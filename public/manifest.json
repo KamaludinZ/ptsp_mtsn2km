@@ -1,0 +1,45 @@
+{
+    "name": "PTSP MTsN 2 Kota Malang",
+    "short_name": "PTSP",
+    "description": "Pelayanan Terpadu Satu Pintu MTsN 2 Kota Malang - Layanan cepat, transparan, dan akuntabel",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#86efac",
+    "theme_color": "#22c55e",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "lang": "id",
+    "dir": "ltr",
+    "categories": ["education", "productivity", "utilities"],
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "32x32",
+            "type": "image/x-icon"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Lihat Layanan",
+            "short_name": "Layanan",
+            "description": "Lihat katalog layanan yang tersedia",
+            "url": "/onlineportal/service-catalog"
+        },
+        {
+            "name": "Lacak Tiket",
+            "short_name": "Tracking",
+            "description": "Lacak status pengajuan layanan",
+            "url": "/onlineportal/track-ticket-form"
+        },
+        {
+            "name": "Pengaduan",
+            "short_name": "Complaint",
+            "description": "Sampaikan pengaduan atau saran",
+            "url": "/supervision/complaints-dashboard"
+        }
+    ],
+        "prefer_related_applications": false,
+    "edge_side_panel": {
+        "preferred_width": 400
+    }
+}

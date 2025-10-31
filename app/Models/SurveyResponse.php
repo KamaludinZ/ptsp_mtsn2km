@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class SurveyResponse extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'survey_id',
+        'user_id',
+        'ticket_id',
+        'ip_address',
+        'completed_at'
+    ];
+
+    protected $casts = [
+        'completed_at' => 'datetime',
+    ];
+
+    // Relationship with survey
+    public function survey()
+    {
+        return $this->belongsTo(Survey::class);
+    }
+
+    // Relationship with user
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Relationship with ticket
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class);
+    }
+
+    // Relationship with survey answers
+    public function answers()
+    {
+        return $this->hasMany(SurveyAnswer::class);
+    }
+}
