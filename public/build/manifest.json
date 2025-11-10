@@ -1,13 +1,148 @@
 {
+  "_bootstrap-!~{00a}~.js": {
+    "file": "assets/bootstrap-BI69yjDX.css",
+    "src": "_bootstrap-!~{00a}~.js"
+  },
+  "_bootstrap-b-xLG9Wz.js": {
+    "file": "assets/bootstrap-b-xLG9Wz.js",
+    "name": "bootstrap",
+    "imports": [
+      "_vendor-ChyupUbu.js"
+    ],
+    "css": [
+      "assets/bootstrap-BI69yjDX.css"
+    ],
+    "assets": [
+      "assets/bootstrap-icons-mSm7cUeB.woff2",
+      "assets/bootstrap-icons-BeopsB42.woff"
+    ]
+  },
+  "_charts-nhbiwqDW.js": {
+    "file": "assets/charts-nhbiwqDW.js",
+    "name": "charts",
+    "imports": [
+      "_vendor-ChyupUbu.js"
+    ]
+  },
+  "_vendor-!~{00b}~.js": {
+    "file": "assets/vendor-DcC8CEE1.css",
+    "src": "_vendor-!~{00b}~.js"
+  },
+  "_vendor-ChyupUbu.js": {
+    "file": "assets/vendor-ChyupUbu.js",
+    "name": "vendor",
+    "css": [
+      "assets/vendor-DcC8CEE1.css"
+    ],
+    "assets": [
+      "assets/fa-brands-400-D_cYUPeE.woff2",
+      "assets/fa-brands-400-D1LuMI3I.ttf",
+      "assets/fa-regular-400-BjRzuEpd.woff2",
+      "assets/fa-regular-400-DZaxPHgR.ttf",
+      "assets/fa-solid-900-CTAAxXor.woff2",
+      "assets/fa-solid-900-D0aA9rwL.ttf",
+      "assets/fa-v4compatibility-C9RhG_FT.woff2",
+      "assets/fa-v4compatibility-CCth-dXg.ttf"
+    ]
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf": {
+    "file": "assets/fa-brands-400-D1LuMI3I.ttf",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2": {
+    "file": "assets/fa-brands-400-D_cYUPeE.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.ttf": {
+    "file": "assets/fa-regular-400-DZaxPHgR.ttf",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.ttf"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2": {
+    "file": "assets/fa-regular-400-BjRzuEpd.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.ttf": {
+    "file": "assets/fa-solid-900-D0aA9rwL.ttf",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.ttf"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2": {
+    "file": "assets/fa-solid-900-CTAAxXor.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.ttf": {
+    "file": "assets/fa-v4compatibility-CCth-dXg.ttf",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.ttf"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2": {
+    "file": "assets/fa-v4compatibility-C9RhG_FT.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2"
+  },
+  "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": {
+    "file": "assets/bootstrap-icons-BeopsB42.woff",
+    "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff"
+  },
+  "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2": {
+    "file": "assets/bootstrap-icons-mSm7cUeB.woff2",
+    "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2"
+  },
+  "resources/css/accessibility.css": {
+    "file": "assets/accessibility-Cf8G-GMu.css",
+    "src": "resources/css/accessibility.css",
+    "isEntry": true
+  },
   "resources/css/app.css": {
-    "file": "assets/app-Bo5rhfgQ.css",
+    "file": "assets/app-tBhfKGjo.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
+  "resources/css/bootstrap-custom.css": {
+    "file": "assets/bootstrap-custom-Bi4iqWMz.css",
+    "src": "resources/css/bootstrap-custom.css",
+    "isEntry": true
+  },
+  "resources/css/dark-mode.css": {
+    "file": "assets/dark-mode-C2HHz9CO.css",
+    "src": "resources/css/dark-mode.css",
+    "isEntry": true
+  },
+  "resources/css/public-layout.css": {
+    "file": "assets/public-layout-h2XdNv4Z.css",
+    "src": "resources/css/public-layout.css",
+    "isEntry": true
+  },
+  "resources/js/accessibility.js": {
+    "file": "assets/accessibility-CCpJFNAr.js",
+    "name": "accessibility",
+    "src": "resources/js/accessibility.js",
+    "isEntry": true
+  },
   "resources/js/app.js": {
-    "file": "assets/app-CvgioS1y.js",
+    "file": "assets/app-CsSQlCva.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_vendor-ChyupUbu.js"
+    ]
+  },
+  "resources/js/bootstrap-bundle.js": {
+    "file": "assets/bootstrap-bundle-BEbfhE_V.js",
+    "name": "bootstrap-bundle",
+    "src": "resources/js/bootstrap-bundle.js",
+    "isEntry": true,
+    "imports": [
+      "_bootstrap-b-xLG9Wz.js",
+      "_vendor-ChyupUbu.js"
+    ]
+  },
+  "resources/js/chart-bundle.js": {
+    "file": "assets/chart-bundle-By6RaqbE.js",
+    "name": "chart-bundle",
+    "src": "resources/js/chart-bundle.js",
+    "isEntry": true,
+    "imports": [
+      "_charts-nhbiwqDW.js",
+      "_vendor-ChyupUbu.js"
+    ]
   }
 }

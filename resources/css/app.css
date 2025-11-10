@@ -1,3 +1,42 @@
+/**
+ * Main Application CSS
+ * Menggunakan Tailwind CSS sebagai framework utama
+ */
+
+/* Bootstrap Icons - Local */
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/**
+ * Custom Styles
+ * Tambahkan custom CSS di sini
+ */
+
+/* Accessibility Enhancements */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Focus Styles for Accessibility */
+*:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}

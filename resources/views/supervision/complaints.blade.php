@@ -1,242 +1,1145 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Pengaduan Masyarakat') }}
-        </h2>
-    </x-slot>
+﻿@extends('layouts.public')
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="text-center mb-8">
-                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                            Layanan Pengaduan Masyarakat
-                        </h1>
-                        <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                            Sampaikan keluhan, saran, atau informasi penting terkait pelayanan di MTsN 2 Kota Malang. 
-                            Kami berkomitmen untuk merespons setiap pengaduan dengan serius.
-                        </p>
+@section('title', 'Layanan Pengaduan - ' . config('app.name', 'PTSP MTsN 2 Kota Malang'))
+
+@push('styles')
+<style>
+    /* Service Component Hover Effect */
+    .service-component {
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(255, 255, 255, 0.25) !important;
+        backdrop-filter: blur(10px);
+    }
+
+    .service-component:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        background: rgba(255, 255, 255, 0.35) !important;
+    }
+
+    .icon-hover {
+        transition: transform 0.3s ease;
+    }
+
+    .service-component:hover .icon-hover {
+        transform: scale(1.2) rotate(5deg);
+    }
+
+    /* Dark mode support for stat cards */
+    [data-theme="dark"] .stat-card {
+        background-color: var(--bs-surface) !important;
+        color: var(--bs-text) !important;
+    }
+
+    [data-theme="dark"] .stat-card .card {
+        background-color: var(--bs-surface) !important;
+    }
+
+    /* Dark mode for additional stats */
+    [data-theme="dark"] .stats-additional {
+        background-color: var(--bs-surface) !important;
+        border-color: var(--bs-primary) !important;
+    }
+
+    /* Dark mode for performance section */
+    [data-theme="dark"] .performance-section {
+        background-color: var(--bs-surface) !important;
+    }
+
+    /* Komponen text always white on green gradient */
+    .component-text {
+        color: white !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Breadcrumb styles */
+    .breadcrumb-separator {
+        margin: 0 8px;
+    }
+
+    [data-theme="dark"] .breadcrumb a,
+    [data-theme="dark"] .breadcrumb span {
+        color: var(--bs-text) !important;
+    }
+
+    /* Dark mode specific fixes */
+    [data-theme="dark"] .text-muted {
+        color: #d1d5db !important;
+    }
+
+    [data-theme="dark"] .lead {
+        color: var(--bs-text) !important;
+    }
+
+    [data-theme="dark"] h1,
+    [data-theme="dark"] h2,
+    [data-theme="dark"] h3,
+    [data-theme="dark"] h4,
+    [data-theme="dark"] h5,
+    [data-theme="dark"] h6 {
+        color: var(--bs-text) !important;
+    }
+
+    [data-theme="dark"] p {
+        color: var(--bs-text);
+    }
+
+    /* Dark mode support for breadcrumb */
+    [data-theme="dark"] .breadcrumb a {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    [data-theme="dark"] .breadcrumb span {
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+
+    /* Dark mode support for icons */
+    [data-theme="dark"] .icon-danger {
+        color: #f87171 !important; /* red-400 */
+    }
+
+    [data-theme="dark"] .icon-success {
+        color: #34d399 !important; /* emerald-400 */
+    }
+
+    [data-theme="dark"] .icon-warning {
+        color: #fbbf24 !important; /* amber-400 */
+    }
+
+    /* Dark mode support for complaint cards */
+    [data-theme="dark"] .complaint-type-card {
+        background: var(--bs-surface) !important;
+        border-color: var(--bs-border-color) !important;
+    }
+
+    [data-theme="dark"] .complaint-type-card:hover {
+        background: var(--bs-surface-hover) !important;
+    }
+
+    /* Dark mode support for info cards */
+    [data-theme="dark"] .info-card {
+        background: var(--bs-surface) !important;
+        border-color: var(--bs-border-color) !important;
+    }
+
+    /* Dark mode support for form elements */
+    [data-theme="dark"] .form-control {
+        background: var(--bs-input-bg) !important;
+        border-color: var(--bs-border-color) !important;
+        color: var(--bs-text) !important;
+    }
+
+    [data-theme="dark"] .form-control:focus {
+        border-color: var(--bs-primary) !important;
+        box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25) !important;
+    }
+
+    [data-theme="dark"] .form-select {
+        background: var(--bs-input-bg) !important;
+        border-color: var(--bs-border-color) !important;
+        color: var(--bs-text) !important;
+    }
+
+    /* Dark mode support for buttons */
+    [data-theme="dark"] .btn-primary {
+        background: var(--bs-primary) !important;
+        border-color: var(--bs-primary) !important;
+        color: white !important;
+    }
+
+    [data-theme="dark"] .btn-primary:hover {
+        background: var(--bs-primary-dark) !important;
+        border-color: var(--bs-primary-dark) !important;
+    }
+
+    /* Dark mode support for alerts */
+    [data-theme="dark"] .alert-info {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+        border-color: #93c5fd !important;
+        color: #1e3a8a !important;
+    }
+
+    [data-theme="dark"] .alert-danger {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%) !important;
+        border-color: #fca5a5 !important;
+        color: #7f1d1d !important;
+    }
+
+    /* Dark mode support for national complaint section */
+    [data-theme="dark"] .national-complaint-card {
+        background: var(--bs-surface) !important;
+        border-color: var(--bs-primary) !important;
+    }
+
+    [data-theme="dark"] .national-complaint-heading,
+    [data-theme="dark"] .national-complaint-text {
+        color: var(--bs-text) !important;
+    }
+
+    [data-theme="dark"] .national-complaint-icon {
+        color: var(--bs-primary) !important;
+    }
+
+    /* Dark mode support for tabs */
+    [data-theme="dark"] .nav-tabs .nav-link {
+        background: var(--bs-gray-800) !important;
+        color: var(--bs-text) !important;
+        border-color: var(--bs-border-color) !important;
+    }
+
+    [data-theme="dark"] .nav-tabs .nav-link.active {
+        background: var(--bs-white) !important;
+        color: var(--bs-dark) !important;
+        border-color: var(--bs-primary) !important;
+    }
+
+    /* Dark mode support for cards */
+    [data-theme="dark"] .card {
+        background: var(--bs-surface) !important;
+        border-color: var(--bs-border-color) !important;
+    }
+
+    [data-theme="dark"] .card-header {
+        background: var(--bs-surface) !important;
+        border-color: var(--bs-border-color) !important;
+    }
+
+    /* Icon background colors for light and dark mode */
+    .complaint-icon-bg {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .complaint-icon-danger {
+        background: rgba(220, 38, 38, 0.1);
+    }
+
+    .complaint-icon-success {
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    .complaint-icon-warning {
+        background: rgba(245, 158, 11, 0.1);
+    }
+
+    [data-theme="dark"] .complaint-icon-danger {
+        background: rgba(239, 68, 68, 0.15);
+    }
+
+    [data-theme="dark"] .complaint-icon-success {
+        background: rgba(16, 185, 129, 0.15);
+    }
+
+    [data-theme="dark"] .complaint-icon-warning {
+        background: rgba(245, 158, 11, 0.15);
+    }
+
+    /* Info icons */
+    .info-icon {
+        color: var(--bs-primary);
+    }
+
+    [data-theme="dark"] .info-icon {
+        color: var(--bs-primary);
+    }
+    
+    /* National complaint card */
+    .national-complaint-card {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+        border: 2px solid #0ea5e9 !important;
+    }
+
+    [data-theme="dark"] .national-complaint-card {
+        background: var(--bs-surface) !important;
+        border-color: var(--bs-primary) !important;
+    }
+    
+    /* Custom styles for complaint page */
+    .page-header {
+        background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-dark) 100%);
+        padding: 48px 0;
+        margin-bottom: 32px;
+    }
+
+    .breadcrumb {
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    .page-title {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #ffffff;
+    }
+
+    .page-subtitle {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Dark mode support for tab navigation */
+    [data-theme="dark"] .nav-link:not(.active) {
+        color: var(--bs-text);
+        background-color: var(--bs-gray-800);
+    }
+
+    [data-theme="dark"] .nav-link.active {
+        color: var(--bs-dark) !important;
+        background-color: var(--bs-white) !important;
+        border-color: var(--bs-primary) !important;
+    }
+
+    /* Dark mode support for national complaint section */
+    [data-theme="dark"] .national-complaint-heading,
+    [data-theme="dark"] .national-complaint-text {
+        color: var(--bs-text) !important;
+    }
+
+    [data-theme="dark"] .national-complaint-card {
+        background: var(--bs-surface) !important;
+        border-color: var(--bs-primary) !important;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-top: 32px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 24px;
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 36px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 8px;
+    }
+
+    .stat-label {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 500;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--bs-text);
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--bs-border-color);
+    }
+
+    [data-theme="dark"] .section-title {
+        border-color: var(--bs-border-color);
+    }
+    
+    .complaint-type-card {
+        background: #ffffff;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        padding: 24px;
+        transition: all 0.2s;
+        text-align: center;
+    }
+    
+    [data-theme="dark"] .complaint-type-card {
+        background: #111827;
+    }
+    
+    .complaint-type-card:hover {
+        border-color: var(--bs-primary);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .form-section {
+        background: #ffffff;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    
+    [data-theme="dark"] .form-section {
+        background: #111827;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--bs-text);
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 15px;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 6px;
+        background: #ffffff;
+        color: var(--bs-text);
+    }
+    
+    [data-theme="dark"] .form-control {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(20, 83, 45, 0.1);
+    }
+    
+    .btn {
+        padding: 12px 24px;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+        border: none;
+    }
+    
+    .btn-primary {
+        background: var(--bs-primary);
+        color: #ffffff !important;
+    }
+    
+    .btn-primary:hover {
+        background: var(--bs-primary-dark);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--bs-primary);
+        color: var(--bs-primary);
+    }
+    
+    .btn-outline:hover {
+        background: var(--bs-primary);
+        color: #ffffff;
+    }
+    
+    .info-card {
+        background: #f8fafc;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    [data-theme="dark"] .info-card {
+        background: #1f2937;
+    }
+    
+    .tracking-card {
+        background: #ffffff;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    
+    [data-theme="dark"] .tracking-card {
+        background: #111827;
+    }
+    
+    .standards-card {
+        background: var(--bs-primary-soft);
+        border-left: 4px solid var(--bs-primary);
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    [data-theme="dark"] .standards-card {
+        background: var(--bs-primary-dark);
+    }
+    
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    /* Additional styles for better dark mode support */
+    .complaint-container {
+        padding: 0 16px 64px;
+    }
+
+    .national-complaint-image {
+        max-width: 200px;
+        height: auto;
+    }
+
+    [data-theme="dark"] .info-text {
+        color: var(--bs-text) !important;
+    }
+
+    [data-theme="dark"] .info-heading {
+        color: var(--bs-text) !important;
+    }
+
+    /* Modal styles */
+    .modal {
+        display: none;
+    }
+
+    .modal.show {
+        display: block;
+    }
+
+    /* Additional icon styles */
+    .info-icon-large {
+        font-size: 1.5rem;
+    }
+
+    /* Text color classes for better dark mode support */
+    .info-heading {
+        color: var(--bs-text) !important;
+    }
+
+    .info-text {
+        color: var(--bs-secondary-text) !important;
+    }
+    /* Info heading and text for consistent styling */
+    .info-heading {
+        color: var(--bs-text) !important;
+        font-weight: bold;
+    }
+    
+    .info-text {
+        color: var(--bs-secondary-text) !important;
+    }
+    
+    [data-theme="dark"] .info-heading {
+        color: var(--bs-text) !important;
+    }
+    
+    [data-theme="dark"] .info-text {
+        color: var(--bs-secondary-text) !important;
+    }
+</style>
+@endpush
+
+@section('content')
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="{{ url('/') }}">Beranda</a>
+            <span class="breadcrumb-separator">/</span>
+            <span>Pengaduan</span>
+        </nav>
+
+        <!-- Title -->
+        <h1 class="page-title">Layanan Pengaduan</h1>
+        <p class="page-subtitle">Sampaikan keluhan, saran, atau informasi penting terkait pelayanan di MTsN 2 Kota Malang</p>
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">1,247</div>
+                <div class="stat-label">Total Pengaduan</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">98%</div>
+                <div class="stat-label">Ditindaklanjuti</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">7</div>
+                <div class="stat-label">Hari Rata-rata</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">95%</div>
+                <div class="stat-label">Puas Ditangani</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container complaint-container">
+    <!-- Complaint Types -->
+    <div class="row mb-6">
+        <div class="col-lg-4 mb-4">
+            <div class="complaint-type-card text-center">
+                <div class="mx-auto mb-3 complaint-icon-bg complaint-icon-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h3 class="h5 fw-bold mb-2">Pengaduan</h3>
+                <p class="text-muted mb-3">
+                    Laporkan keluhan atau masalah pelayanan yang Anda alami
+                </p>
+                <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-primary w-100">
+                    <i class="fas fa-comment me-2"></i> Kirim Pengaduan
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="complaint-type-card text-center">
+                <div class="mx-auto mb-3 complaint-icon-bg complaint-icon-success">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="h5 fw-bold mb-2">Saran/Masukan</h3>
+                <p class="text-muted mb-3">
+                    Berikan ide atau masukan untuk meningkatkan kualitas pelayanan
+                </p>
+                <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-success w-100">
+                    <i class="fas fa-lightbulb me-2"></i> Kirim Saran
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="complaint-type-card text-center">
+                <div class="mx-auto mb-3 complaint-icon-bg complaint-icon-warning">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3 class="h5 fw-bold mb-2">Whistleblowing</h3>
+                <p class="text-muted mb-3">
+                    Laporkan dugaan pelanggaran atau tindakan tidak etis secara rahasia
+                </p>
+                <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-danger w-100">
+                    <i class="fas fa-user-secret me-2"></i> Whistleblowing
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alternative: Direct Tabbed Interface -->
+    <div class="card border-0 shadow-sm rounded-4 mb-6">
+        <div class="card-header bg-white py-4 border-bottom-0">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs nav-fill border-0" id="complaintTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="dumas-alt-tab" data-bs-toggle="tab" data-bs-target="#dumas-alt" type="button" role="tab" aria-controls="dumas-alt" aria-selected="true">
+                        <i class="fas fa-comment me-2"></i>Pengaduan Masyarakat
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="whistleblowing-alt-tab" data-bs-toggle="tab" data-bs-target="#whistleblowing-alt" type="button" role="tab" aria-controls="whistleblowing-alt" aria-selected="false">
+                        <i class="fas fa-user-secret me-2"></i>Whistleblowing
+                    </button>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="card-body p-4">
+            <!-- Tab panes -->
+            <div class="tab-content" id="complaintTabContentAlt">
+                <!-- Dumas Tab -->
+                <div class="tab-pane fade show active" id="dumas-alt" role="tabpanel" aria-labelledby="dumas-alt-tab">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Pengaduan Masyarakat</strong> - Gunakan formulir ini untuk melaporkan keluhan terkait pelayanan publik, seperti pelayanan lambat, prosedur berbelit, petugas tidak ramah, dan sebagainya.
                     </div>
+                    
+                    <form action="{{ route('supervision.complaint.submit.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" name="complaint_type" value="complaint">
 
-                    <!-- Complaint Types -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                        <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
-                            <div class="text-center">
-                                <div class="mx-auto bg-red-100 dark:bg-red-900 rounded-full p-4 w-16 h-16 flex items-center justify-center">
-                                    <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 text-2xl"></i>
-                                </div>
-                                <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Pengaduan</h3>
-                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                    Laporkan keluhan atau masalah pelayanan yang Anda alami
-                                </p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="reporter_name_alt" class="form-label">Nama Pelapor <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="reporter_name_alt" name="reporter_name" required>
                             </div>
-                        </div>
-
-                        <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
-                            <div class="text-center">
-                                <div class="mx-auto bg-green-100 dark:bg-green-900 rounded-full p-4 w-16 h-16 flex items-center justify-center">
-                                    <i class="fas fa-lightbulb text-green-600 dark:text-green-400 text-2xl"></i>
-                                </div>
-                                <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Saran/Masukan</h3>
-                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                    Berikan ide atau masukan untuk meningkatkan kualitas pelayanan
-                                </p>
+                            <div class="col-md-6">
+                                <label for="reporter_email_alt" class="form-label">Email Pelapor <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="reporter_email_alt" name="reporter_email" required>
                             </div>
-                        </div>
-
-                        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
-                            <div class="text-center">
-                                <div class="mx-auto bg-yellow-100 dark:bg-yellow-900 rounded-full p-4 w-16 h-16 flex items-center justify-center">
-                                    <i class="fas fa-bell text-yellow-600 dark:text-yellow-400 text-2xl"></i>
-                                </div>
-                                <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Whistleblowing</h3>
-                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                    Laporkan dugaan pelanggaran atau tindakan tidak etis secara rahasia
-                                </p>
+                            <div class="col-md-6">
+                                <label for="reporter_phone_alt" class="form-label">Nomor Telepon</label>
+                                <input type="tel" class="form-control" id="reporter_phone_alt" name="reporter_phone">
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Complaint Form -->
-                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-8">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                            Formulir Pengaduan
-                        </h2>
-                        
-                        <form class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="complaint-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Jenis Pengaduan <span class="text-red-500">*</span>
-                                    </label>
-                                    <select id="complaint-type" 
-                                            class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                            required>
-                                        <option value="">Pilih Jenis Pengaduan</option>
-                                        <option value="complaint">Pengaduan</option>
-                                        <option value="suggestion">Saran/Masukan</option>
-                                        <option value="whistleblowing">Whistleblowing</option>
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="related-service" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Layanan Terkait (Opsional)
-                                    </label>
-                                    <select id="related-service" 
-                                            class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="">Pilih Layanan</option>
-                                        <option value="1">Surat Keterangan Siswa Aktif</option>
-                                        <option value="2">Legalisir Ijazah</option>
-                                        <option value="3">Surat Permohonan Izin Kegiatan</option>
-                                        <option value="4">Lainnya</option>
-                                    </select>
-                                </div>
+                            <div class="col-md-6">
+                                <label for="complaint_date_alt" class="form-label">Tanggal Kejadian <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="complaint_date_alt" name="complaint_date" required>
                             </div>
-                            
-                            <div>
-                                <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Subjek <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="subject" 
-                                       class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                       placeholder="Masukkan subjek pengaduan" required>
+                            <div class="col-12">
+                                <label for="complaint_title_alt" class="form-label">Judul Pengaduan <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="complaint_title_alt" name="complaint_title" required>
                             </div>
-                            
-                            <div>
-                                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Deskripsi <span class="text-red-500">*</span>
-                                </label>
-                                <textarea id="description" rows="5" 
-                                          class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                          placeholder="Jelaskan secara detail pengaduan Anda..." required></textarea>
+                            <div class="col-12">
+                                <label for="complaint_description_alt" class="form-label">Isi Pengaduan <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="complaint_description_alt" name="complaint_description" rows="5" required></textarea>
                             </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="attachment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Lampiran (Opsional)
-                                    </label>
-                                    <div class="flex items-center justify-center w-full">
-                                        <label for="attachment" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                <i class="fas fa-cloud-upload-alt text-gray-400 dark:text-gray-500 text-3xl mb-2"></i>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                    <span class="font-semibold">Klik untuk mengunggah</span> atau seret file
-                                                </p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, PDF (MAX. 10MB)</p>
-                                            </div>
-                                            <input id="attachment" type="file" class="hidden" />
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Identitas Pelapor
-                                    </label>
-                                    <div class="space-y-4">
-                                        <div class="flex items-center">
-                                            <input id="anonymous" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                            <label for="anonymous" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                Kirim secara anonim
-                                            </label>
-                                        </div>
-                                        
-                                        <div id="identity-fields">
-                                            <div class="mb-3">
-                                                <label for="name" class="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                                                    Nama Lengkap
-                                                </label>
-                                                <input type="text" id="name" 
-                                                       class="block w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                                       placeholder="Nama lengkap Anda">
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label for="email" class="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                                                    Email
-                                                </label>
-                                                <input type="email" id="email" 
-                                                       class="block w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                                       placeholder="Alamat email Anda">
-                                            </div>
-                                            
-                                            <div>
-                                                <label for="phone" class="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                                                    Nomor Telepon (Opsional)
-                                                </label>
-                                                <input type="tel" id="phone" 
-                                                       class="block w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                                       placeholder="Nomor telepon yang bisa dihubungi">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="col-12">
+                                <label for="attachment_alt" class="form-label">Lampiran (jika ada)</label>
+                                <input type="file" class="form-control" id="attachment_alt" name="attachment">
                             </div>
-                            
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    Dengan mengirimkan pengaduan ini, Anda menyetujui 
-                                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">Syarat dan Ketentuan</a> serta 
-                                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">Kebijakan Privasi</a> kami.
-                                </p>
-                                <button type="submit" 
-                                        class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                                    <i class="fas fa-paper-plane mr-2"></i> Kirim Pengaduan
+                            <div class="col-12 d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i> Kirim Pengaduan
                                 </button>
                             </div>
-                        </form>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Whistleblowing Tab -->
+                <div class="tab-pane fade" id="whistleblowing-alt" role="tabpanel" aria-labelledby="whistleblowing-alt-tab">
+                    <div class="alert alert-danger mb-4" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Whistleblowing</strong> - Gunakan formulir ini untuk melaporkan pelanggaran serius seperti korupsi, penipuan, suap, atau penyalahgunaan wewenang yang terjadi di dalam organisasi.
                     </div>
+                    
+                    <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 mb-4">
+                        <div class="flex flex-col md:flex-row items-center gap-3">
+                            <div class="flex-shrink-0">
+                                <div class="bg-red-100 rounded-full p-3">
+                                    <i class="fas fa-shield-alt text-red-600 text-2xl"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-gray-900 mb-1">
+                                    <i class="fas fa-lock me-2"></i> Kerahasiaan Terjamin
+                                </h5>
+                                <p class="text-gray-700">
+                                    Kami menjamin kerahasiaan identitas pelapor dan melindungi dari segala bentuk represaliasi. Laporan Anda akan ditangani dengan profesional dan rahasia.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form action="{{ route('supervision.complaint.submit.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" name="complaint_type" value="whistleblowing">
 
-                    <!-- Information Section -->
-                    <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-blue-50 dark:bg-blue-900 rounded-xl p-6">
-                            <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-3">
-                                <i class="fas fa-shield-alt mr-2"></i> Perlindungan Whistleblower
-                            </h3>
-                            <p class="text-blue-700 dark:text-blue-300 text-sm">
-                                Kami menjamin kerahasiaan identitas pelapor dalam kasus whistleblowing dan melindungi dari segala bentuk represaliasi.
-                            </p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="violation_category_alt" class="form-label">Kategori Pelanggaran <span class="text-danger">*</span></label>
+                                <select class="form-select" id="violation_category_alt" name="violation_category" required>
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="corruption">Korupsi</option>
+                                    <option value="gratification">Gratifikasi</option>
+                                    <option value="nepotism">Nepotisme/Kolusi</option>
+                                    <option value="misconduct">Pelanggaran Etika</option>
+                                    <option value="misuse">Penyalahgunaan Wewenang</option>
+                                    <option value="other">Lainnya</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="incident_date_alt" class="form-label">Tanggal Kejadian</label>
+                                <input type="date" class="form-control" id="incident_date_alt" name="incident_date">
+                            </div>
+                            <div class="col-12">
+                                <label for="incident_title_alt" class="form-label">Judul Laporan <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="incident_title_alt" name="complaint_title" required placeholder="Ringkasan Pelanggaran">
+                            </div>
+                            <div class="col-12">
+                                <label for="incident_description_alt" class="form-label">Deskripsi Kejadian <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="incident_description_alt" name="complaint_description" rows="5" required placeholder="Jelaskan secara detail kejadian pelanggaran..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="evidence_alt" class="form-label">Bukti Pendukung</label>
+                                <div class="input-group">
+                                    <input type="file" class="form-control" id="evidence_alt" name="attachment" multiple>
+                                    <label class="input-group-text" for="evidence_alt">Unggah File</label>
+                                </div>
+                                <div class="form-text">
+                                    Anda dapat mengunggah beberapa file sebagai bukti pendukung (PNG, JPG, PDF, DOCX - Maks 10MB)
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="anonymous_report_alt" name="anonymous" value="1">
+                                    <label class="form-check-label" for="anonymous_report_alt">
+                                        Laporkan secara anonim
+                                    </label>
+                                </div>
+                                
+                                <div id="reporter_identity_section_alt">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="reporter_name_whistle_alt" class="form-label">Nama Lengkap</label>
+                                            <input type="text" class="form-control" id="reporter_name_whistle_alt" name="reporter_name">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="reporter_position_alt" class="form-label">Jabatan/Posisi</label>
+                                            <input type="text" class="form-control" id="reporter_position_alt" name="reporter_position" placeholder="Contoh: Pegawai, Kontraktor, dll">
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label for="reporter_email_whistle_alt" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="reporter_email_whistle_alt" name="reporter_email">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="reporter_phone_whistle_alt" class="form-label">Nomor Telepon</label>
+                                            <input type="tel" class="form-control" id="reporter_phone_whistle_alt" name="reporter_phone">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 d-grid">
+                                <button type="submit" class="btn btn-danger btn-lg">
+                                    <i class="fas fa-bullhorn me-2"></i> Kirim Laporan Rahasia
+                                </button>
+                            </div>
                         </div>
-                        
-                        <div class="bg-green-50 dark:bg-green-900 rounded-xl p-6">
-                            <h3 class="text-lg font-semibold text-green-800 dark:text-green-200 mb-3">
-                                <i class="fas fa-clock mr-2"></i> Waktu Respons
-                            </h3>
-                            <p class="text-green-700 dark:text-green-300 text-sm">
-                                Pengaduan akan ditindaklanjuti dalam waktu maksimal 5 hari kerja sejak tanggal diterima.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Statistics -->
-                    <div class="mt-10 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6">
-                        <h3 class="text-xl font-bold text-center text-gray-900 dark:text-white mb-6">
-                            Statistik Pengaduan 2025
-                        </h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
-                            <div>
-                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">1,247</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-300">Total Pengaduan</div>
-                            </div>
-                            <div>
-                                <div class="text-2xl font-bold text-green-600 dark:text-green-400">98%</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-300">Ditindaklanjuti</div>
-                            </div>
-                            <div>
-                                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">7</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-300">Hari Rata-rata</div>
-                            </div>
-                            <div>
-                                <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">95%</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-300">Puas Ditangani</div>
-                            </div>
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+
+    <!-- NOTE: Original form has been replaced with tabbed interface above -->
+    <!-- Users can now access the complaint form through the buttons or tabbed interface -->
+
+    <!-- Information Section -->
+    <div class="row mb-6">
+        <div class="col-md-6 mb-4">
+            <div class="info-card">
+                <h3 class="h5 fw-bold mb-3">
+                    <i class="fas fa-shield-alt me-2 info-icon"></i>Perlindungan Whistleblower
+                </h3>
+                <p class="text-muted mb-0">
+                    Kami menjamin kerahasiaan identitas pelapor dalam kasus whistleblowing dan melindungi dari segala bentuk represaliasi.
+                </p>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="info-card">
+                <h3 class="h5 fw-bold mb-3">
+                    <i class="fas fa-clock me-2 info-icon"></i>Waktu Respons
+                </h3>
+                <p class="text-muted mb-0">
+                    Pengaduan akan ditindaklanjuti dalam waktu maksimal 5 hari kerja sejak tanggal diterima.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lapor.go.id Information -->
+    <div class="info-card mb-4 text-center national-complaint-card">
+        <div class="row align-items-center">
+            <div class="col-md-3 mb-3 mb-md-0">
+                <img src="{{ asset('images/Simf60FF_SP4N-Lapor.png') }}"
+                     alt="SP4N LAPOR!"
+                     class="img-fluid"
+                     class="national-complaint-image">
+            </div>
+            <div class="col-md-9 text-md-start">
+                <h3 class="h5 fw-bold mb-2 national-complaint-heading">
+                    <i class="fas fa-megaphone me-2 national-complaint-icon"></i>Lapor Pengaduan Nasional
+                </h3>
+                <p class="mb-2 national-complaint-text">
+                    Selain melaporkan pengaduan kepada kami, Anda juga dapat menyampaikan aspirasi dan pengaduan pelayanan publik secara nasional melalui:
+                </p>
+                <a href="https://www.lapor.go.id/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn btn-sm btn-primary">
+                    <i class="fas fa-external-link-alt me-2"></i>Kunjungi LAPOR.GO.ID
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracking Section -->
+    <div class="tracking-card">
+        <h2 class="section-title">Lacak Status Pengaduan Anda</h2>
+        <p class="text-muted mb-4">Ketahui status terkini dari pengaduan yang telah Anda sampaikan</p>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <form method="POST" action="{{ route('supervision.complaint.track') }}" class="space-y-4">
+                    @csrf
+                    <div class="form-group">
+                        <label for="complaint_number" class="form-label">
+                            Nomor Tiket Pengaduan
+                        </label>
+                        <input type="text" 
+                               id="complaint_number" 
+                               name="complaint_number" 
+                               required
+                               class="form-control"
+                               placeholder="Masukkan nomor tiket">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reporter_email" class="form-label">
+                            Email Pelapor (Opsional)
+                        </label>
+                        <input type="email" 
+                               id="reporter_email" 
+                               name="reporter_email" 
+                               class="form-control"
+                               placeholder="Email yang digunakan saat pengiriman">
+                    </div>
+                    
+                    <div class="pt-2">
+                        <button type="submit" 
+                                class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i> Lacak Pengaduan
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <a href="{{ route('supervision.complaint.track.form') }}" 
+                       class="btn btn-outline">
+                        <i class="fas fa-external-link-alt me-2"></i> Buka halaman pelacakan lengkap
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Standards Compliance Note -->
+    <div class="mt-6 p-4 bg-primary-soft rounded-3 border-start border-primary border-4">
+        <div class="d-flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-primary info-icon-large"></i>
+            </div>
+            <div class="ms-4">
+                <h4 class="h5 fw-bold mb-2 info-heading">
+                    Kepatuhan terhadap Standar Pelayanan
+                </h4>
+                <p class="mb-3 info-text">
+                    Layanan pengaduan ini diselaraskan dengan Peraturan Menteri PANRB Nomor 15 Tahun 2014 tentang Pedoman Pelayanan Publik.
+                </p>
+                <button onclick="showStandardsModal()" class="btn btn-outline-primary">
+                    <i class="fas fa-list-check me-2"></i> Lihat 14 Komponen Standar Pelayanan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Standards Modal -->
+<div id="standardsModal" class="modal fade standards-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">14 Komponen Standar Pelayanan</h5>
+                <button type="button" class="btn-close" onclick="closeStandardsModal()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="space-y-3">
+                    <!-- Pengaduan Layanan is the 6th component in the service -->
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            6. Penanganan Pengaduan
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Proses penanganan keluhan dan pengaduan dari masyarakat melalui sistem terpadu.
+                        </p>
+                    </div>
+
+                    <!-- Other standard components -->
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            1. Dasar Hukum
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Landasan hukum penyelenggaraan pelayanan PTSP MTsN 2 Kota Malang sesuai peraturan perundang-undangan yang berlaku.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            2. Persyaratan
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Dokumen dan persyaratan yang harus dipenuhi oleh pemohon untuk mendapatkan pelayanan.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            3. Sistem, Mekanisme, Prosedur
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Alur dan tata cara pelayanan dari mulai pengajuan hingga selesai.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            4. Jangka Waktu Penyelesaian
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Estimasi waktu yang dibutuhkan untuk menyelesaikan setiap pelayanan.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            5. Biaya/Tarif
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Informasi biaya atau tarif pelayanan yang berlaku (jika ada).
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            7. Produk Pelayanan
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Hasil akhir dari pelayanan yang diberikan kepada pemohon.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            8. Sarana, Prasarana, dan Sistem
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Fasilitas dan sistem pendukung penyelenggaraan pelayanan.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            9. Jumlah dan Layanan Pelaksana
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Jumlah petugas yang tersedia untuk setiap layanan.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            10. Jaminan Pelayanan
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Jaminan yang diberikan kepada pemohon terkait kualitas dan waktu pelayanan.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            11. Jaminan Keamanan dan Keselamatan
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Jaminan keamanan data dan informasi pemohon.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            12. Evaluasi Kinerja
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Mekanisme evaluasi kinerja pelayanan secara berkala.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            13. Penetapan Standar Pelayanan
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Mekanisme penetapan standar pelayanan yang harus dipenuhi.
+                        </p>
+                    </div>
+
+                    <div class="standards-card">
+                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
+                            14. Sistem Pengelolaan Pelayanan
+                        </h4>
+                        <p class="mb-0" style="color: var(--bs-secondary-text);">
+                            Sistem pengelolaan pelayanan yang terintegrasi dan terdokumentasi secara baik.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-light rounded">
+                    <p class="mb-0 text-center" style="color: var(--bs-secondary-text);">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Untuk informasi lebih lengkap, silakan hubungi PTSP MTsN 2 Kota Malang.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@push('scripts')
+<script>
+    // Function to show standards modal
+    function showStandardsModal() {
+        const modal = document.getElementById('standardsModal');
+        modal.classList.add('show', 'd-block');
+        modal.style.display = 'block';
+        modal.setAttribute('aria-hidden', 'false');
+        // Add backdrop
+        if (!document.querySelector('.modal-backdrop')) {
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            document.body.appendChild(backdrop);
+        }
+        document.body.classList.add('modal-open');
+    }
+
+    // Function to close standards modal
+    function closeStandardsModal() {
+        const modal = document.getElementById('standardsModal');
+        modal.classList.remove('show', 'd-block');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        // Remove backdrop
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+        document.body.classList.remove('modal-open');
+    }
+    
+    // Handle anonymous checkbox
+    document.addEventListener('DOMContentLoaded', function() {
+        const anonymousCheckbox = document.getElementById('anonymous');
+        const identityFields = document.getElementById('identity-fields');
+        
+        if (anonymousCheckbox && identityFields) {
+            // Initially hide identity fields if anonymous is checked
+            if (anonymousCheckbox.checked) {
+                identityFields.style.display = 'none';
+            }
+            
+            // Toggle identity fields visibility when checkbox changes
+            anonymousCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    identityFields.style.display = 'none';
+                } else {
+                    identityFields.style.display = 'block';
+                }
+            });
+        }
+    });
+</script>
+@endpush

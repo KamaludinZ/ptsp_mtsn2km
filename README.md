@@ -216,6 +216,10 @@ Kontribusi sangat dihargai! Silakan:
 
 Project ini dilisensikan di bawah [MIT License](LICENSE).
 
+## 💡 Sistem Build Tanpa Vite
+
+Proyek ini telah dimodifikasi untuk berjalan tanpa Vite. Untuk informasi lebih lanjut tentang sistem build baru, silakan lihat dokumen `README_BUILD.md`.
+
 ## 📞 Kontak & Support
 
 Untuk pertanyaan, bantuan, atau informasi lebih lanjut:

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Visitor;
+use Illuminate\Http\Request; // Don't forget to import Request
 use Carbon\Carbon;
 
 class PublicController extends Controller
@@ -21,7 +22,7 @@ class PublicController extends Controller
     public function visitorBook()
     {
         $date = request('date', Carbon::today()->toDateString());
-        $visitors = Visitor::with(['targetUser', 'checkedInBy', 'checkedOutBy'])
+        $visitors = Visitor::whereDate('created_at', $date)
             ->whereDate('created_at', $date)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -43,5 +44,62 @@ class PublicController extends Controller
     public function contact()
     {
         return view('public.contact');
+    }
+
+    /**
+     * Handle visitor form submission
+     */
+    public function submitVisitor(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'institution' => 'nullable|string|max:255',
+            'purpose' => 'required|string|max:500',
+            'notes' => 'nullable|string|max:1000',
+            'obscure_name' => 'boolean',
+        ]);
+
+        Visitor::create([
+            'name' => $validated['name'],
+            'phone' => $validated['phone'],
+            'institution' => $validated['institution'],
+            'purpose' => $validated['purpose'],
+            'notes' => $validated['notes'],
+            'is_obscured' => $request->has('obscure_name'),
+            'check_in_time' => Carbon::now(),
+            'status' => 'active',
+        ]);
+
+        return redirect()->route('public.visitor.book')->with('success', 'Tamu berhasil didaftarkan!');
+    }
+
+    /**
+     * Handle service applicant form submission
+     */
+    public function submitApplicant(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'institution' => 'nullable|string|max:255',
+            'applicant_type' => 'nullable|string|max:255',
+            'target_service' => 'required|string|max:500',
+            'notes' => 'nullable|string|max:1000',
+            'obscure_name' => 'boolean',
+        ]);
+
+        Visitor::create([
+            'name' => $validated['name'],
+            'phone' => $validated['phone'],
+            'institution' => $validated['institution'],
+            'purpose' => 'Pemohon Layanan: ' . $validated['target_service'], // Combine purpose
+            'notes' => $validated['notes'],
+            'is_obscured' => $request->has('obscure_name'),
+            'check_in_time' => Carbon::now(),
+            'status' => 'active',
+        ]);
+
+        return redirect()->route('public.visitor.book')->with('success', 'Pemohon layanan berhasil didaftarkan!');
     }
 }

@@ -7,43 +7,157 @@
 
         <title>{{ config('app.name', 'PTSP MTsN 2 KOTA MALANG') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        {{-- Vite Assets: Tailwind CSS and Font Awesome (Local - No CDN) --}}
+        @vite(['resources/css/bootstrap-custom.css', 'resources/css/app.css', 'resources/css/dark-mode.css', 'resources/css/accessibility.css', 'resources/js/bootstrap-bundle.js', 'resources/js/app.js', 'resources/js/accessibility.js'])
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            <!-- Navigation -->
-            <nav class="bg-white border-b border-gray-200">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex justify-between h-16">
-                        <div class="flex">
-                            <div class="flex-shrink-0 flex items-center">
-                                <span class="font-bold text-xl text-gray-800">PTSP Back Office</span>
-                            </div>
-                            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                                <a href="{{ route('backoffice.dashboard') }}" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
-                                <a href="{{ route('backoffice.all.tickets') }}" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">All Tickets</a>
-                            </div>
-                        </div>
-                        <div class="hidden sm:ml-6 sm:flex sm:items-center">
-                            <span class="text-gray-500 mr-4">Welcome, {{ Auth::user()->name }}</span>
-                            <form method="POST" action="{{ route('logout') }}" x-data>
-                                @csrf
-                                <button type="submit" class="text-gray-500 hover:text-gray-700">
-                                    Logout
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
+
+    <!-- Floating Action Buttons - Left Side -->
+    <div class="floating-action-buttons-left">
+        <!-- Accessibility Button -->
+        <button id="accessibility-btn"
+                class="floating-btn accessibility-btn pulse">
+            <span style="line-height: 1;">♿</span>
+        </button>
+
+        <!-- Back to Top Button -->
+        <button onclick="scrollToTop()"
+                id="back-to-top-btn"
+                class="floating-btn back-to-top-btn">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <!-- Floating Action Button - Right Side -->
+    <div class="floating-action-buttons-right">
+        <!-- WhatsApp Button -->
+        <a href="https://wa.me/{{ config('app.whatsapp_number', '6285183367500') }}?text={{ urlencode('Halo, saya ingin bertanya tentang layanan PTSP MTsN 2 KOTA MALANG') }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="floating-btn whatsapp-btn">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <!-- Modern Accessibility Panel -->
+    <div id="accessibilityPanel" class="accessibility-panel">
+        <!-- Panel Header -->
+        <div class="accessibility-panel-header">
+            <h3 class="accessibility-panel-title">
+                <span>🎯</span>
+                <span>Pusat Aksesibilitas</span>
+            </h3>
+            <p class="accessibility-panel-subtitle">WCAG 2.1 AA Compliant • Inklusif untuk Semua</p>
+            <button onclick="toggleAccessibilitySidebar()" class="accessibility-close-btn" aria-label="Tutup panel aksesibilitas">
+                ✕
+            </button>
+        </div>
+
+        <!-- Panel Content -->
+        <div class="accessibility-panel-content">
+            <!-- Font Size Section -->
+            <div class="accessibility-section">
+                <h4 class="accessibility-section-title">
+                    <span>📝</span>
+                    <span>Ukuran Teks</span>
+                </h4>
+                <div class="accessibility-controls">
+                    <button onclick="setFontSize('small')" class="font-size-btn" id="fontSmallBtn">A-</button>
+                    <button onclick="setFontSize('normal')" class="font-size-btn active" id="fontNormalBtn">A</button>
+                    <button onclick="setFontSize('large')" class="font-size-btn" id="fontLargeBtn">A+</button>
+                    <button onclick="setFontSize('extra-large')" class="font-size-btn" id="fontXLargeBtn">A++</button>
                 </div>
-            </nav>
+            </div>
+
+            <!-- Visual Adjustments Section -->
+            <div class="accessibility-section">
+                <h4 class="accessibility-section-title">
+                    <span>🎨</span>
+                    <span>Penyesuaian Visual</span>
+                </h4>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>👁️</span>
+                        <span>Kontras Tinggi</span>
+                    </div>
+                    <div class="accessibility-switch" id="highContrastControl" onclick="toggleHighContrast()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>🔗</span>
+                        <span>Garis Bawah Link</span>
+                    </div>
+                    <div class="accessibility-switch" id="underlineControl" onclick="toggleUnderline()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>📏</span>
+                        <span>Jarak Baris</span>
+                    </div>
+                    <div class="accessibility-switch" id="lineHeightControl" onclick="toggleLineHeight()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>↔️</span>
+                        <span>Jarak Huruf</span>
+                    </div>
+                    <div class="accessibility-switch" id="letterSpacingControl" onclick="toggleLetterSpacing()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>🖱️</span>
+                        <span>Kursor Besar</span>
+                    </div>
+                    <div class="accessibility-switch" id="cursorControl" onclick="toggleLargeCursor()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+            </div>
+
+            <!-- Advanced Features Section -->
+            <div class="accessibility-section">
+                <h4 class="accessibility-section-title">
+                    <span>⚙️</span>
+                    <span>Fitur Lanjutan</span>
+                </h4>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>🎬</span>
+                        <span>Nonaktifkan Animasi</span>
+                    </div>
+                    <div class="accessibility-switch" id="animationControl" onclick="toggleAnimations()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>⌨️</span>
+                        <span>Navigasi Keyboard Ditingkatkan</span>
+                    </div>
+                    <div class="accessibility-switch" id="keyboardControl" onclick="toggleKeyboardNavigation()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+            </div>
+
+            <!-- Reset Section -->
+            <div class="accessibility-section">
+                <button onclick="resetAllAccessibility()" class="btn btn-danger w-100" aria-label="Reset semua pengaturan aksesibilitas">
+                    <i class="fas fa-sync-alt me-2"></i>
+                    Reset Semua Pengaturan
+                </button>
+            </div>
+        </div>
+    </div>
+        <div class="min-h-screen bg-gray-100">
+            @include('layouts.navigation')
 
             <!-- Page Content -->
-            <main>
+            <main id="main-content">
                 {{ $slot }}
             </main>
         </div>

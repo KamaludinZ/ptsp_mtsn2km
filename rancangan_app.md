@@ -128,7 +128,7 @@ Pelacakan dapat dilakukan tanpa login dengan syarat mengetahui nomor tiket, jika
 
 ### C. MODUL BACK-OFFICE (DAPUR PROSES)
 
-Modul ini dioperasikan oleh Staf Internal Sekolah (TU, Waka, Bendahara, Kepsek).
+Modul ini dioperasikan oleh Staf Internal Sekolah (TU, Waka, Kepsek).
 
 #### Modul 7: Antrian Tugas (Workflow Engine)
 

@@ -15,6 +15,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             ServiceSeeder::class,
+            SchoolServicesSeeder::class,
+            SurveySeeder::class,              // Create default survey
+            SurveyUnsurSeeder::class,         // Create survey unsurs
+            SurveyQuestionSeeder::class,      // Create survey questions
+            TicketSeeder::class,
+            VisitorSeeder::class,
+            ComplaintSeeder::class,
+            PengumumanSeeder::class,
         ]);
     }
 }

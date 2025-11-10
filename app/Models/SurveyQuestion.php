@@ -10,33 +10,70 @@ class SurveyQuestion extends Model
     use HasFactory;
 
     protected $fillable = [
-        'survey_id',
-        'question_text',
-        'question_type',
+        'type',
+        'question',
+        'options',
+        'field_type',
         'order',
-        'is_required'
+        'is_required',
+        'is_active',
+        'survey_type',
+        'category',
+        'unsur_id'
     ];
 
     protected $casts = [
+        'options' => 'array',
         'is_required' => 'boolean',
+        'is_active' => 'boolean',
         'order' => 'integer'
     ];
-
-    // Relationship with survey
-    public function survey()
-    {
-        return $this->belongsTo(Survey::class);
-    }
 
     // Relationship with survey answers
     public function answers()
     {
-        return $this->hasMany(SurveyAnswer::class);
+        return $this->hasMany(SurveyAnswer::class, 'survey_question_id');
     }
 
-    // Constants for question types
-    const TYPE_RATING = 'rating';
-    const TYPE_MULTIPLE_CHOICE = 'multiple_choice';
-    const TYPE_TEXT = 'text';
-    const TYPE_YES_NO = 'yes_no';
+    // Relationship with survey unsur
+    public function unsur()
+    {
+        return $this->belongsTo(SurveyUnsur::class, 'unsur_id');
+    }
+
+    // Scope for active questions
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    // Scope by type
+    public function scopeByType($query, $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    // Scope by survey type
+    public function scopeBySurveyType($query, $surveyType)
+    {
+        return $query->where('survey_type', $surveyType);
+    }
+
+    // Scope by category
+    public function scopeByCategory($query, $category)
+    {
+        return $query->where('category', $category);
+    }
+
+    // Scope by unsur
+    public function scopeByUnsur($query, $unsurId)
+    {
+        return $query->where('unsur_id', $unsurId);
+    }
+
+    // Scope ordered
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('order', 'asc');
+    }
 }

@@ -1,989 +1,662 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+@extends('layouts.public')
 
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Katalog Layanan - {{ config('app.name_full', 'MTsN 2 Kota Malang') }} - Daftar lengkap layanan yang tersedia sesuai Permen PANRB 15/2014">
-    <meta name="keywords" content="Katalog Layanan, PTSP, {{ config('app.name_full', 'MTsN 2 Kota Malang') }}, Pelayanan, Permen PANRB, Layanan Digital, Satu Pintu">
-    <meta name="author" content="{{ config('app.name_full', 'PTSP MTsN 2 Kota Malang') }}">
-    <meta name="robots" content="index, follow">
+@section('title', 'Katalog Layanan - ' . config('app.name', 'PTSP MTsN 2 Kota Malang'))
 
-    <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Katalog Layanan - {{ config('app.name_full', 'PTSP MTsN 2 Kota Malang') }}">
-    <meta property="og:description" content="Daftar lengkap layanan yang tersedia sesuai Permen PANRB 15/2014">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="{{ asset('images/ptsp-social.jpg') }}">
-    <meta property="og:url" content="{{ url('/services') }}">
-    <meta property="og:site_name" content="{{ config('app.name_full', 'PTSP MTsN 2 Kota Malang') }}">
+@push('styles')
+<style>
+    /* Service Card Hover Effect */
+    .service-card-modern {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none !important;
+    }
 
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Katalog Layanan - {{ config('app.name_full', 'PTSP MTsN 2 Kota Malang') }}">
-    <meta name="twitter:description" content="Daftar lengkap layanan yang tersedia sesuai Permen PANRB 15/2014">
-    <meta name="twitter:image" content="{{ asset('images/ptsp-social.jpg') }}">
+    .service-card-modern:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid rgba(20, 83, 45, 0.3) !important;
+    }
 
-    <!-- Canonical URL -->
-    <link rel="canonical" href="{{ url('/services') }}">
+    .service-item:hover .service-card-modern {
+        background-color: rgba(20, 83, 45, 0.02) !important;
+    }
 
-    <title>Katalog Layanan - {{ config('app.name', 'PTSP MTsN 2 Kota Malang') }}</title>
+    /* Badge Styles */
+    .badge-mode {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
-    <!-- Favicon and PWA -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <meta name="theme-color" content="#14532d">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="PTSP MTsN 2">
-    <meta name="msapplication-TileColor" content="#14532d">
-    <meta name="msapplication-config" content="{{ asset('browserconfig.xml') }}">
+    .badge-online {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link rel="preload" href="https://fonts.bunny.net/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" as="style">
-    <link href="https://fonts.bunny.net/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    .badge-offline {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    .badge-hybrid {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    /* Accordion Styles */
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(20, 83, 45, 0.05);
+        color: var(--bs-primary);
+    }
 
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(20, 83, 45, 0.2);
+    }
 
-    <!-- Dark Mode CSS -->
-    <link href="{{ asset('css/dark-mode.css') }}" rel="stylesheet">
+    /* Service Meta Icons */
+    .service-meta-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+    }
 
-    <!-- Custom CSS -->
-    <style>
-        /* CSS Variables for Theme Support */
-        :root {
-            /* Light theme colors */
-            --bs-primary: #14532d;
-            --bs-primary-dark: #052e16;
-            --bs-primary-light: #166534;
-            --bs-primary-rgb: 20, 83, 45;
+    /* Dark mode support */
+    [data-theme="dark"] .card {
+        background-color: var(--bs-surface) !important;
+        border-color: #374151 !important;
+    }
 
-            --bs-secondary: #ea580c;
-            --bs-secondary-dark: #c2410c;
-            --bs-secondary-light: #f97316;
-            --bs-secondary-rgb: 234, 88, 12;
+    [data-theme="dark"] .accordion-button:not(.collapsed) {
+        background-color: rgba(20, 83, 45, 0.2);
+    }
 
-            --bs-white: #ffffff;
-            --bs-gray-50: #f9fafb;
-            --bs-gray-100: #f3f4f6;
-            --bs-gray-200: #e5e7eb;
-            --bs-gray-300: #d1d5db;
-            --bs-gray-900: #111827;
-            --bs-gray-800: #1f2937;
-            --bs-gray-700: #374151;
-            --bs-gray-600: #4b5563;
+    /* Filter Card */
+    .filter-card {
+        background: linear-gradient(135deg, rgba(20, 83, 45, 0.03) 0%, rgba(234, 88, 12, 0.03) 100%);
+        border: 2px solid rgba(20, 83, 45, 0.1);
+        border-radius: 16px;
+    }
 
-            /* Semantic colors */
-            --bs-success: #10b981;
-            --bs-warning: #f59e0b;
-            --bs-danger: #ef4444;
-            --bs-info: #3b82f6;
+    [data-theme="dark"] .filter-card {
+        background: linear-gradient(135deg, rgba(20, 83, 45, 0.1) 0%, rgba(234, 88, 12, 0.1) 100%);
+        border-color: #374151;
+    }
 
-            /* Accessibility colors */
-            --bs-focus: #2563eb;
-            --bs-text: #1f2937;
-            --bs-bg: #ffffff;
-            --bs-surface: #f9fafb;
-            --bs-border: #e5e7eb;
+    /* Stats Grid Background */
+    .stats-grid-bg {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(34, 197, 94, 0.05) 100%);
+        border-radius: 15px;
+        padding: 30px; /* Add some padding around the grid */
+        border: 1px solid rgba(16, 185, 129, 0.1);
+    }
 
-            /* Typography */
-            --bs-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            --bs-font-serif: Georgia, 'Times New Roman', serif;
-            --bs-font-mono: 'Fira Code', 'Monaco', 'Consolas', monospace;
+    [data-theme="dark"] .stats-grid-bg {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%);
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+</style>
+@endpush
 
-            /* Shadows */
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+@section('content')
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="text-center mb-5" data-aos="fade-up">
+        <div class="d-inline-flex align-items-center px-4 py-2 rounded-pill mb-3"
+             style="background-color: rgba(20, 83, 45, 0.1);">
+            <i class="fas fa-folder-open me-2" style="color: var(--bs-primary);"></i>
+            <span class="fw-bold text-uppercase" style="color: var(--bs-primary);">Layanan Publik</span>
+        </div>
+        <h1 class="display-4 fw-bold mb-3">
+            Katalog <span style="color: var(--bs-primary);">Layanan</span>
+        </h1>
+        <p class="lead text-muted">
+            Daftar lengkap layanan yang tersedia sesuai dengan
+            <span class="fw-semibold" style="color: var(--bs-primary);">Permen PANRB 15/2014</span>
+        </p>
+    </div>
 
-            /* Gradients */
-            --gradient-primary: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-light) 100%);
-            --gradient-secondary: linear-gradient(135deg, var(--bs-secondary) 0%, var(--bs-secondary-light) 100%);
-            --gradient-dark: linear-gradient(135deg, var(--bs-gray-900) 0%, var(--bs-gray-700) 100%);
+    <!-- Stats Grid -->
+    <div class="stats-grid-bg" data-aos="fade-up" data-aos-delay="100">
+        <div class="row g-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4 h-100">
+                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+                     style="width: 60px; height: 60px; background: var(--gradient-primary);">
+                    <i class="fas fa-layer-group text-white fs-4"></i>
+                </div>
+                <h3 class="h2 fw-bold mb-1" style="color: var(--bs-primary);">{{ $services->count() }}</h3>
+                <p class="text-muted small mb-0">Total Layanan</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4 h-100">
+                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+                     style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--bs-secondary) 0%, var(--bs-secondary-dark) 100%);">
+                    <i class="fas fa-th-large text-white fs-4"></i>
+                </div>
+                <h3 class="h2 fw-bold mb-1" style="color: var(--bs-secondary);">{{ $categories->count() }}</h3>
+                <p class="text-muted small mb-0">Kategori</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4 h-100">
+                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+                     style="width: 60px; height: 60px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <i class="fas fa-award text-white fs-4"></i>
+                </div>
+                <h3 class="h2 fw-bold mb-1 text-success">14+</h3>
+                <p class="text-muted small mb-0">Standar Pelayanan</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center p-4 h-100">
+                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+                     style="width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+                    <i class="fas fa-clock text-white fs-4"></i>
+                </div>
+                <h3 class="h2 fw-bold mb-1 text-primary">24/7</h3>
+                <p class="text-muted small mb-0">Akses Online</p>
+            </div>
+        </div>
+    </div>
+</div>
 
-            /* Animations */
-            --transition-fast: 0.15s ease-in-out;
-            --transition-normal: 0.3s ease-in-out;
-            --transition-slow: 0.5s ease-in-out;
+    <!-- Filter Section -->
+    <div class="filter-card p-4 mt-5 mb-5" data-aos="fade-up" data-aos-delay="200">
 
-            /* Border radius */
-            --radius-sm: 0.375rem;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --radius-xl: 1rem;
-            --radius-2xl: 1.5rem;
-
-            /* Z-index */
-            --z-dropdown: 1000;
-            --z-sticky: 1020;
-            --z-fixed: 1030;
-            --z-modal: 1050;
-            --z-popover: 1070;
-            --z-tooltip: 1080;
-            --z-toast: 1090;
-        }
-
-        /* Enhanced Bootstrap Overrides */
-        .navbar {
-            background: var(--bs-white) !important;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--bs-border);
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
-            padding: 0 0;
-        }
-        .navbar .container-fluid {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 100%;
-        }
-        [data-theme="dark"] .navbar {
-            background: var(--bs-surface) !important;
-        }
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--bs-primary) !important;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-right: auto;
-            flex-shrink: 0;
-        }
-        .navbar-brand:hover {
-            transform: translateY(-2px);
-        }
-        .brand-text {
-            font-size: clamp(1rem, 2.5vw, 1.5rem);
-            font-weight: 700;
-            line-height: 1.2;
-            display: inline-block;
-        }
-        @media (max-width: 768px) {
-            .brand-text {
-                font-size: 0.9rem;
-                max-width: 150px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-        }
-        .navbar-nav {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-left: auto;
-        }
-        .navbar-collapse {
-            flex-grow: 0;
-        }
-        .navbar-nav .nav-link {
-            font-weight: 500;
-            color: var(--bs-gray-700) !important;
-            margin: 0 0.5rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            position: relative;
-            white-space: nowrap;
-        }
-        [data-theme="dark"] .navbar-nav .nav-link {
-            color: var(--bs-gray-300) !important;
-        }
-        .navbar-nav .nav-link:hover {
-            background: var(--bs-primary);
-            color: var(--bs-white) !important;
-            transform: translateY(-1px);
-        }
-
-        /* Hero Section */
-        .hero-section {
-            min-height: 50vh;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-light) 100%);
-        }
-
-        /* Service Cards */
-        .service-card {
-            background: var(--bs-white);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            height: 100%;
-            transition: var(--transition-normal);
-            border: 1px solid var(--bs-border);
-            box-shadow: var(--shadow-sm);
-            position: relative;
-            overflow: hidden;
-        }
-        [data-theme="dark"] .service-card {
-            background: var(--bs-gray-800);
-            border-color: var(--bs-gray-700);
-        }
-        .service-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-xl);
-            border-color: var(--bs-primary);
-        }
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-primary);
-            transform: scaleX(0);
-            transition: var(--transition-normal);
-        }
-        .service-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        /* Footer Styles */
-        .footer {
-            background: var(--bs-gray-900);
-            color: var(--bs-white);
-            padding: 4rem 0 2rem;
-            margin-top: 5rem;
-        }
-        .footer-brand {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .footer-links {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .footer-links li {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            color: var(--bs-gray-300);
-        }
-        .footer-links i {
-            width: 20px;
-            text-align: center;
-            margin-top: 2px;
-            color: var(--bs-primary);
-        }
-
-        /* Search and Filter */
-        .search-section {
-            background: var(--bs-white);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            margin-bottom: 3rem;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--bs-border);
-        }
-        [data-theme="dark"] .search-section {
-            background: var(--bs-gray-800);
-            border-color: var(--bs-gray-700);
-        }
-
-        /* Standards Compliance */
-        .standards-section {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            border-radius: var(--radius-lg);
-            padding: 3rem;
-            text-align: center;
-            margin-top: 3rem;
-        }
-        [data-theme="dark"] .standards-section {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-        }
-
-        /* Focus styles for accessibility */
-        a:focus-visible,
-        button:focus-visible {
-            outline: 3px solid var(--bs-focus);
-            outline-offset: 2px;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .brand-text {
-                font-size: 0.8rem;
-                max-width: 120px;
-            }
-            .navbar-brand div,
-            .navbar-brand .brand-logo {
-                width: 32px !important;
-                height: 32px !important;
-            }
-            .footer-logo {
-                width: 40px !important;
-                height: 40px !important;
-            }
-        }
-
-        /* Print styles */
-        @media print {
-            .theme-toggle,
-            .navbar,
-            footer {
-                display: none;
-            }
-            body {
-                font-size: 12pt;
-                color: black;
-                background: white;
-            }
-            .service-card {
-                break-inside: avoid;
-                border: 1px solid #ccc;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Skip to main content for accessibility -->
-    <a href="#main-content" class="skip-link position-absolute top-0 start-0 z-50 btn btn-primary ms-3 mt-3" style="transform: translateY(-100px);">Skip to main content</a>
-
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg sticky-top" role="navigation" aria-label="Navigasi utama">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand" href="{{ route('home') }}" aria-label="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} - Beranda">
-                @if(config('app.logo'))
-                    <img src="{{ asset(config('app.logo')) }}" alt="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} Logo"
-                         style="width: 40px; height: 40px; object-fit: contain; border-radius: 12px;"
-                         class="brand-logo">
-                @else
-                    <div style="width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-building text-white"></i>
-                    </div>
-                @endif
-                <span class="brand-text">{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"
-                    style="border: none; color: var(--bs-primary);">
-                <span class="navbar-toggler-icon"></span>
+    <!-- Filter Section -->
+    <div class="filter-card p-4 mb-5" data-aos="fade-up" data-aos-delay="200">
+        <div class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">
+                    <i class="fas fa-search me-2" style="color: var(--bs-primary);"></i>
+                    Cari Layanan
+                </label>
+                <input type="text"
+                       id="searchInput"
+                       class="form-control form-control-lg"
+                       placeholder="Ketik nama layanan..."
+                       onkeyup="filterServices()">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                    <i class="fas fa-filter me-2" style="color: var(--bs-secondary);"></i>
+                    Kategori
+                </label>
+                <select id="categoryFilter"
+                        class="form-select form-select-lg"
+                        onchange="filterServices()">
+                    <option value="">Semua Kategori</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->name }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">
+                    <i class="fas fa-eye me-2" style="color: #10b981;"></i>
+                    Tampilan
+                </label>
+                <div class="btn-group w-100" role="group">
+                    <button class="btn btn-lg btn-outline-primary active" id="gridBtn" onclick="setView('grid')">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="btn btn-lg btn-outline-primary" id="listBtn" onclick="setView('list')">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+            <small class="text-muted">
+                Menampilkan <strong id="serviceCount">{{ $services->count() }}</strong> dari {{ $services->count() }} layanan
+            </small>
+            <button class="btn btn-sm btn-outline-secondary" onclick="resetFilter()">
+                <i class="fas fa-redo me-1"></i> Reset
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('home') }}">Beranda</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/services">Layanan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('public.visitor.book') }}">Buku Tamu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('supervision.skm.survey') }}">Survei</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('supervision.complaints.dashboard') }}">Pengaduan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('onlineportal.track.ticket.form') }}">Lacak Tiket</a>
-                    </li>
-                    @auth
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('onlineportal.dashboard') }}">
-                                <i class="fas fa-user-circle me-1"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-link nav-link text-danger">
-                                    <i class="fas fa-sign-out-alt me-1"></i>Logout
-                                </button>
-                            </form>
-                        </li>
-                    @else
-                        <li class="nav-item">
-                            <a class="nav-link btn btn-primary text-white px-3" href="{{ route('login') }}">
-                                <i class="fas fa-sign-in-alt me-1"></i>Login
-                            </a>
-                        </li>
-                    @endauth
-                </ul>
-            </div>
         </div>
-    </nav>
+    </div>
 
-    <!-- Hero Section -->
-    <section class="hero-section" data-aos="fade">
-        <div class="container">
-            <div class="row align-items-center min-vh-100 py-5">
-                <div class="col-lg-12 text-center text-white">
-                    <h1 class="display-3 fw-bold mb-4" data-aos="fade-up">
-                        <i class="fas fa-concierge-bell me-3"></i>
-                        Katalog Layanan
-                    </h1>
-                    <p class="lead mb-4" data-aos="fade-up" data-aos-delay="100">
-                        Daftar lengkap layanan yang tersedia sesuai Permen PANRB 15/2014 tentang Standar Pelayanan Publik
-                    </p>
-                    <div data-aos="fade-up" data-aos-delay="200">
-                        <span class="badge bg-white text-primary fs-6 p-3">
-                            <i class="fas fa-file-contract me-2"></i>
-                            15+ Jenis Layanan Tersedia
+    <!-- Grid View -->
+    <div class="row g-4" id="gridView">
+        @foreach($services as $service)
+        <div class="col-md-6 col-lg-4 service-item"
+             data-name="{{ strtolower($service->name) }}"
+             data-category="{{ $service->categories->first()->name ?? '' }}"
+             data-aos="fade-up"
+             data-aos-delay="{{ $loop->index * 50 }}">
+            <div class="card shadow-sm service-card-modern h-100">
+                <!-- Card Header with Gradient -->
+                <div class="card-header border-0 p-4" style="background: var(--gradient-primary);">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-white text-dark px-3 py-2">
+                            <i class="fas fa-hashtag"></i> {{ $service->code }}
                         </span>
+                        @if($service->mode === 'online')
+                            <span class="badge badge-mode badge-online">
+                                <i class="fas fa-wifi me-1"></i> Online
+                            </span>
+                        @elseif($service->mode === 'offline')
+                            <span class="badge badge-mode badge-offline">
+                                <i class="fas fa-store me-1"></i> Offline
+                            </span>
+                        @else
+                            <span class="badge badge-mode badge-hybrid">
+                                <i class="fas fa-exchange-alt me-1"></i> Hybrid
+                            </span>
+                        @endif
+                    </div>
+                    <h5 class="card-title text-white mb-2 fw-bold">{{ $service->name }}</h5>
+                    @if($service->categories->first())
+                        <small class="text-white-50">
+                            <i class="fas fa-tag me-1"></i> {{ $service->categories->first()->name }}
+                        </small>
+                    @endif
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body p-4">
+                    <p class="text-muted mb-3" style="min-height: 60px;">
+                        {{ Str::limit($service->description, 100) }}
+                    </p>
+
+                    <!-- Service Meta -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="service-meta-icon" style="background: rgba(234, 88, 12, 0.1);">
+                            <i class="fas fa-clock" style="color: var(--bs-secondary);"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Waktu Proses</small>
+                            <strong>{{ $service->processing_time ?: '1-3 hari kerja' }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="service-meta-icon" style="background: rgba(20, 83, 45, 0.1);">
+                            <i class="fas fa-money-bill-wave" style="color: var(--bs-primary);"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Biaya Layanan</small>
+                            <strong>{{ $service->fee > 0 ? 'Rp ' . number_format($service->fee, 0, ',', '.') : 'Gratis' }}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Accordion for Details -->
+                    <div class="accordion" id="accordion{{ $service->id }}">
+                        <div class="accordion-item border-0 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $service->id }}">
+                                    <i class="fas fa-info-circle me-2"></i> Detail Layanan
+                                </button>
+                            </h2>
+                            <div id="collapse{{ $service->id }}" class="accordion-collapse collapse" data-bs-parent="#accordion{{ $service->id }}">
+                                <div class="accordion-body">
+                                    <!-- Persyaratan -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
+                                            <i class="fas fa-list-check me-2"></i> Persyaratan
+                                        </h6>
+                                        @if($service->requirements)
+                                            @php $requirements = json_decode($service->requirements, true); @endphp
+                                            @if(is_array($requirements))
+                                                <ul class="list-unstyled">
+                                                    @foreach($requirements as $req)
+                                                        <li class="mb-2">
+                                                            <i class="fas fa-check text-success me-2"></i> {{ $req }}
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                <p class="text-muted">{{ $service->requirements }}</p>
+                                            @endif
+                                        @else
+                                            <p class="text-muted">-</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Mekanisme -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
+                                            <i class="fas fa-cogs me-2"></i> Sistem & Prosedur
+                                        </h6>
+                                        <p class="text-muted">{{ $service->mechanism ?? '-' }}</p>
+                                    </div>
+
+                                    <!-- Produk Layanan -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
+                                            <i class="fas fa-file-alt me-2"></i> Produk Layanan
+                                        </h6>
+                                        <p class="text-muted">{{ $service->product ?? '-' }}</p>
+                                    </div>
+
+                                    <!-- Pengaduan -->
+                                    <div class="mb-3">
+                                        <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
+                                            <i class="fas fa-headset me-2"></i> Pengaduan
+                                        </h6>
+                                        <p class="text-muted mb-2">{{ $service->complaint_handling ?? 'Hubungi kami melalui halaman pengaduan' }}</p>
+                                        <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-comment-dots me-1"></i> Ajukan Pengaduan
+                                        </a>
+                                    </div>
+
+                                    @if($service->mode === 'online')
+                                        <hr class="my-4">
+                                        @auth
+                                            <a href="{{ route('onlineportal.service.apply', $service->slug) }}" class="btn btn-primary w-100">
+                                                <i class="fas fa-paper-plane me-2"></i> Ajukan Permohonan
+                                            </a>
+                                        @else
+                                            <div class="alert alert-info mb-0">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                <strong>Login diperlukan</strong> untuk mengajukan layanan online.
+                                                <div class="mt-2">
+                                                    <a href="{{ route('login') }}?redirect={{ urlencode(route('onlineportal.service.apply', $service->slug)) }}" class="btn btn-sm btn-primary me-2">
+                                                        <i class="fas fa-sign-in-alt me-1"></i> Login
+                                                    </a>
+                                                    <a href="{{ route('register') }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-user-plus me-1"></i> Daftar
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        @endauth
+                                    @elseif($service->mode === 'hybrid')
+                                        @if($service->external_link)
+                                            <a href="{{ $service->external_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary w-100 mb-2">
+                                                <i class="fas fa-external-link-alt me-2"></i> Akses Layanan Eksternal
+                                            </a>
+                                        @endif
+                                        
+                                        @auth
+                                            <a href="{{ route('onlineportal.service.apply', $service->slug) }}" class="btn btn-outline-primary w-100">
+                                                <i class="fas fa-paper-plane me-2"></i> Ajukan Permohonan Internal
+                                            </a>
+                                        @else
+                                            <a href="{{ route('login') }}?redirect={{ urlencode(route('onlineportal.service.apply', $service->slug)) }}" class="btn btn-outline-primary w-100">
+                                                <i class="fas fa-sign-in-alt me-2"></i> Login untuk Pengajuan Internal
+                                            </a>
+                                        @endauth
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+        @endforeach
+    </div>
 
-    <!-- Main Content -->
-    <main id="main-content" role="main" class="container py-5">
-        <!-- Search and Filter Section -->
-        <section class="search-section" data-aos="fade-up">
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="position-relative">
-                        <div class="position-absolute start-0 top-50 translate-middle-y ps-3">
-                            <i class="fas fa-search text-muted"></i>
-                        </div>
-                        <input type="text"
-                               id="searchInput"
-                               class="form-control form-control-lg ps-5"
-                               placeholder="Cari layanan yang Anda butuhkan..."
-                               style="border-radius: var(--radius-lg);">
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <select id="categoryFilter" class="form-select form-select-lg" style="border-radius: var(--radius-lg);">
-                        <option value="">Semua Kategori</option>
-                        <option value="akademik">Akademik</option>
-                        <option value="administratif">Administratif</option>
-                        <option value="kesiswaan">Kesiswaan</option>
-                        <option value="sarana">Sarana & Prasarana</option>
-                    </select>
-                </div>
-            </div>
-        </section>
-
-        <!-- Services Grid -->
-        <section class="services-section">
-            <div class="row g-4" id="servicesGrid">
-                @foreach($services as $service)
-                <div class="col-lg-4 col-md-6 service-card-wrapper"
-                     data-name="{{ strtolower($service->name) }}"
-                     data-category="{{ strtolower($service->category) }}"
-                     data-aos="fade-up">
-                    <div class="service-card h-100">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <span class="badge bg-primary mb-2">{{ $service->code }}</span>
-                                <h5 class="card-title fw-bold">{{ $service->name }}</h5>
+    <!-- List View -->
+    <div class="d-none" id="listView">
+        @foreach($services as $service)
+        <div class="card shadow-sm service-card-modern mb-4 service-item"
+             data-name="{{ strtolower($service->name) }}"
+             data-category="{{ $service->categories->first()->name ?? '' }}">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="me-3">
+                                <div class="d-flex align-items-center justify-content-center rounded-circle"
+                                     style="width: 60px; height: 60px; background: var(--gradient-primary);">
+                                    <i class="fas fa-file-alt text-white fs-4"></i>
+                                </div>
                             </div>
-                            <div>
-                                @if($service->is_active)
-                                    <span class="badge bg-success">
-                                        <i class="fas fa-check-circle me-1"></i>Aktif
-                                    </span>
-                                @else
-                                    <span class="badge bg-danger">
-                                        <i class="fas fa-times-circle me-1"></i>Non-Aktif
-                                    </span>
-                                @endif
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h5 class="fw-bold mb-0 me-3">{{ $service->name }}</h5>
+                                    @if($service->mode === 'online')
+                                        <span class="badge badge-mode badge-online">Online</span>
+                                    @elseif($service->mode === 'offline')
+                                        <span class="badge badge-mode badge-offline">Offline</span>
+                                    @else
+                                        <span class="badge badge-mode badge-hybrid">Hybrid</span>
+                                    @endif
+                                </div>
+                                <p class="text-muted mb-2">{{ Str::limit($service->description, 150) }}</p>
+                                <div class="d-flex gap-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-hashtag me-1"></i> {{ $service->code }}
+                                    </small>
+                                    @if($service->categories->first())
+                                        <small class="text-muted">
+                                            <i class="fas fa-tag me-1"></i> {{ $service->categories->first()->name }}
+                                        </small>
+                                    @endif
+                                </div>
+                                <!-- Time and Cost Display for List View -->
+                                <div class="d-flex flex-wrap gap-3 mt-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="service-meta-icon" style="background: rgba(234, 88, 12, 0.1);">
+                                            <i class="fas fa-clock" style="color: var(--bs-secondary);"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Waktu Proses</small>
+                                            <strong>{{ $service->processing_time ?: '1-3 hari' }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="service-meta-icon" style="background: rgba(20, 83, 45, 0.1);">
+                                            <i class="fas fa-money-bill-wave" style="color: var(--bs-primary);"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Biaya Layanan</small>
+                                            <strong>{{ $service->fee > 0 ? 'Rp ' . number_format($service->fee, 0, ',', '.') : 'Gratis' }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-
-                        <p class="text-muted mb-4">{{ $service->description }}</p>
-
-                        <div class="mb-4">
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="badge bg-purple-100 text-purple-800">
-                                    <i class="fas fa-user me-1"></i>{{ $service->target_group }}
-                                </span>
-                                <span class="badge bg-warning-100 text-warning-800">
-                                    <i class="fas fa-clock me-1"></i>{{ $service->processing_time }}
-                                </span>
-                                <span class="badge bg-danger-100 text-danger-800">
-                                    <i class="fas fa-money-bill-wave me-1"></i>
-                                    {{ $service->fee ? 'Rp ' . number_format($service->fee, 0, ',', '.') : 'Gratis' }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mt-auto">
-                            <button class="btn btn-outline-primary btn-sm" onclick="showServiceDetail('{{ $service->slug }}')">
-                                <i class="fas fa-info-circle me-1"></i>Detail
-                            </button>
-
-                            @auth
-                                <a href="{{ route('onlineportal.service.apply', $service->slug) }}"
-                                   class="btn btn-primary btn-sm">
-                                    <i class="fas fa-file-medical me-1"></i>Ajukan
-                                </a>
-                            @else
-                                <a href="{{ route('login') }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-sign-in-alt me-1"></i>Login
-                                </a>
-                            @endauth
                         </div>
                     </div>
-                </div>
-                @endforeach
-            </div>
-        </section>
-
-        <!-- Standards Compliance Section -->
-        <section class="standards-section" data-aos="fade-up">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="text-center">
-                        <i class="fas fa-info-circle text-primary fs-1 mb-3"></i>
-                        <h3 class="fw-bold mb-3">Kepatuhan Permen PANRB 15/2014</h3>
-                        <p class="lead mb-4">
-                            Semua layanan ini telah diselarangkan dengan 14 komponen standar pelayanan sesuai Peraturan Menteri PANRB Nomor 15 Tahun 2014 tentang Pedoman Pelayanan Publik.
-                        </p>
-                        <button class="btn btn-primary btn-lg" onclick="showStandardsModal()">
-                            <i class="fas fa-file-contract me-2"></i>
-                            Lihat Standar Pelayanan Lengkap
+                    <div class="col-md-4 text-md-end">
+                        <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#listCollapse{{ $service->id }}">
+                            <i class="fas fa-chevron-down me-1"></i> Detail
                         </button>
                     </div>
                 </div>
-            </div>
-        </section>
-    </main>
 
-    <!-- Footer -->
-    <footer class="footer" role="contentinfo">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 mb-4">
-                    <div class="footer-brand">
-                        @if(config('app.logo'))
-                            <img src="{{ asset(config('app.logo')) }}" alt="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} Logo"
-                                 style="width: 48px; height: 48px; object-fit: contain; border-radius: 12px;"
-                                 class="footer-logo">
-                        @else
-                            <div style="width: 48px; height: 48px; background: var(--gradient-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-building text-white"></i>
-                            </div>
-                        @endif
-                        <div>
-                            <h3>{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</h3>
-                            <p class="text-muted small mb-0">Pelayanan Terpadu Satu Pintu</p>
-                        </div>
-                    </div>
-                    <p class="mb-3">
-                        Pelayanan Terpadu Satu Pintu sesuai Permen PANRB 15/2014 untuk kemudahan akses layanan masyarakat.
-                    </p>
-                    <div class="d-flex gap-3">
-                        <a href="#" class="text-white fs-5" aria-label="Facebook">
-                            <i class="fab fa-facebook"></i>
-                        </a>
-                        <a href="#" class="text-white fs-5" aria-label="Twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="text-white fs-5" aria-label="Instagram">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="text-white fs-5" aria-label="YouTube">
-                            <i class="fab fa-youtube"></i>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="col-lg-3 mb-4">
-                    <h5 class="text-white mb-3">Link Terkait</h5>
-                    <ul class="footer-links">
-                        <li><a href="/" class="text-white-50 text-decoration-none">Beranda</a></li>
-                        <li><a href="/services" class="text-white-50 text-decoration-none">Katalog Layanan</a></li>
-                        <li><a href="{{ route('public.visitor.book') }}" class="text-white-50 text-decoration-none">Buku Tamu</a></li>
-                        <li><a href="{{ route('supervision.complaints.dashboard') }}" class="text-white-50 text-decoration-none">Pengaduan</a></li>
-                        <li><a href="{{ route('supervision.skm.survey') }}" class="text-white-50 text-decoration-none">Survei Kepuasan</a></li>
-                        <li><a href="{{ route('onlineportal.track.ticket.form') }}" class="text-white-50 text-decoration-none">Lacak Tiket</a></li>
-                        @auth
-                            <li><a href="{{ route('onlineportal.dashboard') }}" class="text-white-50 text-decoration-none">Dashboard</a></li>
-                        @endauth
-                    </ul>
-                </div>
-
-                <div class="col-lg-3 mb-4">
-                    <h5 class="text-white mb-3">Kontak Kami</h5>
-                    <ul class="footer-links">
-                        <li>
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Jl. Raya Cemorokandang 77 Kota Malang, Jawa Timur</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-phone"></i>
-                            <span>(0341) 711500</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-envelope"></i>
-                            <span>mtsnmalang2adm@gmail.com</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-globe"></i>
-                            <span>www.mtsn2kotamalang.sch.id</span>
-                        </li>
-                        <li>
-                            <i class="fab fa-whatsapp"></i>
-                            <span>0851 8336 7500 (PTSP)</span>
-                        </li>
-                        <li>
-                            <i class="fab fa-whatsapp"></i>
-                            <span>0851 8337 5008 (Pengaduan)</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-3 mb-4">
-                    <h5 class="text-white mb-3">Jam Operasional</h5>
-                    <ul class="footer-links">
-                        <li>
-                            <i class="fas fa-clock"></i>
-                            <div>
-                                <strong>Senin - Kamis</strong><br>
-                                <span class="text-white">07.00 - 15.00 WIB</span>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-clock"></i>
-                            <div>
-                                <strong>Jumat</strong><br>
-                                <span class="text-white">07.00 - 11.00 WIB</span>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-calendar-times"></i>
-                            <div>
-                                <strong>Sabtu - Minggu</strong><br>
-                                <span class="text-white">Tutup</span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="border-top border-secondary mt-4 pt-4 text-center">
-                <p class="mb-0 text-white-50">
-                    &copy; {{ date('Y') }} {{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}. Hak Cipta Dilindungi.
-                </p>
-                <p class="small text-white-50 mb-0">
-                    Dikembangkan dengan <i class="fas fa-heart text-danger"></i> untuk kemudahan pelayanan masyarakat
-                </p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Service Detail Modal -->
-    <div class="modal fade" id="serviceDetailModal" tabindex="-1" aria-labelledby="serviceDetailModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="serviceDetailModalLabel">Detail Layanan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="modalServiceContent">
-                    <!-- Content will be loaded dynamically -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    @auth
-                        <button type="button" class="btn btn-primary" id="modalApplyButton">Ajukan Layanan</button>
-                    @endauth
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Standards Modal -->
-    <div class="modal fade" id="standardsModal" tabindex="-1" aria-labelledby="standardsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="standardsModalLabel">
-                        <i class="fas fa-list-check me-2"></i>
-                        14 Komponen Standar Pelayanan Publik
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
+                <div class="collapse mt-3" id="listCollapse{{ $service->id }}">
+                    <hr class="my-3">
                     <div class="row">
-                        <div class="col-lg-6">
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">1. Kebijakan Pelayanan</h6>
-                                    <p class="card-text small">Kebijakan yang diimplementasikan untuk memastikan pelayanan yang berkualitas.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">2. Maklumat Pelayanan</h6>
-                                    <p class="card-text small">Informasi lengkap tentang layanan yang disediakan.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">3. Standar Pelayanan</h6>
-                                    <p class="card-text small">Kriteria yang digunakan untuk mengukur kualitas pelayanan.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">4. Prosedur Pelayanan</h6>
-                                    <p class="card-text small">Tahapan yang harus dilalui dalam mendapatkan pelayanan.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">5. Waktu Pelayanan</h6>
-                                    <p class="card-text small">Durasi yang dibutuhkan untuk menyelesaikan setiap layanan.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">6. Biaya/Tarif</h6>
-                                    <p class="card-text small">Rincian biaya untuk setiap jenis layanan.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">7. Produk Pelayanan</h6>
-                                    <p class="card-text small">Hasil akhir yang diterima oleh pemohon layanan.</p>
-                                </div>
-                            </div>
+                        <div class="col-md-6">
+                            <!-- Persyaratan -->
+                            <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
+                                <i class="fas fa-list-check me-2"></i> Persyaratan
+                            </h6>
+                            @if($service->requirements)
+                                @php $requirements = json_decode($service->requirements, true); @endphp
+                                @if(is_array($requirements))
+                                    <ul class="list-unstyled">
+                                        @foreach($requirements as $req)
+                                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> {{ $req }}</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <p class="text-muted">{{ $service->requirements }}</p>
+                                @endif
+                            @else
+                                <p class="text-muted">-</p>
+                            @endif
+
+                            <!-- Mekanisme -->
+                            <h6 class="fw-bold mb-3 mt-4" style="color: var(--bs-primary);">
+                                <i class="fas fa-cogs me-2"></i> Sistem & Prosedur
+                            </h6>
+                            <p class="text-muted">{{ $service->mechanism ?? '-' }}</p>
                         </div>
-                        <div class="col-lg-6">
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">8. Sarana & Prasarana</h6>
-                                    <p class="card-text small">Fasilitas yang disediakan untuk mendukung pelayanan.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">9. Kompetensi Pelaksana</h6>
-                                    <p class="card-text small">Kualifikasi dan kemampuan petugas pelayanan.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">10. Pengaduan</h6>
-                                    <p class="card-text small">Mekanisme penyampaian keluhan dan saran.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">11. Penilaian Kepuasan</h6>
-                                    <p class="card-text small">Sistem untuk mengukur tingkat kepuasan masyarakat.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">12. Jaminan Pelayanan</h6>
-                                    <p class="card-text small">Jaminan yang diberikan untuk memastikan kualitas layanan.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">13. Reward & Punishment</h6>
-                                    <p class="card-text small">Sistem penghargaan dan sanksi untuk pelaksana layanan.</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary">14. Integrasi Teknologi</h6>
-                                    <p class="card-text small">Penerapan teknologi informasi untuk meningkatkan kualitas layanan.</p>
-                                </div>
-                            </div>
+                        <div class="col-md-6">
+                            <!-- Informasi Biaya -->
+                            <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">Informasi Biaya</h6>
+                            <p class="text-muted">{{ $service->fee > 0 ? 'Rp ' . number_format($service->fee, 0, ',', '.') : 'Gratis' }}</p>
+
+                            <!-- Produk Layanan -->
+                            <h6 class="fw-bold mb-3 mt-4" style="color: var(--bs-primary);">
+                                <i class="fas fa-file-alt me-2"></i> Produk Layanan
+                            </h6>
+                            <p class="text-muted">{{ $service->product ?? '-' }}</p>
+
+                            <!-- Pengaduan -->
+                            <h6 class="fw-bold mb-3 mt-4" style="color: var(--bs-primary);">
+                                <i class="fas fa-headset me-2"></i> Pengaduan
+                            </h6>
+                            <p class="text-muted mb-2">{{ $service->complaint_handling ?? 'Hubungi kami melalui halaman pengaduan' }}</p>
+                            <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-comment-dots me-1"></i> Ajukan Pengaduan
+                            </a>
+
+                            <!-- Tombol Akses Layanan -->
+                            @if($service->mode === 'online')
+                                @auth
+                                    <a href="{{ route('onlineportal.service.apply', $service->slug) }}" class="btn btn-primary w-100 mt-3">
+                                        <i class="fas fa-paper-plane me-2"></i> Ajukan Permohonan
+                                    </a>
+                                @else
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Login diperlukan</strong> untuk mengajukan layanan online.
+                                        <div class="mt-2">
+                                            <a href="{{ route('login') }}?redirect={{ urlencode(route('onlineportal.service.apply', $service->slug)) }}" class="btn btn-sm btn-primary me-2">
+                                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                                            </a>
+                                            <a href="{{ route('register') }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-user-plus me-1"></i> Daftar
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endauth
+                            @elseif($service->mode === 'hybrid')
+                                @if($service->external_link)
+                                    <a href="{{ $service->external_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary w-100 mt-3">
+                                        <i class="fas fa-external-link-alt me-2"></i> Akses Layanan Eksternal
+                                    </a>
+                                @endif
+                                
+                                @auth
+                                    <a href="{{ route('onlineportal.service.apply', $service->slug) }}" class="btn btn-outline-primary w-100 mt-2">
+                                        <i class="fas fa-paper-plane me-2"></i> Ajukan Permohonan Internal
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}?redirect={{ urlencode(route('onlineportal.service.apply', $service->slug)) }}" class="btn btn-outline-primary w-100 mt-2">
+                                        <i class="fas fa-sign-in-alt me-2"></i> Login untuk Pengajuan Internal
+                                    </a>
+                                @endauth
+                            @endif
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
+        @endforeach
     </div>
 
-    <!-- Back to Top Button -->
-    <button id="backToTop" class="btn btn-primary position-fixed bottom-0 end-0 m-3" style="display: none; z-index: 1000;">
-        <i class="fas fa-arrow-up"></i>
-    </button>
+    @if($services->count() === 0)
+    <div class="text-center py-5" data-aos="fade-up">
+        <i class="fas fa-inbox text-muted" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">Belum ada layanan tersedia</h4>
+        <p class="text-muted">Silakan cek kembali nanti</p>
+    </div>
+    @endif
+</div>
+@endsection
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        // Initialize AOS
-        AOS.init({
-            duration: 1000,
-            once: true,
-            offset: 100
-        });
+@push('scripts')
+<script>
+function setView(view) {
+    const grid = document.getElementById('gridView');
+    const list = document.getElementById('listView');
+    const gridBtn = document.getElementById('gridBtn');
+    const listBtn = document.getElementById('listBtn');
 
-        // Search and Filter Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('searchInput');
-            const categoryFilter = document.getElementById('categoryFilter');
-            const serviceCards = document.querySelectorAll('.service-card-wrapper');
+    if (view === 'grid') {
+        grid.classList.remove('d-none');
+        list.classList.add('d-none');
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+    } else {
+        grid.classList.add('d-none');
+        list.classList.remove('d-none');
+        gridBtn.classList.remove('active');
+        listBtn.classList.add('active');
+    }
+}
 
-            function filterServices() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const selectedCategory = categoryFilter.value.toLowerCase();
+function filterServices() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const category = document.getElementById('categoryFilter').value;
+    const items = document.querySelectorAll('.service-item');
+    let count = 0;
 
-                serviceCards.forEach(card => {
-                    const serviceName = card.dataset.name;
-                    const serviceCategory = card.dataset.category;
+    items.forEach(item => {
+        const name = item.getAttribute('data-name');
+        const cat = item.getAttribute('data-category');
+        const matchSearch = !search || name.includes(search);
+        const matchCategory = !category || cat === category;
 
-                    const matchesSearch = serviceName.includes(searchTerm);
-                    const matchesCategory = !selectedCategory || serviceCategory === selectedCategory;
-
-                    if (matchesSearch && matchesCategory) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            }
-
-            searchInput.addEventListener('input', filterServices);
-            categoryFilter.addEventListener('change', filterServices);
-
-            // Check URL parameters for initial filtering
-            const urlParams = new URLSearchParams(window.location.search);
-            const search = urlParams.get('search');
-            const category = urlParams.get('category');
-
-            if (search) {
-                searchInput.value = search;
-            }
-            if (category) {
-                categoryFilter.value = category;
-            }
-
-            filterServices();
-        });
-
-        // Service Detail Modal
-        function showServiceDetail(serviceSlug) {
-            const modal = new bootstrap.Modal(document.getElementById('serviceDetailModal'));
-            const modalContent = document.getElementById('modalServiceContent');
-            const modalApplyButton = document.getElementById('modalApplyButton');
-
-            // Load service detail (static content for now)
-            modalContent.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6 class="text-primary mb-3">Persyaratan</h6>
-                        <ul class="list-unstyled">
-                            <li><i class="fas fa-check text-success me-2"></i>Fotokopi kartu pelajar</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Surat keterangan dari sekolah</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Formulir permohonan yang telah diisi</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Pas foto terbaru</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="text-primary mb-3">Prosedur</h6>
-                        <ol class="list-unstyled">
-                            <li class="mb-2"><strong>1.</strong> Mengajukan permohonan secara online atau datang langsung</li>
-                            <li class="mb-2"><strong>2.</strong> Verifikasi berkas persyaratan</li>
-                            <li class="mb-2"><strong>3.</strong> Proses pembuatan surat</li>
-                            <li><strong>4.</strong> Penandatanganan dan pengambilan</li>
-                        </ol>
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <h6 class="text-primary mb-3">Jaminan Pelayanan</h6>
-                    <p>Layanan ini dilaksanakan sesuai standar operasional prosedur (SOP) yang berlaku dan dijamin keabsahannya oleh pihak sekolah.</p>
-                </div>
-            `;
-
-            if (modalApplyButton) {
-                modalApplyButton.onclick = function() {
-                    window.location.href = '/services/' + serviceSlug + '/apply';
-                };
-            }
-
-            modal.show();
+        if (matchSearch && matchCategory) {
+            item.classList.remove('d-none');
+            count++;
+        } else {
+            item.classList.add('d-none');
         }
+    });
 
-        // Standards Modal
-        function showStandardsModal() {
-            const modal = new bootstrap.Modal(document.getElementById('standardsModal'));
-            modal.show();
-        }
+    document.getElementById('serviceCount').textContent = count;
+}
 
-        // Back to Top Button
-        const backToTopButton = document.getElementById('backToTop');
+function resetFilter() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('categoryFilter').value = '';
+    filterServices();
+}
 
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 300) {
-                backToTopButton.style.display = 'block';
-            } else {
-                backToTopButton.style.display = 'none';
-            }
-        });
-
-        backToTopButton.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-
-        // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            // ESC key to close modals
-            if (e.key === 'Escape') {
-                const openModal = document.querySelector('.modal.show');
-                if (openModal) {
-                    const modal = bootstrap.Modal.getInstance(openModal);
-                    if (modal) {
-                        modal.hide();
+// Close other accordions when one opens (for both grid and list views)
+document.addEventListener('DOMContentLoaded', function() {
+    // For grid view accordions
+    const gridAccordions = document.querySelectorAll('[id^="collapse"]');
+    gridAccordions.forEach(function(accordion) {
+        accordion.addEventListener('show.bs.collapse', function() {
+            // Close other grid accordions
+            gridAccordions.forEach(function(otherAccordion) {
+                if (otherAccordion !== accordion && otherAccordion.classList.contains('show')) {
+                    otherAccordion.classList.remove('show');
+                    const triggerButton = document.querySelector(`[data-bs-target="#${otherAccordion.id}"]`) ||
+                                          document.querySelector(`[aria-controls="${otherAccordion.id}"]`);
+                    if (triggerButton) {
+                        triggerButton.classList.remove('collapsed');
+                        triggerButton.setAttribute('aria-expanded', 'true');
                     }
                 }
-            }
+            });
         });
+    });
 
-        // Skip link functionality
-        const skipLink = document.querySelector('.skip-link');
-        if (skipLink) {
-            skipLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector('#main-content');
-                if (target) {
-                    target.setAttribute('tabindex', '-1');
-                    target.focus();
-                    target.scrollIntoView();
+    // For list view accordions
+    const listAccordions = document.querySelectorAll('[id^="listCollapse"]');
+    listAccordions.forEach(function(accordion) {
+        accordion.addEventListener('show.bs.collapse', function() {
+            // Close other list accordions
+            listAccordions.forEach(function(otherAccordion) {
+                if (otherAccordion !== accordion && otherAccordion.classList.contains('show')) {
+                    otherAccordion.classList.remove('show');
+                    const triggerButton = document.querySelector(`[data-bs-target="#${otherAccordion.id}"]`) ||
+                                          document.querySelector(`[aria-controls="${otherAccordion.id}"]`);
+                    if (triggerButton) {
+                        triggerButton.classList.remove('collapsed');
+                        triggerButton.setAttribute('aria-expanded', 'true');
+                    }
                 }
             });
-        }
-    </script>
-</body>
-</html>
+        });
+    });
+});
+</script>
+@endpush

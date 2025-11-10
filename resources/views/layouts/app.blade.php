@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,80 +7,253 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        {{-- Vite Assets: Tailwind CSS and Font Awesome (Local - No CDN) --}}
+        @vite(['resources/css/bootstrap-custom.css', 'resources/css/app.css', 'resources/css/dark-mode.css', 'resources/css/public-layout.css', 'resources/css/accessibility.css', 'resources/js/bootstrap-bundle.js', 'resources/js/app.js', 'resources/js/accessibility.js'])
     </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
+    <body class="tw-font-sans tw-antialiased">
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+    <!-- Floating Action Buttons - Left Side -->
+    <div class="floating-action-buttons-left">
+        <!-- Accessibility Button -->
+        <button id="accessibility-btn"
+                class="floating-btn accessibility-btn pulse">
+            <span style="line-height: 1;">♿</span>
+        </button>
 
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
+        <!-- Back to Top Button -->
+        <button onclick="scrollToTop()"
+                id="back-to-top-btn"
+                class="floating-btn back-to-top-btn">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <!-- Floating Action Button - Right Side -->
+    <div class="floating-action-buttons-right">
+        <!-- WhatsApp Button -->
+        <a href="https://wa.me/{{ config('app.whatsapp_number', '6285183367500') }}?text={{ urlencode('Halo, saya ingin bertanya tentang layanan PTSP MTsN 2 KOTA MALANG') }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="floating-btn whatsapp-btn">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <!-- Modern Accessibility Panel -->
+    <div id="accessibilityPanel" class="accessibility-panel">
+        <!-- Panel Header -->
+        <div class="accessibility-panel-header">
+            <h3 class="accessibility-panel-title">
+                <span>🎯</span>
+                <span>Pusat Aksesibilitas</span>
+            </h3>
+            <p class="accessibility-panel-subtitle">WCAG 2.1 AA Compliant • Inklusif untuk Semua</p>
+            <button onclick="toggleAccessibilitySidebar()" class="accessibility-close-btn" aria-label="Tutup panel aksesibilitas">
+                ✕
+            </button>
         </div>
+
+        <!-- Panel Content -->
+        <div class="accessibility-panel-content">
+            <!-- Font Size Section -->
+            <div class="accessibility-section">
+                <h4 class="accessibility-section-title">
+                    <span>📝</span>
+                    <span>Ukuran Teks</span>
+                </h4>
+                <div class="accessibility-controls">
+                    <button onclick="setFontSize('small')" class="font-size-btn" id="fontSmallBtn">A-</button>
+                    <button onclick="setFontSize('normal')" class="font-size-btn active" id="fontNormalBtn">A</button>
+                    <button onclick="setFontSize('large')" class="font-size-btn" id="fontLargeBtn">A+</button>
+                    <button onclick="setFontSize('extra-large')" class="font-size-btn" id="fontXLargeBtn">A++</button>
+                </div>
+            </div>
+
+            <!-- Visual Adjustments Section -->
+            <div class="accessibility-section">
+                <h4 class="accessibility-section-title">
+                    <span>🎨</span>
+                    <span>Penyesuaian Visual</span>
+                </h4>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>👁️</span>
+                        <span>Kontras Tinggi</span>
+                    </div>
+                    <div class="accessibility-switch" id="highContrastControl" onclick="toggleHighContrast()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>🔗</span>
+                        <span>Garis Bawah Link</span>
+                    </div>
+                    <div class="accessibility-switch" id="underlineControl" onclick="toggleUnderline()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>📏</span>
+                        <span>Jarak Baris</span>
+                    </div>
+                    <div class="accessibility-switch" id="lineHeightControl" onclick="toggleLineHeight()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>↔️</span>
+                        <span>Jarak Huruf</span>
+                    </div>
+                    <div class="accessibility-switch" id="letterSpacingControl" onclick="toggleLetterSpacing()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>🖱️</span>
+                        <span>Kursor Besar</span>
+                    </div>
+                    <div class="accessibility-switch" id="cursorControl" onclick="toggleLargeCursor()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+            </div>
+
+            <!-- Advanced Features Section -->
+            <div class="accessibility-section">
+                <h4 class="accessibility-section-title">
+                    <span>⚙️</span>
+                    <span>Fitur Lanjutan</span>
+                </h4>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>🎬</span>
+                        <span>Nonaktifkan Animasi</span>
+                    </div>
+                    <div class="accessibility-switch" id="animationControl" onclick="toggleAnimations()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+
+                <div class="accessibility-toggle-switch">
+                    <div class="accessibility-toggle-label">
+                        <span>⌨️</span>
+                        <span>Navigasi Keyboard Ditingkatkan</span>
+                    </div>
+                    <div class="accessibility-switch" id="keyboardControl" onclick="toggleKeyboardNavigation()" role="switch" aria-checked="false" tabindex="0"></div>
+                </div>
+            </div>
+
+            <!-- Reset Section -->
+            <div class="accessibility-section">
+                <button onclick="resetAllAccessibility()" class="btn btn-danger w-100" aria-label="Reset semua pengaturan aksesibilitas">
+                    <i class="fas fa-sync-alt me-2"></i>
+                    Reset Semua Pengaturan
+                </button>
+            </div>
+        </div>
+    </div>
+        <!-- Dashboard Layout with Fixed Sidebar and Topbar -->
+        @auth
+            <div class="dashboard-layout">
+                <!-- Fixed Sidebar -->
+                @include('layouts.sidebar')
+
+                <div class="main-panel">
+                    <!-- Fixed Topbar -->
+                    <div class="topbar">
+                        <!-- Page Heading (Topbar content) -->
+                        @hasSection('header')
+                            <header class="topbar-content">
+                                <div class="container-fluid px-4">
+                                    @yield('header')
+                                </div>
+                            </header>
+                        @endif
+                    </div>
+
+                    <!-- Main Content Wrapper -->
+                    <main class="content-wrapper">
+                        @yield('content')
+                    </main>
+                    
+                    <!-- Footer -->
+                    <footer class="footer">
+                        <div class="container-fluid px-4">
+                            <div class="text-center py-3 text-muted">
+                                &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. All rights reserved.
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+
+            <style>
+                /* 1. Atur pembungkus utama untuk menggunakan Flexbox */
+                .dashboard-layout {
+                    display: flex; /* Ini kuncinya! */
+                    width: 100%;
+                    min-height: 100vh; /* Setidaknya setinggi layar */
+                }
+
+                /* 2. Atur lebar Sidebar */
+                .sidebar {
+                    width: 250px; /* Atur lebar sidebar sesuai kebutuhan */
+                    background-color: #333; /* Contoh warna */
+                    color: white;
+                }
+
+                /* 3. Atur panel utama (Topbar + Konten) */
+                .main-panel {
+                    /* Gunakan sisa ruang yang tersedia */
+                    flex-grow: 1; 
+                    
+                    /* Atur agar Topbar dan Konten tersusun vertikal */
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                /* 4. Styling Topbar dan Konten */
+                .topbar {
+                    height: 60px; /* Tinggi Topbar */
+                    background-color: #fff;
+                    border-bottom: 1px solid #eee;
+                }
+
+                .content-wrapper {
+                    /* Gunakan sisa ruang vertikal di main-panel */
+                    flex-grow: 1; 
+                    padding: 20px;
+                    background-color: #f4f7f6;
+                    overflow-y: auto; /* Biarkan konten bisa di-scroll jika panjang */
+                }
+
+                .footer {
+                    padding: 15px 20px;
+                    background-color: #fff;
+                    border-top: 1px solid #eee;
+                }
+            </style>
+        @else
+            <!-- Public Layout without Sidebar -->
+            <div class="tw-min-h-screen tw-bg-gray-100 dark:tw-bg-gray-900">
+                @include('layouts.navigation')
+
+                <!-- Page Heading -->
+                @hasSection('header')
+                    <header class="tw-bg-white dark:tw-bg-gray-800 tw-shadow">
+                        <div class="tw-max-w-7xl tw-mx-auto tw-py-6 tw-px-4 sm:tw-px-6 lg:tw-px-8">
+                            @yield('header')
+                        </div>
+                    </header>
+                @endif
+
+                <!-- Page Content -->
+                <main id="main-content">
+                    @yield('content')
+                </main>
+            </div>
+        @endauth
         
-        <!-- Theme Toggle Script -->
-        <script>
-            // Dark mode toggle
-            document.addEventListener('DOMContentLoaded', function() {
-                const html = document.documentElement;
-                const themeToggle = document.getElementById('theme-toggle');
-                const themeIcon = document.getElementById('theme-icon');
 
-                // Check for saved theme preference or respect system preference
-                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    html.classList.add('dark');
-                    if (themeIcon) {
-                        themeIcon.classList.remove('fa-moon');
-                        themeIcon.classList.add('fa-sun');
-                    }
-                } else {
-                    html.classList.remove('dark');
-                    if (themeIcon) {
-                        themeIcon.classList.remove('fa-sun');
-                        themeIcon.classList.add('fa-moon');
-                    }
-                }
-
-                // Theme toggle function
-                function toggleTheme() {
-                    if (html.classList.contains('dark')) {
-                        html.classList.remove('dark');
-                        localStorage.theme = 'light';
-                        if (themeIcon) {
-                            themeIcon.classList.remove('fa-sun');
-                            themeIcon.classList.add('fa-moon');
-                        }
-                    } else {
-                        html.classList.add('dark');
-                        localStorage.theme = 'dark';
-                        if (themeIcon) {
-                            themeIcon.classList.remove('fa-moon');
-                            themeIcon.classList.add('fa-sun');
-                        }
-                    }
-                }
-
-                // Add event listener to theme toggle button
-                if (themeToggle) {
-                    themeToggle.addEventListener('click', toggleTheme);
-                }
-            });
-        </script>
     </body>
 </html>

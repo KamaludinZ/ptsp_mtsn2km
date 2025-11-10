@@ -83,7 +83,20 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => 'id',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Supported Locales
+    |--------------------------------------------------------------------------
+    |
+    | This array contains the list of locales that are supported by the
+    | application. This is used for validation and to determine which
+    | languages should be available in the language switcher.
+    |
+    */
+
+    'supported_locales' => ['en', 'id', 'ar'],
 
     /*
     |--------------------------------------------------------------------------
@@ -170,8 +183,8 @@ return [
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
+
         App\Providers\RouteServiceProvider::class,
-        App\Providers\FilamentPanelProvider::class,
     ])->toArray(),
 
     /*

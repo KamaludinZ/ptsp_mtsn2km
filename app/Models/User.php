@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,7 +10,7 @@ use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes;
 
@@ -82,5 +82,53 @@ class User extends Authenticatable
     public function scopeOfType($query, $type)
     {
         return $query->where('user_type', $type);
+    }
+
+    /**
+     * Relationship with tickets created by user
+     */
+    public function tickets()
+    {
+        return $this->hasMany(\App\Models\Ticket::class);
+    }
+
+    /**
+     * Relationship with tickets assigned to user
+     */
+    public function assignedTickets()
+    {
+        return $this->hasMany(\App\Models\Ticket::class, 'assigned_to_id');
+    }
+
+    /**
+     * Relationship with tickets currently handled by user
+     */
+    public function handlingTickets()
+    {
+        return $this->hasMany(\App\Models\Ticket::class, 'current_handler_id');
+    }
+
+    /**
+     * Check if user has a specific role (using Spatie)
+     */
+    public function isAdmin()
+    {
+        return $this->hasRole(['super_admin', 'admin']);
+    }
+
+    /**
+     * Check if user is kepala sekolah
+     */
+    public function isKepalaSekolah()
+    {
+        return $this->hasRole('kepala_sekolah');
+    }
+
+    /**
+     * Check if user is petugas
+     */
+    public function isPetugas()
+    {
+        return $this->hasRole(['petugas_tu', 'petugas_loket']);
     }
 }

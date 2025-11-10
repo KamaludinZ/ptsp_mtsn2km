@@ -1,17 +1,15 @@
 // Service Worker for PTSP MTsN 2 Kota Malang
-const CACHE_NAME = 'ptsp-mtsn2-v1.0.0';
+const CACHE_NAME = 'ptsp-mtsn2-v1.1.0';
 const urlsToCache = [
     '/',
-    '/welcome',
-    '/css/app.css',
-    '/js/app.js',
-    '/images/logo.png',
-    '/images/ptsp-og-image.jpg',
     '/favicon.ico'
 ];
 
 // Install event - cache resources
 self.addEventListener('install', function(event) {
+    // Force the waiting service worker to become the active service worker
+    self.skipWaiting();
+
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(function(cache) {
@@ -69,6 +67,7 @@ self.addEventListener('fetch', function(event) {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', function(event) {
+    // Take control of all pages immediately
     event.waitUntil(
         caches.keys().then(function(cacheNames) {
             return Promise.all(
@@ -79,6 +78,8 @@ self.addEventListener('activate', function(event) {
                     }
                 })
             );
+        }).then(function() {
+            return self.clients.claim();
         })
     );
 });

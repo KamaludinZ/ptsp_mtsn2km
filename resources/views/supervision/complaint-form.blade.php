@@ -1,247 +1,258 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Formulir Pengaduan Masyarakat') }}
-        </h2>
-    </x-slot>
+@extends('layouts.public')
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="text-center mb-8">
-                        <div class="mx-auto bg-red-100 dark:bg-red-900 w-16 h-16 rounded-full flex items-center justify-center">
-                            <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 text-2xl"></i>
-                        </div>
-                        <h1 class="mt-4 text-3xl font-bold text-gray-900 dark:text-white">
-                            Formulir Pengaduan Masyarakat
-                        </h1>
-                        <p class="mt-2 text-lg text-gray-600 dark:text-gray-300">
-                            Sampaikan keluhan, saran, atau pengaduan Anda secara anonim atau terbuka
-                        </p>
-                    </div>
+@section('title', 'Formulir Pengaduan')
 
-                    <!-- Complaint Types -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                        <div class="border border-red-200 dark:border-red-800 rounded-xl p-6 bg-red-50 dark:bg-red-900/20">
-                            <div class="text-center">
-                                <div class="mx-auto bg-red-100 dark:bg-red-900 rounded-full p-4 w-16 h-16 flex items-center justify-center">
-                                    <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
-                                </div>
-                                <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Pengaduan</h3>
-                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                    Laporkan keluhan atau masalah pelayanan yang Anda alami
-                                </p>
-                            </div>
-                        </div>
+@section('content')
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="text-center mb-5" data-aos="fade-up">
+        <h1 class="display-4 fw-bold mb-3">
+            Formulir <span style="color: var(--bs-primary);">Pengaduan</span>
+        </h1>
+        <p class="lead text-muted">
+            Sampaikan keluhan, saran, atau masukan Anda untuk perbaikan layanan kami.
+        </p>
+    </div>
 
-                        <div class="border border-green-200 dark:border-green-800 rounded-xl p-6 bg-green-50 dark:bg-green-900/20">
-                            <div class="text-center">
-                                <div class="mx-auto bg-green-100 dark:bg-green-900 rounded-full p-4 w-16 h-16 flex items-center justify-center">
-                                    <i class="fas fa-lightbulb text-green-600 dark:text-green-400 text-2xl"></i>
-                                </div>
-                                <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Saran/Masukan</h3>
-                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                    Berikan ide atau masukan untuk meningkatkan kualitas pelayanan
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="border border-yellow-200 dark:border-yellow-800 rounded-xl p-6 bg-yellow-50 dark:bg-yellow-900/20">
-                            <div class="text-center">
-                                <div class="mx-auto bg-yellow-100 dark:bg-yellow-900 rounded-full p-4 w-16 h-16 flex items-center justify-center">
-                                    <i class="fas fa-bell text-yellow-600 dark:text-yellow-400 text-2xl"></i>
-                                </div>
-                                <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Whistleblowing</h3>
-                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                    Laporkan dugaan pelanggaran atau tindakan tidak etis secara rahasia
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Complaint Form -->
-                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-8">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                            <i class="fas fa-file-medical mr-2"></i> Formulir Pengaduan
-                        </h2>
-                        
-                        <form class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="complaint_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Jenis Pengaduan <span class="text-red-500">*</span>
-                                    </label>
-                                    <select id="complaint_type" 
-                                            class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                            required>
-                                        <option value="">Pilih Jenis Pengaduan</option>
-                                        <option value="complaint">Pengaduan</option>
-                                        <option value="suggestion">Saran/Masukan</option>
-                                        <option value="whistleblowing">Whistleblowing</option>
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="related_service" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Layanan Terkait (Opsional)
-                                    </label>
-                                    <select id="related_service" 
-                                            class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="">Pilih Layanan</option>
-                                        <option value="1">Surat Keterangan Siswa Aktif</option>
-                                        <option value="2">Legalisir Ijazah</option>
-                                        <option value="3">Surat Permohonan Izin Kegiatan</option>
-                                        <option value="4">Surat Rekomendasi Beasiswa</option>
-                                        <option value="5">Surat Keterangan Kelakuan Baik</option>
-                                        <option value="6">Surat Keterangan Pindah Sekolah</option>
-                                        <option value="7">Lainnya</option>
-                                    </select>
-                                </div>
+    <!-- Tab Navigation -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-4 border-bottom-0">
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs nav-fill border-0" id="complaintTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active bg-gradient" id="dumas-tab" data-bs-toggle="tab" data-bs-target="#dumas" type="button" role="tab" aria-controls="dumas" aria-selected="true" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: 1px solid #2980b9; border-radius: 8px 8px 0 0; transition: all 0.3s ease;">
+                                <i class="fas fa-comment me-2"></i>Pengaduan Masyarakat
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link bg-gradient" id="whistleblowing-tab" data-bs-toggle="tab" data-bs-target="#whistleblowing" type="button" role="tab" aria-controls="whistleblowing" aria-selected="false" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: 1px solid #c0392b; border-radius: 8px 8px 0 0; transition: all 0.3s ease;">
+                                <i class="fas fa-user-secret me-2"></i>Whistleblowing
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="card-body p-4 bg-light" style="background-color: var(--bs-gray-100);">
+                    <!-- Tab panes -->
+                    <div class="tab-content" id="complaintTabContent">
+                        <!-- Dumas Tab -->
+                        <div class="tab-pane fade show active p-4 rounded" id="dumas" role="tabpanel" aria-labelledby="dumas-tab" style="background-color: var(--bs-white, #ffffff); border: 1px solid var(--bs-border-color, #dee2e6); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <div class="alert alert-info mb-4" role="alert" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 1px solid #90caf9; color: #000000;">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Pengaduan Masyarakat</strong> - Gunakan formulir ini untuk melaporkan keluhan terkait pelayanan publik, seperti pelayanan lambat, prosedur berbelit, petugas tidak ramah, dan sebagainya.
                             </div>
                             
-                            <div>
-                                <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Judul <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="title" 
-                                       class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                       placeholder="Masukkan judul pengaduan" required>
-                            </div>
-                            
-                            <div>
-                                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Deskripsi <span class="text-red-500">*</span>
-                                </label>
-                                <textarea id="description" rows="6" 
-                                          class="block w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                          placeholder="Jelaskan secara detail pengaduan Anda..." required></textarea>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="attachment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Lampiran (Opsional)
-                                    </label>
-                                    <div class="flex items-center justify-center w-full">
-                                        <label for="attachment" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                <i class="fas fa-cloud-upload-alt text-gray-400 dark:text-gray-500 text-3xl mb-2"></i>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                    <span class="font-semibold">Klik untuk mengunggah</span> atau seret file
-                                                </p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, PDF (MAX. 10MB)</p>
-                                            </div>
-                                            <input id="attachment" type="file" class="hidden" />
-                                        </label>
+                            <form action="{{ route('supervision.complaint.submit.store') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <input type="hidden" name="complaint_type" value="complaint">
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="reporter_name" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Nama Pelapor <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="reporter_name" name="reporter_name" required style="color: var(--bs-body-color, #212529);">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="reporter_email" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Email Pelapor <span class="text-danger">*</span></label>
+                                        <input type="email" class="form-control" id="reporter_email" name="reporter_email" required style="color: var(--bs-body-color, #212529);">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="reporter_phone" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Nomor Telepon</label>
+                                        <input type="tel" class="form-control" id="reporter_phone" name="reporter_phone" style="color: var(--bs-body-color, #212529);">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="complaint_date" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Tanggal Kejadian <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="complaint_date" name="complaint_date" required style="color: var(--bs-body-color, #212529);">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="complaint_title" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Judul Pengaduan <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="complaint_title" name="complaint_title" required style="color: var(--bs-body-color, #212529);">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="complaint_description" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Isi Pengaduan <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="complaint_description" name="complaint_description" rows="5" required style="color: var(--bs-body-color, #212529);"></textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="attachment" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Lampiran (jika ada)</label>
+                                        <input type="file" class="form-control" id="attachment" name="attachment" style="color: var(--bs-body-color, #212529);">
+                                    </div>
+                                    <div class="col-12 d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg" id="submit-button-dumas" style="background: linear-gradient(135deg, #3498db, #2980b9); border: none; color: white;">
+                                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                            <i class="fas fa-paper-plane me-2"></i> Kirim Pengaduan
+                                        </button>
                                     </div>
                                 </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Identitas Pelapor
-                                    </label>
-                                    <div class="space-y-4">
-                                        <div class="flex items-center">
-                                            <input id="anonymous" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                            <label for="anonymous" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                Kirim secara anonim
+                            </form>
+                        </div>
+                        
+                        <!-- Whistleblowing Tab -->
+                        <div class="tab-pane fade p-4 rounded" id="whistleblowing" role="tabpanel" aria-labelledby="whistleblowing-tab" style="background-color: var(--bs-white, #ffffff); border: 1px solid var(--bs-border-color, #dee2e6); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <div class="alert alert-danger mb-4" role="alert" style="background: linear-gradient(135deg, #ffebee, #ffcdd2); border: 1px solid #ef9a9a; color: #000000;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Whistleblowing</strong> - Gunakan formulir ini untuk melaporkan pelanggaran serius seperti korupsi, penipuan, suap, atau penyalahgunaan wewenang yang terjadi di dalam organisasi.
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 mb-4" style="background: linear-gradient(135deg, #fff5f5, #ffebee); color: var(--bs-emphasis-color, #000000);">
+                                <div class="flex flex-col md:flex-row items-center gap-3">
+                                    <div class="flex-shrink-0">
+                                        <div class="bg-red-100 rounded-full p-3">
+                                            <i class="fas fa-shield-alt text-red-600 text-2xl"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-gray-900 mb-1">
+                                            <i class="fas fa-lock me-2"></i> Kerahasiaan Terjamin
+                                        </h5>
+                                        <p class="text-gray-700">
+                                            Kami menjamin kerahasiaan identitas pelapor dan melindungi dari segala bentuk represaliasi. Laporan Anda akan ditangani dengan profesional dan rahasia.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <form action="{{ route('supervision.complaint.submit.store') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <input type="hidden" name="complaint_type" value="whistleblowing">
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="violation_category" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Kategori Pelanggaran <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="violation_category" name="violation_category" required style="color: var(--bs-body-color, #212529);">
+                                            <option value="">Pilih Kategori</option>
+                                            <option value="corruption">Korupsi</option>
+                                            <option value="gratification">Gratifikasi</option>
+                                            <option value="nepotism">Nepotisme/Kolusi</option>
+                                            <option value="misconduct">Pelanggaran Etika</option>
+                                            <option value="misuse">Penyalahgunaan Wewenang</option>
+                                            <option value="other">Lainnya</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="incident_date" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Tanggal Kejadian</label>
+                                        <input type="date" class="form-control" id="incident_date" name="incident_date" style="color: var(--bs-body-color, #212529);">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="incident_title" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Judul Laporan <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="incident_title" name="complaint_title" required placeholder="Ringkasan Pelanggaran" style="color: var(--bs-body-color, #212529);">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="incident_description" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Deskripsi Kejadian <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="incident_description" name="complaint_description" rows="5" required placeholder="Jelaskan secara detail kejadian pelanggaran..." style="color: var(--bs-body-color, #212529);"></textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="evidence" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Bukti Pendukung</label>
+                                        <div class="input-group">
+                                            <input type="file" class="form-control" id="evidence" name="attachment" multiple style="color: var(--bs-body-color, #212529);">
+                                            <label class="input-group-text" for="evidence">Unggah File</label>
+                                        </div>
+                                        <div class="form-text">
+                                            Anda dapat mengunggah beberapa file sebagai bukti pendukung (PNG, JPG, PDF, DOCX - Maks 10MB)
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="anonymous_report" name="anonymous" value="1">
+                                            <label class="form-check-label" for="anonymous_report" style="color: var(--bs-emphasis-color, #000000);">
+                                                Laporkan secara anonim
                                             </label>
                                         </div>
                                         
-                                        <div id="identity_fields">
-                                            <div class="mb-3">
-                                                <label for="complainant_name" class="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                                                    Nama Lengkap
-                                                </label>
-                                                <input type="text" id="complainant_name" 
-                                                       class="block w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                                       placeholder="Nama lengkap Anda">
+                                        <div id="reporter_identity_section">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label for="reporter_name_whistle" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Nama Lengkap</label>
+                                                    <input type="text" class="form-control" id="reporter_name_whistle" name="reporter_name" style="color: var(--bs-body-color, #212529);">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="reporter_position" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Jabatan/Posisi</label>
+                                                    <input type="text" class="form-control" id="reporter_position" name="reporter_position" placeholder="Contoh: Pegawai, Kontraktor, dll" style="color: var(--bs-body-color, #212529);">
+                                                </div>
                                             </div>
-                                            
-                                            <div class="mb-3">
-                                                <label for="complainant_email" class="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                                                    Email
-                                                </label>
-                                                <input type="email" id="complainant_email" 
-                                                       class="block w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                                       placeholder="Alamat email Anda">
-                                            </div>
-                                            
-                                            <div>
-                                                <label for="complainant_contact" class="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                                                    Nomor Telepon (Opsional)
-                                                </label>
-                                                <input type="tel" id="complainant_contact" 
-                                                       class="block w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
-                                                       placeholder="Nomor telepon yang bisa dihubungi">
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <label for="reporter_email_whistle" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Email</label>
+                                                    <input type="email" class="form-control" id="reporter_email_whistle" name="reporter_email" style="color: var(--bs-body-color, #212529);">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="reporter_phone_whistle" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Nomor Telepon</label>
+                                                    <input type="tel" class="form-control" id="reporter_phone_whistle" name="reporter_phone" style="color: var(--bs-body-color, #212529);">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <div class="col-12 d-grid">
+                                        <button type="submit" class="btn btn-danger btn-lg" id="submit-button-whistle" style="background: linear-gradient(135deg, #e74c3c, #c0392b); border: none; color: white;">
+                                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                            <i class="fas fa-bullhorn me-2"></i> Kirim Laporan Rahasia
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    Dengan mengirimkan pengaduan ini, Anda menyetujui 
-                                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">Syarat dan Ketentuan</a> serta 
-                                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">Kebijakan Privasi</a> kami.
-                                </p>
-                                <button type="submit" 
-                                        class="w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
-                                    <i class="fas fa-paper-plane mr-2"></i> Kirim Pengaduan
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Information Section -->
-                    <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-blue-50 dark:bg-blue-900 rounded-xl p-6">
-                            <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-3">
-                                <i class="fas fa-shield-alt mr-2"></i> Perlindungan Whistleblower
-                            </h3>
-                            <p class="text-blue-700 dark:text-blue-300 text-sm">
-                                Kami menjamin kerahasiaan identitas pelapor dalam kasus whistleblowing dan melindungi dari segala bentuk represaliasi.
-                            </p>
-                        </div>
-                        
-                        <div class="bg-green-50 dark:bg-green-900 rounded-xl p-6">
-                            <h3 class="text-lg font-semibold text-green-800 dark:text-green-200 mb-3">
-                                <i class="fas fa-clock mr-2"></i> Waktu Respons
-                            </h3>
-                            <p class="text-green-700 dark:text-green-300 text-sm">
-                                Pengaduan akan ditindaklanjuti dalam waktu maksimal 5 hari kerja sejak tanggal diterima.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Statistics -->
-                    <div class="mt-10 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6">
-                        <h3 class="text-xl font-bold text-center text-gray-900 dark:text-white mb-6">
-                            Statistik Pengaduan 2025
-                        </h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
-                            <div>
-                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">1,247</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-300">Total Pengaduan</div>
-                            </div>
-                            <div>
-                                <div class="text-2xl font-bold text-green-600 dark:text-green-400">98%</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-300">Ditindaklanjuti</div>
-                            </div>
-                            <div>
-                                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">7</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-300">Hari Rata-rata</div>
-                            </div>
-                            <div>
-                                <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">95%</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-300">Puas Ditangani</div>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle anonymous checkbox for whistleblowing form
+        const anonymousCheckbox = document.getElementById('anonymous_report');
+        const reporterIdentitySection = document.getElementById('reporter_identity_section');
+        
+        if (anonymousCheckbox && reporterIdentitySection) {
+            // Initially show the identity section unless checkbox is checked
+            if (anonymousCheckbox.checked) {
+                reporterIdentitySection.style.display = 'none';
+            }
+            
+            anonymousCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    reporterIdentitySection.style.display = 'none';
+                } else {
+                    reporterIdentitySection.style.display = 'block';
+                }
+            });
+        }
+        
+        // Handle submit buttons
+        const formDumas = document.querySelector('#dumas form');
+        const submitButtonDumas = document.getElementById('submit-button-dumas');
+        
+        const formWhistle = document.querySelector('#whistleblowing form');
+        const submitButtonWhistle = document.getElementById('submit-button-whistle');
+        
+        if (formDumas && submitButtonDumas) {
+            formDumas.addEventListener('submit', function () {
+                submitButtonDumas.disabled = true;
+                submitButtonDumas.querySelector('.spinner-border').classList.remove('d-none');
+            });
+        }
+        
+        if (formWhistle && submitButtonWhistle) {
+            formWhistle.addEventListener('submit', function () {
+                submitButtonWhistle.disabled = true;
+                submitButtonWhistle.querySelector('.spinner-border').classList.remove('d-none');
+            });
+        }
+        
+        // Add hover effects to tabs
+        const tabs = document.querySelectorAll('.nav-link');
+        tabs.forEach(tab => {
+            tab.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            tab.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>
+@endpush

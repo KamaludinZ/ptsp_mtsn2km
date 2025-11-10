@@ -16,7 +16,30 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        // Generate captcha and store it in session
+        $captcha = $this->generateCaptcha();
+        session(['captcha_value' => $captcha]);
+        
+        return view('auth.login', compact('captcha'));
+    }
+
+    /**
+     * Generate a random 6-digit captcha
+     */
+    private function generateCaptcha(): string
+    {
+        return str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Refresh captcha and return as JSON
+     */
+    public function refreshCaptcha()
+    {
+        $captcha = $this->generateCaptcha();
+        session(['captcha_value' => $captcha]);
+        
+        return response()->json(['captcha' => $captcha]);
     }
 
     /**

@@ -21,12 +21,17 @@ class OnlinePortalController extends Controller
         $user = Auth::user();
         $userType = $user ? $user->user_type : 'umum';
 
-        // Get categories - all categories for now since we don't have service-category relationship
+        // Get categories
         $categories = ServiceCategory::orderBy('name')->get();
 
-        // Get services based on user type (using LIKE for SQLite compatibility)
-        $services = Service::where('user_types_allowed', 'LIKE', '%"' . $userType . '"%')
-            ->where('is_active', true)
+        // Get services based on user type with SQLite compatibility
+        // Using LIKE for JSON search in SQLite
+        $services = Service::where('is_active', true)
+            ->where(function($query) use ($userType) {
+                $query->where('user_types_allowed', 'LIKE', '%'.$userType.'%')
+                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
+            })
+            ->with(['categories'])
             ->orderBy('name')
             ->get();
 
@@ -43,13 +48,19 @@ class OnlinePortalController extends Controller
 
         $service = Service::where('slug', $slug)
             ->with(['category', 'requirements', 'components', 'workflow'])
-            ->whereJsonContains('user_types_allowed', $userType)
+            ->where(function($query) use ($userType) {
+                $query->where('user_types_allowed', 'LIKE', '%'.$userType.'%')
+                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
+            })
             ->firstOrFail();
 
         // Get related services
         $relatedServices = Service::where('category_id', $service->category_id)
             ->where('id', '!=', $service->id)
-            ->whereJsonContains('user_types_allowed', $userType)
+            ->where(function($query) use ($userType) {
+                $query->where('user_types_allowed', 'LIKE', '%'.$userType.'%')
+                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
+            })
             ->limit(4)
             ->get();
 
@@ -70,7 +81,10 @@ class OnlinePortalController extends Controller
 
         $service = Service::where('slug', $slug)
             ->with(['requirements', 'components'])
-            ->whereJsonContains('user_types_allowed', $user->user_type)
+            ->where(function($query) use ($user) {
+                $query->where('user_types_allowed', 'LIKE', '%'.$user->user_type.'%')
+                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
+            })
             ->firstOrFail();
 
         return view('onlineportal.application-form', compact('service', 'user'));
@@ -89,7 +103,10 @@ class OnlinePortalController extends Controller
         }
 
         $service = Service::where('slug', $slug)
-            ->whereJsonContains('user_types_allowed', $user->user_type)
+            ->where(function($query) use ($user) {
+                $query->where('user_types_allowed', 'LIKE', '%'.$user->user_type.'%')
+                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
+            })
             ->firstOrFail();
 
         $validated = $request->validate([
@@ -172,19 +189,40 @@ class OnlinePortalController extends Controller
             'email' => 'nullable|email',
         ]);
 
-        $ticket = Ticket::with(['service', 'user', 'logs', 'files'])
-            ->where('ticket_number', $validated['ticket_number']);
+        $ticketQuery = Ticket::with([
+            'service', 
+            'user', 
+            'logs', 
+            'files',
+            'workflowSteps' => function($query) {
+                $query->withPivot('completed_at', 'notes');
+                $query->orderBy('order');
+            },
+            'output' // Include output file info
+        ])
+        ->where('ticket_number', $validated['ticket_number']);
 
         // If email provided, verify ownership
         if (!empty($validated['email'])) {
-            $ticket->whereHas('user', function($query) use ($validated) {
+            $ticketQuery->whereHas('user', function($query) use ($validated) {
                 $query->where('email', $validated['email']);
             });
         }
 
-        $ticket = $ticket->firstOrFail();
+        $ticket = $ticketQuery->first();
 
-        return view('onlineportal.track-ticket-result', compact('ticket'));
+        if (!$ticket) {
+            return response()->json(['message' => 'Nomor tiket tidak ditemukan'], 404);
+        }
+
+        // Prepare response data
+        $responseData = $ticket->toArray();
+        
+        // Add additional computed fields
+        $responseData['has_output_file'] = $ticket->output && $ticket->output->file_path ? true : false;
+        
+        // Make sure we return the proper structure for the frontend
+        return response()->json($responseData);
     }
 
     /**

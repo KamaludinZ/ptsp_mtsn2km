@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Service;
+use App\Models\User;
 
 class Complaint extends Model
 {
@@ -24,7 +26,17 @@ class Complaint extends Model
         'resolution_notes',
         'resolved_at',
         'resolved_by',
-        'anonymous'
+        'anonymous',
+        'complaint_number',
+        'type',
+        'reporter_name',
+        'reporter_email',
+        'reporter_phone',
+        'service_id',
+        'category',
+        'assigned_to_id',
+        'response',
+        'is_whistleblowing'
     ];
 
     protected $casts = [
@@ -50,6 +62,18 @@ class Complaint extends Model
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
+    // Alternative relationship name to match controller
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    // Relationship with service
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
     // Constants for complaint types
     const TYPE_COMPLAINT = 'complaint';
     const TYPE_SUGGESTION = 'suggestion';
@@ -67,4 +91,48 @@ class Complaint extends Model
     const PRIORITY_NORMAL = 'normal';
     const PRIORITY_HIGH = 'high';
     const PRIORITY_URGENT = 'urgent';
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->complaint_number)) {
+                $model->complaint_number = $model->generateComplaintNumber();
+            }
+        });
+    }
+
+    /**
+     * Generate complaint number based on type
+     */
+    public function generateComplaintNumber()
+    {
+        $prefix = match($this->complaint_type ?? $this->type) {
+            'complaint', 'pengaduan' => 'P',        // P for complaints
+            'suggestion', 'saran' => 'S',            // S for suggestions
+            'whistleblowing' => 'W',                // W for whistleblowing
+            default => 'P'
+        };
+        
+        $yearMonth = now()->format('Ym');
+        
+        // Get the next sequence number
+        $lastComplaint = static::where('complaint_number', 'LIKE', "{$prefix}-{$yearMonth}-%")
+            ->orderByRaw("CAST(SUBSTR(complaint_number, -3) AS INTEGER) DESC")
+            ->first();
+        
+        $sequence = 1;
+        if ($lastComplaint) {
+            $lastSequence = substr($lastComplaint->complaint_number, -3);
+            if (is_numeric($lastSequence)) {
+                $sequence = intval($lastSequence) + 1;
+            }
+        }
+        
+        // Format the sequence number to be 3 digits
+        $sequenceNumber = str_pad($sequence, 3, '0', STR_PAD_LEFT);
+        
+        return "{$prefix}-{$yearMonth}-{$sequenceNumber}";
+    }
 }

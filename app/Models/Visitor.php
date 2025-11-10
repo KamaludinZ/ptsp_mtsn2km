@@ -20,7 +20,8 @@ class Visitor extends Model
         'photo_path',
         'visitor_card_number',
         'status',
-        'created_by'
+        'created_by',
+        'is_obscured'
     ];
 
     protected $casts = [

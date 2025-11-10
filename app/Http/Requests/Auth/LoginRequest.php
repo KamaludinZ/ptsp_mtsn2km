@@ -41,6 +41,16 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        // Validasi captcha - membandingkan input captcha dengan session
+        $captchaInput = $this->input('captcha');
+        $storedCaptcha = session('captcha_value'); // Ambil dari session
+        
+        if (empty($captchaInput) || empty($storedCaptcha) || strtoupper($captchaInput) !== strtoupper($storedCaptcha)) {
+            throw ValidationException::withMessages([
+                'captcha' => 'Kode verifikasi tidak valid.',
+            ]);
+        }
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
@@ -50,6 +60,9 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+        
+        // Hapus captcha dari session setelah berhasil login
+        session()->forget('captcha_value');
     }
 
     /**

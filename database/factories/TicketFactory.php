@@ -20,7 +20,7 @@ class TicketFactory extends Factory
             'ticket_number' => 'LAYANAN-' . date('Ym') . '-' . str_pad(fake()->numberBetween(1, 99999), 5, '0', STR_PAD_LEFT),
             'user_id' => 1, // Assuming user ID 1 exists
             'service_id' => 1, // Assuming service ID 1 exists
-            'channel' => fake()->randomElement(['online', 'offline']),
+            'mode' => fake()->randomElement(['online', 'offline']),
             'status' => fake()->randomElement(['submitted', 'verified', 'in_process', 'approved', 'rejected', 'completed', 'cancelled']),
             'created_by' => 1, // Assuming user ID 1 exists
         ];

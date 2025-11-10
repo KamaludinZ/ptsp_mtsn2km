@@ -13,6 +13,8 @@ class SurveyResponse extends Model
         'survey_id',
         'user_id',
         'ticket_id',
+        'ticket_code',
+        'respondent_email',
         'ip_address',
         'completed_at'
     ];
