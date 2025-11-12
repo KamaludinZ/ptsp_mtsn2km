@@ -5,3 +5,5 @@
 /vendor
 npm-debug.log
 yarn-error.log
+resources/css/home.css
+storage/framework/cache/

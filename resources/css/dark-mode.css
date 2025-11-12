@@ -732,3 +732,185 @@
         animation: none !important;
     }
 }
+
+/* Additional overrides for the "About" section in dark mode */
+[data-theme="dark"] section#tentang div[style*="background: var(--gradient-primary)"] {
+    background: var(--bg-dark-2) !important;
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] section#tentang div[style*="background: rgba(20, 83, 45, 0.1)"] {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] section#tentang div[style*="background: rgba(234, 88, 12, 0.1)"] {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] section#tentang div[style*="background: rgba(16, 185, 129, 0.1)"] {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] section#tentang .bg-white,
+[data-theme="dark"] section#tentang div[style*="background: white"] {
+    background-color: var(--bs-dark-bg-secondary) !important;
+}
+
+[data-theme="dark"] section#tentang .text-dark {
+    color: var(--bs-dark-text-secondary) !important;
+}
+
+[data-theme="dark"] section#tentang .small,
+[data-theme="dark"] section#tentang .text-muted {
+    color: var(--bs-dark-text-muted) !important;
+}
+
+/* Specific fix for icons in the tentang section */
+[data-theme="dark"] section#tentang i.fas,
+[data-theme="dark"] section#tentang i.fab,
+[data-theme="dark"] section#tentang i.far,
+[data-theme="dark"] section#tentang i.fal {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+/* Specific fix for strong elements in tentang section */
+[data-theme="dark"] section#tentang strong {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+/* Additional overrides for the performance stats section */
+[data-theme="dark"] section[style*="background-color: var(--bs-gray-50);"] {
+    background-color: var(--bs-gray-800) !important;
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] .stat-card {
+    background-color: var(--bs-dark-bg-secondary) !important;
+    border-color: var(--bs-dark-border-primary) !important;
+    color: var(--bs-dark-text-secondary) !important;
+}
+
+[data-theme="dark"] .stat-card * {
+    color: var(--bs-dark-text-secondary) !important;
+}
+
+/* Service cards */
+[data-theme="dark"] .service-card {
+    background-color: var(--bs-dark-bg-secondary) !important;
+    border-color: var(--bs-dark-border-primary) !important;
+    color: var(--bs-dark-text-secondary) !important;
+}
+
+/* Feature cards for quick access */
+[data-theme="dark"] .feature-card {
+    background-color: var(--bs-dark-bg-secondary) !important;
+    border-color: var(--bs-dark-border-primary) !important;
+    color: var(--bs-dark-text-secondary) !important;
+}
+
+[data-theme="dark"] .feature-card * {
+    color: var(--bs-dark-text-secondary) !important;
+}
+
+/* High priority overrides for stat numbers in performance section */
+[data-theme="dark"] .stat-number {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+/* High priority overrides for service titles and icons */
+[data-theme="dark"] .service-icon {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] .service-icon i {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] .service-title {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+/* Additional specific overrides for elements with inline styles */
+[data-theme="dark"] [style*="color: var(--bs-primary);"] {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] [style*="color: #10b981;"] {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] [style*="color: #3b82f6;"] {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] [style*="color: #14532d;"] {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+/* Specific overrides for the additional stats bar */
+[data-theme="dark"] .border-dashed .display-6[style*="color: var(--bs-primary);"],
+[data-theme="dark"] .border-dashed .display-6[style*="color: var(--bs-secondary);"],
+[data-theme="dark"] .border-dashed .display-6[style*="color: #10b981;"],
+[data-theme="dark"] .border-dashed .display-6[style*="color: #3b82f6;"] {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+/* Footer specific overrides - HIGH PRIORITY */
+[data-theme="dark"] footer nav h6[style*="color: white"] {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] footer nav span[style*="color: white"],
+[data-theme="dark"] footer nav strong[style*="color: white"] {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] footer nav a[style*="color: white"] {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] footer nav a[style*="color: white"]:hover {
+    color: var(--bs-primary) !important;
+}
+
+/* Fix for icons in footer */
+[data-theme="dark"] footer nav i[style*="color: #ea580c"] {
+    color: var(--bs-primary) !important;
+}
+
+[data-theme="dark"] footer nav a i[style*="color: #ea580c"] {
+    color: var(--bs-primary) !important;
+}
+
+/* Override the inline onMouseOver/Out events for footer links */
+[data-theme="dark"] footer nav a {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] footer nav a:hover {
+    color: var(--bs-primary) !important;
+}
+
+/* Footer background and icon color fixes */
+[data-theme="dark"] footer[role="contentinfo"] {
+    background-color: var(--bs-dark-bg-tertiary) !important;
+    color: var(--bs-dark-text-secondary) !important;
+}
+
+/* Footer icon color fixes */
+[data-theme="dark"] footer i.fas,
+[data-theme="dark"] footer i.fab,
+[data-theme="dark"] footer i.far,
+[data-theme="dark"] footer i.fal {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+/* Ensure social media icons are also white */
+[data-theme="dark"] footer .flex.gap-4.mt-4 i {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+/* Footer specific text overrides */
+[data-theme="dark"] footer .text-sm[style*="opacity: 0.8"] {
+    color: var(--bs-dark-text-muted) !important;
+}
