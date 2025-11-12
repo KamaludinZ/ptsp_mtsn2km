@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="{{ $themePublic ?? 'light' }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -163,7 +163,7 @@
                     <div class="topbar">
                         <!-- Page Heading (Topbar content) -->
                         @hasSection('header')
-                            <header class="topbar-content">
+                            <header class="topbar-content" role="banner">
                                 <div class="container-fluid px-4">
                                     @yield('header')
                                 </div>
@@ -177,7 +177,7 @@
                     </main>
                     
                     <!-- Footer -->
-                    <footer class="footer">
+                    <footer class="footer" role="contentinfo">
                         <div class="container-fluid px-4">
                             <div class="text-center py-3 text-muted">
                                 &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. All rights reserved.

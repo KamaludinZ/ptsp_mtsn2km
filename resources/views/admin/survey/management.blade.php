@@ -5,75 +5,59 @@
 
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid p-4">
     <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex flex-wrap justify-content-between align-items-center">
-                <div>
-                    <h2 class="h3 mb-2 fw-bold" style="color: var(--bs-text);">
-                        <i class="bi bi-clipboard-data-fill me-2" style="color: var(--bs-secondary);"></i>Manajemen Survey
-                    </h2>
-                    <p class="text-muted mb-0">Kelola sistem survei untuk evaluasi kinerja pelayanan.</p>
-                </div>
-                <div class="mt-3 mt-md-0">
-                    <a href="{{ route('suadmin.skm.report') }}" class="btn btn-outline-primary shadow-sm">
-                        <i class="bi bi-file-earmark-bar-graph-fill me-2"></i>Laporan SKM
-                    </a>
-                    <a href="{{ route('suadmin.spak.report') }}" class="btn btn-primary shadow-sm">
-                        <i class="bi bi-shield-check me-2"></i>Laporan SPAK
-                    </a>
-                </div>
-            </div>
+    <div class="flex flex-wrap justify-between items-center mb-4">
+        <div>
+            <h2 class="text-2xl font-bold text-base-content">
+                <i class="bi bi-clipboard-data-fill mr-2 text-secondary"></i>Manajemen Survey
+            </h2>
+            <p class="text-base-content/70">Kelola sistem survei untuk evaluasi kinerja pelayanan.</p>
+        </div>
+        <div class="mt-3 md:mt-0">
+            <a href="{{ route('suadmin.skm.report') }}" class="btn btn-outline btn-primary shadow-sm">
+                <i class="bi bi-file-earmark-bar-graph-fill mr-2"></i>Laporan SKM
+            </a>
+            <a href="{{ route('suadmin.spak.report') }}" class="btn btn-primary shadow-sm">
+                <i class="bi bi-shield-check mr-2"></i>Laporan SPAK
+            </a>
         </div>
     </div>
 
-
-
     <!-- Main Content -->
-    <div class="row">
-        <div class="col-12">
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
             <!-- Survey Categories Tabs -->
-            <ul class="nav nav-tabs mb-4" id="surveyTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="identity-tab" data-bs-toggle="tab" data-bs-target="#identity" type="button" role="tab">
-                        <i class="fas fa-user-edit me-2"></i>Form Identitas
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="skm-tab" data-bs-toggle="tab" data-bs-target="#skm" type="button" role="tab">
-                        <i class="fas fa-smile-beam me-2"></i>Form SKM
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="spak-tab" data-bs-toggle="tab" data-bs-target="#spak" type="button" role="tab">
-                        <i class="fas fa-shield-alt me-2"></i>Form SPAK
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="editions-tab" data-bs-toggle="tab" data-bs-target="#editions" type="button" role="tab">
-                        <i class="fas fa-calendar-alt me-2"></i>Edisi Survei
-                    </button>
-                </li>
-            </ul>
+            <div class="tabs tabs-boxed mb-4">
+                <a class="tab survey-tab-button" :class="{ 'tab-active': activeTab === 'identity' }" @click.prevent="activeTab = 'identity'">
+                    <i class="fas fa-user-edit mr-2"></i>Form Identitas
+                </a>
+                <a class="tab survey-tab-button" :class="{ 'tab-active': activeTab === 'skm' }" @click.prevent="activeTab = 'skm'">
+                    <i class="fas fa-smile-beam mr-2"></i>Form SKM
+                </a>
+                <a class="tab survey-tab-button" :class="{ 'tab-active': activeTab === 'spak' }" @click.prevent="activeTab = 'spak'">
+                    <i class="fas fa-shield-alt mr-2"></i>Form SPAK
+                </a>
+                <a class="tab survey-tab-button" :class="{ 'tab-active': activeTab === 'editions' }" @click.prevent="activeTab = 'editions'">
+                    <i class="fas fa-calendar-alt mr-2"></i>Edisi Survei
+                </a>
+            </div>
 
             <!-- Tab Content -->
-            <div class="tab-content" id="surveyTabContent">
+            <div class="tab-content">
                 <!-- Identity Questions Tab -->
-                <div class="tab-pane fade show active" id="identity" role="tabpanel">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-primary-soft">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0"><i class="fas fa-user-edit me-2"></i>Form Identitas Responden</h5>
-                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addIdentityQuestionModal">
-                                    <i class="fas fa-plus me-1"></i>Tambah Pertanyaan
-                                </button>
-                            </div>
+                <div x-show="activeTab === 'identity'">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-header bg-primary-soft flex justify-between items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-user-edit mr-2"></i>Form Identitas Responden</h5>
+                            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addIdentityQuestionModal">
+                                <i class="fas fa-plus mr-1"></i>Tambah Pertanyaan
+                            </button>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive rounded-3 shadow-sm">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
+                            <div class="overflow-x-auto">
+                                <table class="table w-full">
+                                    <thead>
                                         <tr>
                                             <th>No</th>
                                             <th>Nama Pertanyaan</th>
@@ -82,31 +66,36 @@
                                             <th>Tipe Jawaban</th>
                                             <th>Wajib?</th>
                                             <th>Aktif?</th>
-                                            <th class="text-end">Aksi</th>
+                                            <th class="text-right">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="identity-questions">
                                         @forelse($identityQuestions as $question)
-                                            <tr class="align-middle">
+                                            <tr>
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $question->question }}</td>
                                                 <td>-</td>
-                                                <td><span class="badge bg-info">Identitas</span></td>
-                                                <td><span class="badge bg-secondary">{{ $question->field_type }}</span></td>
-                                                <td><span class="badge bg-{{ $question->is_required ? 'danger' : 'secondary' }}">{{ $question->is_required ? 'Ya' : 'Tidak' }}</span></td>
-                                                <td><span class="badge bg-{{ $question->is_active ? 'success' : 'secondary' }}">{{ $question->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
-                                                <td class="text-end">
-                                                    <div class="btn-group">
-                                                        <button class="btn btn-sm btn-outline-warning" onclick="editQuestion('identity', {{ $question->id }})"><i class="fas fa-edit"></i></button>
-                                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteQuestion({{ $question->id }})"><i class="fas fa-trash"></i></button>
+                                                <td><span class="badge badge-info">Identitas</span></td>
+                                                <td><span class="badge badge-neutral">{{ $question->field_type }}</span></td>
+                                                <td><span class="badge @if($question->is_required) badge-error @else badge-neutral @endif">{{ $question->is_required ? 'Ya' : 'Tidak' }}</span></td>
+                                                <td><span class="badge @if($question->is_active) badge-success @else badge-neutral @endif">{{ $question->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
+                                                <td class="text-right">
+                                                    <div class="dropdown dropdown-end">
+                                                        <label tabindex="0" class="btn btn-ghost btn-xs">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </label>
+                                                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32">
+                                                            <li><button class="btn btn-sm btn-warning" onclick="editQuestion('identity', {{ $question->id }})"><i class="fas fa-edit"></i> Edit</button></li>
+                                                            <li><button class="btn btn-sm btn-error" onclick="deleteQuestion({{ $question->id }})"><i class="fas fa-trash"></i> Hapus</button></li>
+                                                        </ul>
                                                     </div>
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="6" class="empty-state">
-                                                    <i class="fas fa-inbox fa-3x mb-3"></i>
-                                                    <h5 class="text-muted">Tidak ada pertanyaan identitas yang aktif.</h5>
+                                                <td colspan="8" class="text-center py-16">
+                                                    <i class="fas fa-inbox fa-5x text-base-content/20 mb-3"></i>
+                                                    <h5 class="text-lg font-bold text-base-content/70">Tidak ada pertanyaan identitas yang aktif.</h5>
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -118,20 +107,18 @@
                 </div>
 
                 <!-- SKM Questions Tab -->
-                <div class="tab-pane fade" id="skm" role="tabpanel">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-success-soft">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0"><i class="fas fa-smile-beam me-2"></i>Form Survei Kepuasan (SKM)</h5>
-                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addSkmQuestionModal">
-                                    <i class="fas fa-plus me-1"></i>Tambah Pertanyaan
-                                </button>
-                            </div>
+                <div x-show="activeTab === 'skm'">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-header bg-success-soft flex justify-between items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-smile-beam mr-2"></i>Form Survei Kepuasan (SKM)</h5>
+                            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addSkmQuestionModal">
+                                <i class="fas fa-plus mr-1"></i>Tambah Pertanyaan
+                            </button>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive rounded-3 shadow-sm">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
+                            <div class="overflow-x-auto">
+                                <table class="table w-full">
+                                    <thead>
                                         <tr>
                                             <th>No</th>
                                             <th>Pertanyaan</th>
@@ -141,32 +128,37 @@
                                             <th>Opsi Jawaban</th>
                                             <th>Wajib</th>
                                             <th>Aktif</th>
-                                            <th class="text-end">Aksi</th>
+                                            <th class="text-right">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="skm-questions">
                                         @forelse($skmQuestions as $question)
-                                            <tr class="align-middle">
+                                            <tr>
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $question->question }}</td>
                                                 <td>{{ $question->unsur->name ?? '-' }}</td>
-                                                <td><span class="badge bg-success">SKM</span></td>
+                                                <td><span class="badge badge-success">SKM</span></td>
                                                 <td>{{ $question->field_type }}</td>
                                                 <td>{{ $question->options ? implode(', ', json_decode($question->options)) : '-' }}</td>
-                                                <td><span class="badge bg-{{ $question->is_required ? 'danger' : 'secondary' }}">{{ $question->is_required ? 'Ya' : 'Tidak' }}</span></td>
-                                                <td><span class="badge bg-{{ $question->is_active ? 'success' : 'secondary' }}">{{ $question->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
-                                                <td class="text-end">
-                                                    <div class="btn-group">
-                                                        <button class="btn btn-sm btn-outline-warning" onclick="editQuestion('skm', {{ $question->id }})"><i class="fas fa-edit"></i></button>
-                                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteQuestion({{ $question->id }})"><i class="fas fa-trash"></i></button>
+                                                <td><span class="badge @if($question->is_required) badge-error @else badge-neutral @endif">{{ $question->is_required ? 'Ya' : 'Tidak' }}</span></td>
+                                                <td><span class="badge @if($question->is_active) badge-success @else badge-neutral @endif">{{ $question->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
+                                                <td class="text-right">
+                                                    <div class="dropdown dropdown-end">
+                                                        <label tabindex="0" class="btn btn-ghost btn-xs">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </label>
+                                                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32">
+                                                            <li><button class="btn btn-sm btn-warning" onclick="editQuestion('skm', {{ $question->id }})"><i class="fas fa-edit"></i> Edit</button></li>
+                                                            <li><button class="btn btn-sm btn-error" onclick="deleteQuestion({{ $question->id }})"><i class="fas fa-trash"></i> Hapus</button></li>
+                                                        </ul>
                                                     </div>
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="empty-state">
-                                                    <i class="fas fa-inbox fa-3x mb-3"></i>
-                                                    <h5 class="text-muted">Tidak ada pertanyaan SKM yang aktif.</h5>
+                                                <td colspan="9" class="text-center py-16">
+                                                    <i class="fas fa-inbox fa-5x text-base-content/20 mb-3"></i>
+                                                    <h5 class="text-lg font-bold text-base-content/70">Tidak ada pertanyaan SKM yang aktif.</h5>
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -178,20 +170,18 @@
                 </div>
 
                 <!-- SPAK Questions Tab -->
-                <div class="tab-pane fade" id="spak" role="tabpanel">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-info-soft">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0"><i class="fas fa-shield-alt me-2"></i>Form Survei Anti Korupsi (SPAK)</h5>
-                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addSpakQuestionModal">
-                                    <i class="fas fa-plus me-1"></i>Tambah Pertanyaan
-                                </button>
-                            </div>
+                <div x-show="activeTab === 'spak'">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-header bg-info-soft flex justify-between items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-shield-alt mr-2"></i>Form Survei Anti Korupsi (SPAK)</h5>
+                            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addSpakQuestionModal">
+                                <i class="fas fa-plus mr-1"></i>Tambah Pertanyaan
+                            </button>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive rounded-3 shadow-sm">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
+                            <div class="overflow-x-auto">
+                                <table class="table w-full">
+                                    <thead>
                                         <tr>
                                             <th>No</th>
                                             <th>Pertanyaan</th>
@@ -201,32 +191,37 @@
                                             <th>Opsi Jawaban</th>
                                             <th>Wajib</th>
                                             <th>Aktif</th>
-                                            <th class="text-end">Aksi</th>
+                                            <th class="text-right">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="spak-questions">
                                         @forelse($spakQuestions as $question)
-                                            <tr class="align-middle">
+                                            <tr>
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $question->question }}</td>
                                                 <td>{{ $question->unsur->name ?? '-' }}</td>
-                                                <td><span class="badge bg-danger">SPAK</span></td>
+                                                <td><span class="badge badge-error">SPAK</span></td>
                                                 <td>{{ $question->field_type }}</td>
                                                 <td>{{ $question->options ? implode(', ', json_decode($question->options)) : '-' }}</td>
-                                                <td><span class="badge bg-{{ $question->is_required ? 'danger' : 'secondary' }}">{{ $question->is_required ? 'Ya' : 'Tidak' }}</span></td>
-                                                <td><span class="badge bg-{{ $question->is_active ? 'success' : 'secondary' }}">{{ $question->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
-                                                <td class="text-end">
-                                                    <div class="btn-group">
-                                                        <button class="btn btn-sm btn-outline-warning" onclick="editQuestion('spak', {{ $question->id }})"><i class="fas fa-edit"></i></button>
-                                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteQuestion({{ $question->id }})"><i class="fas fa-trash"></i></button>
+                                                <td><span class="badge @if($question->is_required) badge-error @else badge-neutral @endif">{{ $question->is_required ? 'Ya' : 'Tidak' }}</span></td>
+                                                <td><span class="badge @if($question->is_active) badge-success @else badge-neutral @endif">{{ $question->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
+                                                <td class="text-right">
+                                                    <div class="dropdown dropdown-end">
+                                                        <label tabindex="0" class="btn btn-ghost btn-xs">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </label>
+                                                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32">
+                                                            <li><button class="btn btn-sm btn-warning" onclick="editQuestion('spak', {{ $question->id }})"><i class="fas fa-edit"></i> Edit</button></li>
+                                                            <li><button class="btn btn-sm btn-error" onclick="deleteQuestion({{ $question->id }})"><i class="fas fa-trash"></i> Hapus</button></li>
+                                                        </ul>
                                                     </div>
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="empty-state">
-                                                    <i class="fas fa-inbox fa-3x mb-3"></i>
-                                                    <h5 class="text-muted">Tidak ada pertanyaan SPAK yang aktif.</h5>
+                                                <td colspan="8" class="text-center py-16">
+                                                    <i class="fas fa-inbox fa-5x text-base-content/20 mb-3"></i>
+                                                    <h5 class="text-lg font-bold text-base-content/70">Tidak ada pertanyaan SPAK yang aktif.</h5>
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -238,20 +233,18 @@
                 </div>
 
                 <!-- Survey Editions Tab -->
-                <div class="tab-pane fade" id="editions" role="tabpanel">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-warning-soft">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0"><i class="fas fa-calendar-alt me-2"></i>Edisi Survei</h5>
-                                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#createEditionModal">
-                                    <i class="fas fa-plus me-1"></i>Tambah Edisi
-                                </button>
-                            </div>
+                <div x-show="activeTab === 'editions'">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-header bg-warning-soft flex justify-between items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-calendar-alt mr-2"></i>Edisi Survei</h5>
+                            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#createEditionModal">
+                                <i class="fas fa-plus mr-1"></i>Tambah Edisi
+                            </button>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive rounded-3 shadow-sm">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
+                            <div class="overflow-x-auto">
+                                <table class="table w-full">
+                                    <thead>
                                         <tr>
                                             <th>Nama Edisi</th>
                                             <th>Jenis</th>
@@ -260,31 +253,36 @@
                                             <th>Tanggal Mulai</th>
                                             <th>Tanggal Selesai</th>
                                             <th>Status</th>
-                                            <th class="text-end">Aksi</th>
+                                            <th class="text-right">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="survey-editions">
                                         @if($activeEdition)
-                                            <tr class="align-middle">
+                                            <tr>
                                                 <td>{{ $activeEdition->name }}</td>
-                                                <td><span class="badge bg-primary">{{ $activeEdition->type }}</span></td>
+                                                <td><span class="badge badge-primary">{{ $activeEdition->type }}</span></td>
                                                 <td>{{ $activeEdition->period }}</td>
                                                 <td>{{ $activeEdition->year }}</td>
                                                 <td>{{ $activeEdition->start_date->format('d M Y') }}</td>
                                                 <td>{{ $activeEdition->end_date->format('d M Y') }}</td>
-                                                <td><span class="badge bg-success">Aktif</span></td>
-                                                <td class="text-end">
-                                                    <div class="btn-group">
-                                                        <button class="btn btn-sm btn-outline-warning" onclick="editEdition({{ $activeEdition->id }})"><i class="fas fa-edit"></i></button>
-                                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEdition({{ $activeEdition->id }})"><i class="fas fa-trash"></i></button>
+                                                <td><span class="badge badge-success">Aktif</span></td>
+                                                <td class="text-right">
+                                                    <div class="dropdown dropdown-end">
+                                                        <label tabindex="0" class="btn btn-ghost btn-xs">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </label>
+                                                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32">
+                                                            <li><button class="btn btn-sm btn-warning" onclick="editEdition({{ $activeEdition->id }})"><i class="fas fa-edit"></i> Edit</button></li>
+                                                            <li><button class="btn btn-sm btn-error" onclick="deleteEdition({{ $activeEdition->id }})"><i class="fas fa-trash"></i> Hapus</button></li>
+                                                        </ul>
                                                     </div>
                                                 </td>
                                             </tr>
                                         @else
                                             <tr>
-                                                <td colspan="8" class="empty-state">
-                                                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
-                                                    <h5 class="text-muted">Tidak ada edisi survei yang aktif saat ini.</h5>
+                                                <td colspan="8" class="text-center py-16">
+                                                    <i class="fas fa-calendar-times fa-5x text-base-content/20 mb-3"></i>
+                                                    <h5 class="text-lg font-bold text-base-content/70">Tidak ada edisi survei yang aktif saat ini.</h5>
                                                 </td>
                                             </tr>
                                         @endif

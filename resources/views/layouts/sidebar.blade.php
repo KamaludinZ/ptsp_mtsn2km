@@ -260,9 +260,23 @@
                     <span>Dashboard Keamanan</span>
                 </a>
 
-                <a href="{{ route('suadmin.settings.index') }}" class="sidebar-link {{ request()->routeIs('suadmin.settings.*') ? 'active' : '' }}">
+                <div class="sidebar-divider">
+                    <span>PENGATURAN</span>
+                </div>
+
+                <a href="{{ route('suadmin.settings.index') }}" class="sidebar-link {{ request()->routeIs('suadmin.settings.index') ? 'active' : '' }}">
                     <i class="fas fa-cog me-3"></i>
-                    <span>Konfigurasi</span>
+                    <span>Pengaturan Umum</span>
+                </a>
+
+                <a href="{{ route('suadmin.roles.index') }}" class="sidebar-link {{ request()->routeIs('suadmin.roles.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-shield me-3"></i>
+                    <span>Hak Akses Role</span>
+                </a>
+
+                <a href="{{ route('suadmin.users.index') }}" class="sidebar-link {{ request()->routeIs('suadmin.users.*') ? 'active' : '' }}">
+                    <i class="fas fa-users-cog me-3"></i>
+                    <span>Manajemen User</span>
                 </a>
             @endif
 

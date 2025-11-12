@@ -1,1 +1,0 @@
-import{b as o}from"./bootstrap-b-xLG9Wz.js";import{A as n}from"./vendor-ChyupUbu.js";window.bootstrap=o,document.addEventListener("DOMContentLoaded",function(){n.init({duration:800,easing:"ease-in-out",once:!0,mirror:!1})}),window.AOS=n;

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 
+// Force rebuild
 export default defineConfig({
     plugins: [
         laravel({
@@ -10,6 +11,12 @@ export default defineConfig({
                 'resources/css/dark-mode.css',
                 'resources/css/public-layout.css',
                 'resources/css/accessibility.css',
+                'resources/css/home.css',
+                'resources/css/pengumuman.css',
+                'resources/css/visitor-book.css',
+                'resources/css/about.css',
+                'resources/css/contact.css',
+                'resources/css/admin.css',
                 'resources/js/app.js',
                 'resources/js/bootstrap-bundle.js',
                 'resources/js/chart-bundle.js',

@@ -1,446 +1,142 @@
-<nav class="navbar navbar-expand-lg sticky-top" role="navigation" aria-label="Navigasi utama">
-    <div class="container-fluid px-3 px-lg-4">
-        <!-- Logo/Brand -->
-        <a class="navbar-brand me-auto" href="{{ route('home') }}" aria-label="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} - Beranda">
-            @if(config('app.logo'))
-                <img src="{{ asset(config('app.logo')) }}" alt="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} Logo"
-                     style="width: 40px; height: 40px; object-fit: contain; border-radius: 12px;"
-                     class="brand-logo">
-            @else
-                <div style="width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-building text-white"></i>
+<nav class="bg-base-100 shadow-sm sticky top-0 z-50" role="navigation" aria-label="Navigasi utama">
+    <div class="max-w-full mx-auto px-8">
+        <div class="flex items-center justify-between h-16">
+            <!-- Left Section: Burger Menu + Logo & App Name -->
+            <div class="flex items-center gap-4">
+                <!-- Burger Menu (Mobile/Tablet) -->
+                <div class="dropdown lg:hidden">
+                    <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+                        </svg>
+                    </div>
+                    <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[100] mt-3 w-52 p-2 shadow">
+                        <li><a href="{{ route('home') }}" class="text-gray-900 font-semibold"><i class="fas fa-home mr-2"></i>Beranda</a></li>
+                        <li><a href="{{ route('onlineportal.service.catalog') }}" class="text-gray-900 font-semibold"><i class="fas fa-concierge-bell mr-2"></i>Layanan</a></li>
+                        <li><a href="{{ route('public.about') }}" class="text-gray-900 font-semibold"><i class="fas fa-info-circle mr-2"></i>Tentang</a></li>
+                        <li><a href="{{ route('public.visitor.book') }}" class="text-gray-900 font-semibold"><i class="fas fa-book mr-2"></i>Buku Tamu</a></li>
+                        <li><a href="{{ route('supervision.skm.survey') }}" class="text-gray-900 font-semibold"><i class="fas fa-poll mr-2"></i>Survei</a></li>
+                        <li><a href="{{ route('supervision.complaints.dashboard') }}" class="text-gray-900 font-semibold"><i class="fas fa-comments mr-2"></i>Pengaduan</a></li>
+                        <li><a href="{{ route('onlineportal.track.ticket.form') }}" class="text-gray-900 font-semibold"><i class="fas fa-search mr-2"></i>Lacak Tiket</a></li>
+                        <li><a href="{{ route('pengumuman.index') }}" class="text-gray-900 font-semibold"><i class="fas fa-bullhorn mr-2"></i>Pengumuman</a></li>
+                    </ul>
                 </div>
-            @endif
-            <span class="brand-text d-none d-sm-inline-block">{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</span>
-        </a>
 
-        <!-- Action Buttons (Always Visible) -->
-        <div class="d-flex align-items-center gap-2 order-lg-3">
-            <!-- Language Dropdown -->
-            <div class="dropdown">
-                <button class="btn btn-icon-square" id="languageDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false"
-                        aria-label="Pilih bahasa"
-                        title="Pilih Bahasa">
-                    <i class="fas fa-globe"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="languageDropdown">
-                    <li>
-                        <button class="dropdown-item d-flex align-items-center" onclick="changeLanguage('id')">
-                            <span class="me-2">🇮🇩</span> Indonesia
-                        </button>
-                    </li>
-                    <li>
-                        <button class="dropdown-item d-flex align-items-center" onclick="changeLanguage('en')">
-                            <span class="me-2">🇬🇧</span> English
-                        </button>
-                    </li>
-                    <li>
-                        <button class="dropdown-item d-flex align-items-center" onclick="changeLanguage('ar')">
-                            <span class="me-2">🇸🇦</span> العربية
-                        </button>
-                    </li>
-                </ul>
+                <!-- Logo & App Name -->
+                <a href="{{ route('home') }}" class="flex items-center gap-2 no-underline">
+                    @if(config('app.logo'))
+                        <img src="{{ asset(config('app.logo')) }}" alt="Logo" class="h-8 w-8 object-contain" />
+                    @else
+                        <img src="{{ asset('images/kemenag-logo.png') }}" alt="Logo" class="h-8 w-8 object-contain" />
+                    @endif
+                    <span class="hidden sm:inline font-bold text-lg text-gray-900">{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</span>
+                </a>
             </div>
 
-            <!-- Theme Toggle -->
-            <button class="btn btn-icon-square" onclick="toggleTheme()"
-                    aria-label="Toggle tema gelap/terang"
-                    title="Toggle Tema">
-                <i class="fas fa-moon" id="themeIcon"></i>
-            </button>
+            <!-- Center Section: Menu Horizontal (Desktop) -->
+            <div class="hidden lg:flex items-center gap-1">
+                <a href="{{ route('home') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Beranda</a>
+                <a href="{{ route('onlineportal.service.catalog') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Layanan</a>
+                <a href="{{ route('public.about') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Tentang</a>
+                <a href="{{ route('public.visitor.book') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Buku Tamu</a>
+                <a href="{{ route('supervision.skm.survey') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Survei</a>
+                <a href="{{ route('supervision.complaints.dashboard') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Pengaduan</a>
+                <a href="{{ route('onlineportal.track.ticket.form') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Lacak Tiket</a>
+                <a href="{{ route('pengumuman.index') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Pengumuman</a>
+            </div>
 
-            <!-- Auth Buttons -->
-            @auth
-                @php
-                    $user = Auth::user();
-                    $dashboardLink = get_dashboard_route_for_user($user);
-                @endphp
-                <!-- User Profile -->
-                <a class="btn btn-icon-square d-none d-sm-flex"
-                   href="{{ $dashboardLink }}"
-                   aria-label="Dashboard"
-                   title="Dashboard">
-                    <i class="fas fa-user-circle"></i>
-                </a>
+            <!-- Right Section: Action Buttons -->
+            <div class="flex items-center gap-2">
+                <!-- Language Dropdown -->
+                <div class="dropdown dropdown-end">
+                    <div tabindex="0" role="button" class="btn btn-circle btn-sm border-2 border-gray-300 bg-white hover:border-gray-900 hover:bg-gray-50 transition" aria-label="Pilih bahasa">
+                        <i class="fas fa-globe text-gray-900"></i>
+                    </div>
+                    <ul tabindex="0" class="dropdown-content menu menu-sm p-2 shadow bg-base-100 rounded-box w-52 mt-4 z-[100]">
+                        <li><a onclick="changeLanguage('id')"><span>🇮🇩</span>Indonesia</a></li>
+                        <li><a onclick="changeLanguage('en')"><span>🇬🇧</span>English</a></li>
+                        <li><a onclick="changeLanguage('ar')"><span>🇸🇦</span>العربية</a></li>
+                    </ul>
+                </div>
 
-                <!-- Logout -->
-                <form method="POST" action="{{ route('logout') }}" class="d-inline" id="header-logout-form">
-                    @csrf
-                    <a href="{{ route('logout') }}"
-                       onclick="event.preventDefault(); document.getElementById('header-logout-form').submit();"
-                       class="btn btn-icon-square btn-danger-outline d-none d-sm-flex"
-                       aria-label="Keluar"
-                       title="Keluar">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </a>
-                </form>
-            @else
-                <!-- Login Button -->
-                <a class="btn btn-sm btn-primary d-none d-md-inline-flex align-items-center"
-                   href="{{ route('login') }}">
-                    <i class="fas fa-sign-in-alt me-2"></i>
-                    <span>Masuk</span>
-                </a>
+                <!-- Theme Toggle -->
+                <label class="swap swap-rotate btn btn-circle btn-sm border-2 border-gray-300 bg-white hover:border-gray-900 hover:bg-gray-50 relative inline-flex transition cursor-pointer" aria-label="Toggle tema">
+                    <input type="checkbox" id="theme-toggle" class="absolute opacity-0" />
+                    <svg class="swap-off fill-current w-4 h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>
+                    <svg class="swap-on fill-current w-4 h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg>
+                </label>
 
-                <!-- Login Icon Only (Tablet) -->
-                <a class="btn btn-icon-square d-md-none"
-                   href="{{ route('login') }}"
-                   aria-label="Masuk"
-                   title="Masuk">
-                    <i class="fas fa-sign-in-alt"></i>
-                </a>
-
-                <!-- Register Button -->
-                <a class="btn btn-sm btn-outline-primary d-none d-md-inline-flex align-items-center"
-                   href="{{ route('register') }}">
-                    <i class="fas fa-user-plus me-2"></i>
-                    <span>Daftar</span>
-                </a>
-
-                <!-- Register Icon Only (Tablet) -->
-                <a class="btn btn-icon-square d-md-none"
-                   href="{{ route('register') }}"
-                   aria-label="Daftar"
-                   title="Daftar">
-                    <i class="fas fa-user-plus"></i>
-                </a>
-            @endauth
-
-            <!-- Burger Menu Toggle -->
-            <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
-
-        <!-- Collapsible Menu -->
-        <div class="collapse navbar-collapse order-lg-2" id="navbarNav">
-            <ul class="navbar-nav mx-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('home') }}" data-lang-key="home">
-                        <i class="fas fa-home d-lg-none me-2"></i>
-                        <span>Beranda</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('onlineportal.service.catalog') }}" data-lang-key="services">
-                        <i class="fas fa-concierge-bell d-lg-none me-2"></i>
-                        <span>Layanan</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('public.about') }}" data-lang-key="about">
-                        <i class="fas fa-info-circle d-lg-none me-2"></i>
-                        <span>Tentang</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('public.visitor.book') }}" data-lang-key="visitor-book">
-                        <i class="fas fa-book d-lg-none me-2"></i>
-                        <span>Buku Tamu</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('supervision.skm.survey') }}" data-lang-key="survey">
-                        <i class="fas fa-poll d-lg-none me-2"></i>
-                        <span>Survei</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('supervision.complaints.dashboard') }}" data-lang-key="complaints">
-                        <i class="fas fa-comments d-lg-none me-2"></i>
-                        <span>Pengaduan</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('onlineportal.track.ticket.form') }}" data-lang-key="track-ticket">
-                        <i class="fas fa-search d-lg-none me-2"></i>
-                        <span>Lacak Tiket</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('pengumuman.index') }}" data-lang-key="announcements">
-                        <i class="fas fa-bullhorn d-lg-none me-2"></i>
-                        <span>Pengumuman</span>
-                    </a>
-                </li>
-
-                <!-- Mobile Only Auth Links -->
+                <!-- User Menu / Login -->
                 @auth
-                    <li class="nav-item d-sm-none">
-                        <hr class="dropdown-divider my-2">
-                    </li>
-                    <li class="nav-item d-sm-none">
-                        <a class="nav-link" href="{{ $dashboardLink }}">
-                            <i class="fas fa-user-circle me-2"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="nav-item d-sm-none">
-                        <form method="POST" action="{{ route('logout') }}" id="mobile-logout-form">
-                            @csrf
-                            <a href="{{ route('logout') }}"
-                               onclick="event.preventDefault(); document.getElementById('mobile-logout-form').submit();"
-                               class="nav-link text-danger w-100 text-start">
-                                <i class="fas fa-sign-out-alt me-2"></i>
-                                <span>Keluar</span>
-                            </a>
-                        </form>
-                    </li>
+                    @php
+                        $user = Auth::user();
+                        $dashboardLink = get_dashboard_route_for_user($user);
+                    @endphp
+                    <div class="dropdown dropdown-end">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm">
+                            <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center">
+                                <i class="fas fa-user text-xs"></i>
+                            </div>
+                        </div>
+                        <ul tabindex="0" class="dropdown-content menu menu-sm p-2 shadow bg-base-100 rounded-box w-52 mt-4 z-[100]">
+                            <li class="menu-title"><span>{{ $user->name }}</span></li>
+                            <li><a href="{{ $dashboardLink }}"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}" id="header-logout-form">
+                                    @csrf
+                                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('header-logout-form').submit();" class="text-error">
+                                        <i class="fas fa-sign-out-alt"></i>Keluar
+                                    </a>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-sm bg-gray-900 text-white border-2 border-gray-900 hover:bg-gray-700 hover:border-gray-700 transition">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Masuk</span>
+                    </a>
+                    <a href="{{ route('register') }}" class="btn btn-outline btn-sm border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Daftar</span>
+                    </a>
                 @endauth
-            </ul>
+            </div>
         </div>
     </div>
 </nav>
 
-<style>
-    /* Navbar Styles */
-    .navbar {
-        background: var(--bs-white);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        padding: 0.75rem 0;
-        transition: all 0.3s ease;
-    }
+<script>
+// Initialize theme
+document.addEventListener('DOMContentLoaded', function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.checked = savedTheme === 'dark';
 
-    [data-theme="dark"] .navbar {
-        background: var(--bs-surface);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        // Add event listener to toggle
+        themeToggle.addEventListener('change', function() {
+            const newTheme = this.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
     }
+});
 
-    /* Brand */
-    .navbar-brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 700;
-        color: var(--bs-primary);
-        font-size: 1rem;
-        padding: 0;
-    }
+function changeLanguage(lang) {
+    localStorage.setItem('language', lang);
+    updateLanguage(lang);
+}
 
-    .brand-text {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 200px;
-    }
-
-    @media (min-width: 768px) {
-        .brand-text {
-            max-width: none;
+function updateLanguage(lang) {
+    // Update all elements with data-lang-key
+    const elements = document.querySelectorAll('[data-lang-key]');
+    elements.forEach(element => {
+        const key = element.getAttribute('data-lang-key');
+        if (translations[lang] && translations[lang][key]) {
+            element.textContent = translations[lang][key];
         }
-    }
-
-    /* Icon Square Buttons */
-    .btn-icon-square {
-        width: 40px;
-        height: 40px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--bs-border);
-        border-radius: 8px;
-        background: transparent;
-        color: var(--bs-text);
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-    }
-
-    .btn-icon-square:hover {
-        background: var(--bs-surface);
-        border-color: var(--bs-primary);
-        color: var(--bs-primary);
-        transform: translateY(-2px);
-    }
-
-    .btn-icon-square:active {
-        transform: translateY(0);
-    }
-
-    .btn-danger-outline {
-        border-color: #dc3545;
-        color: #dc3545;
-    }
-
-    .btn-danger-outline:hover {
-        background: #dc3545;
-        color: white;
-    }
-
-    /* Navbar Toggler */
-    .navbar-toggler {
-        border: 1px solid var(--bs-border);
-        border-radius: 8px;
-        width: 40px;
-        height: 40px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        transition: all 0.2s ease;
-    }
-
-    .navbar-toggler:hover {
-        background: var(--bs-surface);
-        border-color: var(--bs-primary);
-    }
-
-    .navbar-toggler:focus {
-        box-shadow: none;
-        border-color: var(--bs-primary);
-    }
-
-    .navbar-toggler-icon {
-        width: 20px;
-        height: 20px;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 0, 0, 0.55)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-    }
-
-    [data-theme="dark"] .navbar-toggler-icon {
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.85)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-    }
-
-    /* Nav Links */
-    .nav-link {
-        color: var(--bs-text);
-        font-weight: 500;
-        padding: 0.5rem 1rem;
-        transition: all 0.2s ease;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-    }
-
-    .nav-link:hover {
-        color: var(--bs-primary);
-        background: rgba(20, 83, 45, 0.05);
-    }
-
-    [data-theme="dark"] .nav-link:hover {
-        background: rgba(20, 83, 45, 0.2);
-    }
-
-    /* Mobile Menu Styles */
-    @media (max-width: 991.98px) {
-        .navbar-collapse {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: var(--bs-white);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        [data-theme="dark"] .navbar-collapse {
-            background: var(--bs-surface);
-        }
-
-        .navbar-nav {
-            gap: 0.25rem;
-        }
-
-        .nav-item {
-            width: 100%;
-        }
-
-        .nav-link {
-            padding: 0.75rem 1rem;
-        }
-
-        .nav-link i {
-            width: 20px;
-            text-align: center;
-        }
-    }
-
-    /* Dropdown Menu */
-    .dropdown-menu {
-        border: 1px solid var(--bs-border);
-        border-radius: 12px;
-        padding: 0.5rem;
-        margin-top: 0.5rem;
-        min-width: 180px;
-    }
-
-    [data-theme="dark"] .dropdown-menu {
-        background: var(--bs-surface);
-    }
-
-    .dropdown-item {
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-        transition: all 0.2s ease;
-    }
-
-    .dropdown-item:hover {
-        background: rgba(20, 83, 45, 0.05);
-        color: var(--bs-primary);
-    }
-
-    [data-theme="dark"] .dropdown-item:hover {
-        background: rgba(20, 83, 45, 0.2);
-    }
-
-    /* Auth Buttons */
-    .btn-primary {
-        background: var(--bs-primary);
-        border-color: var(--bs-primary);
-        color: white;
-        font-weight: 600;
-        padding: 0.5rem 1.25rem;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-
-    .btn-primary:hover {
-        background: var(--bs-primary-dark);
-        border-color: var(--bs-primary-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(20, 83, 45, 0.3);
-    }
-
-    .btn-outline-primary {
-        border: 1px solid var(--bs-primary);
-        color: var(--bs-primary);
-        background: transparent;
-        font-weight: 600;
-        padding: 0.5rem 1.25rem;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-
-    .btn-outline-primary:hover {
-        background: var(--bs-primary);
-        color: white;
-        transform: translateY(-2px);
-    }
-
-    /* Responsive Breakpoints */
-    @media (max-width: 575.98px) {
-        .navbar-brand {
-            font-size: 0.9rem;
-        }
-
-        .btn-icon-square {
-            width: 36px;
-            height: 36px;
-        }
-
-        .navbar-toggler {
-            width: 36px;
-            height: 36px;
-        }
-    }
-
-    /* Smooth Animations */
-    .navbar-collapse {
-        transition: all 0.3s ease-in-out;
-    }
-
-    .collapsing {
-        transition: height 0.3s ease;
-    }
-</style>
-<!-- Fixed visitor-book CSS conflicts at Mon, Nov  3, 2025  6:55:00 AM -->
+    });
+}
+</script>

@@ -9,6 +9,7 @@ use App\Http\Controllers\PublicController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\PengumumanController;
+use App\Http\Controllers\ContactController;
 
 // Online Portal Routes
 Route::get('/services', [OnlinePortalController::class, 'serviceCatalog'])->name('onlineportal.service.catalog');
@@ -94,6 +95,7 @@ Route::post('/visitor-book/submit-visitor', [PublicController::class, 'submitVis
 Route::post('/visitor-book/submit-applicant', [PublicController::class, 'submitApplicant'])->name('public.applicant.submit');
 Route::get('/about', [PublicController::class, 'about'])->name('public.about');
 Route::get('/contact', [PublicController::class, 'contact'])->name('public.contact');
+Route::post('/contact', [ContactController::class, 'store'])->name('public.contact.store');
 
 // Front Desk Authenticated Routes (Requires Email Verification)
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -260,6 +262,20 @@ Route::middleware(['auth', 'verified'])->prefix('suadmin')->name('suadmin.')->gr
     // Settings
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+    Route::post('/settings/reset', [\App\Http\Controllers\Admin\SettingsController::class, 'reset'])->name('settings.reset');
+
+    // Role Management
+    Route::resource('roles', \App\Http\Controllers\Admin\RoleController::class);
+    Route::post('/roles/{role}/clone', [\App\Http\Controllers\Admin\RoleController::class, 'clone'])->name('roles.clone');
+    Route::post('/roles/{role}/assign-permissions', [\App\Http\Controllers\Admin\RoleController::class, 'assignPermissions'])->name('roles.assign-permissions');
+    Route::get('/roles/{role}/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'getPermissions'])->name('roles.permissions');
+
+    // User Management
+    Route::resource('users', \App\Http\Controllers\Admin\UserManagementController::class);
+    Route::post('/users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::post('/users/{user}/reset-password', [\App\Http\Controllers\Admin\UserManagementController::class, 'resetPassword'])->name('users.reset-password');
+    Route::post('/users/bulk-action', [\App\Http\Controllers\Admin\UserManagementController::class, 'bulkAction'])->name('users.bulk-action');
+    Route::get('/users/export', [\App\Http\Controllers\Admin\UserManagementController::class, 'export'])->name('users.export');
 });
 
 // Admin Management Routes (Requires Email Verification)

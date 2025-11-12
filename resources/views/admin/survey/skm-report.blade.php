@@ -3,125 +3,111 @@
 @section('title', 'Laporan SKM')
 
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">📊 Laporan SKM</h1>
-        <div class="btn-group">
-            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="fas fa-download me-1"></i>Export
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">PDF</a></li>
-                <li><a class="dropdown-item" href="#">Excel</a></li>
-                <li><a class="dropdown-item" href="#">CSV</a></li>
+<div class="container-fluid p-4">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold text-base-content">📊 Laporan SKM</h1>
+        <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-outline btn-primary">
+                <i class="fas fa-download mr-1"></i>Export
+            </label>
+            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32">
+                <li><a>PDF</a></li>
+                <li><a>Excel</a></li>
+                <li><a>CSV</a></li>
             </ul>
         </div>
     </div>
 
     <!-- Current Month Report Section -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-success bg-opacity-10 border-bottom-0">
-            <h5 class="card-title mb-0 text-success">
-                <i class="fas fa-smile me-2"></i>Survei Kepuasan Masyarakat Bulan {{ now()->monthName }} {{ now()->year }}
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-header bg-success/10 text-success">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-smile mr-2"></i>Survei Kepuasan Masyarakat Bulan {{ now()->monthName }} {{ now()->year }}
             </h5>
         </div>
         <div class="card-body">
             <!-- Demographic Information -->
-            <div class="row mb-4">
-                <div class="col-md-6 col-lg-3 mb-3">
-                    <div class="card border-start border-success h-100">
-                        <div class="card-body">
-                            <h6 class="text-muted">Umur</h6>
-                            @forelse($currentMonthData['demographics']['age_groups'] ?? [] as $age => $count)
-                                <div class="d-flex justify-content-between">
-                                    <span>{{ $age }}</span>
-                                    <span class="badge bg-success">{{ $count }}</span>
-                                </div>
-                            @empty
-                                <span class="text-muted">-</span>
-                            @endforelse
-                        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="card border-l-4 border-success bg-base-100 shadow-md">
+                    <div class="card-body">
+                        <h6 class="text-base-content/70">Umur</h6>
+                        @forelse($currentMonthData['demographics']['age_groups'] ?? [] as $age => $count)
+                            <div class="flex justify-between">
+                                <span>{{ $age }}</span>
+                                <span class="badge badge-success">{{ $count }}</span>
+                            </div>
+                        @empty
+                            <span class="text-base-content/70">-</span>
+                        @endforelse
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-3 mb-3">
-                    <div class="card border-start border-info h-100">
-                        <div class="card-body">
-                            <h6 class="text-muted">Pendidikan</h6>
-                            @forelse($currentMonthData['demographics']['education_levels'] ?? [] as $education => $count)
-                                <div class="d-flex justify-content-between">
-                                    <span>{{ $education }}</span>
-                                    <span class="badge bg-info">{{ $count }}</span>
-                                </div>
-                            @empty
-                                <span class="text-muted">-</span>
-                            @endforelse
-                        </div>
+                <div class="card border-l-4 border-info bg-base-100 shadow-md">
+                    <div class="card-body">
+                        <h6 class="text-base-content/70">Pendidikan</h6>
+                        @forelse($currentMonthData['demographics']['education_levels'] ?? [] as $education => $count)
+                            <div class="flex justify-between">
+                                <span>{{ $education }}</span>
+                                <span class="badge badge-info">{{ $count }}</span>
+                            </div>
+                        @empty
+                            <span class="text-base-content/70">-</span>
+                        @endforelse
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-3 mb-3">
-                    <div class="card border-start border-warning h-100">
-                        <div class="card-body">
-                            <h6 class="text-muted">Pekerjaan</h6>
-                            @forelse($currentMonthData['demographics']['job_types'] ?? [] as $job => $count)
-                                <div class="d-flex justify-content-between">
-                                    <span>{{ $job }}</span>
-                                    <span class="badge bg-warning">{{ $count }}</span>
-                                </div>
-                            @empty
-                                <span class="text-muted">-</span>
-                            @endforelse
-                        </div>
+                <div class="card border-l-4 border-warning bg-base-100 shadow-md">
+                    <div class="card-body">
+                        <h6 class="text-base-content/70">Pekerjaan</h6>
+                        @forelse($currentMonthData['demographics']['job_types'] ?? [] as $job => $count)
+                            <div class="flex justify-between">
+                                <span>{{ $job }}</span>
+                                <span class="badge badge-warning">{{ $count }}</span>
+                            </div>
+                        @empty
+                            <span class="text-base-content/70">-</span>
+                        @endforelse
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-3 mb-3">
-                    <div class="card border-start border-secondary h-100">
-                        <div class="card-body">
-                            <h6 class="text-muted">Jenis Layanan</h6>
-                            @forelse($currentMonthData['demographics']['service_types'] ?? [] as $service => $count)
-                                <div class="d-flex justify-content-between">
-                                    <span>{{ $service }}</span>
-                                    <span class="badge bg-secondary">{{ $count }}</span>
-                                </div>
-                            @empty
-                                <span class="text-muted">-</span>
-                            @endforelse
-                        </div>
+                <div class="card border-l-4 border-neutral bg-base-100 shadow-md">
+                    <div class="card-body">
+                        <h6 class="text-base-content/70">Jenis Layanan</h6>
+                        @forelse($currentMonthData['demographics']['service_types'] ?? [] as $service => $count)
+                            <div class="flex justify-between">
+                                <span>{{ $service }}</span>
+                                <span class="badge badge-neutral">{{ $count }}</span>
+                            </div>
+                        @empty
+                            <span class="text-base-content/70">-</span>
+                        @endforelse
                     </div>
                 </div>
             </div>
 
             <!-- SKM Results -->
-            <div class="row mb-4">
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h3 class="text-primary">{{ $currentMonthData['results']['total_respondents'] ?? 0 }}</h3>
-                            <p class="text-muted mb-0">Responden</p>
-                        </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+                <div class="card bg-base-100 shadow-md">
+                    <div class="card-body text-center">
+                        <h3 class="text-primary text-3xl font-bold">{{ $currentMonthData['results']['total_respondents'] ?? 0 }}</h3>
+                        <p class="text-base-content/70 mb-0">Responden</p>
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h3 class="text-success">{{ $currentMonthData['results']['percentage'] ?? 0 }}%</h3>
-                            <p class="text-muted mb-0">Persentase Indeks</p>
-                        </div>
+                <div class="card bg-base-100 shadow-md">
+                    <div class="card-body text-center">
+                        <h3 class="text-success text-3xl font-bold">{{ $currentMonthData['results']['percentage'] ?? 0 }}%</h3>
+                        <p class="text-base-content/70 mb-0">Persentase Indeks</p>
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h3 class="text-info">{{ $currentMonthData['results']['average'] ?? 0 }}</h3>
-                            <p class="text-muted mb-0">Nilai Rata-rata</p>
-                        </div>
+                <div class="card bg-base-100 shadow-md">
+                    <div class="card-body text-center">
+                        <h3 class="text-info text-3xl font-bold">{{ $currentMonthData['results']['average'] ?? 0 }}</h3>
+                        <p class="text-base-content/70 mb-0">Nilai Rata-rata</p>
                     </div>
                 </div>
             </div>
 
             <!-- SKM Questions Results -->
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
+            <div class="overflow-x-auto">
+                <table class="table w-full">
+                    <thead>
                         <tr>
                             <th>No</th>
                             <th>Pertanyaan</th>
@@ -139,7 +125,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted">Tidak ada data SKM untuk bulan ini</td>
+                                <td colspan="4" class="text-center text-base-content/70">Tidak ada data SKM untuk bulan ini</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -149,61 +135,55 @@
     </div>
 
     <!-- Quarterly Archives Section -->
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-info bg-opacity-10 border-bottom-0">
-            <h5 class="card-title mb-0 text-info">
-                <i class="fas fa-archive me-2"></i>Arsip Data Triwulan
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-header bg-info/10 text-info">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-archive mr-2"></i>Arsip Data Triwulan
             </h5>
         </div>
         <div class="card-body">
             <!-- Toggle for quarterly archive details -->
-            <div class="mb-3">
-                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#quarterlyDetails" aria-expanded="false">
-                    <i class="fas fa-list me-1"></i>Lihat Detail Arsip
+            <div class="mb-4">
+                <button class="btn btn-info btn-sm" type="button" onclick="document.getElementById('quarterlyDetails').classList.toggle('hidden')">
+                    <i class="fas fa-list mr-1"></i>Lihat Detail Arsip
                 </button>
             </div>
 
-            <div class="collapse" id="quarterlyDetails">
-                <div class="row">
+            <div id="quarterlyDetails" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Display quarterly archives in card format -->
                     @forelse($quarterlyArchives as $archive)
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card border">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0">{{ $archive->quarter }} {{ $archive->year }}</h6>
+                        <div class="card bg-base-100 shadow-md border">
+                            <div class="card-header bg-base-200">
+                                <h6 class="card-title mb-0">{{ $archive->quarter }} {{ $archive->year }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <small class="text-base-content/70">Responden:</small>
+                                    <strong>{{ ($archive->calculated_values['total_respondents'] ?? 0) }}</strong>
                                 </div>
-                                <div class="card-body">
-                                    <div class="mb-2">
-                                        <small class="text-muted">Responden:</small>
-                                        <strong>{{ ($archive->calculated_values['total_respondents'] ?? 0) }}</strong>
-                                    </div>
-                                    <div class="mb-2">
-                                        <small class="text-muted">Indeks Persentase:</small>
-                                        <strong>{{ ($archive->calculated_values['percentage'] ?? 0) }}%</strong>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted">Rata-rata:</small>
-                                        <strong>{{ ($archive->calculated_values['average'] ?? 0) }}</strong>
-                                    </div>
-                                    
-                                    <div class="mt-3">
-                                        <button class="btn btn-sm btn-outline-primary w-100" 
-                                                type="button" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#archiveDetailModal" 
-                                                onclick="loadArchiveDetails({{ $archive->id }})">
-                                            <i class="fas fa-eye me-1"></i>Detail
-                                        </button>
-                                    </div>
+                                <div class="mb-2">
+                                    <small class="text-base-content/70">Indeks Persentase:</small>
+                                    <strong>{{ ($archive->calculated_values['percentage'] ?? 0) }}%</strong>
+                                </div>
+                                <div>
+                                    <small class="text-base-content/70">Rata-rata:</small>
+                                    <strong>{{ ($archive->calculated_values['average'] ?? 0) }}</strong>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <button class="btn btn-outline btn-primary w-full" 
+                                            type="button" 
+                                            onclick="loadArchiveDetails({{ $archive->id }}); document.getElementById('archiveDetailModal').showModal()">
+                                        <i class="fas fa-eye mr-1"></i>Detail
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     @empty
-                        <div class="col-12">
-                            <div class="text-center py-4 text-muted">
-                                <i class="fas fa-archive fa-2x mb-3"></i>
-                                <p>Belum ada arsip data triwulan tersedia</p>
-                            </div>
+                        <div class="col-span-full text-center py-4 text-base-content/70">
+                            <i class="fas fa-archive fa-3x mb-3"></i>
+                            <p>Belum ada arsip data triwulan tersedia</p>
                         </div>
                     @endforelse
                 </div>
@@ -212,25 +192,20 @@
     </div>
 
     <!-- Archive Detail Modal -->
-    <div class="modal fade" id="archiveDetailModal" tabindex="-1" aria-labelledby="archiveDetailModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="archiveDetailModalLabel">Detail Arsip Triwulan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="archive-detail-content">
-                        <p class="text-muted text-center">Memuat detail arsip...</p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary">Cetak</button>
-                </div>
+    <dialog id="archiveDetailModal" class="modal">
+        <div class="modal-box w-11/12 max-w-5xl">
+            <h3 class="font-bold text-lg">Detail Arsip Triwulan</h3>
+            <div id="archive-detail-content" class="py-4">
+                <p class="text-base-content/70 text-center">Memuat detail arsip...</p>
+            </div>
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn">Tutup</button>
+                    <button class="btn btn-primary">Cetak</button>
+                </form>
             </div>
         </div>
-    </div>
+    </dialog>
 </div>
 
 @push('scripts')

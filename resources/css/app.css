@@ -1,14 +1,22 @@
 /**
  * Main Application CSS
- * Menggunakan Tailwind CSS sebagai framework utama
+ * Menggunakan Tailwind CSS v4 dengan CSS-first configuration
  */
 
+/* SEMUA @import HARUS DI AWAL sebelum yang lain */
 /* Bootstrap Icons - Local */
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind CSS v4 - Import dengan @import tailwindcss */
+@import "tailwindcss";
+
+/* DaisyUI Plugin */
+@plugin "daisyui";
+
+/* Tailwind Theme Configuration */
+@theme {
+  /* Extend default theme jika diperlukan */
+}
 
 /**
  * Custom Styles
@@ -32,6 +40,80 @@
 *:focus-visible {
     outline: 2px solid #667eea;
     outline-offset: 2px;
+}
+
+/* Link Styles - No underline by default, with hover effect */
+a {
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+a:hover {
+    opacity: 0.8;
+}
+
+/* Navigation Menu Styles - Force black color */
+nav .menu li > a {
+    color: #111827 !important;
+    font-weight: 600;
+}
+
+nav .menu li > a:hover {
+    color: #16a34a !important;
+}
+
+/* Navigation horizontal menu */
+nav a[href] {
+    color: #111827 !important;
+}
+
+nav a[href]:hover {
+    color: #16a34a !important;
+}
+
+/* Header Button Borders - Force visible borders */
+nav .btn-circle {
+    border: 2px solid #d1d5db !important;
+    background-color: white !important;
+}
+
+nav .btn-circle:hover {
+    border-color: #111827 !important;
+    background-color: #f9fafb !important;
+}
+
+nav .btn-circle i,
+nav .btn-circle svg {
+    color: #111827 !important;
+}
+
+/* Login and Register buttons */
+nav .btn-sm[href*="login"] {
+    border: 2px solid #111827 !important;
+    background-color: #111827 !important;
+    color: white !important;
+}
+
+nav .btn-sm[href*="login"]:hover {
+    background-color: #374151 !important;
+    border-color: #374151 !important;
+    color: white !important;
+}
+
+nav .btn-sm[href*="login"]:hover span,
+nav .btn-sm[href*="login"]:hover i {
+    color: white !important;
+}
+
+nav .btn-sm[href*="register"] {
+    border: 2px solid #111827 !important;
+    background-color: transparent !important;
+    color: #111827 !important;
+}
+
+nav .btn-sm[href*="register"]:hover {
+    background-color: #111827 !important;
+    color: white !important;
 }
 
 /* Print Styles */

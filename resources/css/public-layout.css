@@ -50,21 +50,57 @@ body {
     color: var(--bs-text);
 }
 
-/* Dark mode navbar */
-[data-theme="dark"] .navbar {
-    background: var(--bs-surface) !important;
+/* Dark mode navbar - sama dengan footer */
+[data-theme="dark"] nav,
+[data-theme="dark"] .navbar,
+[data-theme="dark"] nav.bg-base-100 {
+    background: #111827 !important;
+    background-color: #111827 !important;
 }
 
-[data-theme="dark"] .navbar-brand {
-    color: var(--bs-text) !important;
+[data-theme="dark"] .navbar-brand,
+[data-theme="dark"] .navbar-brand span {
+    color: white !important;
 }
 
-[data-theme="dark"] .nav-link {
-    color: var(--bs-text) !important;
+/* Dark mode menu links - putih */
+[data-theme="dark"] nav a,
+[data-theme="dark"] .nav-link,
+[data-theme="dark"] nav .text-gray-900 {
+    color: white !important;
 }
 
+[data-theme="dark"] nav a:hover,
 [data-theme="dark"] .nav-link:hover {
-    color: var(--bs-primary) !important;
+    color: var(--bs-primary-light) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Dark mode dropdown menu */
+[data-theme="dark"] nav .dropdown-content,
+[data-theme="dark"] nav .bg-base-100 {
+    background: #1f2937 !important;
+}
+
+[data-theme="dark"] nav .dropdown-content a {
+    color: white !important;
+}
+
+/* Dark mode language button icon - hitam dengan background putih */
+[data-theme="dark"] nav .btn-circle.bg-white {
+    background-color: white !important;
+    border-color: #d1d5db !important;
+}
+
+[data-theme="dark"] nav .btn-circle.bg-white i,
+[data-theme="dark"] nav .btn-circle.bg-white svg {
+    color: black !important;
+    fill: black !important;
+}
+
+[data-theme="dark"] nav .btn-circle.bg-white:hover {
+    background-color: #f3f4f6 !important;
+    border-color: #9ca3af !important;
 }
 
 /* Dark mode text-muted becomes lighter */
@@ -427,6 +463,42 @@ body {
     margin-top: 4rem;
 }
 
+/* Footer specific link styles - separated from header navigation */
+footer a,
+footer a span,
+footer a:link,
+footer a:visited {
+    color: white !important;
+    text-decoration: none !important;
+}
+
+footer a:hover,
+footer a:hover span,
+footer a:active {
+    color: #ea580c !important;
+}
+
+footer nav a,
+footer nav a span {
+    color: white !important;
+}
+
+footer nav a:hover,
+footer nav a:hover span {
+    color: #ea580c !important;
+}
+
+/* Specific for footer emerald links */
+footer.footer-emerald a,
+footer.footer-emerald a span {
+    color: white !important;
+}
+
+footer.footer-emerald a:hover,
+footer.footer-emerald a:hover span {
+    color: #ea580c !important;
+}
+
 .footer-brand {
     display: flex;
     align-items: center;
@@ -457,13 +529,67 @@ body {
 }
 
 .footer-links a {
-    color: var(--bs-white);
+    color: var(--bs-white) !important;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .footer-links a:hover {
+    color: var(--bs-secondary) !important;
+}
+
+/* New Emerald Footer Theme */
+.footer-emerald {
+    background-color: var(--bs-primary-dark);
+    color: #d1d5db; /* text-gray-300 */
+}
+
+.footer-emerald .footer-title {
+    color: white !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.footer-emerald a {
+    color: white !important;
+}
+
+.footer-emerald a span {
+    color: white !important;
+}
+
+.footer-emerald a:hover,
+.footer-emerald a.link-hover:hover {
+    color: var(--bs-secondary) !important;
+}
+
+.footer-emerald a:hover span {
+    color: var(--bs-secondary) !important;
+}
+
+.footer-emerald .icon-accent {
     color: var(--bs-secondary);
+}
+
+.footer-emerald h6 {
+    color: white !important;
+}
+
+.footer-emerald nav a {
+    color: white !important;
+}
+
+.footer-emerald nav a span {
+    color: white !important;
+}
+
+.footer-emerald nav a:hover {
+    color: var(--bs-secondary) !important;
+}
+
+.footer-emerald nav a:hover span {
+    color: var(--bs-secondary) !important;
 }
 
 /* Font size adjustments */

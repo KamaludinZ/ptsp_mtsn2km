@@ -1,1 +1,7 @@
-node_modules
+/node_modules
+/public/build
+/storage/logs/laravel.log
+.env
+/vendor
+npm-debug.log
+yarn-error.log

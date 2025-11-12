@@ -1,9 +1,21 @@
 import './bootstrap';
 
 // Import Font Awesome (local - no CDN)
-import '@fortawesome/fontawesome-free/css/all.min.css';
+import '@fortawesome/fontawesome-free/scss/fontawesome.scss';
+import '@fortawesome/fontawesome-free/scss/solid.scss';
+import '@fortawesome/fontawesome-free/scss/brands.scss';
+
+// Import AOS Animation Library (local - no CDN)
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize AOS
+    AOS.init({
+        duration: 600,
+        once: true,
+        offset: 100
+    });
     // Dark mode toggle
     const html = document.documentElement;
     const themeToggle = document.getElementById('theme-toggle');

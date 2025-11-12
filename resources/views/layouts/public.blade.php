@@ -1,14 +1,21 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      data-theme="{{ \App\Models\AppSetting::where('key', 'theme_public')->value('value') ?? 'light' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', config('app.name', 'PTSP MTsN 2 Kota Malang'))</title>
+    @php
+        $appName = \App\Models\AppSetting::where('key', 'app_name')->value('value') ?? config('app.name', 'PTSP MTsN 2 Kota Malang');
+        $appFavicon = \App\Models\AppSetting::where('key', 'app_favicon')->value('value') ?? 'favicon.ico';
+    @endphp
+
+    <title>@yield('title', $appName)</title>
+    <meta name="description" content="@yield('description', 'Pelayanan Terpadu Satu Pintu - ' . $appName)">
 
     <!-- Favicon and PWA -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ Storage::disk('public')->exists($appFavicon) && $appFavicon != 'favicon.ico' ? asset('storage/' . $appFavicon) : asset('images/kemenag-favicon.ico') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#14532d">
@@ -28,40 +35,100 @@
     @stack('styles')
 </head>
 <body class="font-normal">
+    @php
+        // Get contact settings from database
+        $contactAddress = \App\Models\AppSetting::where('key', 'contact_address')->value('value') ?? 'Jl. Raya Cemorokandang 77 Kota Malang, Jawa Timur';
+        $contactPhone = \App\Models\AppSetting::where('key', 'contact_phone')->value('value') ?? '(0341) 711500';
+        $contactEmail = \App\Models\AppSetting::where('key', 'contact_email')->value('value') ?? 'mtsnmalang2adm@gmail.com';
+        $contactWebsite = \App\Models\AppSetting::where('key', 'contact_website')->value('value') ?? 'www.mtsn2kotamalang.sch.id';
+        $contactWhatsappPtsp = \App\Models\AppSetting::where('key', 'contact_whatsapp_ptsp')->value('value') ?? '6285183367500';
+        $contactWhatsappPengaduan = \App\Models\AppSetting::where('key', 'contact_whatsapp_pengaduan')->value('value') ?? '6285183375008';
+    @endphp
+
     <!-- Contact Header -->
-    <div style="background-color: #111827; color: white; padding: 0.5rem 0; font-size: 0.75rem;">
-        <div style="max-width: 1280px; margin: 0 auto; padding: 0 0.5rem;">
-            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; padding: 0; white-space: nowrap; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;">
-                <div style="display: flex; align-items: center; white-space: nowrap; min-width: max-content;">
-                    <i class="fas fa-map-marker-alt" style="color: #f97316; margin-right: 0.25rem; font-size: 0.75rem;"></i>
-                    <span>Jl. Raya Cemorokandang 77 Kota Malang, Jawa Timur</span>
+    <div style="background-color: #052e16; color: #d1d5db; padding: 0.5rem 0; font-size: 0.75rem;" role="banner" aria-label="Informasi Kontak">
+        <div style="max-width: 1280px; margin: 0 auto; padding: 0 1rem;">
+            <!-- Desktop View - Centered -->
+            <div class="hidden md:flex items-center justify-center gap-4 flex-wrap">
+                <div class="flex items-center whitespace-nowrap">
+                    <i class="fas fa-map-marker-alt" style="color: #ea580c; margin-right: 0.5rem;"></i>
+                    <span>{{ $contactAddress }}</span>
                 </div>
-                <div style="display: flex; align-items: center; white-space: nowrap; min-width: max-content;">
-                    <i class="fas fa-phone" style="color: #f97316; margin-right: 0.25rem; font-size: 0.75rem;"></i>
-                    <span>(0341) 711500</span>
+                <div class="flex items-center whitespace-nowrap">
+                    <i class="fas fa-phone" style="color: #ea580c; margin-right: 0.5rem;"></i>
+                    <span>{{ $contactPhone }}</span>
                 </div>
-                <div style="display: flex; align-items: center; white-space: nowrap; min-width: max-content;">
-                    <i class="fas fa-envelope" style="color: #f97316; margin-right: 0.25rem; font-size: 0.75rem;"></i>
-                    <span>mtsnmalang2adm@gmail.com</span>
+                <div class="flex items-center whitespace-nowrap">
+                    <i class="fas fa-envelope" style="color: #ea580c; margin-right: 0.5rem;"></i>
+                    <span>{{ $contactEmail }}</span>
                 </div>
-                <div style="display: flex; align-items: center; white-space: nowrap; min-width: max-content;">
-                    <i class="fas fa-globe" style="color: #f97316; margin-right: 0.25rem; font-size: 0.75rem;"></i>
-                    <span>www.mtsn2kotamalang.sch.id</span>
+                <div class="flex items-center whitespace-nowrap">
+                    <i class="fas fa-globe" style="color: #ea580c; margin-right: 0.5rem;"></i>
+                    <span>{{ $contactWebsite }}</span>
                 </div>
-                <div style="display: flex; align-items: center; white-space: nowrap; min-width: max-content;">
-                    <i class="fab fa-whatsapp" style="color: #f97316; margin-right: 0.25rem; font-size: 0.75rem;"></i>
-                    <span>0851 8336 7500 (PTSP)</span>
+                <div class="flex items-center whitespace-nowrap">
+                    <i class="fas fa-comment" style="color: #ea580c; margin-right: 0.5rem;"></i>
+                    <span>{{ preg_replace('/^62/', '0', $contactWhatsappPtsp) }} (PTSP)</span>
                 </div>
-                <div style="display: flex; align-items: center; white-space: nowrap; min-width: max-content;">
-                    <i class="fab fa-whatsapp" style="color: #f97316; margin-right: 0.25rem; font-size: 0.75rem;"></i>
-                    <span>0851 8337 5008 (Pengaduan)</span>
+                <div class="flex items-center whitespace-nowrap">
+                    <i class="fas fa-comment" style="color: #ea580c; margin-right: 0.5rem;"></i>
+                    <span>{{ preg_replace('/^62/', '0', $contactWhatsappPengaduan) }} (Pengaduan)</span>
+                </div>
+            </div>
+
+            <!-- Mobile View - Dropdown -->
+            <div class="md:hidden flex items-center justify-center">
+                <div style="position: relative;">
+                    <button type="button" onclick="toggleContactDropdown()" class="btn btn-ghost btn-xs" style="color: #d1d5db;">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <span>Info Kontak</span>
+                        <i class="fas fa-chevron-down ml-1" id="contactChevron"></i>
+                    </button>
+                    <ul id="contactDropdownMenu" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); background-color: #052e16; border: 1px solid #374151; border-radius: 0.5rem; padding: 0.5rem; margin-top: 0.25rem; width: 16rem; z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
+                                <i class="fas fa-map-marker-alt" style="color: #ea580c;"></i>
+                                <span>{{ $contactAddress }}</span>
+                            </div>
+                        </li>
+                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
+                                <i class="fas fa-phone" style="color: #ea580c;"></i>
+                                <span>{{ $contactPhone }}</span>
+                            </div>
+                        </li>
+                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
+                                <i class="fas fa-envelope" style="color: #ea580c;"></i>
+                                <span>{{ $contactEmail }}</span>
+                            </div>
+                        </li>
+                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
+                                <i class="fas fa-globe" style="color: #ea580c;"></i>
+                                <span>{{ $contactWebsite }}</span>
+                            </div>
+                        </li>
+                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
+                                <i class="fas fa-comment" style="color: #ea580c;"></i>
+                                <span>{{ preg_replace('/^62/', '0', $contactWhatsappPtsp) }} (PTSP)</span>
+                            </div>
+                        </li>
+                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
+                                <i class="fas fa-comment" style="color: #ea580c;"></i>
+                                <span>{{ preg_replace('/^62/', '0', $contactWhatsappPengaduan) }} (Pengaduan)</span>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Skip to main content for accessibility -->
-    <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
+    <a href="#main-content" class="skip-link" aria-label="Lewati ke konten utama">Lewati ke konten utama</a>
 
     <!-- Floating Action Buttons - Left Side -->
     <div class="floating-action-buttons-left">
@@ -210,151 +277,89 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer" role="contentinfo">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 mb-4">
-                    <div class="footer-brand">
+    <footer role="contentinfo" style="background-color: #052e16; color: #d1d5db; padding: 2.5rem 1rem;">
+        <div style="max-width: 1280px; margin-left: auto; margin-right: auto;">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2 lg:col-span-1">
+                    <div class="flex items-center gap-3 mb-4">
                         @if(config('app.logo'))
                             <img src="{{ asset(config('app.logo')) }}" alt="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} Logo"
-                                 style="width: 48px; height: 48px; object-fit: contain; border-radius: 12px;"
-                                 class="footer-logo">
+                                 class="h-12 w-12 object-contain rounded-lg bg-white p-1">
                         @else
-                            <div style="width: 48px; height: 48px; background: var(--gradient-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-building text-white"></i>
-                            </div>
+                            <img src="{{ asset('images/kemenag-logo.png') }}" alt="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} Logo"
+                                 class="h-12 w-12 object-contain rounded-lg bg-white p-1">
                         @endif
                         <div>
-                            <h3>{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</h3>
-                            <p class="text-muted small mb-0">Pelayanan Terpadu Satu Pintu</p>
+                            <h3 class="font-bold" style="color: white; font-size: 1.0rem;">{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</h3>
+                            <p class="text-sm" style="opacity: 0.8;">Pelayanan Terpadu Satu Pintu</p>
                         </div>
                     </div>
-                    <p class="mb-3">
-                        Pelayanan Terpadu Satu Pintu sesuai Permen PANRB 15/2014 untuk kemudahan akses layanan masyarakat.
+                    <p class="text-sm" style="opacity: 0.8;">
+                        Sistem pelayanan terpadu sesuai Permen PANRB 15/2014 untuk kemudahan akses layanan.
                     </p>
-                    <div class="d-flex gap-3">
-                        <a href="#" class="text-white fs-5" aria-label="Facebook">
-                            <i class="fab fa-facebook"></i>
-                        </a>
-                        <a href="#" class="text-white fs-5" aria-label="Twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="text-white fs-5" aria-label="Instagram">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="text-white fs-5" aria-label="YouTube">
-                            <i class="fab fa-youtube"></i>
-                        </a>
+                    <div class="flex gap-4 mt-4">
+                        <a href="#" class="hover:text-[#ea580c] text-2xl transition-colors" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="hover:text-[#ea580c] text-2xl transition-colors" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="hover:text-[#ea580c] text-2xl transition-colors" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="hover:text-[#ea580c] text-2xl transition-colors" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                     </div>
                 </div>
 
-                <div class="col-lg-3 mb-4">
-                    <h5 class="text-white mb-3">Kontak Kami</h5>
-                    <ul class="footer-links">
-                        <li>
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Jl. Raya Cemorokandang 77 Kota Malang, Jawa Timur</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-phone"></i>
-                            <span>(0341) 711500</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-envelope"></i>
-                            <span>mtsnmalang2adm@gmail.com</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-globe"></i>
-                            <span>www.mtsn2kotamalang.sch.id</span>
-                        </li>
-                        <li>
-                            <i class="fab fa-whatsapp"></i>
-                            <span>0851 8336 7500 (PTSP)</span>
-                        </li>
-                        <li>
-                            <i class="fab fa-whatsapp"></i>
-                            <span>0851 8337 5008 (Pengaduan)</span>
-                        </li>
-                    </ul>
-                </div>
+                <nav>
+                    <h6 class="font-bold uppercase mb-4" style="color: white;">Kontak Kami</h6> 
+                    <div class="flex items-start gap-2 text-sm mb-2"><i class="fas fa-map-marker-alt mt-1" style="color: #ea580c;"></i><span style="color: white;">Jl. Raya Cemorokandang 77 Kota Malang, Jawa Timur</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2"><i class="fas fa-phone" style="color: #ea580c;"></i><span style="color: white;">(0341) 711500</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2"><i class="fas fa-envelope" style="color: #ea580c;"></i><span style="color: white;">mtsnmalang2adm@gmail.com</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2"><i class="fas fa-globe" style="color: #ea580c;"></i><span style="color: white;">www.mtsn2kotamalang.sch.id</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2"><i class="fas fa-comment" style="color: #ea580c;"></i><span style="color: white;">0851 8336 7500 (PTSP)</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-comment" style="color: #ea580c;"></i><span style="color: white;">0851 8337 5008 (Pengaduan)</span></div>
+                </nav>
 
-                <div class="col-lg-3 mb-4">
-                    <h5 class="text-white mb-3">Jam Operasional</h5>
-                    <ul class="footer-links">
-                        <li>
-                            <i class="fas fa-clock"></i>
+                <nav>
+                    <h6 class="font-bold uppercase mb-4" style="color: white;">Jam Operasional</h6>
+                    <div class="text-sm">
+                        <div class="flex items-start gap-2 mb-2">
+                            <i class="fas fa-clock mt-1" style="color: #ea580c;"></i>
                             <div>
-                                <strong>Senin - Kamis</strong><br>
-                                <span class="text-white">07.00 - 15.00 WIB</span>
+                                <strong style="color: white;">Senin - Kamis</strong><br>
+                                <span style="opacity: 0.8;">07.00 - 15.00 WIB</span>
                             </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="flex items-start gap-2 mb-2">
+                            <i class="fas fa-clock mt-1" style="color: #ea580c;"></i>
                             <div>
-                                <strong>Jumat</strong><br>
-                                <span class="text-white">07.00 - 11.00 WIB</span>
+                                <strong style="color: white;">Jumat</strong><br>
+                                <span style="opacity: 0.8;">07.00 - 11.00 WIB</span>
                             </div>
-                        </li>
-                        <li>
-                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-calendar-times mt-1" style="color: #ea580c;"></i>
                             <div>
-                                <strong>Sabtu - Minggu</strong><br>
-                                <span class="text-white">Tutup</span>
+                                <strong style="color: white;">Sabtu - Minggu</strong><br>
+                                <span style="opacity: 0.8;">Tutup</span>
                             </div>
-                        </li>
-                    </ul>
-                </div>
+                        </div>
+                    </div>
+                </nav>
 
-                <div class="col-lg-3 mb-4">
-                    <h5 class="text-white mb-3">Link Terkait</h5>
-                    <ul class="footer-links">
-                        <li>
-                            <i class="fas fa-external-link-alt"></i>
-                            <a href="https://kemenag.go.id" target="_blank" rel="noopener noreferrer">
-                                Kementerian Agama RI
-                            </a>
-                        </li>
-                        <li>
-                            <i class="fas fa-external-link-alt"></i>
-                            <a href="https://kanwil.kemenag.go.id/jatim" target="_blank" rel="noopener noreferrer">
-                                Kanwil Kemenag Jatim
-                            </a>
-                        </li>
-                        <li>
-                            <i class="fas fa-external-link-alt"></i>
-                            <a href="https://kankemenag.malangkota.go.id" target="_blank" rel="noopener noreferrer">
-                                Kemenag Kota Malang
-                            </a>
-                        </li>
-                        <li>
-                            <i class="fas fa-external-link-alt"></i>
-                            <a href="https://lapor.go.id" target="_blank" rel="noopener noreferrer">
-                                SP4N Lapor
-                            </a>
-                        </li>
-                        <li>
-                            <i class="fas fa-external-link-alt"></i>
-                            <a href="https://ppid.kemenag.go.id" target="_blank" rel="noopener noreferrer">
-                                PPID Kemenag
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                <nav>
+                    <h6 class="font-bold uppercase mb-4" style="color: white;">Link Terkait</h6> 
+                    <a href="https://kemenag.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2" style="color: white; transition-colors: 0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='white'"><i class="fas fa-external-link-alt" style="color: #ea580c;"></i><span>Kementerian Agama RI</span></a>
+                    <a href="https://kanwil.kemenag.go.id/jatim" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2" style="color: white; transition-colors: 0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='white'"><i class="fas fa-external-link-alt" style="color: #ea580c;"></i><span>Kanwil Kemenag Jatim</span></a>
+                    <a href="https://kankemenag.malangkota.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2" style="color: white; transition-colors: 0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='white'"><i class="fas fa-external-link-alt" style="color: #ea580c;"></i><span>Kemenag Kota Malang</span></a>
+                    <a href="https://lapor.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2" style="color: white; transition-colors: 0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='white'"><i class="fas fa-external-link-alt" style="color: #ea580c;"></i><span>SP4N Lapor</span></a>
+                    <a href="https://sippn.menpan.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm" style="color: white; transition-colors: 0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='white'"><i class="fas fa-external-link-alt" style="color: #ea580c;"></i><span>SIPPN Menpan</span></a>
+                </nav>
             </div>
-
-            <hr class="my-4" style="border-color: var(--bs-gray-700);">
-
-            <div class="row align-items-center">
-                <div class="col-md-7">
-                    <p class="mb-0">
-                        <i class="fas fa-code-branch text-info me-2" style="font-size: 0.8rem;"></i>
-                        <span class="me-3" style="font-size: 0.8rem; color: var(--bs-gray-400);">v1.0.0</span>
+            <div class="mt-10 pt-10" style="border-top: 1px solid #374151;">
+                <div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
+                    <p class="text-sm" style="opacity: 0.8;">
+                        <i class="fas fa-code-branch mr-2"></i>
+                        <span class="mr-3">v1.0.0</span>
                         &copy; {{ date('Y') }} {{ config('app.name_full', 'PTSP MTsN 2 Kota Malang') }}. Hak Cipta Dilindungi.
                     </p>
-                </div>
-                <div class="col-md-5 text-md-end">
-                    <p class="mb-0">
-                        <i class="fas fa-code me-1" style="font-size: 0.8rem;"></i> Dikembangkan dengan <i class="fas fa-heart text-danger mx-1" style="font-size: 0.8rem;"></i> oleh Tim PUSKOM
+                    <p class="text-sm" style="opacity: 0.8;">
+                        <i class="fas fa-code mr-1"></i> Dikembangkan dengan <i class="fas fa-heart text-red-500 mx-1"></i> oleh Tim PUSKOM
                     </p>
                 </div>
             </div>
@@ -363,6 +368,32 @@
 
     {{-- Scripts now loaded via Vite (bootstrap-bundle.js includes Bootstrap JS and AOS) --}}
     <script>
+        // Contact Dropdown Toggle for Mobile
+        function toggleContactDropdown() {
+            const menu = document.getElementById('contactDropdownMenu');
+            const chevron = document.getElementById('contactChevron');
+
+            if (menu.style.display === 'none' || menu.style.display === '') {
+                menu.style.display = 'block';
+                if (chevron) chevron.style.transform = 'rotate(180deg)';
+            } else {
+                menu.style.display = 'none';
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('contactDropdownMenu');
+            const btn = event.target.closest('button[onclick="toggleContactDropdown()"]');
+
+            if (!btn && menu && menu.style.display === 'block') {
+                menu.style.display = 'none';
+                const chevron = document.getElementById('contactChevron');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        });
+
         // Initialize AOS - Optimized for performance
         if (typeof AOS !== 'undefined') {
             // Disable AOS on mobile devices for better performance

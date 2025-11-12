@@ -37,7 +37,13 @@
       "Bash(php:*)",
       "Bash(del check-user-role.php)",
       "Bash(del check-roles.php)",
-      "Bash(del test-survey-api.php)"
+      "Bash(del test-survey-api.php)",
+      "Bash(if not exist \"resources\\views\\admin\\settings\" mkdir \"resources\\views\\admin\\settings\")",
+      "Bash(taskkill /F /PID 2816)",
+      "Bash(resources/views/welcome_backup.blade.php)",
+      "Bash(tasklist:*)",
+      "Bash(taskkill:*)",
+      "Bash(timeout 5 echo:*)"
     ],
     "deny": [],
     "ask": []
