@@ -10,7 +10,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
                         </svg>
                     </div>
-                    <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[100] mt-3 w-52 p-2 shadow">
+                    <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-100 mt-3 w-52 p-2 shadow">
                         <li><a href="{{ route('home') }}" class="text-gray-900 font-semibold"><i class="fas fa-home mr-2"></i>Beranda</a></li>
                         <li><a href="{{ route('onlineportal.service.catalog') }}" class="text-gray-900 font-semibold"><i class="fas fa-concierge-bell mr-2"></i>Layanan</a></li>
                         <li><a href="{{ route('public.about') }}" class="text-gray-900 font-semibold"><i class="fas fa-info-circle mr-2"></i>Tentang</a></li>
@@ -52,7 +52,7 @@
                     <div tabindex="0" role="button" class="btn btn-circle btn-sm border-2 border-gray-300 bg-white hover:border-gray-900 hover:bg-gray-50 transition" aria-label="Pilih bahasa">
                         <i class="fas fa-globe text-gray-900"></i>
                     </div>
-                    <ul tabindex="0" class="dropdown-content menu menu-sm p-2 shadow bg-base-100 rounded-box w-52 mt-4 z-[100]">
+                    <ul tabindex="0" class="dropdown-content menu menu-sm p-2 shadow bg-base-100 rounded-box w-52 mt-4 z-100">
                         <li><a onclick="changeLanguage('id')"><span>🇮🇩</span>Indonesia</a></li>
                         <li><a onclick="changeLanguage('en')"><span>🇬🇧</span>English</a></li>
                         <li><a onclick="changeLanguage('ar')"><span>🇸🇦</span>العربية</a></li>
@@ -78,7 +78,7 @@
                                 <i class="fas fa-user text-xs"></i>
                             </div>
                         </div>
-                        <ul tabindex="0" class="dropdown-content menu menu-sm p-2 shadow bg-base-100 rounded-box w-52 mt-4 z-[100]">
+                        <ul tabindex="0" class="dropdown-content menu menu-sm p-2 shadow bg-base-100 rounded-box w-52 mt-4 z-100">
                             <li class="menu-title"><span>{{ $user->name }}</span></li>
                             <li><a href="{{ $dashboardLink }}"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
                             <li>

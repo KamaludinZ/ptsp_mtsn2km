@@ -102,7 +102,7 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <div class="d-flex align-items-start gap-3">
-                                    <div style="width: 48px; height: 48px; background: rgba(20, 83, 45, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <div style="width: 48px; height: 48px; background: rgba(20, 83, 45, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; shrink-0;">
                                         <i class="fas fa-check-double" style="color: var(--bs-primary);"></i>
                                     </div>
                                     <div>
@@ -114,7 +114,7 @@
 
                             <div class="col-12">
                                 <div class="d-flex align-items-start gap-3">
-                                    <div style="width: 48px; height: 48px; background: rgba(234, 88, 12, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <div style="width: 48px; height: 48px; background: rgba(234, 88, 12, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; shrink-0;">
                                         <i class="fas fa-clock" style="color: var(--bs-secondary);"></i>
                                     </div>
                                     <div>
@@ -126,7 +126,7 @@
 
                             <div class="col-12">
                                 <div class="d-flex align-items-start gap-3">
-                                    <div style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <div style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; shrink-0;">
                                         <i class="fas fa-mobile-alt" style="color: #10b981;"></i>
                                     </div>
                                     <div>
