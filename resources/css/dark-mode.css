@@ -94,8 +94,16 @@
 [data-theme="dark"] header,
 [data-theme="dark"] .header,
 [data-theme="dark"] .navbar {
-    background-color: var(--bs-dark-bg-secondary) !important;
+    background-color: var(--bg-dark-3) !important;
     border-color: var(--bs-dark-border-primary) !important;
+}
+
+[data-theme="dark"] .nav-link {
+    color: var(--bs-dark-text-primary) !important;
+}
+
+[data-theme="dark"] .btn-lang .fas {
+    color: #000000 !important;
 }
 
 [data-theme="dark"] header .text-white,
