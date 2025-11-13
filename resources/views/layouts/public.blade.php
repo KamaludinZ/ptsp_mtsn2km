@@ -279,7 +279,7 @@
     <!-- Footer -->
     <footer role="contentinfo" class="bg-gray-800 text-gray-200 dark:bg-gray-900 dark:text-gray-300 py-10 px-4">
         <div class="max-w-screen-xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 bg-transparent">
                 <div class="col-span-1 md:col-span-2 lg:col-span-1">
                     <div class="flex items-center gap-3 mb-4">
                         @if(config('app.logo'))
