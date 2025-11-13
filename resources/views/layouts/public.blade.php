@@ -46,7 +46,7 @@
     @endphp
 
     <!-- Contact Header -->
-    <div class="bg-gray-800 text-gray-200 dark:bg-gray-900 dark:text-gray-300 py-2 text-xs" role="banner" aria-label="Informasi Kontak">
+    <div class="bg-gray-800 text-gray-200 dark:text-gray-300 py-2 text-xs" role="banner" aria-label="Informasi Kontak">
         <div style="max-width: 1280px; margin: 0 auto; padding: 0 1rem;">
             <!-- Desktop View - Centered -->
             <div class="hidden md:flex items-center justify-center gap-4 flex-wrap">
@@ -277,7 +277,7 @@
     </main>
 
     <!-- Footer -->
-    <footer role="contentinfo" class="bg-gray-800 text-gray-200 dark:bg-gray-900 dark:text-gray-300 py-10 px-4">
+    <footer role="contentinfo" class="bg-gray-800 text-gray-200 dark:text-gray-300 py-10 px-4">
         <div class="max-w-screen-xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 bg-transparent">
                 <div class="col-span-1 md:col-span-2 lg:col-span-1">
