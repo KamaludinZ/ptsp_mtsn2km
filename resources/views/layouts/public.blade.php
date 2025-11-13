@@ -305,7 +305,7 @@
                     </div>
                 </div>
 
-                <nav>
+                <nav class="bg-transparent">
                     <h6 class="font-bold uppercase mb-4 text-white">Kontak Kami</h6> 
                     <div class="flex items-start gap-2 text-sm mb-2 text-white"><i class="fas fa-map-marker-alt mt-1 text-orange-500"></i><span>Jl. Raya Cemorokandang 77 Kota Malang, Jawa Timur</span></div>
                     <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-phone text-orange-500"></i><span>(0341) 711500</span></div>
@@ -315,7 +315,7 @@
                     <div class="flex items-center gap-2 text-sm text-white"><i class="fas fa-comment text-orange-500"></i><span>0851 8337 5008 (Pengaduan)</span></div>
                 </nav>
 
-                <nav>
+                <nav class="bg-transparent">
                     <h6 class="font-bold uppercase mb-4 text-white">Jam Operasional</h6>
                     <div class="text-sm">
                         <div class="flex items-start gap-2 mb-2 text-white">
@@ -342,7 +342,7 @@
                     </div>
                 </nav>
 
-                <nav>
+                <nav class="bg-transparent">
                     <h6 class="font-bold uppercase mb-4 text-white">Link Terkait</h6> 
                     <a href="https://kemenag.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kementerian Agama RI</span></a>
                     <a href="https://kanwil.kemenag.go.id/jatim" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kanwil Kemenag Jatim</span></a>
