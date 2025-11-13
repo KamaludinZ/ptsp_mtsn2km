@@ -277,8 +277,8 @@
     </main>
 
     <!-- Footer -->
-    <footer role="contentinfo" style="background-color: #052e16; color: #d1d5db; padding: 2.5rem 1rem;">
-        <div style="max-width: 1280px; margin-left: auto; margin-right: auto;">
+    <footer role="contentinfo" class="bg-gray-800 text-gray-200 dark:bg-gray-900 dark:text-gray-300 py-10 px-4">
+        <div class="max-w-screen-xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <div class="col-span-1 md:col-span-2 lg:col-span-1">
                     <div class="flex items-center gap-3 mb-4">
@@ -290,75 +290,75 @@
                                  class="h-12 w-12 object-contain rounded-lg bg-white p-1">
                         @endif
                         <div>
-                            <h3 class="font-bold" style="color: white; font-size: 1.0rem;">{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</h3>
-                            <p class="text-sm" style="opacity: 0.8;">Pelayanan Terpadu Satu Pintu</p>
+                            <h3 class="font-bold text-white text-base">{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</h3>
+                            <p class="text-sm opacity-80">Pelayanan Terpadu Satu Pintu</p>
                         </div>
                     </div>
-                    <p class="text-sm" style="opacity: 0.8;">
+                    <p class="text-sm opacity-80">
                         Sistem pelayanan terpadu sesuai Permen PANRB 15/2014 untuk kemudahan akses layanan.
                     </p>
                     <div class="flex gap-4 mt-4">
-                        <a href="#" class="hover:text-[#ea580c] text-2xl transition-colors" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="hover:text-[#ea580c] text-2xl transition-colors" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="hover:text-[#ea580c] text-2xl transition-colors" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="hover:text-[#ea580c] text-2xl transition-colors" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="hover:text-orange-500 text-2xl transition-colors text-white" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="hover:text-orange-500 text-2xl transition-colors text-white" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="hover:text-orange-500 text-2xl transition-colors text-white" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="hover:text-orange-500 text-2xl transition-colors text-white" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                     </div>
                 </div>
 
                 <nav>
-                    <h6 class="font-bold uppercase mb-4" style="color: white;">Kontak Kami</h6> 
-                    <div class="flex items-start gap-2 text-sm mb-2"><i class="fas fa-map-marker-alt mt-1" style="color: #ea580c;"></i><span style="color: white;">Jl. Raya Cemorokandang 77 Kota Malang, Jawa Timur</span></div>
-                    <div class="flex items-center gap-2 text-sm mb-2"><i class="fas fa-phone" style="color: #ea580c;"></i><span style="color: white;">(0341) 711500</span></div>
-                    <div class="flex items-center gap-2 text-sm mb-2"><i class="fas fa-envelope" style="color: #ea580c;"></i><span style="color: white;">mtsnmalang2adm@gmail.com</span></div>
-                    <div class="flex items-center gap-2 text-sm mb-2"><i class="fas fa-globe" style="color: #ea580c;"></i><span style="color: white;">www.mtsn2kotamalang.sch.id</span></div>
-                    <div class="flex items-center gap-2 text-sm mb-2"><i class="fas fa-comment" style="color: #ea580c;"></i><span style="color: white;">0851 8336 7500 (PTSP)</span></div>
-                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-comment" style="color: #ea580c;"></i><span style="color: white;">0851 8337 5008 (Pengaduan)</span></div>
+                    <h6 class="font-bold uppercase mb-4 text-white">Kontak Kami</h6> 
+                    <div class="flex items-start gap-2 text-sm mb-2 text-white"><i class="fas fa-map-marker-alt mt-1 text-orange-500"></i><span>Jl. Raya Cemorokandang 77 Kota Malang, Jawa Timur</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-phone text-orange-500"></i><span>(0341) 711500</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-envelope text-orange-500"></i><span>mtsnmalang2adm@gmail.com</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-globe text-orange-500"></i><span>www.mtsn2kotamalang.sch.id</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-comment text-orange-500"></i><span>0851 8336 7500 (PTSP)</span></div>
+                    <div class="flex items-center gap-2 text-sm text-white"><i class="fas fa-comment text-orange-500"></i><span>0851 8337 5008 (Pengaduan)</span></div>
                 </nav>
 
                 <nav>
-                    <h6 class="font-bold uppercase mb-4" style="color: white;">Jam Operasional</h6>
+                    <h6 class="font-bold uppercase mb-4 text-white">Jam Operasional</h6>
                     <div class="text-sm">
-                        <div class="flex items-start gap-2 mb-2">
-                            <i class="fas fa-clock mt-1" style="color: #ea580c;"></i>
+                        <div class="flex items-start gap-2 mb-2 text-white">
+                            <i class="fas fa-clock mt-1 text-orange-500"></i>
                             <div>
-                                <strong style="color: white;">Senin - Kamis</strong><br>
-                                <span style="opacity: 0.8;">07.00 - 15.00 WIB</span>
+                                <strong class="text-white">Senin - Kamis</strong><br>
+                                <span class="opacity-80">07.00 - 15.00 WIB</span>
                             </div>
                         </div>
-                        <div class="flex items-start gap-2 mb-2">
-                            <i class="fas fa-clock mt-1" style="color: #ea580c;"></i>
+                        <div class="flex items-start gap-2 mb-2 text-white">
+                            <i class="fas fa-clock mt-1 text-orange-500"></i>
                             <div>
-                                <strong style="color: white;">Jumat</strong><br>
-                                <span style="opacity: 0.8;">07.00 - 11.00 WIB</span>
+                                <strong class="text-white">Jumat</strong><br>
+                                <span class="opacity-80">07.00 - 11.00 WIB</span>
                             </div>
                         </div>
-                        <div class="flex items-start gap-2">
-                            <i class="fas fa-calendar-times mt-1" style="color: #ea580c;"></i>
+                        <div class="flex items-start gap-2 text-white">
+                            <i class="fas fa-calendar-times mt-1 text-orange-500"></i>
                             <div>
-                                <strong style="color: white;">Sabtu - Minggu</strong><br>
-                                <span style="opacity: 0.8;">Tutup</span>
+                                <strong class="text-white">Sabtu - Minggu</strong><br>
+                                <span class="opacity-80">Tutup</span>
                             </div>
                         </div>
                     </div>
                 </nav>
 
                 <nav>
-                    <h6 class="font-bold uppercase mb-4" style="color: white;">Link Terkait</h6> 
-                    <a href="https://kemenag.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2" style="color: white; transition-colors: 0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='white'"><i class="fas fa-external-link-alt" style="color: #ea580c;"></i><span>Kementerian Agama RI</span></a>
-                    <a href="https://kanwil.kemenag.go.id/jatim" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2" style="color: white; transition-colors: 0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='white'"><i class="fas fa-external-link-alt" style="color: #ea580c;"></i><span>Kanwil Kemenag Jatim</span></a>
-                    <a href="https://kankemenag.malangkota.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2" style="color: white; transition-colors: 0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='white'"><i class="fas fa-external-link-alt" style="color: #ea580c;"></i><span>Kemenag Kota Malang</span></a>
-                    <a href="https://lapor.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2" style="color: white; transition-colors: 0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='white'"><i class="fas fa-external-link-alt" style="color: #ea580c;"></i><span>SP4N Lapor</span></a>
-                    <a href="https://sippn.menpan.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm" style="color: white; transition-colors: 0.2s;" onmouseover="this.style.color='#ea580c'" onmouseout="this.style.color='white'"><i class="fas fa-external-link-alt" style="color: #ea580c;"></i><span>SIPPN Menpan</span></a>
+                    <h6 class="font-bold uppercase mb-4 text-white">Link Terkait</h6> 
+                    <a href="https://kemenag.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kementerian Agama RI</span></a>
+                    <a href="https://kanwil.kemenag.go.id/jatim" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kanwil Kemenag Jatim</span></a>
+                    <a href="https://kankemenag.malangkota.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kemenag Kota Malang</span></a>
+                    <a href="https://lapor.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>SP4N Lapor</span></a>
+                    <a href="https://sippn.menpan.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>SIPPN Menpan</span></a>
                 </nav>
             </div>
-            <div class="mt-10 pt-10" style="border-top: 1px solid #374151;">
+            <div class="mt-10 pt-10 border-t border-gray-700 dark:border-gray-600">
                 <div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
-                    <p class="text-sm" style="opacity: 0.8;">
+                    <p class="text-sm opacity-80">
                         <i class="fas fa-code-branch mr-2"></i>
                         <span class="mr-3">v1.0.0</span>
                         &copy; {{ date('Y') }} {{ config('app.name_full', 'PTSP MTsN 2 Kota Malang') }}. Hak Cipta Dilindungi.
                     </p>
-                    <p class="text-sm" style="opacity: 0.8;">
+                    <p class="text-sm opacity-80">
                         <i class="fas fa-code mr-1"></i> Dikembangkan dengan <i class="fas fa-heart text-red-500 mx-1"></i> oleh Tim PUSKOM
                     </p>
                 </div>
