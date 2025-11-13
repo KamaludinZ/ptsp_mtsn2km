@@ -47,6 +47,16 @@
         border-radius: 16px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Desktop Layout - Header di sebelah kiri */
+    @media (min-width: 768px) {
+        .forgot-card {
+            flex-direction: row;
+            min-height: 550px;
+        }
     }
 
     [data-theme="dark"] .forgot-card {
@@ -59,6 +69,19 @@
         color: white;
         padding: 40px 32px;
         text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Desktop - Header occupy 40% width */
+    @media (min-width: 768px) {
+        .forgot-header {
+            width: 40%;
+            min-height: 550px;
+            padding: 60px 40px;
+        }
     }
 
     .forgot-icon {
@@ -73,8 +96,85 @@
         font-size: 40px;
     }
 
+    /* Desktop - Larger icon */
+    @media (min-width: 768px) {
+        .forgot-icon {
+            width: 100px;
+            height: 100px;
+            font-size: 50px;
+            margin-bottom: 24px;
+        }
+    }
+
+    .forgot-header h1 {
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    @media (min-width: 768px) {
+        .forgot-header h1 {
+            font-size: 28px;
+        }
+    }
+
+    .forgot-features {
+        margin-top: 32px;
+        text-align: left;
+    }
+
+    .forgot-features .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        opacity: 0.95;
+    }
+
+    .forgot-features .feature-icon {
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .forgot-features .feature-text {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
     .form-body {
         padding: 40px 32px;
+        flex: 1;
+        background: #ffffff;
+    }
+
+    [data-theme="dark"] .form-body {
+        background: #111827;
+    }
+
+    /* Desktop - Form body occupy 60% width */
+    @media (min-width: 768px) {
+        .form-body {
+            width: 60%;
+            padding: 60px 50px;
+        }
+    }
+
+    .form-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--bs-text);
+        margin-bottom: 8px;
+    }
+
+    .form-subtitle {
+        font-size: 14px;
+        color: var(--bs-secondary-text);
+        margin-bottom: 24px;
     }
 
     .form-group {
@@ -220,19 +320,52 @@
 <div class="forgot-container">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-5 col-xl-4">
+            <div class="col-12 col-md-10 col-lg-9 col-xl-8">
                 <div class="forgot-card">
                     <!-- Header -->
                     <div class="forgot-header">
-                        <div class="forgot-icon">
-                            <i class="fas fa-key"></i>
+                        <div>
+                            <div class="forgot-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <h1 class="fw-bold mb-2">Lupa Password?</h1>
+                            <p class="mb-0" style="opacity: 0.9;">Reset Password Akun Anda</p>
+
+                            <!-- Features - Hidden on mobile, shown on desktop -->
+                            <div class="forgot-features d-none d-md-block">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div class="feature-text">Link dikirim ke email</div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="feature-text">Berlaku 60 menit</div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div class="feature-text">Aman dan terenkripsi</div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-redo"></i>
+                                    </div>
+                                    <div class="feature-text">Dapat diulang kapan saja</div>
+                                </div>
+                            </div>
                         </div>
-                        <h1 class="h3 fw-bold mb-2">Lupa Password</h1>
-                        <p class="mb-0" style="opacity: 0.9;">Reset password akun Anda</p>
                     </div>
 
                     <!-- Form Body -->
                     <div class="form-body">
+                        <h2 class="form-title">Reset Password</h2>
+                        <p class="form-subtitle">Masukkan email Anda untuk mendapatkan link reset password</p>
+
                         <div class="info-box">
                             <p class="mb-0" style="color: #1e40af; font-size: 14px;">
                                 <i class="fas fa-info-circle me-2"></i>

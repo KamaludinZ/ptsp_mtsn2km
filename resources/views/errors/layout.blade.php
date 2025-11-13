@@ -14,126 +14,161 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 16px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
         }
 
         .error-card {
             background: white;
-            border-radius: 1rem;
+            border-radius: 16px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            max-width: 600px;
-            width: 90%;
-            padding: 2rem;
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Desktop Layout - Header di sebelah kiri */
+        @media (min-width: 768px) {
+            .error-card {
+                flex-direction: row;
+                min-height: 500px;
+            }
+        }
+
+        .error-header {
+            background: linear-gradient(135deg, #15803d 0%, #1a532d 100%);
+            color: white;
+            padding: 40px 32px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Desktop - Header occupy 35% width */
+        @media (min-width: 768px) {
+            .error-header {
+                width: 35%;
+                padding: 60px 40px;
+            }
+        }
+
+        .error-icon-wrapper {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #dcfce7;
+        }
+
+        .error-header-title {
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .error-header-subtitle {
+            font-size: 16px;
+            font-weight: 300;
+            opacity: 0.8;
+        }
+
+        .error-content {
+            flex: 1;
+            padding: 40px 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
         }
 
+        /* Desktop - Content occupy 65% width */
+        @media (min-width: 768px) {
+            .error-content {
+                width: 65%;
+                padding: 60px 50px;
+            }
+        }
+
         .error-code {
-            font-size: 6rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 0;
+            font-size: 5rem;
+            font-weight: 900;
             line-height: 1;
+            color: #1f2937;
         }
 
         .error-title {
-            font-size: 2rem;
-            font-weight: 600;
+            font-size: 1.75rem;
+            font-weight: 700;
             color: #1f2937;
-            margin: 1rem 0;
+            margin-top: 16px;
         }
 
         .error-message {
-            color: #6b7280;
-            font-size: 1.125rem;
-            margin: 1rem 0 2rem;
-        }
-
-        .error-icon {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 1rem;
-        }
-
-        .btn-primary {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        .btn-secondary {
-            display: inline-block;
-            background: #f3f4f6;
             color: #4b5563;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            font-size: 1rem;
+            margin-top: 8px;
+            max-width: 400px;
+        }
+
+        .btn-back {
+            display: inline-block;
+            background: #166534;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
-            margin-left: 0.5rem;
-            transition: background 0.2s;
+            margin-top: 32px;
+            transition: background-color 0.3s, transform 0.2s;
         }
 
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-
-        .error-details {
-            background: #f9fafb;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-top: 1.5rem;
-            text-align: left;
-            font-size: 0.875rem;
-            color: #6b7280;
+        .btn-back:hover {
+            background: #15803d;
+            transform: translateY(-2px);
         }
 
         .support-info {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid #e5e7eb;
-            font-size: 0.875rem;
+            margin-top: 32px;
+            font-size: 12px;
             color: #9ca3af;
-        }
-
-        @media (max-width: 640px) {
-            .error-code {
-                font-size: 4rem;
-            }
-
-            .error-title {
-                font-size: 1.5rem;
-            }
-
-            .btn-primary, .btn-secondary {
-                display: block;
-                margin: 0.5rem 0;
-            }
         }
     </style>
 </head>
 <body>
     <div class="error-container">
         <div class="error-card">
-            @yield('content')
+            {{-- Bagian Header (Kiri di Desktop) --}}
+            <div class="error-header">
+                <div class="error-icon-wrapper">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h1 class="error-header-title">{{ config('app.name') }}</h1>
+                <p class="error-header-subtitle">Layanan Terpadu Satu Pintu</p>
+            </div>
 
-            <div class="support-info">
-                <p>Jika masalah berlanjut, silakan hubungi administrator sistem.</p>
-                <p class="mt-2">
-                    <strong>MTsN 2 Kota Malang</strong><br>
-                    Email: admin@mtsn2kotamalang.sch.id
-                </p>
+            {{-- Bagian Konten (Kanan di Desktop) --}}
+            <div class="error-content">
+                <div class="error-code">@yield('code', 'Oops!')</div>
+                <h2 class="error-title">@yield('title')</h2>
+                <p class="error-message">@yield('message')</p>
+
+                <a href="{{ app('router')->has('home') ? route('home') : url('/') }}" class="btn-back">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Beranda
+                </a>
+
+                <div class="support-info">
+                    <p>Jika masalah berlanjut, silakan hubungi administrator sistem.</p>
+                </div>
             </div>
         </div>
     </div>
