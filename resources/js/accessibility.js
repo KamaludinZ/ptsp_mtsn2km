@@ -183,23 +183,3 @@ function loadAccessibilityPreferences() {
         document.getElementById('keyboardControl').classList.add('active');
     }
 }
-
-// Theme Toggle
-function toggleTheme() {
-    const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', newTheme);
-
-    const icon = document.getElementById('themeIcon');
-    icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-
-    localStorage.setItem('theme', newTheme);
-}
-
-// Load theme preference
-const savedTheme = localStorage.getItem('theme') || 'light';
-document.documentElement.setAttribute('data-theme', savedTheme);
-if (savedTheme === 'dark') {
-    document.getElementById('themeIcon').className = 'fas fa-sun';
-}
