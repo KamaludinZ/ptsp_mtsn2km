@@ -53,65 +53,65 @@ a:hover {
 }
 
 /* Navigation Menu Styles - Force black color */
-nav .menu li > a {
+.sticky nav .menu li > a {
     color: #111827 !important;
     font-weight: 600;
 }
 
-nav .menu li > a:hover {
+.sticky nav .menu li > a:hover {
     color: #16a34a !important;
 }
 
 /* Navigation horizontal menu */
-nav a[href] {
+.sticky nav a[href] {
     color: #111827 !important;
 }
 
-nav a[href]:hover {
+.sticky nav a[href]:hover {
     color: #16a34a !important;
 }
 
 /* Header Button Borders - Force visible borders */
-nav .btn-circle {
+.sticky nav .btn-circle {
     border: 2px solid #d1d5db !important;
     background-color: white !important;
 }
 
-nav .btn-circle:hover {
+.sticky nav .btn-circle:hover {
     border-color: #111827 !important;
     background-color: #f9fafb !important;
 }
 
-nav .btn-circle i,
-nav .btn-circle svg {
+.sticky nav .btn-circle i,
+.sticky nav .btn-circle svg {
     color: #111827 !important;
 }
 
 /* Login and Register buttons */
-nav .btn-sm[href*="login"] {
+.sticky nav .btn-sm[href*="login"] {
     border: 2px solid #111827 !important;
     background-color: #111827 !important;
     color: white !important;
 }
 
-nav .btn-sm[href*="login"]:hover {
+.sticky nav .btn-sm[href*="login"]:hover {
     background-color: #374151 !important;
     border-color: #374151 !important;
     color: white !important;
 }
 
-nav .btn-sm[href*="login"]:hover span,
-nav .btn-sm[href*="login"]:hover i {
+.sticky nav .btn-sm[href*="login"]:hover span,
+.sticky nav .btn-sm[href*="login"]:hover i {
     color: white !important;
 }
 
-nav .btn-sm[href*="register"] {
+.sticky nav .btn-sm[href*="register"] {
     border: 2px solid #111827 !important;
     background-color: transparent !important;
     color: #111827 !important;
 }
 
-nav .btn-sm[href*="register"]:hover {
+.sticky nav .btn-sm[href*="register"]:hover {
     background-color: #111827 !important;
     color: white !important;
 }
