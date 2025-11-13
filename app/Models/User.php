@@ -9,10 +9,14 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -113,7 +117,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isAdmin()
     {
-        return $this->hasRole(['super_admin', 'admin']);
+        return $this->hasRole('admin');
     }
 
     /**
@@ -125,10 +129,38 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Check if user is kepala TU
+     */
+    public function isKepalaTU()
+    {
+        return $this->hasRole('kepala_tu');
+    }
+
+    /**
      * Check if user is petugas
      */
     public function isPetugas()
     {
         return $this->hasRole(['petugas_tu', 'petugas_loket']);
+    }
+
+    /**
+     * Determine if user can access Filament panel
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Allow access for users with admin or petugas roles
+        return $this->hasRole(['admin', 'kepala_sekolah', 'kepala_tu', 'petugas_tu', 'petugas_loket']);
+    }
+
+    /**
+     * Activity log options
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'user_type', 'is_active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
