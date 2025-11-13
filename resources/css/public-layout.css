@@ -153,8 +153,8 @@ body {
 }
 
 .floating-btn {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -162,7 +162,7 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 30px;
     color: white;
     border: none;
     z-index: 1000;
@@ -237,6 +237,22 @@ body {
 .whatsapp-btn {
     background: #25D366; /* Fallback */
     @apply bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(37, 211, 102, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+    }
 }
 
 /* Accessibility Panel */
