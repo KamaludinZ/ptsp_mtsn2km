@@ -46,7 +46,7 @@
     @endphp
 
     <!-- Contact Header -->
-    <div style="background-color: #052e16; color: #d1d5db; padding: 0.5rem 0; font-size: 0.75rem;" role="banner" aria-label="Informasi Kontak">
+    <div class="bg-gray-800 text-gray-200 dark:bg-gray-900 dark:text-gray-300 py-2 text-xs" role="banner" aria-label="Informasi Kontak">
         <div style="max-width: 1280px; margin: 0 auto; padding: 0 1rem;">
             <!-- Desktop View - Centered -->
             <div class="hidden md:flex items-center justify-center gap-4 flex-wrap">
