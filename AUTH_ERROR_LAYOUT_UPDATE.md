@@ -57,6 +57,12 @@ Berikut adalah daftar file yang telah diperbarui:
 7.  **`resources/views/errors/503.blade.php`** (Maintenance):
     *   Diperbarui untuk menggunakan layout error yang seragam, memastikan halaman maintenance juga konsisten dengan desain baru.
 
+8.  **`resources/views/errors/429.blade.php`**:
+    *   Diperbarui untuk menggunakan layout error yang seragam, memastikan halaman "Too Many Requests" juga konsisten dengan desain baru.
+
+9.  **`resources/views/errors/blocked.blade.php`**:
+    *   Halaman custom untuk IP yang diblokir ini juga telah disesuaikan dengan layout baru untuk konsistensi.
+
 ### C. Kompilasi Aset
 
 *   Aset frontend (CSS dan JS) telah dikompilasi menggunakan `npm run build` untuk memastikan semua perubahan styling dari file-file Blade dan CSS internal diterapkan dengan benar di lingkungan produksi.
@@ -71,7 +77,10 @@ Meskipun perubahan telah diimplementasikan, langkah pengujian manual sangat dire
 - [ ] Verifikasi halaman `forgot-password`.
 - [ ] Verifikasi halaman `404 Not Found` (coba akses URL yang tidak ada).
 - [ ] Verifikasi halaman `403 Forbidden` (jika ada rute yang bisa memicu error ini).
+- [ ] Verifikasi halaman `419 Page Expired` (submit form setelah sesi kedaluwarsa).
+- [ ] Verifikasi halaman `429 Too Many Requests` (jika ada rate limiter yang bisa di-trigger).
 - [ ] Verifikasi halaman `500 Server Error` (jika ada cara untuk mensimulasikannya di lingkungan development).
 - [ ] Verifikasi halaman `503 Service Unavailable` (aktifkan mode maintenance melalui `php artisan down`).
+- [ ] Verifikasi halaman `blocked` (jika ada cara untuk mensimulasikan IP block).
 
 Dengan selesainya pembaruan ini, aplikasi kini memiliki tampilan yang lebih profesional, konsisten, dan modern di seluruh alur autentikasi dan halaman notifikasi error.

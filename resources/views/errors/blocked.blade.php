@@ -1,35 +1,28 @@
-@extends('errors.layout')
+@extends('errors::layout')
 
-@section('title', 'IP Diblokir')
-
-@section('content')
-    <div class="error-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-full h-full text-red-600">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-        </svg>
-    </div>
-
-    <h1 class="error-code">🚫</h1>
-    <h2 class="error-title">Akses Diblokir</h2>
+@section('title', __('IP Blocked'))
+@section('code', '🚫')
+@section('message')
     <p class="error-message">
-        Alamat IP Anda telah diblokir dari mengakses sistem ini.
+        Alamat IP Anda ({{ request()->ip() }}) telah diblokir dari mengakses sistem ini.
     </p>
 
-    <div class="error-details">
-        <strong>Alasan:</strong> {{ $reason ?? 'Aktivitas mencurigakan terdeteksi' }}<br>
-        @if($expires_at)
-            <strong>Blokir akan berakhir:</strong> {{ \Carbon\Carbon::parse($expires_at)->format('d M Y H:i') }}<br>
-            <strong>Sisa waktu:</strong> {{ \Carbon\Carbon::parse($expires_at)->diffForHumans() }}
+    <div class="error-details" style="margin-top: 1.5rem; text-align: left; max-width: 450px; margin-left: auto; margin-right: auto;">
+        <h3 style="font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem;">Detail Blokir:</h3>
+        <p style="margin-bottom: 0.5rem;"><strong>Alasan:</strong> {{ $reason ?? 'Aktivitas mencurigakan terdeteksi' }}</p>
+        @if(isset($expires_at) && $expires_at)
+            <p style="margin-bottom: 0.5rem;"><strong>Blokir berakhir:</strong> {{ \Carbon\Carbon::parse($expires_at)->format('d M Y H:i') }} ({{ \Carbon\Carbon::parse($expires_at)->diffForHumans() }})</p>
         @else
-            <strong>Jenis blokir:</strong> Permanen
+            <p style="margin-bottom: 0.5rem;"><strong>Jenis blokir:</strong> Permanen</p>
         @endif
     </div>
 
-    <div class="error-details" style="margin-top: 1.5rem;">
-        <strong>Jika Anda merasa ini adalah kesalahan:</strong><br>
-        Silakan hubungi administrator sistem dengan menyertakan informasi berikut:<br>
-        <strong>IP Address:</strong> {{ request()->ip() }}<br>
-        <strong>Waktu:</strong> {{ now()->format('d M Y H:i:s') }}<br>
-        <strong>User Agent:</strong> {{ request()->userAgent() }}
+    <div class="error-details" style="margin-top: 1.5rem; text-align: left; max-width: 450px; margin-left: auto; margin-right: auto; background: #fffbe6; border-left-color: #f59e0b;">
+        <h3 style="font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem;">Merasa ini kesalahan?</h3>
+        <p>Silakan hubungi administrator sistem dengan menyertakan informasi di bawah ini:</p>
+        <ul style="font-size: 0.875rem; padding-left: 1.25rem; margin-top: 0.5rem;">
+            <li><strong>IP Address:</strong> {{ request()->ip() }}</li>
+            <li><strong>Waktu:</strong> {{ now()->format('d M Y H:i:s') }}</li>
+        </ul>
     </div>
 @endsection
