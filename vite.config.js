@@ -9,7 +9,6 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/css/bootstrap-custom.css',
                 'resources/css/dark-mode.css',
-                'resources/css/public-layout.css',
                 'resources/css/accessibility.css',
                 'resources/css/home.css',
                 'resources/css/pengumuman.css',

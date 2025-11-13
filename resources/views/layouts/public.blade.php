@@ -25,7 +25,6 @@
         'resources/css/bootstrap-custom.css',
         'resources/css/app.css',
         'resources/css/dark-mode.css',
-        'resources/css/public-layout.css',
         'resources/css/accessibility.css',
         'resources/js/bootstrap-bundle.js',
         'resources/js/app.js',

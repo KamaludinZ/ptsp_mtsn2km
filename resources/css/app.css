@@ -13,6 +13,9 @@
 /* DaisyUI Plugin */
 @plugin "daisyui";
 
+/* Import public-layout.css after Tailwind directives */
+@import 'public-layout.css';
+
 /* Tailwind Theme Configuration */
 @theme {
   /* Extend default theme jika diperlukan */

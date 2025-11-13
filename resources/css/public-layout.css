@@ -235,7 +235,8 @@ body {
 }
 
 .whatsapp-btn {
-    background: #25D366;
+    background: #25D366; /* Fallback */
+    @apply bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700;
 }
 
 /* Accessibility Panel */
