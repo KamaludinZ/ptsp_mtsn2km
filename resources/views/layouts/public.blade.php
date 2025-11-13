@@ -84,7 +84,7 @@
                         <span>Info Kontak</span>
                         <i class="fas fa-chevron-down ml-1" id="contactChevron"></i>
                     </button>
-                    <ul id="contactDropdownMenu" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); background-color: #052e16; border: 1px solid #374151; border-radius: 0.5rem; padding: 0.5rem; margin-top: 0.25rem; width: 16rem; z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+                    <ul id="contactDropdownMenu" class="dropdown-content menu menu-sm p-2 shadow bg-gray-800 dark:bg-gray-900 rounded-box w-52 mt-4 z-100" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); border: 1px solid #374151; border-radius: 0.5rem; padding: 0.5rem; margin-top: 0.25rem; width: 16rem; z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
                         <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
                             <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
                                 <i class="fas fa-map-marker-alt" style="color: #ea580c;"></i>
