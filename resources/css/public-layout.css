@@ -819,6 +819,6 @@ body.keyboard-navigation *:focus {
     outline-offset: 2px !important;
 }
 
-.no-hover:hover {
+footer a:hover:not(.hover\:text-orange-500) {
     color: white !important;
 }

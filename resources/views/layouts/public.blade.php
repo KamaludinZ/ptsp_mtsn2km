@@ -326,10 +326,10 @@
                         Sistem pelayanan terpadu sesuai Permen PANRB 15/2014 untuk kemudahan akses layanan.
                     </p>
                     <div class="flex gap-4 mt-4">
-                        <a href="#" class="text-2xl text-white no-hover" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-2xl text-white no-hover" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-2xl text-white no-hover" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-2xl text-white no-hover" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                     </div>
                 </div>
 
