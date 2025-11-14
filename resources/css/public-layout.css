@@ -133,6 +133,33 @@ body {
     top: 6px;
 }
 
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+    display: none;
+}
+
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #888 transparent;
+}
+
+
+
 /* Floating Action Buttons - Left Side */
 .floating-action-buttons-left {
     position: fixed;
@@ -144,17 +171,26 @@ body {
     gap: 15px;
 }
 
-/* Floating Action Button - Right Side */
-.floating-action-buttons-right {
+/* Move WhatsApp button to right side to cover white artifact */
+.floating-action-buttons-left .whatsapp-dropdown {
     position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 9999;
+    right: 5px;
+    bottom: 5px;
+    left: auto;
+}
+
+
+
+/* WhatsApp dropdown container styling */
+.whatsapp-dropdown {
+    position: relative;
+    display: inline-block;
+    background: transparent; /* Ensure no background */
 }
 
 .floating-btn {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -162,15 +198,33 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
     cursor: pointer;
-    font-size: 30px;
+    font-size: 24px;
     color: white;
     border: none;
     z-index: 1000;
+    text-decoration: none; /* Ensure no text decoration affects the button */
+    position: relative;  /* Add position relative for proper image positioning */
+    overflow: hidden;    /* Make sure nothing overflows */
 }
 
 .floating-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    text-decoration: none; /* Ensure no text decoration affects the button on hover */
+}
+
+/* Style images inside floating buttons to fill the space */
+.floating-btn img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+    pointer-events: none;
+    max-width: none; /* Override any max-width constraints */
+    max-height: none; /* Override any max-height constraints */
+    background: transparent; /* Ensure no background */
+    border: none; /* Ensure no border */
+    padding: 0; /* Ensure no padding */
+    margin: 0; /* Ensure no margin */
 }
 
 .back-to-top-btn {
@@ -234,25 +288,148 @@ body {
     animation: accessibilityPulse 2s infinite;
 }
 
+/* Style the accessibility image to appear blue/white */
+.accessibility-btn img {
+    filter: invert(100%) hue-rotate(180deg) brightness(1.2) contrast(1.2);
+    transition: filter 0.3s ease;
+}
+
+.accessibility-btn:hover img {
+    filter: invert(100%) hue-rotate(180deg) brightness(1.5) contrast(1.2); /* Brighter on hover */
+}
+
 .whatsapp-btn {
-    background: #25D366; /* Fallback */
-    @apply bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700;
+    background: #25D366; /* WhatsApp green color */
     animation: pulse 2s infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; /* Remove any inherited text decoration */
+    border: none; /* Ensure no default border */
+    overflow: hidden; /* Hide any overflow */
+}
+
+.whatsapp-btn:hover,
+.whatsapp-btn:active,
+.whatsapp-btn:focus {
+    background: #128C7E !important; /* Darker WhatsApp green on interaction */
+    text-decoration: none; /* Ensure no text decoration on interaction */
+    transform: scale(1.1);
+}
+
+/* Style the WhatsApp icon image */
+.whatsapp-btn img {
+    width: 60%;  /* Make sure image doesn't exceed button size */
+    height: 60%;
+    object-fit: contain;  /* Maintain aspect ratio */
+    pointer-events: none; /* Prevent image from interfering with clicks */
+}
+
+/* Dark mode support for WhatsApp button */
+[data-theme="dark"] .whatsapp-btn {
+    background: #25D366;
+}
+
+[data-theme="dark"] .whatsapp-btn:hover,
+[data-theme="dark"] .whatsapp-btn:active,
+[data-theme="dark"] .whatsapp-btn:focus {
+    background: #128C7E;
 }
 
 @keyframes pulse {
     0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
-    }
-    70% {
         transform: scale(1);
-        box-shadow: 0 0 0 10px rgba(37, 211, 102, 0);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
     }
     100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
+}
+
+/* WhatsApp Dropdown Styles */
+.whatsapp-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.whatsapp-dropdown-menu {
+    position: absolute;
+    bottom: 100%;
+    right: 0; /* Align to right since button is now on right side */
+    background: var(--bs-surface, white); /* Use theme surface color for consistency */
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    padding: 8px 0;
+    min-width: 280px;
+    z-index: 10000;
+    display: none;
+    margin-bottom: 15px;
+    overflow: hidden;
+    transform: translateY(10px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    border: 1px solid var(--bs-border, #e5e7eb); /* Add border for better visibility */
+}
+
+.whatsapp-dropdown-menu.show {
+    display: block;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* WhatsApp Info Banner */
+.whatsapp-info {
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #128c7e 0%, #075e54 100%);
+    color: white;
+    font-size: 0.75rem;
+    text-align: center;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.whatsapp-info i {
+    font-size: 0.85rem;
+}
+
+.whatsapp-option {
+    margin: 0;
+}
+
+.whatsapp-dropdown-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: #2d3748;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.whatsapp-dropdown-link:hover {
+    background-color: #fff5f0;
+    color: #ff6b35;
+}
+
+.whatsapp-dropdown-link i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.whatsapp-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+    object-fit: contain;
 }
 
 /* Accessibility Panel */
@@ -472,6 +649,7 @@ body {
     color: var(--bs-primary);
 }
 
+
 /* Footer Styles */
 .footer {
     background: var(--bs-gray-900);
@@ -489,20 +667,9 @@ footer a:visited {
     text-decoration: none !important;
 }
 
-footer a:hover,
-footer a:hover span,
-footer a:active {
-    color: #ea580c !important;
-}
-
 footer nav a,
 footer nav a span {
     color: white !important;
-}
-
-footer nav a:hover,
-footer nav a:hover span {
-    color: #ea580c !important;
 }
 
 /* Specific for footer emerald links */

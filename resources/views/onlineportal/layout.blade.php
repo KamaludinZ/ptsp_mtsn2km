@@ -34,10 +34,7 @@
                 class="floating-btn back-to-top-btn">
             <i class="fas fa-arrow-up"></i>
         </button>
-    </div>
 
-    <!-- Floating Action Button - Right Side -->
-    <div class="floating-action-buttons-right">
         <!-- WhatsApp Button -->
         <a href="https://wa.me/{{ config('app.whatsapp_number', '6285183367500') }}?text={{ urlencode('Halo, saya ingin bertanya tentang layanan PTSP MTsN 2 KOTA MALANG') }}"
            target="_blank"

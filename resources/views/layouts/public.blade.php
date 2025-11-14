@@ -25,6 +25,7 @@
         'resources/css/bootstrap-custom.css',
         'resources/css/app.css',
         'resources/css/dark-mode.css',
+        'resources/css/public-layout.css',
         'resources/css/accessibility.css',
         'resources/js/bootstrap-bundle.js',
         'resources/js/app.js',
@@ -133,8 +134,9 @@
     <div class="floating-action-buttons-left">
         <!-- Accessibility Button -->
         <button id="accessibility-btn"
-                class="floating-btn accessibility-btn pulse">
-            <span style="line-height: 1;">♿</span>
+                class="floating-btn accessibility-btn pulse"
+                aria-label="Buka panel aksesibilitas">
+            <i class="fas fa-universal-access"></i>
         </button>
 
         <!-- Back to Top Button -->
@@ -143,17 +145,44 @@
                 class="floating-btn back-to-top-btn">
             <i class="fas fa-arrow-up"></i>
         </button>
-    </div>
 
-    <!-- Floating Action Button - Right Side -->
-    <div class="floating-action-buttons-right">
-        <!-- WhatsApp Button -->
-        <a href="https://wa.me/{{ config('app.whatsapp_number', '6285183367500') }}?text={{ urlencode('Halo, saya ingin bertanya tentang layanan PTSP MTsN 2 KOTA MALANG') }}"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="floating-btn whatsapp-btn">
-            <i class="fab fa-whatsapp"></i>
-        </a>
+        <!-- WhatsApp Button with Dropdown -->
+        <div class="whatsapp-dropdown">
+            <button type="button" class="floating-btn whatsapp-btn" id="whatsapp-toggle">
+                <img src="{{ asset('images/WhatsApp.webp') }}" alt="WhatsApp" class="w-full h-full object-contain">
+            </button>
+            <div class="whatsapp-dropdown-menu" id="whatsapp-dropdown-menu">
+                <!-- Info Jam Operasional -->
+                <div class="whatsapp-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Layanan WhatsApp Aktif Sesuai Jam Operasional</span>
+                </div>
+                <div class="whatsapp-option">
+                    <a href="https://wa.me/6285183367500?text=Halo, saya ingin bertanya tentang layanan PTSP MTsN 2 KOTA MALANG"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="whatsapp-dropdown-link">
+                        <img src="{{ asset('images/WhatsApp.webp') }}" alt="WhatsApp" class="whatsapp-icon"> PTSP (085183367500)
+                    </a>
+                </div>
+                <div class="whatsapp-option">
+                    <a href="https://wa.me/6285156631610?text=Halo, saya ingin bertanya tentang layanan Komite MTsN 2 KOTA MALANG"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="whatsapp-dropdown-link">
+                        <img src="{{ asset('images/WhatsApp.webp') }}" alt="WhatsApp" class="whatsapp-icon"> Komite (085156631610)
+                    </a>
+                </div>
+                <div class="whatsapp-option">
+                    <a href="https://wa.me/6285183375008?text=Halo, saya ingin menyampaikan pengaduan ke MTsN 2 KOTA MALANG"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="whatsapp-dropdown-link">
+                        <img src="{{ asset('images/WhatsApp.webp') }}" alt="WhatsApp" class="whatsapp-icon"> Pengaduan (085183375008)
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modern Accessibility Panel -->
@@ -297,10 +326,10 @@
                         Sistem pelayanan terpadu sesuai Permen PANRB 15/2014 untuk kemudahan akses layanan.
                     </p>
                     <div class="flex gap-4 mt-4">
-                        <a href="#" class="hover:text-orange-500 text-2xl transition-colors text-white" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="hover:text-orange-500 text-2xl transition-colors text-white" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="hover:text-orange-500 text-2xl transition-colors text-white" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="hover:text-orange-500 text-2xl transition-colors text-white" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
                     </div>
                 </div>
 
@@ -444,13 +473,17 @@
             const btn = document.getElementById('accessibility-btn');
 
             if (panel.classList.contains('open')) {
+                // Close panel
                 panel.classList.remove('open');
-                btn.innerHTML = '<span style="line-height: 1;">♿</span>';
+                btn.innerHTML = '<i class="fas fa-universal-access"></i>';
                 btn.classList.add('pulse');
+                btn.setAttribute('aria-label', 'Buka panel aksesibilitas');
             } else {
+                // Open panel
                 panel.classList.add('open');
-                btn.innerHTML = '<i class="fas fa-times" style="line-height: 1;"></i>';
+                btn.innerHTML = '<i class="fas fa-times"></i>';
                 btn.classList.remove('pulse');
+                btn.setAttribute('aria-label', 'Tutup panel aksesibilitas');
             }
         }
 
@@ -621,6 +654,7 @@
                 console.error('Error changing language:', error);
             });
         }
+
     </script>
     @stack('scripts')
 </body>

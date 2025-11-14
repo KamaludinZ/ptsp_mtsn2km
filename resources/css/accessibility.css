@@ -30,14 +30,8 @@
     gap: 15px;
 }
 
-/* Floating Action Button - Right Side */
-.floating-action-buttons-right {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 9999;
-}
 
+/* Floating button sizing is defined in public-layout.css to avoid conflicts 
 .floating-btn {
     width: 50px;
     height: 50px;
@@ -53,6 +47,7 @@
     border: none;
     z-index: 1000;
 }
+*/
 
 .floating-btn:hover {
     transform: scale(1.1);
@@ -89,6 +84,14 @@
     overflow: hidden;
 }
 
+.accessibility-btn i {
+    font-size: 24px;
+    line-height: 1;
+    color: white;
+    z-index: 2;
+    position: relative;
+}
+
 .accessibility-btn::before {
     content: '';
     position: absolute;
@@ -120,32 +123,39 @@
     animation: accessibilityPulse 2s infinite;
 }
 
-.whatsapp-btn {
+/* Specific WhatsApp button styling moved to public-layout.css to avoid conflicts */
+/* .whatsapp-btn {
     background: #25D366;
-}
+} */
 
 /* Accessibility Panel */
 .accessibility-panel {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 320px;
-    max-height: 100vh;
+    left: 85px; /* 20px (button left) + 50px (button width) + 15px (gap) */
+    bottom: 20px;
+    width: 340px;
+    max-width: calc(100vw - 100px);
+    max-height: calc(100vh - 150px);
     background: var(--bs-white);
     z-index: 10000;
-    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-    transform: translateX(-100%);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    transform: translateX(-20px) scale(0.95);
+    opacity: 0;
+    visibility: hidden;
     display: flex;
     flex-direction: column;
 }
 
 .accessibility-panel.open {
-    transform: translateX(0);
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
 }
 
 .accessibility-panel-header {
-    padding: 1.5rem;
+    padding: 1rem;
     background: var(--gradient-primary);
     color: var(--bs-white);
     border-bottom: 3px solid var(--bs-primary);
@@ -191,14 +201,13 @@
 }
 
 .accessibility-panel-content {
-    flex: 1;
     overflow-y: auto;
-    padding: 1.5rem;
+    padding: 1rem 1rem 0 1rem; /* top right bottom left */
 }
 
 .accessibility-section {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
     border-bottom: 1px solid var(--bs-border);
 }
 
@@ -212,7 +221,7 @@
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--bs-text);
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -228,11 +237,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
+    padding: 0.75rem;
     background: var(--bs-gray-50);
     border: 1px solid var(--bs-border);
     border-radius: 8px;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     transition: all 0.2s ease;
 }
 

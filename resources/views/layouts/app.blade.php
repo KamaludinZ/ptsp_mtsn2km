@@ -19,7 +19,7 @@
         <!-- Accessibility Button -->
         <button id="accessibility-btn"
                 class="floating-btn accessibility-btn pulse">
-            <span style="line-height: 1;">♿</span>
+            <img src="{{ asset('images/Accessibility.png') }}" alt="Accessibility" class="w-full h-full object-contain">
         </button>
 
         <!-- Back to Top Button -->
@@ -28,17 +28,39 @@
                 class="floating-btn back-to-top-btn">
             <i class="fas fa-arrow-up"></i>
         </button>
-    </div>
 
-    <!-- Floating Action Button - Right Side -->
-    <div class="floating-action-buttons-right">
-        <!-- WhatsApp Button -->
-        <a href="https://wa.me/{{ config('app.whatsapp_number', '6285183367500') }}?text={{ urlencode('Halo, saya ingin bertanya tentang layanan PTSP MTsN 2 KOTA MALANG') }}"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="floating-btn whatsapp-btn">
-            <i class="fab fa-whatsapp"></i>
-        </a>
+        <!-- WhatsApp Button with Dropdown -->
+        <div class="whatsapp-dropdown">
+            <button type="button" class="floating-btn whatsapp-btn" id="whatsapp-toggle">
+                <img src="{{ asset('images/WhatsApp.webp') }}" alt="WhatsApp" class="w-full h-full object-contain">
+            </button>
+            <div class="whatsapp-dropdown-menu" id="whatsapp-dropdown-menu">
+                <div class="whatsapp-option">
+                    <a href="https://wa.me/6285183367500?text=Halo, saya ingin bertanya tentang layanan PTSP MTsN 2 KOTA MALANG"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="whatsapp-dropdown-link">
+                        <img src="{{ asset('images/WhatsApp.webp') }}" alt="WhatsApp" class="whatsapp-icon"> PTSP (085183367500)
+                    </a>
+                </div>
+                <div class="whatsapp-option">
+                    <a href="https://wa.me/6285156631610?text=Halo, saya ingin bertanya tentang layanan Komite MTsN 2 KOTA MALANG"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="whatsapp-dropdown-link">
+                        <img src="{{ asset('images/WhatsApp.webp') }}" alt="WhatsApp" class="whatsapp-icon"> Komite (085156631610)
+                    </a>
+                </div>
+                <div class="whatsapp-option">
+                    <a href="https://wa.me/6285183375008?text=Halo, saya ingin menyampaikan pengaduan ke MTsN 2 KOTA MALANG"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="whatsapp-dropdown-link">
+                        <img src="{{ asset('images/WhatsApp.webp') }}" alt="WhatsApp" class="whatsapp-icon"> Pengaduan (085183375008)
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modern Accessibility Panel -->
