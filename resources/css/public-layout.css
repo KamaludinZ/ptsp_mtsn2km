@@ -818,3 +818,7 @@ body.keyboard-navigation *:focus {
     outline: 3px solid var(--bs-focus) !important;
     outline-offset: 2px !important;
 }
+
+.no-hover:hover {
+    color: white !important;
+}
