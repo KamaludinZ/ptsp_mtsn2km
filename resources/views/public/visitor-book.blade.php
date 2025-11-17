@@ -310,6 +310,10 @@
 
     /* Ensure institution fields are hidden by default */
     #institution-fields {
+        display: none !important;
+    }
+
+    .hidden {
         display: none;
     }
 </style>
@@ -518,7 +522,7 @@
                                 <option value="instansi_perusahaan">Instansi/Perusahaan</option>
                             </select>
                         </div>
-                        <div class="col-12" id="institution-fields" style="display: none;">
+                        <div class="col-12" id="institution-fields">
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">
@@ -688,9 +692,9 @@
             var institutionFields = document.getElementById('institution-fields');
             if (applicantTypeSelect && institutionFields) {
                 if (applicantTypeSelect.value === 'instansi_perusahaan') {
-                    institutionFields.style.display = 'block';
+                    institutionFields.style.setProperty('display', 'block', 'important');
                 } else {
-                    institutionFields.style.display = 'none';
+                    institutionFields.style.setProperty('display', 'none', 'important');
                 }
             }
         }
