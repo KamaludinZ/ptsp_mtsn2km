@@ -643,9 +643,10 @@
                             <p class="mb-3 text-muted">
                                 Layanan pengaduan ini diselaraskan dengan Peraturan Menteri PANRB Nomor 15 Tahun 2014 tentang Pedoman Pelayanan Publik.
                             </p>
-                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#standardsModal">
+                            <!-- The button to open modal -->
+                            <label for="standards-modal" class="btn btn-outline-primary">
                                 <i class="fas fa-list-check me-2"></i> Lihat 14 Komponen Standar Pelayanan
-                            </button>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -654,156 +655,102 @@
     </div>
 </div>
 
-<!-- Standards Modal -->
-<div id="standardsModal" class="modal fade standards-modal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">14 Komponen Standar Pelayanan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="space-y-3">
-                    <!-- Pengaduan Layanan is the 6th component in the service -->
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            6. Penanganan Pengaduan
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Proses penanganan keluhan dan pengaduan dari masyarakat melalui sistem terpadu.
-                        </p>
-                    </div>
-
-                    <!-- Other standard components -->
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            1. Dasar Hukum
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Landasan hukum penyelenggaraan pelayanan PTSP MTsN 2 Kota Malang sesuai peraturan perundang-undangan yang berlaku.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            2. Persyaratan
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Dokumen dan persyaratan yang harus dipenuhi oleh pemohon untuk mendapatkan pelayanan.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            3. Sistem, Mekanisme, Prosedur
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Alur dan tata cara pelayanan dari mulai pengajuan hingga selesai.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            4. Jangka Waktu Penyelesaian
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Estimasi waktu yang dibutuhkan untuk menyelesaikan setiap pelayanan.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            5. Biaya/Tarif
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Informasi biaya atau tarif pelayanan yang berlaku (jika ada).
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            7. Produk Pelayanan
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Hasil akhir dari pelayanan yang diberikan kepada pemohon.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            8. Sarana, Prasarana, dan Sistem
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Fasilitas dan sistem pendukung penyelenggaraan pelayanan.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            9. Jumlah dan Layanan Pelaksana
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Jumlah petugas yang tersedia untuk setiap layanan.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            10. Jaminan Pelayanan
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Jaminan yang diberikan kepada pemohon terkait kualitas dan waktu pelayanan.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            11. Jaminan Keamanan dan Keselamatan
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Jaminan keamanan data dan informasi pemohon.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            12. Evaluasi Kinerja
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Mekanisme evaluasi kinerja pelayanan secara berkala.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            13. Penetapan Standar Pelayanan
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Mekanisme penetapan standar pelayanan yang harus dipenuhi.
-                        </p>
-                    </div>
-
-                    <div class="standards-card">
-                        <h4 class="fw-bold mb-2" class="fw-bold mb-2 info-heading">
-                            14. Sistem Pengelolaan Pelayanan
-                        </h4>
-                        <p class="mb-0" style="color: var(--bs-secondary-text);">
-                            Sistem pengelolaan pelayanan yang terintegrasi dan terdokumentasi secara baik.
-                        </p>
-                    </div>
+<!-- DaisyUI Modal -->
+<input type="checkbox" id="standards-modal" class="modal-toggle" />
+<div class="modal" role="dialog">
+    <div class="modal-box w-11/12 max-w-5xl">
+        <h3 class="font-bold text-lg">14 Komponen Standar Pelayanan</h3>
+        <div class="py-4 space-y-4">
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">6. Penanganan Pengaduan</h4>
+                    <p>Proses penanganan keluhan dan pengaduan dari masyarakat melalui sistem terpadu.</p>
                 </div>
-
-                <div class="mt-4 p-3 bg-light rounded">
-                    <p class="mb-0 text-center" style="color: var(--bs-secondary-text);">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Untuk informasi lebih lengkap, silakan hubungi PTSP MTsN 2 Kota Malang.
-                    </p>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">1. Dasar Hukum</h4>
+                    <p>Landasan hukum penyelenggaraan pelayanan PTSP MTsN 2 Kota Malang sesuai peraturan perundang-undangan yang berlaku.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">2. Persyaratan</h4>
+                    <p>Dokumen dan persyaratan yang harus dipenuhi oleh pemohon untuk mendapatkan pelayanan.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">3. Sistem, Mekanisme, Prosedur</h4>
+                    <p>Alur dan tata cara pelayanan dari mulai pengajuan hingga selesai.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">4. Jangka Waktu Penyelesaian</h4>
+                    <p>Estimasi waktu yang dibutuhkan untuk menyelesaikan setiap pelayanan.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">5. Biaya/Tarif</h4>
+                    <p>Informasi biaya atau tarif pelayanan yang berlaku (jika ada).</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">7. Produk Pelayanan</h4>
+                    <p>Hasil akhir dari pelayanan yang diberikan kepada pemohon.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">8. Sarana, Prasarana, dan Sistem</h4>
+                    <p>Fasilitas dan sistem pendukung penyelenggaraan pelayanan.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">9. Jumlah dan Layanan Pelaksana</h4>
+                    <p>Jumlah petugas yang tersedia untuk setiap layanan.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">10. Jaminan Pelayanan</h4>
+                    <p>Jaminan yang diberikan kepada pemohon terkait kualitas dan waktu pelayanan.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">11. Jaminan Keamanan dan Keselamatan</h4>
+                    <p>Jaminan keamanan data dan informasi pemohon.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">12. Evaluasi Kinerja</h4>
+                    <p>Mekanisme evaluasi kinerja pelayanan secara berkala.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">13. Penetapan Standar Pelayanan</h4>
+                    <p>Mekanisme penetapan standar pelayanan yang harus dipenuhi.</p>
+                </div>
+            </div>
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h4 class="card-title">14. Sistem Pengelolaan Pelayanan</h4>
+                    <p>Sistem pengelolaan pelayanan yang terintegrasi dan terdokumentasi secara baik.</p>
                 </div>
             </div>
         </div>
+        <div class="modal-action">
+            <label for="standards-modal" class="btn">Tutup</label>
+        </div>
     </div>
 </div>
-
 @endsection
 
 @push('scripts')
