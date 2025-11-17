@@ -4,11 +4,6 @@
 
 @push('styles')
 <style>
-    /* Debug: Force tab pane visibility */
-    .tab-pane {
-        display: block !important;
-    }
-
     /* Service Component Hover Effect */
     .service-component {
         cursor: pointer;
@@ -191,6 +186,9 @@
         background: var(--bs-gray-800) !important;
         color: var(--bs-text) !important;
         border-color: var(--bs-border-color) !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     [data-theme="dark"] .nav-tabs .nav-link.active {
@@ -428,7 +426,9 @@
         cursor: pointer;
         transition: all 0.2s;
         text-decoration: none;
-        display: inline-block;
+        display: inline-flex; /* Changed to inline-flex */
+        align-items: center; /* Added for vertical centering */
+        justify-content: center; /* Added for horizontal centering */
         border: none;
     }
     
