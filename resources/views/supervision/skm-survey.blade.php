@@ -101,6 +101,39 @@
     .text-amber {
         color: #f59e0b;
     }
+
+    /* Disabled field styling */
+    .form-control:disabled,
+    .form-select:disabled {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    /* Readonly field styling */
+    .form-control[readonly] {
+        background-color: #f3f4f6 !important;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    [data-theme="dark"] .form-control:disabled,
+    [data-theme="dark"] .form-select:disabled {
+        background-color: #1f2937;
+        border-color: #374151;
+        color: #6b7280;
+    }
+
+    [data-theme="dark"] .form-control[readonly] {
+        background-color: #1f2937 !important;
+        border-color: #374151;
+        color: #9ca3af;
+    }
 </style>
 @endpush
 
@@ -146,10 +179,109 @@
                         </div>
                         <div class="card-body">
                             <div class="row g-4">
-                                <!-- Service Type Selection -->
-                                <div class="col-md-12">
+                                <!-- Ticket Code (was at bottom, now at top - col-md-6) -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Kode Tiket Layanan <span class="text-danger">*</span></label>
+                                    <input type="text" id="ticket_code" name="ticket_code" class="form-control @error('ticket_code') is-invalid @enderror"
+                                           value="{{ old('ticket_code', $ticket ? $ticket->ticket_number : '') }}" placeholder="Contoh: N-202511-001" required>
+                                    <div class="form-text">Masukkan kode tiket layanan yang Anda terima</div>
+                                    @error('ticket_code')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div id="ticket_validation_message" class="mt-2"></div>
+                                </div>
+
+                                <!-- Email (stays here) -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Email Aktif <span class="text-danger">*</span></label>
+                                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror survey-field"
+                                           value="{{ old('email', $ticket ? $ticket->user->email : '') }}" placeholder="email@example.com" required disabled>
+                                    @error('email')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- Personal Information -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
+                                    <input type="text" name="name" class="form-control @error('name') is-invalid @enderror survey-field" value="{{ old('name', $ticket ? $ticket->user->name : '') }}" required disabled>
+                                    @error('name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Usia <span class="text-danger">*</span></label>
+                                    <select name="age" class="form-select @error('age') is-invalid @enderror survey-field" required disabled>
+                                        <option value="">-- Pilih Usia --</option>
+                                        <option value="<20" {{ old('age') == '<20' ? 'selected' : '' }}>Dibawah 20 Tahun</option>
+                                        <option value="21-30" {{ old('age') == '21-30' ? 'selected' : '' }}>21 s.d 30 Tahun</option>
+                                        <option value="31-40" {{ old('age') == '31-40' ? 'selected' : '' }}>31 s.d 40 Tahun</option>
+                                        <option value="41-50" {{ old('age') == '41-50' ? 'selected' : '' }}>41 s.d 50 Tahun</option>
+                                        <option value=">50" {{ old('age') == '>50' ? 'selected' : '' }}>Diatas 50 Tahun</option>
+                                    </select>
+                                    @error('age')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Jenis Kelamin <span class="text-danger">*</span></label>
+                                    <select name="gender" class="form-select @error('gender') is-invalid @enderror survey-field" required disabled>
+                                        <option value="">-- Pilih Jenis Kelamin --</option>
+                                        <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Laki-laki</option>
+                                        <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Perempuan</option>
+                                    </select>
+                                    @error('gender')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Pendidikan <span class="text-danger">*</span></label>
+                                    <select name="education" class="form-select @error('education') is-invalid @enderror survey-field" required disabled>
+                                        <option value="">-- Pilih Pendidikan --</option>
+                                        <option value="sd" {{ old('education') == 'sd' ? 'selected' : '' }}>SD</option>
+                                        <option value="smp" {{ old('education') == 'smp' ? 'selected' : '' }}>SMP</option>
+                                        <option value="sma" {{ old('education') == 'sma' ? 'selected' : '' }}>SMA</option>
+                                        <option value="d3" {{ old('education') == 'd3' ? 'selected' : '' }}>D3</option>
+                                        <option value="d4/s1" {{ old('education') == 'd4/s1' ? 'selected' : '' }}>D4/S1</option>
+                                        <option value="s2" {{ old('education') == 's2' ? 'selected' : '' }}>S2</option>
+                                        <option value="s3" {{ old('education') == 's3' ? 'selected' : '' }}>S3</option>
+                                    </select>
+                                    @error('education')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Pekerjaan <span class="text-danger">*</span></label>
+                                    <select name="occupation" class="form-select @error('occupation') is-invalid @enderror survey-field" required disabled>
+                                        <option value="">-- Pilih Pekerjaan --</option>
+                                        <option value="pns/tni/polri" {{ old('occupation') == 'pns/tni/polri' ? 'selected' : '' }}>PNS/TNI/POLRI</option>
+                                        <option value="pegawai_swasta" {{ old('occupation') == 'pegawai_swasta' ? 'selected' : '' }}>Pegawai Swasta</option>
+                                        <option value="wiraswasta" {{ old('occupation') == 'wiraswasta' ? 'selected' : '' }}>Wiraswasta</option>
+                                        <option value="petani/pekebun" {{ old('occupation') == 'petani/pekebun' ? 'selected' : '' }}>Petani/Pekebun</option>
+                                        <option value="pelajar/mahasiswa" {{ old('occupation') == 'pelajar/mahasiswa' ? 'selected' : '' }}>Pelajar/Mahasiswa</option>
+                                        <option value="lainnya" {{ old('occupation') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                                    </select>
+                                    @error('occupation')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Nomor WhatsApp</label>
+                                    <input type="tel" name="phone" class="form-control @error('phone') is-invalid @enderror survey-field" value="{{ old('phone', $ticket ? $ticket->user->whatsapp_number : '') }}" disabled>
+                                    @error('phone')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                                <!-- Service Type Selection (moved from top - col-md-6) -->
+                                <div class="col-md-6">
                                     <label class="form-label fw-semibold">Pilih Jenis Pelayanan <span class="text-danger">*</span></label>
-                                    <select name="service_type" class="form-select @error('service_type') is-invalid @enderror" required>
+                                    <select id="service_type_display" class="form-select @error('service_type') is-invalid @enderror survey-field" disabled>
                                         <option value="">-- Pilih Jenis Pelayanan --</option>
                                         <option value="mutasi_siswa_masuk" {{ old('service_type') == 'mutasi_siswa_masuk' ? 'selected' : '' }}>Mutasi Siswa Masuk</option>
                                         <option value="mutasi_siswa_keluar" {{ old('service_type') == 'mutasi_siswa_keluar' ? 'selected' : '' }}>Mutasi Siswa Keluar</option>
@@ -169,104 +301,9 @@
                                         <option value="screening_kesehatan" {{ old('service_type') == 'screening_kesehatan' ? 'selected' : '' }}>Screening Kesehatan Siswa</option>
                                         <option value="penerimaan_iuran_komite" {{ old('service_type') == 'penerimaan_iuran_komite' ? 'selected' : '' }}>Penerimaan Iuran Komite</option>
                                     </select>
+                                    <!-- Hidden input to submit service_type when select is disabled -->
+                                    <input type="hidden" name="service_type" id="service_type_value" required>
                                     @error('service_type')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <!-- Personal Information -->
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
-                                    <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
-                                    @error('name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Usia <span class="text-danger">*</span></label>
-                                    <select name="age" class="form-select @error('age') is-invalid @enderror" required>
-                                        <option value="">-- Pilih Usia --</option>
-                                        <option value="<20" {{ old('age') == '<20' ? 'selected' : '' }}>Dibawah 20 Tahun</option>
-                                        <option value="21-30" {{ old('age') == '21-30' ? 'selected' : '' }}>21 s.d 30 Tahun</option>
-                                        <option value="31-40" {{ old('age') == '31-40' ? 'selected' : '' }}>31 s.d 40 Tahun</option>
-                                        <option value="41-50" {{ old('age') == '41-50' ? 'selected' : '' }}>41 s.d 50 Tahun</option>
-                                        <option value=">50" {{ old('age') == '>50' ? 'selected' : '' }}>Diatas 50 Tahun</option>
-                                    </select>
-                                    @error('age')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Jenis Kelamin <span class="text-danger">*</span></label>
-                                    <select name="gender" class="form-select @error('gender') is-invalid @enderror" required>
-                                        <option value="">-- Pilih Jenis Kelamin --</option>
-                                        <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Laki-laki</option>
-                                        <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Perempuan</option>
-                                    </select>
-                                    @error('gender')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Pendidikan <span class="text-danger">*</span></label>
-                                    <select name="education" class="form-select @error('education') is-invalid @enderror" required>
-                                        <option value="">-- Pilih Pendidikan --</option>
-                                        <option value="sd" {{ old('education') == 'sd' ? 'selected' : '' }}>SD</option>
-                                        <option value="smp" {{ old('education') == 'smp' ? 'selected' : '' }}>SMP</option>
-                                        <option value="sma" {{ old('education') == 'sma' ? 'selected' : '' }}>SMA</option>
-                                        <option value="d3" {{ old('education') == 'd3' ? 'selected' : '' }}>D3</option>
-                                        <option value="d4/s1" {{ old('education') == 'd4/s1' ? 'selected' : '' }}>D4/S1</option>
-                                        <option value="s2" {{ old('education') == 's2' ? 'selected' : '' }}>S2</option>
-                                        <option value="s3" {{ old('education') == 's3' ? 'selected' : '' }}>S3</option>
-                                    </select>
-                                    @error('education')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Pekerjaan <span class="text-danger">*</span></label>
-                                    <select name="occupation" class="form-select @error('occupation') is-invalid @enderror" required>
-                                        <option value="">-- Pilih Pekerjaan --</option>
-                                        <option value="pns/tni/polri" {{ old('occupation') == 'pns/tni/polri' ? 'selected' : '' }}>PNS/TNI/POLRI</option>
-                                        <option value="pegawai_swasta" {{ old('occupation') == 'pegawai_swasta' ? 'selected' : '' }}>Pegawai Swasta</option>
-                                        <option value="wiraswasta" {{ old('occupation') == 'wiraswasta' ? 'selected' : '' }}>Wiraswasta</option>
-                                        <option value="petani/pekebun" {{ old('occupation') == 'petani/pekebun' ? 'selected' : '' }}>Petani/Pekebun</option>
-                                        <option value="pelajar/mahasiswa" {{ old('occupation') == 'pelajar/mahasiswa' ? 'selected' : '' }}>Pelajar/Mahasiswa</option>
-                                        <option value="lainnya" {{ old('occupation') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
-                                    </select>
-                                    @error('occupation')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">No. Telepon</label>
-                                    <input type="tel" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone') }}">
-                                    @error('phone')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Kode Tiket Layanan <span class="text-danger">*</span></label>
-                                    <input type="text" id="ticket_code" name="ticket_code" class="form-control @error('ticket_code') is-invalid @enderror"
-                                           value="{{ old('ticket_code') }}" placeholder="Contoh: N-202511-001" required>
-                                    <div class="form-text">Masukkan kode tiket layanan yang Anda terima</div>
-                                    @error('ticket_code')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <div id="ticket_validation_message" class="mt-2"></div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Email Aktif <span class="text-danger">*</span></label>
-                                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                           value="{{ old('email') }}" placeholder="email@example.com" required>
-                                    @error('email')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -274,7 +311,9 @@
                         </div>
                         <div class="card-footer bg-light">
                             <div class="d-flex justify-content-end">
-                                <button type="button" class="btn btn-primary btn-lg px-5" onclick="nextStep(2)">Lanjut ke SKM <i class="fas fa-arrow-right ms-2"></i></button>
+                                <button type="button" class="btn btn-primary btn-lg px-5" onclick="nextStep(2)" id="nextStepBtn" disabled>
+                                    Lanjut ke SKM <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -820,15 +859,28 @@ let ticketCodeValid = false;
 document.getElementById('ticket_code').addEventListener('blur', function() {
     const ticketCode = this.value.trim();
     const messageDiv = document.getElementById('ticket_validation_message');
+    const surveyFields = document.querySelectorAll('.survey-field');
+    const nextButton = document.getElementById('nextStepBtn');
 
     if (!ticketCode) {
         messageDiv.innerHTML = '';
         ticketCodeValid = false;
+        // Disable all survey fields
+        surveyFields.forEach(field => {
+            field.disabled = true;
+        });
+        if (nextButton) nextButton.disabled = true;
         return;
     }
 
     // Show loading
     messageDiv.innerHTML = '<div class="alert alert-info py-2"><i class="fas fa-spinner fa-spin me-2"></i>Memeriksa kode tiket...</div>';
+
+    // Disable all fields while checking
+    surveyFields.forEach(field => {
+        field.disabled = true;
+    });
+    if (nextButton) nextButton.disabled = true;
 
     // Check ticket code
     fetch('{{ route("supervision.skm.validate-ticket") }}', {
@@ -844,14 +896,70 @@ document.getElementById('ticket_code').addEventListener('blur', function() {
         if (data.valid) {
             messageDiv.innerHTML = '<div class="alert alert-success py-2"><i class="fas fa-check-circle me-2"></i>' + data.message + '</div>';
             ticketCodeValid = true;
+
+            // Auto-fill email and service_type from ticket data
+            if (data.data) {
+                // Fill email field
+                if (data.data.email) {
+                    const emailField = document.querySelector('input[name="email"]');
+                    if (emailField) {
+                        emailField.value = data.data.email;
+                    }
+                }
+
+                // Fill service_type field
+                if (data.data.service_type) {
+                    const serviceTypeDisplay = document.getElementById('service_type_display');
+                    const serviceTypeValue = document.getElementById('service_type_value');
+                    if (serviceTypeDisplay) {
+                        serviceTypeDisplay.value = data.data.service_type;
+                    }
+                    if (serviceTypeValue) {
+                        serviceTypeValue.value = data.data.service_type;
+                    }
+                }
+            }
+
+            // Enable all survey fields
+            surveyFields.forEach(field => {
+                field.disabled = false;
+            });
+
+            // Make email and service_type readonly (not disabled) so they're still submitted
+            const emailField = document.querySelector('input[name="email"]');
+            const serviceTypeDisplay = document.getElementById('service_type_display');
+            if (emailField) {
+                emailField.setAttribute('readonly', true);
+                emailField.classList.add('bg-light');
+                emailField.style.backgroundColor = '#f3f4f6';
+            }
+            if (serviceTypeDisplay) {
+                serviceTypeDisplay.disabled = true;
+                serviceTypeDisplay.style.pointerEvents = 'none';
+                serviceTypeDisplay.style.backgroundColor = '#f3f4f6';
+            }
+
+            if (nextButton) nextButton.disabled = false;
         } else {
             messageDiv.innerHTML = '<div class="alert alert-danger py-2"><i class="fas fa-times-circle me-2"></i>' + data.message + '</div>';
             ticketCodeValid = false;
+
+            // Keep fields disabled
+            surveyFields.forEach(field => {
+                field.disabled = true;
+            });
+            if (nextButton) nextButton.disabled = true;
         }
     })
     .catch(error => {
         messageDiv.innerHTML = '<div class="alert alert-warning py-2"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memvalidasi kode tiket. Silakan coba lagi.</div>';
         ticketCodeValid = false;
+
+        // Keep fields disabled on error
+        surveyFields.forEach(field => {
+            field.disabled = true;
+        });
+        if (nextButton) nextButton.disabled = true;
     });
 });
 
@@ -934,6 +1042,28 @@ function prevStep(step) {
 
 // Initialize first step
 showStep(currentStep);
+
+// Initialize - make sure all fields are disabled on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const surveyFields = document.querySelectorAll('.survey-field');
+    const nextButton = document.getElementById('nextStepBtn');
+    const ticketCodeInput = document.getElementById('ticket_code');
+
+    // Disable all survey fields initially
+    surveyFields.forEach(field => {
+        field.disabled = true;
+    });
+
+    // Disable next button initially
+    if (nextButton) {
+        nextButton.disabled = true;
+    }
+
+    // If ticket code is pre-filled, trigger validation
+    if (ticketCodeInput && ticketCodeInput.value) {
+        ticketCodeInput.dispatchEvent(new Event('blur'));
+    }
+});
 
 // Initialize form submission
 document.getElementById('surveyForm').addEventListener('submit', function(e) {
