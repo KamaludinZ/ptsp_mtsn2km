@@ -310,7 +310,7 @@
 
     /* Ensure institution fields are hidden by default */
     #institution-fields {
-        display: none !important;
+        display: none;
     }
 </style>
 @endpush
