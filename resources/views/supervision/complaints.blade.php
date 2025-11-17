@@ -454,122 +454,132 @@
     <div class="card shadow-lg border-0 mt-5">
         <div class="card-body p-4">
             <!-- Information Section -->
-            <div class="row">
+            <div class="row g-4 mb-4">
                 <div class="col-md-6">
-                    <div>
-                        <h3 class="h5 fw-bold mb-3">
-                            <i class="fas fa-shield-alt me-2 info-icon"></i>Perlindungan Whistleblower
-                        </h3>
-                        <p class="text-muted mb-0">
-                            Kami menjamin kerahasiaan identitas pelapor dalam kasus whistleblowing dan melindungi dari segala bentuk represaliasi.
-                        </p>
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="h5 fw-bold mb-3">
+                                <i class="fas fa-shield-alt me-2 text-primary"></i>Perlindungan Whistleblower
+                            </h3>
+                            <p class="text-muted mb-0">
+                                Kami menjamin kerahasiaan identitas pelapor dalam kasus whistleblowing dan melindungi dari segala bentuk represaliasi.
+                            </p>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="col-md-6">
-                    <div>
-                        <h3 class="h5 fw-bold mb-3">
-                            <i class="fas fa-clock me-2 info-icon"></i>Waktu Respons
-                        </h3>
-                        <p class="text-muted mb-0">
-                            Pengaduan akan ditindaklanjuti dalam waktu maksimal 5 hari kerja sejak tanggal diterima.
-                        </p>
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="h5 fw-bold mb-3">
+                                <i class="fas fa-clock me-2 text-primary"></i>Waktu Respons
+                            </h3>
+                            <p class="text-muted mb-0">
+                                Pengaduan akan ditindaklanjuti dalam waktu maksimal 5 hari kerja sejak tanggal diterima.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Lapor.go.id Information -->
-            <div class="text-center">
-                <div class="row align-items-center">
-                    <div class="col-md-3 mb-3 mb-md-0">
-                        <img src="{{ asset('images/Simf60FF_SP4N-Lapor.png') }}"
-                             alt="SP4N LAPOR!"
-                             class="img-fluid"
-                             class="national-complaint-image">
-                    </div>
-                    <div class="col-md-9 text-md-start">
-                        <h3 class="h5 fw-bold mb-2 national-complaint-heading">
-                            <i class="fas fa-megaphone me-2 national-complaint-icon"></i>Lapor Pengaduan Nasional
-                        </h3>
-                        <p class="mb-2 national-complaint-text">
-                            Selain melaporkan pengaduan kepada kami, Anda juga dapat menyampaikan aspirasi dan pengaduan pelayanan publik secara nasional melalui:
-                        </p>
-                        <a href="https://www.lapor.go.id/"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="btn btn-sm btn-primary">
-                            <i class="fas fa-external-link-alt me-2"></i>Kunjungi LAPOR.GO.ID
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tracking Section -->
-            <div>
-                <h2 class="section-title">Lacak Status Pengaduan Anda</h2>
-                <p class="text-muted mb-4">Ketahui status terkini dari pengaduan yang telah Anda sampaikan</p>
-                
-                <div class="row justify-content-center">
-                    <div class="col-md-8">
-                        <form method="POST" action="{{ route('supervision.complaint.track') }}" class="space-y-4">
-                            @csrf
-                            <div class="form-group">
-                                <label for="complaint_number" class="form-label">
-                                    Nomor Tiket Pengaduan
-                                </label>
-                                <input type="text" 
-                                       id="complaint_number" 
-                                       name="complaint_number" 
-                                       required
-                                       class="form-control"
-                                       placeholder="Masukkan nomor tiket">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="reporter_email" class="form-label">
-                                    Email Pelapor (Opsional)
-                                </label>
-                                <input type="email" 
-                                       id="reporter_email" 
-                                       name="reporter_email" 
-                                       class="form-control"
-                                       placeholder="Email yang digunakan saat pengiriman">
-                            </div>
-                            
-                            <div class="pt-2">
-                                <button type="submit" 
-                                        class="btn btn-primary w-100">
-                                    <i class="fas fa-search me-2"></i> Lacak Pengaduan
-                                </button>
-                            </div>
-                        </form>
-                        
-                        <div class="text-center mt-4">
-                            <a href="{{ route('supervision.complaint.track.form') }}" 
-                               class="btn btn-outline">
-                                <i class="fas fa-external-link-alt me-2"></i> Buka halaman pelacakan lengkap
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <img src="{{ asset('images/Simf60FF_SP4N-Lapor.png') }}"
+                                 alt="SP4N LAPOR!"
+                                 class="img-fluid"
+                                 style="max-height: 80px;">
+                        </div>
+                        <div class="col-md-9 text-md-start">
+                            <h3 class="h5 fw-bold mb-2">
+                                <i class="fas fa-megaphone me-2 text-primary"></i>Lapor Pengaduan Nasional
+                            </h3>
+                            <p class="mb-2 text-muted">
+                                Selain melaporkan pengaduan kepada kami, Anda juga dapat menyampaikan aspirasi dan pengaduan pelayanan publik secara nasional melalui:
+                            </p>
+                            <a href="https://www.lapor.go.id/"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-sm btn-primary">
+                                <i class="fas fa-external-link-alt me-2"></i>Kunjungi LAPOR.GO.ID
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Standards Compliance Note -->
-            <div class="p-4 rounded-3 border-start border-primary border-4">
-                <div class="d-flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-info-circle text-primary info-icon-large"></i>
+            <!-- Tracking Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h3 fw-bold mb-4 text-center">Lacak Status Pengaduan Anda</h2>
+                    <p class="text-muted mb-4 text-center">Ketahui status terkini dari pengaduan yang telah Anda sampaikan</p>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <form method="POST" action="{{ route('supervision.complaint.track') }}" class="space-y-4">
+                                @csrf
+                                <div class="form-group mb-3">
+                                    <label for="complaint_number" class="form-label">
+                                        Nomor Tiket Pengaduan
+                                    </label>
+                                    <input type="text" 
+                                           id="complaint_number" 
+                                           name="complaint_number" 
+                                           required
+                                           class="form-control"
+                                           placeholder="Masukkan nomor tiket">
+                                </div>
+                                
+                                <div class="form-group mb-4">
+                                    <label for="reporter_email" class="form-label">
+                                        Email Pelapor (Opsional)
+                                    </label>
+                                    <input type="email" 
+                                           id="reporter_email" 
+                                           name="reporter_email" 
+                                           class="form-control"
+                                           placeholder="Email yang digunakan saat pengiriman">
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" 
+                                            class="btn btn-primary btn-lg">
+                                        <i class="fas fa-search me-2"></i> Lacak Pengaduan
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <div class="text-center mt-4">
+                                <a href="{{ route('supervision.complaint.track.form') }}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-external-link-alt me-2"></i> Buka halaman pelacakan lengkap
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="ms-4">
-                        <h4 class="h5 fw-bold mb-2 info-heading">
-                            Kepatuhan terhadap Standar Pelayanan
-                        </h4>
-                        <p class="mb-3 info-text">
-                            Layanan pengaduan ini diselaraskan dengan Peraturan Menteri PANRB Nomor 15 Tahun 2014 tentang Pedoman Pelayanan Publik.
-                        </p>
-                        <button onclick="showStandardsModal()" class="btn btn-outline-primary">
-                            <i class="fas fa-list-check me-2"></i> Lihat 14 Komponen Standar Pelayanan
-                        </button>
+                </div>
+            </div>
+
+            <!-- Standards Compliance Note -->
+            <div class="card">
+                <div class="card-body p-4 border-start border-primary border-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-primary info-icon-large" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <div class="ms-4">
+                            <h4 class="h5 fw-bold mb-2">
+                                Kepatuhan terhadap Standar Pelayanan
+                            </h4>
+                            <p class="mb-3 text-muted">
+                                Layanan pengaduan ini diselaraskan dengan Peraturan Menteri PANRB Nomor 15 Tahun 2014 tentang Pedoman Pelayanan Publik.
+                            </p>
+                            <button onclick="showStandardsModal()" class="btn btn-outline-primary">
+                                <i class="fas fa-list-check me-2"></i> Lihat 14 Komponen Standar Pelayanan
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
