@@ -71,6 +71,12 @@
                 </svg>
                 Tema
             </a>
+            <a class="tab" data-tab="integration">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                </svg>
+                Integrasi
+            </a>
         </div>
 
         <!-- Tab Content -->
@@ -250,6 +256,120 @@
                     <div class="alert alert-info mt-4">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <span>Tema akan diterapkan setelah menyimpan dan refresh halaman.</span>
+                    </div>
+                </div>
+
+                <!-- Integration Tab -->
+                <div id="integration-tab" class="tab-content hidden">
+                    <h2 class="card-title text-2xl mb-4">Pengaturan Integrasi</h2>
+
+                    <!-- WhatsApp Settings -->
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold mb-2">Pengaturan WhatsApp Gateway</h3>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">WhatsApp API URL</span>
+                                <div class="tooltip" data-tip="URL endpoint dari penyedia API WhatsApp.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="text" name="whatsapp_api_url" value="{{ $settings['integration']->where('key', 'whatsapp_api_url')->first()->value ?? '' }}" class="input input-bordered w-full" placeholder="https://api.whatsapp.com/send">
+                        </div>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">WhatsApp API Token</span>
+                                <div class="tooltip" data-tip="Token otentikasi untuk mengakses API.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="password" name="whatsapp_api_token" value="{{ $settings['integration']->where('key', 'whatsapp_api_token')->first()->value ?? '' }}" class="input input-bordered w-full" placeholder="Token rahasia API">
+                        </div>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">WhatsApp Sender ID</span>
+                                <div class="tooltip" data-tip="Nomor WhatsApp yang terdaftar sebagai pengirim.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="text" name="whatsapp_sender_id" value="{{ $settings['integration']->where('key', 'whatsapp_sender_id')->first()->value ?? '' }}" class="input input-bordered w-full" placeholder="Nomor pengirim (misal: 6281234567890)">
+                        </div>
+                    </div>
+
+                    <!-- Email Settings -->
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Pengaturan Email (SMTP)</h3>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">Mailer</span>
+                                <div class="tooltip" data-tip="Contoh: smtp, log, array.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="text" name="mail_mailer" value="{{ $settings['integration']->where('key', 'mail_mailer')->first()->value ?? 'smtp' }}" class="input input-bordered w-full" placeholder="smtp">
+                        </div>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">Host</span>
+                                <div class="tooltip" data-tip="Host server SMTP.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="text" name="mail_host" value="{{ $settings['integration']->where('key', 'mail_host')->first()->value ?? '' }}" class="input input-bordered w-full" placeholder="smtp.mailgun.org">
+                        </div>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">Port</span>
+                                <div class="tooltip" data-tip="Port server SMTP.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="text" name="mail_port" value="{{ $settings['integration']->where('key', 'mail_port')->first()->value ?? '' }}" class="input input-bordered w-full" placeholder="587">
+                        </div>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">Username</span>
+                                <div class="tooltip" data-tip="Username untuk otentikasi SMTP.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="text" name="mail_username" value="{{ $settings['integration']->where('key', 'mail_username')->first()->value ?? '' }}" class="input input-bordered w-full" placeholder="Username SMTP">
+                        </div>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">Password</span>
+                                <div class="tooltip" data-tip="Password untuk otentikasi SMTP.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="password" name="mail_password" value="{{ $settings['integration']->where('key', 'mail_password')->first()->value ?? '' }}" class="input input-bordered w-full" placeholder="Password SMTP">
+                        </div>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">Enkripsi</span>
+                                <div class="tooltip" data-tip="Contoh: tls, ssl.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="text" name="mail_encryption" value="{{ $settings['integration']->where('key', 'mail_encryption')->first()->value ?? 'tls' }}" class="input input-bordered w-full" placeholder="tls">
+                        </div>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">Alamat Pengirim</span>
+                                <div class="tooltip" data-tip="Alamat email yang akan digunakan sebagai pengirim.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="email" name="mail_from_address" value="{{ $settings['integration']->where('key', 'mail_from_address')->first()->value ?? '' }}" class="input input-bordered w-full" placeholder="noreply@example.com">
+                        </div>
+                        <div class="form-control w-full mb-4">
+                            <label class="label">
+                                <span class="label-text font-semibold">Nama Pengirim</span>
+                                <div class="tooltip" data-tip="Nama yang akan ditampilkan sebagai pengirim.">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                            </label>
+                            <input type="text" name="mail_from_name" value="{{ $settings['integration']->where('key', 'mail_from_name')->first()->value ?? '' }}" class="input input-bordered w-full" placeholder="Nama Aplikasi">
+                        </div>
                     </div>
                 </div>
 

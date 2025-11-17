@@ -36,49 +36,75 @@ class SettingsController extends Controller
     {
         try {
             $data = $request->except(['_token', '_method']);
+            $envData = [];
 
+            $settingsToUpdate = [];
             foreach ($data as $key => $value) {
-                // Skip null values
-                if ($value === null) {
+                if ($value === null && !$request->hasFile($key)) {
                     continue;
                 }
 
-                // Handle file uploads
                 if ($request->hasFile($key)) {
+                    // Handle file uploads
                     $file = $request->file($key);
                     $setting = AppSetting::where('key', $key)->first();
-
-                    // Delete old file if exists
                     if ($setting && $setting->value && Storage::disk('public')->exists($setting->value)) {
                         Storage::disk('public')->delete($setting->value);
                     }
-
-                    // Store new file
-                    if ($key === 'app_favicon') {
-                        $path = $file->storeAs('settings', 'favicon.' . $file->getClientOriginalExtension(), 'public');
-                    } elseif ($key === 'app_logo') {
-                        $path = $file->storeAs('settings', 'logo.' . $file->getClientOriginalExtension(), 'public');
-                    } else {
-                        $path = $file->store('settings', 'public');
-                    }
-
+                    $path = $file->store('settings', 'public');
                     $value = $path;
                 }
 
-                // Update or create setting
-                AppSetting::updateOrCreate(
-                    ['key' => $key],
-                    ['value' => $value]
-                );
+                // Separate .env and database settings
+                if (in_array($key, ['whatsapp_api_token', 'mail_password'])) {
+                    $envKey = strtoupper($key);
+                    $envData[$envKey] = $value;
+                } else if (in_array($key, ['whatsapp_api_url', 'whatsapp_sender_id', 'mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_encryption', 'mail_from_address', 'mail_from_name'])) {
+                    $envKey = strtoupper($key);
+                    $envData[$envKey] = $value;
+                    $settingsToUpdate[$key] = $value;
+                } else {
+                    $settingsToUpdate[$key] = $value;
+                }
             }
 
-            // Clear cache
+            // Update database settings
+            foreach ($settingsToUpdate as $key => $value) {
+                AppSetting::updateOrCreate(['key' => $key], ['value' => $value]);
+            }
+
+            // Update .env file
+            if (!empty($envData)) {
+                $this->updateEnv($envData);
+            }
+
             Cache::flush();
 
             return redirect()->back()->with('success', 'Pengaturan berhasil diperbarui!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal memperbarui pengaturan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Helper to update .env file
+     */
+    private function updateEnv(array $data)
+    {
+        $envFilePath = app()->environmentFilePath();
+        $content = file_get_contents($envFilePath);
+
+        foreach ($data as $key => $value) {
+            $key = strtoupper($key);
+            $value = '"' . $value . '"'; // Add quotes to handle spaces
+            if (strpos($content, $key . '=') !== false) {
+                $content = preg_replace('/^' . $key . '=.*/m', $key . '=' . $value, $content);
+            } else {
+                $content .= "\n" . $key . '=' . $value;
+            }
+        }
+
+        file_put_contents($envFilePath, $content);
     }
 
     /**
