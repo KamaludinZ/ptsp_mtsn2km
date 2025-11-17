@@ -15,6 +15,8 @@ class Visitor extends Model
         'phone',
         'email',
         'institution',
+        'institution_type',
+        'company_type',
         'purpose',
         'notes',
         'person_to_meet',
