@@ -282,40 +282,6 @@
     [data-theme="dark"] .form-check-label {
         color: #d1d5db !important;
     }
-
-    /* Debug - Force Visibility */
-    form {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    .form-control, .form-select, textarea, button[type="submit"] {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    .row {
-        display: flex !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    .col-md-6, .col-12 {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    /* Ensure institution fields are hidden by default */
-    #institution-fields {
-        display: none !important;
-    }
-
-    .hidden {
-        display: none;
-    }
 </style>
 @endpush
 
