@@ -643,7 +643,7 @@
                             <p class="mb-3 text-muted">
                                 Layanan pengaduan ini diselaraskan dengan Peraturan Menteri PANRB Nomor 15 Tahun 2014 tentang Pedoman Pelayanan Publik.
                             </p>
-                            <button onclick="showStandardsModal()" class="btn btn-outline-primary">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#standardsModal">
                                 <i class="fas fa-list-check me-2"></i> Lihat 14 Komponen Standar Pelayanan
                             </button>
                         </div>
@@ -660,7 +660,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">14 Komponen Standar Pelayanan</h5>
-                <button type="button" class="btn-close" onclick="closeStandardsModal()" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="space-y-3">
@@ -808,35 +808,6 @@
 
 @push('scripts')
 <script>
-    // Function to show standards modal
-    function showStandardsModal() {
-        const modal = document.getElementById('standardsModal');
-        modal.classList.add('show', 'd-block');
-        modal.style.display = 'block';
-        modal.setAttribute('aria-hidden', 'false');
-        // Add backdrop
-        if (!document.querySelector('.modal-backdrop')) {
-            const backdrop = document.createElement('div');
-            backdrop.className = 'modal-backdrop fade show';
-            document.body.appendChild(backdrop);
-        }
-        document.body.classList.add('modal-open');
-    }
-
-    // Function to close standards modal
-    function closeStandardsModal() {
-        const modal = document.getElementById('standardsModal');
-        modal.classList.remove('show', 'd-block');
-        modal.style.display = 'none';
-        modal.setAttribute('aria-hidden', 'true');
-        // Remove backdrop
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-            backdrop.remove();
-        }
-        document.body.classList.remove('modal-open');
-    }
-    
     // Handle anonymous checkbox
     document.addEventListener('DOMContentLoaded', function() {
         const anonymousCheckbox = document.getElementById('anonymous_report_alt');
