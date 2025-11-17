@@ -4,6 +4,11 @@
 
 @push('styles')
 <style>
+    /* Debug: Force tab pane visibility */
+    .tab-pane {
+        display: block !important;
+    }
+
     /* Service Component Hover Effect */
     .service-component {
         cursor: pointer;
