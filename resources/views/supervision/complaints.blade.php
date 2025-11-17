@@ -550,7 +550,7 @@
             </div>
 
             <!-- Lapor.go.id Information -->
-            <div class="card mb-4">
+            <div class="card mb-4 bg-danger-subtle">
                 <div class="card-body text-center">
                     <div class="row align-items-center">
                         <div class="col-md-3 mb-3 mb-md-0">
