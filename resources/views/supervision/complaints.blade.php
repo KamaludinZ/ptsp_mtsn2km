@@ -3,40 +3,273 @@
 @section('title', 'Layanan Pengaduan - ' . config('app.name', 'PTSP MTsN 2 Kota Malang'))
 
 @push('styles')
+<style>
+    /* Hero Section */
+    .visitor-hero {
+        background: linear-gradient(135deg, #15803d 0%, #166534 50%, #14532d 100%);
+        color: white;
+        padding: 3rem 0 2rem;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+
+    .visitor-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+        z-index: 0;
+    }
+
+    .visitor-hero .container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .visitor-hero .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+
+    .visitor-hero .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Stats Cards */
+    .stat-card-visitor {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+    }
+
+    .stat-card-visitor:hover {
+        transform: translateY(-8px) !important;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+        border-color: rgba(21, 128, 61, 0.2);
+    }
+
+    .stat-card-visitor .stat-icon {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 1.25rem;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card-visitor .stat-value {
+        font-size: 3rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+
+    .stat-card-visitor .stat-label {
+        font-size: 1rem;
+        color: #6b7280;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Tabs */
+    .nav-tabs-visitor {
+        border: none;
+        gap: 1rem;
+        margin-bottom: -1px;
+    }
+
+    .nav-tabs-visitor .nav-link {
+        border: 2px solid transparent;
+        border-radius: 12px 12px 0 0;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        color: var(--bs-gray-600);
+        background: var(--bs-gray-100);
+        transition: all 0.3s ease;
+    }
+
+    .nav-tabs-visitor .nav-link:hover {
+        background: var(--bs-gray-200);
+        color: var(--bs-gray-800);
+    }
+
+    .nav-tabs-visitor .nav-link.active {
+        background: white;
+        color: var(--bs-primary);
+        border-color: var(--bs-gray-300) var(--bs-gray-300) white;
+    }
+
+    /* Form Card */
+    .visitor-form-card {
+        background: white;
+        border-radius: 0 16px 16px 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--bs-gray-200);
+        min-height: 400px;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+    }
+
+    /* Tab Content */
+    .tab-content {
+        padding-top: 1rem;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .tab-pane {
+        display: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .tab-pane.active {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .tab-pane.show {
+        display: block !important;
+    }
+
+    /* Dark Mode */
+    [data-theme="dark"] body {
+        background-color: #111827 !important;
+    }
+
+    [data-theme="dark"] .stat-card-visitor {
+        background: #1f2937 !important;
+        border: 1px solid #374151;
+    }
+
+    [data-theme="dark"] .stat-card-visitor .stat-value {
+        color: white !important;
+    }
+
+    [data-theme="dark"] .stat-card-visitor .stat-label {
+        color: #9ca3af !important;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link {
+        background: #1f2937;
+        color: #9ca3af;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link.active {
+        background: #374151;
+        color: white;
+        border-color: #4b5563 #4b5563 #374151;
+    }
+
+    [data-theme="dark"] .visitor-form-card {
+        background: #1f2937 !important;
+        border-color: #374151 !important;
+    }
+
+    [data-theme="dark"] .card {
+        background: #1f2937 !important;
+        border-color: #374151 !important;
+        color: white !important;
+    }
+
+    [data-theme="dark"] h1,
+    [data-theme="dark"] h2,
+    [data-theme="dark"] h3,
+    [data-theme="dark"] h4,
+    [data-theme="dark"] h5,
+    [data-theme="dark"] h6 {
+        color: white !important;
+    }
+
+    [data-theme="dark"] p,
+    [data-theme="dark"] .text-muted {
+        color: #9ca3af !important;
+    }
+
+    [data-theme="dark"] .form-label {
+        color: white !important;
+    }
+
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .form-select,
+    [data-theme="dark"] textarea {
+        background-color: #374151 !important;
+        border-color: #4b5563 !important;
+        color: white !important;
+    }
+
+    [data-theme="dark"] .form-check-label {
+        color: #d1d5db !important;
+    }
+</style>
 @endpush
 
 @section('content')
 <!-- Page Header -->
-<div class="page-header">
+<div class="visitor-hero">
     <div class="container">
-        <!-- Breadcrumb -->
-        <nav class="breadcrumb">
-            <a href="{{ url('/') }}">Beranda</a>
-            <span class="breadcrumb-separator">/</span>
-            <span>Pengaduan</span>
-        </nav>
-
-        <!-- Title -->
-        <h1 class="page-title">Layanan Pengaduan</h1>
-        <p class="page-subtitle">Sampaikan keluhan, saran, atau informasi penting terkait pelayanan di MTsN 2 Kota Malang</p>
+        <div class="text-center mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center">
+                    <li class="breadcrumb-item"><a href="{{ url('/') }}" class="text-white">Beranda</a></li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Pengaduan</li>
+                </ol>
+            </nav>
+            <h1 class="display-4 fw-bold mb-3">Layanan Pengaduan</h1>
+            <p class="lead mb-4 opacity-90">Sampaikan keluhan, saran, atau informasi penting terkait pelayanan di MTsN 2 Kota Malang</p>
+        </div>
 
         <!-- Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">1,247</div>
-                <div class="stat-label">Total Pengaduan</div>
+        <div class="row g-4 justify-content-center mt-4">
+            <div class="col-md-4 col-lg-3">
+                <div class="stat-card-visitor">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #15803d 0%, #166534 100%);">
+                        <i class="fas fa-users text-white"></i>
+                    </div>
+                    <div class="stat-value">1,247</div>
+                    <div class="stat-label">Total Pengaduan</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">98%</div>
-                <div class="stat-label">Ditindaklanjuti</div>
+            <div class="col-md-4 col-lg-3">
+                <div class="stat-card-visitor">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <i class="fas fa-user-check text-white"></i>
+                    </div>
+                    <div class="stat-value">98%</div>
+                    <div class="stat-label">Ditindaklanjuti</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">7</div>
-                <div class="stat-label">Hari Rata-rata</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">95%</div>
-                <div class="stat-label">Puas Ditangani</div>
+            <div class="col-md-4 col-lg-3">
+                <div class="stat-card-visitor">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <i class="fas fa-calendar-check text-white"></i>
+                    </div>
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Hari Rata-rata</div>
+                </div>
             </div>
         </div>
     </div>
@@ -48,7 +281,7 @@
     <div class="card border-0 shadow-sm rounded-4 mb-6">
         <div class="card-header bg-white py-4 border-bottom-0">
             <!-- Nav tabs -->
-            <ul class="nav nav-tabs nav-fill border-0" id="complaintTab" role="tablist">
+            <ul class="nav nav-tabs nav-tabs-visitor mb-0" id="complaintTab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="dumas-alt-tab" data-bs-toggle="tab" data-bs-target="#dumas-alt" type="button" role="tab" aria-controls="dumas-alt" aria-selected="true">
                         <i class="fas fa-comment me-2"></i>Pengaduan Masyarakat
@@ -62,7 +295,7 @@
             </ul>
         </div>
         
-        <div class="card-body p-4">
+        <div class="visitor-form-card p-4">
             <!-- Tab panes -->
             <div class="tab-content" id="complaintTabContentAlt">
                 <!-- Dumas Tab -->
