@@ -609,12 +609,9 @@
             <div class="tab-content" id="complaintTabContentAlt">
                 <!-- Dumas Tab -->
                 <div class="tab-pane fade show active" id="dumas-alt" role="tabpanel" aria-labelledby="dumas-alt-tab">
-                    <div class="alert alert-info" role="alert">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Pengaduan Masyarakat</strong> - Gunakan formulir ini untuk melaporkan keluhan terkait pelayanan publik, seperti pelayanan lambat, prosedur berbelit, petugas tidak ramah, dan sebagainya.
-                    </div>
-                    
                     <form action="{{ route('supervision.complaint.submit') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" name="complaint_type" value="complaint">
 
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -1072,8 +1069,8 @@
     
     // Handle anonymous checkbox
     document.addEventListener('DOMContentLoaded', function() {
-        const anonymousCheckbox = document.getElementById('anonymous');
-        const identityFields = document.getElementById('identity-fields');
+        const anonymousCheckbox = document.getElementById('anonymous_report_alt');
+        const identityFields = document.getElementById('reporter_identity_section_alt');
         
         if (anonymousCheckbox && identityFields) {
             // Initially hide identity fields if anonymous is checked
