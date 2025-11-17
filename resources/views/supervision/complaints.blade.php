@@ -4,6 +4,14 @@
 
 @push('styles')
 <style>
+    /* Specific fix for language button icon alignment on this page */
+    .navbar .dropdown .btn-circle i.fas.fa-globe {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: auto !important;
+    }
+
     /* Service Component Hover Effect */
     .service-component {
         cursor: pointer;
