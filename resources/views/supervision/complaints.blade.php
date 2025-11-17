@@ -588,8 +588,8 @@
                             <form method="POST" action="{{ route('supervision.complaint.track') }}" class="space-y-4">
                                 @csrf
                                 <div class="form-group mb-3">
-                                    <label for="complaint_number" class="form-label">
-                                        Nomor Tiket Pengaduan
+                                    <label for="complaint_number" class="form-label fw-semibold">
+                                        <i class="fas fa-ticket-alt me-2 text-primary"></i>Nomor Tiket Pengaduan
                                     </label>
                                     <input type="text" 
                                            id="complaint_number" 
@@ -600,8 +600,8 @@
                                 </div>
                                 
                                 <div class="form-group mb-4">
-                                    <label for="reporter_email" class="form-label">
-                                        Email Pelapor (Opsional)
+                                    <label for="reporter_email" class="form-label fw-semibold">
+                                        <i class="fas fa-envelope me-2 text-primary"></i>Email Pelapor (Opsional)
                                     </label>
                                     <input type="email" 
                                            id="reporter_email" 
