@@ -522,7 +522,7 @@
                                 <option value="instansi_perusahaan">Instansi/Perusahaan</option>
                             </select>
                         </div>
-                        <div class="col-12" id="institution-fields">
+                        <div class="col-12 hidden" id="institution-fields">
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">
@@ -692,9 +692,9 @@
             var institutionFields = document.getElementById('institution-fields');
             if (applicantTypeSelect && institutionFields) {
                 if (applicantTypeSelect.value === 'instansi_perusahaan') {
-                    institutionFields.style.setProperty('display', 'block', 'important');
+                    institutionFields.classList.remove('hidden');
                 } else {
-                    institutionFields.style.setProperty('display', 'none', 'important');
+                    institutionFields.classList.add('hidden');
                 }
             }
         }
