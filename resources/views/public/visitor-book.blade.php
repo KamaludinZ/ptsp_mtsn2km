@@ -677,6 +677,28 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('🚀 Initializing visitor book tabs...');
 
+        // Function to toggle institution fields visibility
+        function toggleInstitutionFields() {
+            var applicantTypeSelect = document.getElementById('applicant_type');
+            var institutionFields = document.getElementById('institution-fields');
+            if (applicantTypeSelect && institutionFields) {
+                if (applicantTypeSelect.value === 'instansi_perusahaan') {
+                    institutionFields.style.display = 'block';
+                } else {
+                    institutionFields.style.display = 'none';
+                }
+            }
+        }
+
+        // Call on page load to set initial state
+        toggleInstitutionFields();
+
+        // Attach event listener
+        var applicantTypeSelect = document.getElementById('applicant_type');
+        if (applicantTypeSelect) {
+            applicantTypeSelect.addEventListener('change', toggleInstitutionFields);
+        }
+
         // Force show first tab immediately
         const firstTab = document.querySelector('#visitor-form');
         if (firstTab) {
@@ -752,15 +774,6 @@
         });
 
         console.log('✅ Visitor book initialization complete!');
-    });
-
-    document.getElementById('applicant_type').addEventListener('change', function () {
-        var institutionFields = document.getElementById('institution-fields');
-        if (this.value === 'instansi_perusahaan') {
-            institutionFields.style.display = 'block';
-        } else {
-            institutionFields.style.display = 'none';
-        }
     });
 </script>
 
