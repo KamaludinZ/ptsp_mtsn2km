@@ -224,6 +224,17 @@
     [data-theme="dark"] .form-check-label {
         color: #d1d5db !important;
     }
+    .nav-tabs-visitor .nav-link#whistleblowing-alt-tab.active {
+        background: #dc3545; /* Bootstrap red */
+        color: white;
+        border-color: #dc3545 #dc3545 white;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link#whistleblowing-alt-tab.active {
+        background: #dc3545; /* Bootstrap red */
+        color: white;
+        border-color: #dc3545 #dc3545 #1f2937;
+    }
 </style>
 @endpush
 
@@ -306,31 +317,45 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="reporter_name_alt" class="form-label">Nama Pelapor <span class="text-danger">*</span></label>
+                                <label for="reporter_name_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-2 text-primary"></i>Nama Pelapor <span class="text-danger">*</span>
+                                </label>
                                 <input type="text" class="form-control" id="reporter_name_alt" name="reporter_name" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="reporter_email_alt" class="form-label">Email Pelapor <span class="text-danger">*</span></label>
+                                <label for="reporter_email_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope me-2 text-primary"></i>Email Pelapor <span class="text-danger">*</span>
+                                </label>
                                 <input type="email" class="form-control" id="reporter_email_alt" name="reporter_email" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="reporter_phone_alt" class="form-label">Nomor Telepon</label>
+                                <label for="reporter_phone_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-phone me-2 text-primary"></i>Nomor Telepon
+                                </label>
                                 <input type="tel" class="form-control" id="reporter_phone_alt" name="reporter_phone">
                             </div>
                             <div class="col-md-6">
-                                <label for="complaint_date_alt" class="form-label">Tanggal Kejadian <span class="text-danger">*</span></label>
+                                <label for="complaint_date_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-alt me-2 text-primary"></i>Tanggal Kejadian <span class="text-danger">*</span>
+                                </label>
                                 <input type="date" class="form-control" id="complaint_date_alt" name="complaint_date" required>
                             </div>
                             <div class="col-12">
-                                <label for="complaint_title_alt" class="form-label">Judul Pengaduan <span class="text-danger">*</span></label>
+                                <label for="complaint_title_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-heading me-2 text-primary"></i>Judul Pengaduan <span class="text-danger">*</span>
+                                </label>
                                 <input type="text" class="form-control" id="complaint_title_alt" name="complaint_title" required>
                             </div>
                             <div class="col-12">
-                                <label for="complaint_description_alt" class="form-label">Isi Pengaduan <span class="text-danger">*</span></label>
+                                <label for="complaint_description_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-file-alt me-2 text-primary"></i>Isi Pengaduan <span class="text-danger">*</span>
+                                </label>
                                 <textarea class="form-control" id="complaint_description_alt" name="complaint_description" rows="5" required></textarea>
                             </div>
                             <div class="col-12">
-                                <label for="attachment_alt" class="form-label">Lampiran (jika ada)</label>
+                                <label for="attachment_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-paperclip me-2 text-primary"></i>Lampiran (jika ada)
+                                </label>
                                 <input type="file" class="form-control" id="attachment_alt" name="attachment">
                             </div>
                             <div class="col-12 d-grid">
@@ -373,7 +398,9 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="violation_category_alt" class="form-label">Kategori Pelanggaran <span class="text-danger">*</span></label>
+                                <label for="violation_category_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-tag me-2 text-danger"></i>Kategori Pelanggaran <span class="text-danger">*</span>
+                                </label>
                                 <select class="form-select" id="violation_category_alt" name="violation_category" required>
                                     <option value="">Pilih Kategori</option>
                                     <option value="corruption">Korupsi</option>
@@ -385,19 +412,27 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label for="incident_date_alt" class="form-label">Tanggal Kejadian</label>
+                                <label for="incident_date_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-alt me-2 text-danger"></i>Tanggal Kejadian
+                                </label>
                                 <input type="date" class="form-control" id="incident_date_alt" name="incident_date">
                             </div>
                             <div class="col-12">
-                                <label for="incident_title_alt" class="form-label">Judul Laporan <span class="text-danger">*</span></label>
+                                <label for="incident_title_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-heading me-2 text-danger"></i>Judul Laporan <span class="text-danger">*</span>
+                                </label>
                                 <input type="text" class="form-control" id="incident_title_alt" name="complaint_title" required placeholder="Ringkasan Pelanggaran">
                             </div>
                             <div class="col-12">
-                                <label for="incident_description_alt" class="form-label">Deskripsi Kejadian <span class="text-danger">*</span></label>
+                                <label for="incident_description_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-file-alt me-2 text-danger"></i>Deskripsi Kejadian <span class="text-danger">*</span>
+                                </label>
                                 <textarea class="form-control" id="incident_description_alt" name="complaint_description" rows="5" required placeholder="Jelaskan secara detail kejadian pelanggaran..."></textarea>
                             </div>
                             <div class="col-12">
-                                <label for="evidence_alt" class="form-label">Bukti Pendukung</label>
+                                <label for="evidence_alt" class="form-label fw-semibold">
+                                    <i class="fas fa-paperclip me-2 text-danger"></i>Bukti Pendukung
+                                </label>
                                 <div class="input-group">
                                     <input type="file" class="form-control" id="evidence_alt" name="attachment" multiple>
                                     <label class="input-group-text" for="evidence_alt">Unggah File</label>
@@ -409,29 +444,37 @@
                             <div class="col-12">
                                 <div class="form-check mb-3">
                                     <input class="form-check-input" type="checkbox" id="anonymous_report_alt" name="anonymous" value="1">
-                                    <label class="form-check-label" for="anonymous_report_alt">
-                                        Laporkan secara anonim
+                                    <label class="form-check-label fw-semibold" for="anonymous_report_alt">
+                                        <i class="fas fa-user-secret me-2 text-danger"></i>Laporkan secara anonim
                                     </label>
                                 </div>
                                 
                                 <div id="reporter_identity_section_alt">
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <label for="reporter_name_whistle_alt" class="form-label">Nama Lengkap</label>
+                                            <label for="reporter_name_whistle_alt" class="form-label fw-semibold">
+                                                <i class="fas fa-user me-2 text-danger"></i>Nama Lengkap
+                                            </label>
                                             <input type="text" class="form-control" id="reporter_name_whistle_alt" name="reporter_name">
                                         </div>
                                         <div class="col-md-6">
-                                            <label for="reporter_position_alt" class="form-label">Jabatan/Posisi</label>
+                                            <label for="reporter_position_alt" class="form-label fw-semibold">
+                                                <i class="fas fa-briefcase me-2 text-danger"></i>Jabatan/Posisi
+                                            </label>
                                             <input type="text" class="form-control" id="reporter_position_alt" name="reporter_position" placeholder="Contoh: Pegawai, Kontraktor, dll">
                                         </div>
                                     </div>
                                     <div class="row mt-3">
                                         <div class="col-md-6">
-                                            <label for="reporter_email_whistle_alt" class="form-label">Email</label>
+                                            <label for="reporter_email_whistle_alt" class="form-label fw-semibold">
+                                                <i class="fas fa-envelope me-2 text-danger"></i>Email
+                                            </label>
                                             <input type="email" class="form-control" id="reporter_email_whistle_alt" name="reporter_email">
                                         </div>
                                         <div class="col-md-6">
-                                            <label for="reporter_phone_whistle_alt" class="form-label">Nomor Telepon</label>
+                                            <label for="reporter_phone_whistle_alt" class="form-label fw-semibold">
+                                                <i class="fas fa-phone me-2 text-danger"></i>Nomor Telepon
+                                            </label>
                                             <input type="tel" class="form-control" id="reporter_phone_whistle_alt" name="reporter_phone">
                                         </div>
                                     </div>
