@@ -307,6 +307,11 @@
         opacity: 1 !important;
         visibility: visible !important;
     }
+
+    /* Ensure institution fields are hidden by default */
+    #institution-fields {
+        display: none !important;
+    }
 </style>
 @endpush
 
