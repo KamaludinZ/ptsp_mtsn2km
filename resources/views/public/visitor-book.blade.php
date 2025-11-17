@@ -423,34 +423,29 @@
                         </div>
                         <div class="col-12">
                             <div class="row g-4">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label fw-semibold">
                                         <i class="fas fa-building me-2 text-primary"></i>Instansi/Perusahaan
                                     </label>
                                     <input type="text" name="institution" class="form-control form-control-lg">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label fw-semibold">
-                                        <i class="fas fa-tag me-2 text-primary"></i>Jenis Instansi
+                                        <i class="fas fa-tag me-2 text-primary"></i>Jenis Instansi/Perusahaan
                                     </label>
-                                    <select name="institution_type" class="form-select form-select-lg">
-                                        <option value="">Pilih Jenis Instansi</option>
-                                        <option value="pemerintah">Pemerintah</option>
-                                        <option value="swasta">Swasta</option>
-                                        <option value="pendidikan">Pendidikan</option>
-                                        <option value="lainnya">Lainnya</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">
-                                        <i class="fas fa-briefcase me-2 text-primary"></i>Jenis Perusahaan
-                                    </label>
-                                    <select name="company_type" class="form-select form-select-lg">
-                                        <option value="">Pilih Jenis Perusahaan</option>
-                                        <option value="umkm">UMKM</option>
-                                        <option value="menengah">Menengah</option>
-                                        <option value="besar">Besar</option>
-                                        <option value="multinasional">Multinasional</option>
+                                    <select name="institution_category" class="form-select form-select-lg">
+                                        <option value="">Pilih Kategori</option>
+                                        <optgroup label="Instansi">
+                                            <option value="pemerintah">Pemerintah</option>
+                                            <option value="swasta">Swasta</option>
+                                            <option value="pendidikan">Pendidikan</option>
+                                        </optgroup>
+                                        <optgroup label="Perusahaan">
+                                            <option value="umkm">UMKM</option>
+                                            <option value="menengah">Menengah</option>
+                                            <option value="besar">Besar</option>
+                                            <option value="multinasional">Multinasional</option>
+                                        </optgroup>
                                         <option value="lainnya">Lainnya</option>
                                     </select>
                                 </div>
@@ -510,34 +505,29 @@
                         </div>
                         <div class="col-12">
                             <div class="row g-4">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label fw-semibold">
                                         <i class="fas fa-building me-2 text-primary"></i>Instansi/Perusahaan
                                     </label>
                                     <input type="text" name="institution" class="form-control form-control-lg">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label fw-semibold">
-                                        <i class="fas fa-tag me-2 text-primary"></i>Jenis Instansi
+                                        <i class="fas fa-tag me-2 text-primary"></i>Jenis Instansi/Perusahaan
                                     </label>
-                                    <select name="institution_type" class="form-select form-select-lg">
-                                        <option value="">Pilih Jenis Instansi</option>
-                                        <option value="pemerintah">Pemerintah</option>
-                                        <option value="swasta">Swasta</option>
-                                        <option value="pendidikan">Pendidikan</option>
-                                        <option value="lainnya">Lainnya</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">
-                                        <i class="fas fa-briefcase me-2 text-primary"></i>Jenis Perusahaan
-                                    </label>
-                                    <select name="company_type" class="form-select form-select-lg">
-                                        <option value="">Pilih Jenis Perusahaan</option>
-                                        <option value="umkm">UMKM</option>
-                                        <option value="menengah">Menengah</option>
-                                        <option value="besar">Besar</option>
-                                        <option value="multinasional">Multinasional</option>
+                                    <select name="institution_category" class="form-select form-select-lg">
+                                        <option value="">Pilih Kategori</option>
+                                        <optgroup label="Instansi">
+                                            <option value="pemerintah">Pemerintah</option>
+                                            <option value="swasta">Swasta</option>
+                                            <option value="pendidikan">Pendidikan</option>
+                                        </optgroup>
+                                        <optgroup label="Perusahaan">
+                                            <option value="umkm">UMKM</option>
+                                            <option value="menengah">Menengah</option>
+                                            <option value="besar">Besar</option>
+                                            <option value="multinasional">Multinasional</option>
+                                        </optgroup>
                                         <option value="lainnya">Lainnya</option>
                                     </select>
                                 </div>
