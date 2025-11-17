@@ -224,16 +224,40 @@
     [data-theme="dark"] .form-check-label {
         color: #d1d5db !important;
     }
-    .nav-tabs-visitor .nav-link#whistleblowing-alt-tab.active {
+    .nav-tabs-visitor .nav-link#whistleblowing-alt-tab {
         background: #dc3545; /* Bootstrap red */
         color: white;
-        border-color: #dc3545 #dc3545 white;
+        border-color: #dc3545 #dc3545 #dc3545; /* Red border all around when not active */
+    }
+
+    .nav-tabs-visitor .nav-link#whistleblowing-alt-tab:hover {
+        background: #c82333; /* Slightly darker red on hover */
+        color: white;
+        border-color: #c82333 #c82333 #c82333;
+    }
+
+    .nav-tabs-visitor .nav-link#whistleblowing-alt-tab.active {
+        background: #c82333; /* Darker red when active */
+        color: white;
+        border-color: #c82333 #c82333 white; /* White bottom border when active */
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link#whistleblowing-alt-tab {
+        background: #dc3545; /* Bootstrap red */
+        color: white;
+        border-color: #dc3545 #dc3545 #dc3545;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link#whistleblowing-alt-tab:hover {
+        background: #c82333; /* Slightly darker red on hover */
+        color: white;
+        border-color: #c82333 #c82333 #c82333;
     }
 
     [data-theme="dark"] .nav-tabs-visitor .nav-link#whistleblowing-alt-tab.active {
-        background: #dc3545; /* Bootstrap red */
+        background: #c82333; /* Darker red when active */
         color: white;
-        border-color: #dc3545 #dc3545 #1f2937;
+        border-color: #c82333 #c82333 #1f2937; /* Dark mode background for bottom border */
     }
 </style>
 @endpush
