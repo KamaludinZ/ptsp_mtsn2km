@@ -4,7 +4,6 @@
 
 @push('styles')
 @endpush
-@endpush
 
 @section('content')
 <!-- Page Header -->
