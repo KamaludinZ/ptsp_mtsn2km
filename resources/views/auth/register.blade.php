@@ -47,11 +47,120 @@
         border-radius: 16px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Desktop Layout - Header di sebelah kiri */
+    @media (min-width: 768px) {
+        .register-card {
+            flex-direction: row;
+            min-height: 650px;
+        }
     }
 
     [data-theme="dark"] .register-card {
         background: #111827;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .register-header {
+        background: var(--bs-primary);
+        color: white;
+        padding: 40px 32px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Desktop - Header occupy 35% width */
+    @media (min-width: 768px) {
+        .register-header {
+            width: 35%;
+            min-height: 650px;
+            padding: 60px 40px;
+        }
+    }
+
+    .register-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 16px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+    }
+
+    /* Desktop - Larger icon */
+    @media (min-width: 768px) {
+        .register-icon {
+            width: 100px;
+            height: 100px;
+            font-size: 50px;
+            margin-bottom: 24px;
+        }
+    }
+
+    .register-header h1 {
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    @media (min-width: 768px) {
+        .register-header h1 {
+            font-size: 28px;
+        }
+    }
+
+    .register-features {
+        margin-top: 32px;
+        text-align: left;
+    }
+
+    .register-features .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        opacity: 0.95;
+    }
+
+    .register-features .feature-icon {
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .register-features .feature-text {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .register-form-wrapper {
+        flex: 1;
+        background: #ffffff;
+    }
+
+    [data-theme="dark"] .register-form-wrapper {
+        background: #111827;
+    }
+
+    /* Desktop - Form wrapper occupy 65% width */
+    @media (min-width: 768px) {
+        .register-form-wrapper {
+            width: 65%;
+            overflow-y: auto;
+        }
     }
 
     .tab-buttons {
@@ -84,8 +193,14 @@
 
     .tab-content {
         display: none;
-        padding: 32px;
+        padding: 24px;
         animation: fadeIn 0.3s;
+    }
+
+    @media (min-width: 768px) {
+        .tab-content {
+            padding: 32px 40px;
+        }
     }
 
     .tab-content.active {
@@ -192,10 +307,17 @@
 
     .bottom-links {
         display: flex;
+        flex-direction: column;
         gap: 12px;
         margin-top: 24px;
         padding-top: 24px;
         border-top: 1px solid var(--bs-border-color);
+    }
+
+    @media (min-width: 576px) {
+        .bottom-links {
+            flex-direction: row;
+        }
     }
 
     .bottom-links a, .bottom-links button {
@@ -209,16 +331,51 @@
 <div class="register-container">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-8 col-xl-7">
+            <div class="col-12 col-md-11 col-lg-10 col-xl-9">
                 <div class="register-card">
                     <!-- Header -->
-                    <div class="text-center p-4" style="background: var(--bs-primary); color: white;">
-                        <h1 class="h3 fw-bold mb-2">Daftar Akun Baru</h1>
-                        <p class="mb-0" style="opacity: 0.9;">MTsN 2 Kota Malang - PTSP Online</p>
+                    <div class="register-header">
+                        <div>
+                            <div class="register-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <h1 class="fw-bold mb-2">Daftar Akun Baru</h1>
+                            <p class="mb-0" style="opacity: 0.9;">Bergabung dengan Sistem PTSP MTsN 2 Kota Malang</p>
+
+                            <!-- Features - Hidden on mobile, shown on desktop -->
+                            <div class="register-features d-none d-md-block">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="feature-text">Gratis dan mudah</div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-user-check"></i>
+                                    </div>
+                                    <div class="feature-text">Akses layanan online</div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-history"></i>
+                                    </div>
+                                    <div class="feature-text">Tracking permohonan</div>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div class="feature-text">Notifikasi real-time</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Tabs -->
-                    <div class="tab-buttons">
+                    <!-- Form Wrapper -->
+                    <div class="register-form-wrapper">
+                        <!-- Tabs -->
+                        <div class="tab-buttons">
                         <button class="tab-button active" onclick="switchTab('umum')">
                             <i class="fas fa-user me-2"></i>Pendaftar Umum
                         </button>
@@ -254,18 +411,37 @@
                                 @enderror
                             </div>
 
-                            <div class="form-group">
-                                <label for="email_umum" class="form-label">
-                                    Email <span class="text-danger">*</span>
-                                </label>
-                                <input type="email" id="email_umum" name="email"
-                                       class="form-control @error('email') is-invalid @enderror"
-                                       value="{{ old('email') }}"
-                                       placeholder="contoh@email.com"
-                                       required>
-                                @error('email')
-                                    <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
-                                @enderror
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email_umum" class="form-label">
+                                            Email <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="email" id="email_umum" name="email"
+                                               class="form-control @error('email') is-invalid @enderror"
+                                               value="{{ old('email') }}"
+                                               placeholder="contoh@email.com"
+                                               required>
+                                        @error('email')
+                                            <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="whatsapp_number_umum" class="form-label">
+                                            Nomor WhatsApp <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" id="whatsapp_number_umum" name="whatsapp_number"
+                                               class="form-control @error('whatsapp_number') is-invalid @enderror"
+                                               value="{{ old('whatsapp_number') }}"
+                                               placeholder="Contoh: 081234567890"
+                                               required>
+                                        @error('whatsapp_number')
+                                            <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="row">
@@ -348,18 +524,37 @@
                                 @enderror
                             </div>
 
-                            <div class="form-group">
-                                <label for="email_civitas" class="form-label">
-                                    Email <span class="text-danger">*</span>
-                                </label>
-                                <input type="email" id="email_civitas" name="email"
-                                       class="form-control @error('email') is-invalid @enderror"
-                                       value="{{ old('email') }}"
-                                       placeholder="contoh@email.com"
-                                       required>
-                                @error('email')
-                                    <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
-                                @enderror
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email_civitas" class="form-label">
+                                            Email <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="email" id="email_civitas" name="email"
+                                               class="form-control @error('email') is-invalid @enderror"
+                                               value="{{ old('email') }}"
+                                               placeholder="contoh@email.com"
+                                               required>
+                                        @error('email')
+                                            <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="whatsapp_number_civitas" class="form-label">
+                                            Nomor WhatsApp <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" id="whatsapp_number_civitas" name="whatsapp_number"
+                                               class="form-control @error('whatsapp_number') is-invalid @enderror"
+                                               value="{{ old('whatsapp_number') }}"
+                                               placeholder="Contoh: 081234567890"
+                                               required>
+                                        @error('whatsapp_number')
+                                            <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="row">
@@ -398,18 +593,21 @@
                         </form>
                     </div>
 
-                    <!-- Bottom Links -->
-                    <div class="px-4 pb-4">
-                        <div class="bottom-links">
-                            <a href="{{ route('login') }}" class="btn btn-outline">
-                                <i class="fas fa-sign-in-alt me-2"></i>Sudah Punya Akun? Login
-                            </a>
-                            <a href="{{ url('/') }}" class="btn btn-outline">
-                                <i class="fas fa-home me-2"></i>Kembali ke Beranda
-                            </a>
+                        <!-- Bottom Links -->
+                        <div class="px-4 pb-4">
+                            <div class="bottom-links">
+                                <a href="{{ route('login') }}" class="btn btn-outline">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Sudah Punya Akun? Login
+                                </a>
+                                <a href="{{ url('/') }}" class="btn btn-outline">
+                                    <i class="fas fa-home me-2"></i>Kembali ke Beranda
+                                </a>
+                            </div>
                         </div>
                     </div>
+                    <!-- End Form Wrapper -->
                 </div>
+                <!-- End Register Card -->
 
                 <!-- Email Verification Notice -->
                 <div class="text-center mt-4 p-3" style="background: rgba(255, 255, 255, 0.8); border-radius: 8px; backdrop-filter: blur(10px);">

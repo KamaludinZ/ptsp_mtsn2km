@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     protected $fillable = [
         'name',
         'email',
+        'whatsapp_number',
         'password',
         'user_type', // guru, pegawai, siswa, walimurid, alumni, instansi, umum
         'registration_code', // for internal users
