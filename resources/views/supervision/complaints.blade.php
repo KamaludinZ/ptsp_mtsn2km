@@ -830,7 +830,7 @@
         }
     });
 
-    document.addEventListener('DOMContentLoaded', function () {
+    function initializeBootstrapTabs() {
         var triggerTabList = [].slice.call(document.querySelectorAll('#complaintTab button'))
         triggerTabList.forEach(function (triggerEl) {
             var tabTrigger = new bootstrap.Tab(triggerEl)
@@ -840,6 +840,12 @@
                 tabTrigger.show()
             })
         })
-    });
+    }
+
+    if (window.bootstrap) {
+        initializeBootstrapTabs();
+    } else {
+        window.addEventListener('load', initializeBootstrapTabs);
+    }
 </script>
 @endpush
