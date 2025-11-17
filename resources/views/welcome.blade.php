@@ -425,6 +425,291 @@
             </div>
         </section>
 
+        <!-- Services Section -->
+        <section id="layanan" aria-labelledby="services-heading">
+            <div class="container">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <div class="d-inline-flex align-items-center px-4 py-2 rounded-pill mb-3"
+                         style="background-color: rgba(20, 83, 45, 0.1);">
+                        <i class="fas fa-th-large me-2" style="color: var(--bs-primary);"></i>
+                        <span class="fw-bold text-uppercase" style="color: var(--bs-primary);">Layanan Kami</span>
+                    </div>
+                    <h2 id="services-heading" class="display-4 fw-bold mb-3">
+                        Jenis <span style="color: var(--bs-primary);">Pelayanan</span> Tersedia
+                    </h2>
+                    <p class="lead text-muted">
+                        Melayani berbagai kebutuhan sivitas akademika dan masyarakat
+                    </p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Layanan Akademik -->
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                        <article class="service-card">
+                            <div class="service-header service-header-primary">
+                                <div class="service-icon">
+                                    <i class="fas fa-user-graduate text-white"></i>
+                                </div>
+                                <h3 class="service-title">Layanan Akademik</h3>
+                                <p class="service-subtitle">Untuk Siswa & Alumni</p>
+                            </div>
+                            <div class="service-body">
+                                <ul class="service-list">
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Surat Keterangan Siswa Aktif</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Legalisir Ijazah & Transkrip</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Surat Rekomendasi</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Surat Keterangan Berkelakuan Baik</span>
+                                    </li>
+                                </ul>
+                                <a href="{{ route('onlineportal.service.catalog') }}" class="btn btn-primary w-100">
+                                    <i class="fas fa-arrow-right me-2"></i>Lihat Detail
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+
+                    <!-- Layanan Wali Murid -->
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                        <article class="service-card">
+                            <div class="service-header service-header-secondary">
+                                <div class="service-icon">
+                                    <i class="fas fa-users text-white"></i>
+                                </div>
+                                <h3 class="service-title">Layanan Wali Murid</h3>
+                                <p class="service-subtitle">Untuk Orang Tua</p>
+                            </div>
+                            <div class="service-body">
+                                <ul class="service-list">
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Informasi Akademik Anak</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Izin Tidak Masuk Sekolah</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Surat Panggilan Orang Tua</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Konsultasi BK</span>
+                                    </li>
+                                </ul>
+                                <a href="{{ route('onlineportal.service.catalog') }}" class="btn btn-primary w-100">
+                                    <i class="fas fa-arrow-right me-2"></i>Lihat Detail
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+
+                    <!-- Layanan Instansi -->
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                        <article class="service-card">
+                            <div class="service-header service-header-emerald">
+                                <div class="service-icon">
+                                    <i class="fas fa-briefcase text-white"></i>
+                                </div>
+                                <h3 class="service-title">Layanan Instansi</h3>
+                                <p class="service-subtitle">Untuk Mitra Kerja</p>
+                            </div>
+                            <div class="service-body">
+                                <ul class="service-list">
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Surat Permohonan Kerjasama</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Izin Kegiatan & Penelitian</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Permohonan Data Statistik</span>
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Surat Rekomendasi Instansi</span>
+                                    </li>
+                                </ul>
+                                <a href="{{ route('onlineportal.service.catalog') }}" class="btn btn-primary w-100">
+                                    <i class="fas fa-arrow-right me-2"></i>Lihat Detail
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How to Use PTSP Section -->
+        <section id="cara-menggunakan" aria-labelledby="how-to-use-heading" style="background-color: var(--bs-gray-50);">
+            <div class="container">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <div class="d-inline-flex align-items-center px-4 py-2 rounded-pill mb-3"
+                         style="background-color: rgba(234, 88, 12, 0.1);">
+                        <i class="fas fa-question-circle me-2" style="color: var(--bs-secondary);"></i>
+                        <span class="fw-bold text-uppercase" style="color: var(--bs-secondary);">Panduan Penggunaan</span>
+                    </div>
+                    <h2 id="how-to-use-heading" class="display-4 fw-bold mb-3">
+                        Cara Menggunakan <span style="color: var(--bs-primary);">Aplikasi PTSP</span>
+                    </h2>
+                    <p class="lead text-muted">
+                        Ikuti langkah mudah untuk mendapatkan pelayanan terbaik kami
+                    </p>
+                </div>
+
+                <div class="row g-5">
+                    <div class="col-lg-6" data-aos="fade-right">
+                        <h3 class="h2 fw-bold mb-4 text-primary">Pelayanan Online</h3>
+                        <p class="mb-4">
+                            Dapatkan layanan kapan saja dan di mana saja melalui portal online kami.
+                        </p>
+                        <ol class="list-group">
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-primary">
+                                    <i class="fas fa-user-plus fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Daftar Akun / Login</h5>
+                                    <p class="mb-0 text-muted">Daftarkan akun Anda atau login jika sudah memiliki akun untuk mengakses layanan online.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-primary">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Pilih Layanan</h5>
+                                    <p class="mb-0 text-muted">Kunjungi halaman "Lihat Semua Layanan" dan pilih jenis layanan yang Anda butuhkan.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-primary">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Isi Formulir Permohonan</h5>
+                                    <p class="mb-0 text-muted">Lengkapi formulir permohonan dengan data yang benar, wajib menyertakan email dan nomor WhatsApp aktif, serta unggah dokumen persyaratan yang diperlukan.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-primary">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Dapatkan Nomor Tiket</h5>
+                                    <p class="mb-0 text-muted">Setelah permohonan diajukan, Anda akan menerima nomor tiket melalui email/WhatsApp untuk melacak status layanan Anda.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-primary">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Lacak Status</h5>
+                                    <p class="mb-0 text-muted">Gunakan fitur "Lacak Status Tiket" untuk memantau perkembangan permohonan Anda secara real-time.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-primary">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Ambil Hasil Layanan</h5>
+                                    <p class="mb-0 text-muted">Jika layanan sudah selesai, Anda akan diberitahu melalui email/WhatsApp untuk mengambil hasilnya secara online atau di loket PTSP.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-primary">
+                                    <i class="fas fa-poll fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Isi Survei Penilaian Layanan</h5>
+                                    <p class="mb-0 text-muted">Berikan penilaian Anda terhadap layanan yang telah diterima untuk membantu kami meningkatkan kualitas.</p>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div class="col-lg-6" data-aos="fade-left">
+                        <h3 class="h2 fw-bold mb-4 text-secondary">Pelayanan Offline</h3>
+                        <p class="mb-4">
+                            Kunjungi loket PTSP kami untuk pelayanan tatap muka yang ramah dan efisien. Anda juga dapat mendaftar akun terlebih dahulu untuk kemudahan administrasi.
+                        </p>
+                        <ol class="list-group">
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-secondary">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Datang ke Loket PTSP</h5>
+                                    <p class="mb-0 text-muted">Kunjungi loket Pelayanan Terpadu Satu Pintu MTsN 2 Kota Malang pada jam operasional.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-secondary">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Ambil Nomor Antrean</h5>
+                                    <p class="mb-0 text-muted">Ambil nomor antrean dan tunggu panggilan dari petugas layanan.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-secondary">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Sampaikan Kebutuhan & Data Diri</h5>
+                                    <p class="mb-0 text-muted">Sampaikan jenis layanan yang Anda butuhkan kepada petugas, serahkan dokumen persyaratan, serta berikan email dan nomor WhatsApp aktif Anda.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-secondary">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Proses Layanan & Nomor Tiket</h5>
+                                    <p class="mb-0 text-muted">Petugas akan memproses permohonan Anda. Anda akan menerima nomor tiket melalui email/WhatsApp dan diberitahu estimasi waktu penyelesaian.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-secondary">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Ambil Hasil Layanan</h5>
+                                    <p class="mb-0 text-muted">Setelah layanan selesai, Anda akan diberitahu melalui email/WhatsApp untuk mengambil hasilnya di loket PTSP.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-start border-0 ps-0">
+                                <div class="me-3 text-secondary">
+                                    <i class="fas fa-poll fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Isi Survei Penilaian Layanan</h5>
+                                    <p class="mb-0 text-muted">Berikan penilaian Anda terhadap layanan yang telah diterima untuk membantu kami meningkatkan kualitas.</p>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Quick Access Section -->
         <section style="background-color: var(--bs-gray-50);" aria-labelledby="access-heading">
             <div class="container">

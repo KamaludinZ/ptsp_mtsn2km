@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Faq;
 use App\Models\Visitor;
 use Illuminate\Http\Request; // Don't forget to import Request
 use Carbon\Carbon;
@@ -22,9 +23,8 @@ class PublicController extends Controller
     public function visitorBook()
     {
         $date = request('date', Carbon::today()->toDateString());
-        $visitors = Visitor::whereDate('created_at', $date)
-            ->whereDate('created_at', $date)
-            ->orderBy('created_at', 'desc')
+        $visitors = Visitor::whereDate('check_in_time', $date)
+            ->orderBy('check_in_time', 'desc')
             ->paginate(20);
 
         return view('public.visitor-book', compact('visitors', 'date'));
@@ -35,7 +35,8 @@ class PublicController extends Controller
      */
     public function about()
     {
-        return view('public.about');
+        $faqs = Faq::where('is_active', true)->orderBy('created_at', 'desc')->get();
+        return view('public.about', compact('faqs'));
     }
 
     /**
