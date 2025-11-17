@@ -586,61 +586,6 @@
 
 <!-- Main Content -->
 <div class="container complaint-container">
-    <!-- Add New Complaint Button -->
-    <div class="text-end mb-4">
-        <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-primary btn-lg">
-            <i class="fas fa-plus me-2"></i> Buat Pengaduan Baru
-        </a>
-    </div>
-
-    <!-- Complaint Types -->
-    <div class="row mb-6">
-        <div class="col-lg-4 mb-4">
-            <div class="complaint-type-card text-center">
-                <div class="mx-auto mb-3 complaint-icon-bg complaint-icon-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                </div>
-                <h3 class="h5 fw-bold mb-2">Pengaduan</h3>
-                <p class="text-muted mb-3">
-                    Laporkan keluhan atau masalah pelayanan yang Anda alami
-                </p>
-                <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-primary w-100">
-                    <i class="fas fa-comment me-2"></i> Kirim Pengaduan
-                </a>
-            </div>
-        </div>
-        
-        <div class="col-lg-4 mb-4">
-            <div class="complaint-type-card text-center">
-                <div class="mx-auto mb-3 complaint-icon-bg complaint-icon-success">
-                    <i class="fas fa-lightbulb"></i>
-                </div>
-                <h3 class="h5 fw-bold mb-2">Saran/Masukan</h3>
-                <p class="text-muted mb-3">
-                    Berikan ide atau masukan untuk meningkatkan kualitas pelayanan
-                </p>
-                <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-success w-100">
-                    <i class="fas fa-lightbulb me-2"></i> Kirim Saran
-                </a>
-            </div>
-        </div>
-        
-        <div class="col-lg-4 mb-4">
-            <div class="complaint-type-card text-center">
-                <div class="mx-auto mb-3 complaint-icon-bg complaint-icon-warning">
-                    <i class="fas fa-bell"></i>
-                </div>
-                <h3 class="h5 fw-bold mb-2">Whistleblowing</h3>
-                <p class="text-muted mb-3">
-                    Laporkan dugaan pelanggaran atau tindakan tidak etis secara rahasia
-                </p>
-                <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-danger w-100">
-                    <i class="fas fa-user-secret me-2"></i> Whistleblowing
-                </a>
-            </div>
-        </div>
-    </div>
-    
     <!-- Alternative: Direct Tabbed Interface -->
     <div class="card border-0 shadow-sm rounded-4 mb-6">
         <div class="card-header bg-white py-4 border-bottom-0">
@@ -669,9 +614,7 @@
                         <strong>Pengaduan Masyarakat</strong> - Gunakan formulir ini untuk melaporkan keluhan terkait pelayanan publik, seperti pelayanan lambat, prosedur berbelit, petugas tidak ramah, dan sebagainya.
                     </div>
                     
-                    <form action="{{ route('supervision.complaint.submit.store') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <input type="hidden" name="complaint_type" value="complaint">
+                    <form action="{{ route('supervision.complaint.submit') }}" method="POST" enctype="multipart/form-data">
 
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -736,7 +679,7 @@
                         </div>
                     </div>
                     
-                    <form action="{{ route('supervision.complaint.submit.store') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('supervision.complaint.submit') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="complaint_type" value="whistleblowing">
 
