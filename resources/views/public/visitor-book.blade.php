@@ -2,33 +2,357 @@
 
 @section('title', 'Buku Tamu - ' . config('app.name', 'PTSP MTsN 2 Kota Malang'))
 
+@push('styles')
+<style>
+    /* Hero Section */
+    .visitor-hero {
+        background: linear-gradient(135deg, #15803d 0%, #166534 50%, #14532d 100%);
+        color: white;
+        padding: 3rem 0 2rem;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+
+    .visitor-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+        z-index: 0;
+    }
+
+    .visitor-hero .container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .visitor-hero .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+
+    .visitor-hero .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Stats Cards */
+    .stat-card-visitor {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+    }
+
+    .stat-card-visitor:hover {
+        transform: translateY(-8px) !important;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+        border-color: rgba(21, 128, 61, 0.2);
+    }
+
+    .stat-card-visitor .stat-icon {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 1.25rem;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card-visitor .stat-value {
+        font-size: 3rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+
+    .stat-card-visitor .stat-label {
+        font-size: 1rem;
+        color: #6b7280;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Tabs */
+    .nav-tabs-visitor {
+        border: none;
+        gap: 1rem;
+        margin-bottom: -1px;
+    }
+
+    .nav-tabs-visitor .nav-link {
+        border: 2px solid transparent;
+        border-radius: 12px 12px 0 0;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        color: var(--bs-gray-600);
+        background: var(--bs-gray-100);
+        transition: all 0.3s ease;
+    }
+
+    .nav-tabs-visitor .nav-link:hover {
+        background: var(--bs-gray-200);
+        color: var(--bs-gray-800);
+    }
+
+    .nav-tabs-visitor .nav-link.active {
+        background: white;
+        color: var(--bs-primary);
+        border-color: var(--bs-gray-300) var(--bs-gray-300) white;
+    }
+
+    /* Form Card */
+    .visitor-form-card {
+        background: white;
+        border-radius: 0 16px 16px 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--bs-gray-200);
+        min-height: 400px;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+    }
+
+    /* Tab Content */
+    .tab-content {
+        padding-top: 1rem;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .tab-pane {
+        display: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .tab-pane.active {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .tab-pane.show {
+        display: block !important;
+    }
+
+    /* Table */
+    .visitor-table {
+        background: white;
+    }
+
+    .visitor-table thead th {
+        background: var(--bs-gray-50);
+        color: var(--bs-gray-700);
+        font-weight: 600;
+        border-bottom: 2px solid var(--bs-gray-300);
+    }
+
+    .visitor-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .visitor-table tbody tr:hover {
+        background-color: var(--bs-gray-50);
+    }
+
+    /* Badges */
+    .badge-active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-finished {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    /* Dark Mode */
+    [data-theme="dark"] body {
+        background-color: #111827 !important;
+    }
+
+    [data-theme="dark"] .stat-card-visitor {
+        background: #1f2937 !important;
+        border: 1px solid #374151;
+    }
+
+    [data-theme="dark"] .stat-card-visitor .stat-value {
+        color: white !important;
+    }
+
+    [data-theme="dark"] .stat-card-visitor .stat-label {
+        color: #9ca3af !important;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link {
+        background: #1f2937;
+        color: #9ca3af;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link.active {
+        background: #374151;
+        color: white;
+        border-color: #4b5563 #4b5563 #374151;
+    }
+
+    [data-theme="dark"] .visitor-form-card {
+        background: #1f2937 !important;
+        border-color: #374151 !important;
+    }
+
+    [data-theme="dark"] .card {
+        background: #1f2937 !important;
+        border-color: #374151 !important;
+        color: white !important;
+    }
+
+    [data-theme="dark"] .visitor-table {
+        background: #1f2937 !important;
+    }
+
+    [data-theme="dark"] .visitor-table thead th {
+        background: #374151 !important;
+        color: white !important;
+        border-bottom-color: #4b5563 !important;
+    }
+
+    [data-theme="dark"] .visitor-table tbody tr:hover {
+        background-color: #374151 !important;
+    }
+
+    [data-theme="dark"] .visitor-table tbody td {
+        color: #d1d5db !important;
+        border-bottom-color: #374151 !important;
+    }
+
+    [data-theme="dark"] h1,
+    [data-theme="dark"] h2,
+    [data-theme="dark"] h3,
+    [data-theme="dark"] h4,
+    [data-theme="dark"] h5,
+    [data-theme="dark"] h6 {
+        color: white !important;
+    }
+
+    [data-theme="dark"] p,
+    [data-theme="dark"] .text-muted {
+        color: #9ca3af !important;
+    }
+
+    [data-theme="dark"] .form-label {
+        color: white !important;
+    }
+
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .form-select,
+    [data-theme="dark"] textarea {
+        background-color: #374151 !important;
+        border-color: #4b5563 !important;
+        color: white !important;
+    }
+
+    [data-theme="dark"] .form-check-label {
+        color: #d1d5db !important;
+    }
+
+    /* Debug - Force Visibility */
+    form {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .form-control, .form-select, textarea, button[type="submit"] {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .row {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .col-md-6, .col-12 {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+</style>
+@endpush
+
 @section('content')
 
 <!-- Page Header -->
-<div class="hero min-h-[40vh] bg-primary">
-    <div class="hero-overlay bg-opacity-60"></div>
-    <div class="hero-content text-center text-neutral-content">
-        <div class="max-w-md">
-            <div class="text-sm breadcrumbs">
-                <ul>
-                    <li><a href="{{ url('/') }}">Beranda</a></li> 
-                    <li>Buku Tamu</li>
-                </ul>
-            </div>
-            <h1 class="mb-5 text-5xl font-bold">Buku Tamu</h1>
-            <p class="mb-5">Pencatatan kunjungan tamu fisik ke MTsN 2 Kota Malang</p>
-            <div class="stats shadow">
-                <div class="stat">
-                    <div class="stat-title">Total Tamu Hari Ini</div>
+<div class="visitor-hero">
+    <div class="container">
+        <div class="text-center mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center">
+                    <li class="breadcrumb-item"><a href="{{ url('/') }}" class="text-white">Beranda</a></li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Buku Tamu</li>
+                </ol>
+            </nav>
+            <h1 class="display-4 fw-bold mb-3">📋 Buku Tamu Digital</h1>
+            <p class="lead mb-4 opacity-90">Sistem pencatatan kunjungan tamu MTsN 2 Kota Malang</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-4 justify-content-center mt-4">
+            <div class="col-md-4 col-lg-3">
+                <div class="stat-card-visitor">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #15803d 0%, #166534 100%);">
+                        <i class="fas fa-users text-white"></i>
+                    </div>
                     <div class="stat-value">{{ $visitors->total() }}</div>
+                    <div class="stat-label">Total Tamu</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-title">Sedang Aktif</div>
-                    <div class="stat-value">{{ $visitors->whereNull('checkout_at')->count() }}</div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="stat-card-visitor">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <i class="fas fa-user-check text-white"></i>
+                    </div>
+                    <div class="stat-value">{{ $visitors->whereNull('check_out_time')->count() }}</div>
+                    <div class="stat-label">Sedang Aktif</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-title">Tanggal</div>
-                    <div class="stat-value">{{ \Carbon\Carbon::parse($date)->format('d M Y') }}</div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="stat-card-visitor">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <i class="fas fa-calendar-check text-white"></i>
+                    </div>
+                    <div class="stat-value">{{ $visitors->whereNotNull('check_out_time')->count() }}</div>
+                    <div class="stat-label">Selesai</div>
                 </div>
             </div>
         </div>
@@ -36,93 +360,136 @@
 </div>
 
 <!-- Main Content -->
-<div class="container py-4 pb-5">
-    <!-- Form Tabs -->
-    <div class="tabs tabs-boxed">
-        <a class="tab tab-lg" :class="{ 'tab-active': activeTab === 'visitor' }" @click.prevent="activeTab = 'visitor'">Formulir Tamu Kunjungan</a> 
-        <a class="tab tab-lg" :class="{ 'tab-active': activeTab === 'applicant' }" @click.prevent="activeTab = 'applicant'">Formulir Tamu Pemohon Layanan Offline</a>
-    </div>
+<div class="container py-5">
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
-    <div class="card bg-base-100 shadow-xl mt-[-1rem]">
-        <div class="card-body">
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Terjadi kesalahan:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Form Tabs -->
+    <ul class="nav nav-tabs nav-tabs-visitor mb-0" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="visitor-tab" data-bs-toggle="tab" data-bs-target="#visitor-form" type="button" role="tab">
+                <i class="fas fa-user-friends me-2"></i>Formulir Tamu Kunjungan
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="applicant-tab" data-bs-toggle="tab" data-bs-target="#applicant-form" type="button" role="tab">
+                <i class="fas fa-file-alt me-2"></i>Formulir Tamu Pemohon Layanan Offline
+            </button>
+        </li>
+    </ul>
+
+    <div class="visitor-form-card p-4">
+        <div class="tab-content">
             <!-- Visitor Form -->
-            <div x-show="activeTab === 'visitor'">
-                <form action="#" method="POST">
+            <div class="tab-pane fade show active" id="visitor-form" role="tabpanel">
+                <form action="{{ route('public.visitor.submit') }}" method="POST">
                     @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="label">
-                                <span class="label-text">Nama Lengkap *</span>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-user me-2 text-primary"></i>Nama Lengkap *
                             </label>
-                            <input type="text" name="name" class="input input-bordered w-full" required>
+                            <input type="text" name="name" class="form-control form-control-lg" required>
                         </div>
-                        <div>
-                            <label class="label">
-                                <span class="label-text">No. Telepon/HP *</span>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-phone me-2 text-primary"></i>No. Telepon/HP *
                             </label>
-                            <input type="tel" name="phone" class="input input-bordered w-full" required>
+                            <input type="tel" name="phone" class="form-control form-control-lg" required>
                         </div>
-                        <div>
-                            <label class="label">
-                                <span class="label-text">Instansi/Perusahaan</span>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-envelope me-2 text-primary"></i>Email
                             </label>
-                            <input type="text" name="institution" class="input input-bordered w-full">
+                            <input type="email" name="email" class="form-control form-control-lg">
                         </div>
-                        <div>
-                            <label class="label">
-                                <span class="label-text">Tujuan Kunjungan *</span>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-building me-2 text-primary"></i>Instansi/Perusahaan
                             </label>
-                            <input type="text" name="purpose" class="input input-bordered w-full" required>
+                            <input type="text" name="institution" class="form-control form-control-lg">
                         </div>
-                        <div class="col-span-1 md:col-span-2">
-                            <label class="label">
-                                <span class="label-text">Keperluan Lainnya</span>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-bullseye me-2 text-primary"></i>Tujuan Kunjungan *
                             </label>
-                            <textarea name="notes" class="textarea textarea-bordered w-full" rows="3" placeholder="Jelaskan secara singkat keperluan Anda"></textarea>
+                            <input type="text" name="purpose" class="form-control form-control-lg" required>
                         </div>
-                        <div class="col-span-1 md:col-span-2">
-                            <div class="form-control">
-                                <label class="label cursor-pointer">
-                                    <span class="label-text">Samarkan Nama di Daftar Tamu</span> 
-                                    <input type="checkbox" name="obscure_name" class="checkbox" />
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-comment-dots me-2 text-primary"></i>Keperluan Lainnya
+                            </label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Jelaskan secara singkat keperluan Anda"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input type="checkbox" name="obscure_name" class="form-check-input" id="obscure1">
+                                <label class="form-check-label" for="obscure1">
+                                    <i class="fas fa-user-secret me-2"></i>Samarkan Nama di Daftar Tamu
                                 </label>
                             </div>
                         </div>
-                        <div class="col-span-1 md:col-span-2">
-                            <button type="submit" class="btn btn-primary">Daftar Tamu</button>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-check-circle me-2"></i>Daftar Tamu
+                            </button>
                         </div>
                     </div>
                 </form>
             </div>
 
             <!-- Service Applicant Form -->
-<div x-show="activeTab === 'applicant'">
+            <div class="tab-pane fade" id="applicant-form" role="tabpanel">
                 <form action="{{ route('public.applicant.submit') }}" method="POST">
                     @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="label">
-                                <span class="label-text">Nama Lengkap *</span>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-user me-2 text-primary"></i>Nama Lengkap *
                             </label>
-                            <input type="text" name="name" class="input input-bordered w-full" required>
+                            <input type="text" name="name" class="form-control form-control-lg" required>
                         </div>
-                        <div>
-                            <label class="label">
-                                <span class="label-text">No. Telepon/HP *</span>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-phone me-2 text-primary"></i>No. Telepon/HP *
                             </label>
-                            <input type="tel" name="phone" class="input input-bordered w-full" required>
+                            <input type="tel" name="phone" class="form-control form-control-lg" required>
                         </div>
-                        <div>
-                            <label class="label">
-                                <span class="label-text">Instansi/Perusahaan</span>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-envelope me-2 text-primary"></i>Email
                             </label>
-                            <input type="text" name="institution" class="input input-bordered w-full">
+                            <input type="email" name="email" class="form-control form-control-lg">
                         </div>
-                        <div>
-                            <label class="label">
-                                <span class="label-text">Status Pemohon</span>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-building me-2 text-primary"></i>Instansi/Perusahaan
                             </label>
-                            <select name="applicant_type" class="select select-bordered w-full">
+                            <input type="text" name="institution" class="form-control form-control-lg">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-id-card me-2 text-primary"></i>Status Pemohon
+                            </label>
+                            <select name="applicant_type" class="form-select form-select-lg">
                                 <option value="">Pilih Status</option>
                                 <option value="siswa">Siswa</option>
                                 <option value="wali_murid">Wali Murid</option>
@@ -132,28 +499,30 @@
                                 <option value="instansi">Instansi Pemerintah</option>
                             </select>
                         </div>
-                        <div class="col-span-1 md:col-span-2">
-                            <label class="label">
-                                <span class="label-text">Layanan yang Dituju *</span>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-clipboard-list me-2 text-primary"></i>Layanan yang Dituju *
                             </label>
-                            <input type="text" name="target_service" class="input input-bordered w-full" required placeholder="Contoh: Pengambilan Ijazah, Surat Keterangan, dll">
+                            <input type="text" name="target_service" class="form-control form-control-lg" required placeholder="Contoh: Pengambilan Ijazah, Surat Keterangan, dll">
                         </div>
-                        <div class="col-span-1 md:col-span-2">
-                            <label class="label">
-                                <span class="label-text">Catatan Tambahan</span>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-comment-dots me-2 text-primary"></i>Catatan Tambahan
                             </label>
-                            <textarea name="notes" class="textarea textarea-bordered w-full" rows="3" placeholder="Jelaskan secara singkat keperluan Anda"></textarea>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Jelaskan secara singkat keperluan Anda"></textarea>
                         </div>
-                        <div class="col-span-1 md:col-span-2">
-                            <div class="form-control">
-                                <label class="label cursor-pointer">
-                                    <span class="label-text">Samarkan Nama di Daftar Tamu</span> 
-                                    <input type="checkbox" name="obscure_name" class="checkbox" />
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input type="checkbox" name="obscure_name" class="form-check-input" id="obscure2">
+                                <label class="form-check-label" for="obscure2">
+                                    <i class="fas fa-user-secret me-2"></i>Samarkan Nama di Daftar Tamu
                                 </label>
                             </div>
                         </div>
-                        <div class="col-span-1 md:col-span-2">
-                            <button type="submit" class="btn btn-primary">Daftar Pemohon Layanan</button>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-paper-plane me-2"></i>Daftar Pemohon Layanan
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -162,65 +531,77 @@
     </div>
 
     <!-- Visitor List -->
-    <div class="card bg-base-100 shadow-xl mt-8">
-        <div class="card-body">
-            <h2 class="card-title">
-                <i class="fas fa-list mr-2"></i>Daftar Tamu 
+    <div class="card shadow-lg border-0 mt-5">
+        <div class="card-body p-4">
+            <h2 class="h3 fw-bold mb-4">
+                <i class="fas fa-list me-2 text-primary"></i>Daftar Tamu
                 <span class="text-primary">{{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }}</span>
             </h2>
-            <div class="overflow-x-auto">
-                <table class="table w-full">
+            <div class="table-responsive">
+                <table class="table visitor-table table-hover align-middle">
                     <thead>
                         <tr>
-                            <th>No</th>
+                            <th style="width: 60px;">No</th>
                             <th>Nama Tamu</th>
                             <th>Instansi</th>
                             <th>Tujuan</th>
-                            <th>Check In</th>
-                            <th>Check Out</th>
-                            <th>Status</th>
+                            <th style="width: 100px;">Check In</th>
+                            <th style="width: 100px;">Check Out</th>
+                            <th style="width: 120px;">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($visitors as $index => $visitor)
                             <tr>
-                                <th>{{ ($visitors->currentPage() - 1) * $visitors->perPage() + $index + 1 }}</th>
+                                <td class="fw-semibold text-muted">{{ ($visitors->currentPage() - 1) * $visitors->perPage() + $index + 1 }}</td>
                                 <td>
-                                    <div class="font-bold">
+                                    <div class="fw-bold">
                                         @if ($visitor->is_obscured)
                                             <script>document.write(obscureName("{{ $visitor->name }}"))</script>
                                         @else
                                             {{ $visitor->name }}
                                         @endif
                                     </div>
-                                    <div class="text-sm opacity-50">{{ $visitor->phone }}</div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-phone me-1"></i>{{ $visitor->phone }}
+                                    </div>
                                 </td>
                                 <td>{{ $visitor->institution ?: '-' }}</td>
                                 <td>{{ Str::limit($visitor->purpose, 30) }}</td>
-                                <td>{{ \Carbon\Carbon::parse($visitor->created_at)->format('H:i') }}</td>
-                                <td>{{ $visitor->checkout_at ? \Carbon\Carbon::parse($visitor->checkout_at)->format('H:i') : '-' }}</td>
                                 <td>
-                                    @if ($visitor->checkout_at)
-                                        <div class="badge badge-warning gap-2">
-                                            <i class="fas fa-check-circle"></i>Selesai
-                                        </div>
+                                    <i class="fas fa-clock me-1 text-primary"></i>
+                                    {{ \Carbon\Carbon::parse($visitor->check_in_time)->format('H:i') }}
+                                </td>
+                                <td>
+                                    @if($visitor->check_out_time)
+                                        <i class="fas fa-clock me-1 text-warning"></i>
+                                        {{ \Carbon\Carbon::parse($visitor->check_out_time)->format('H:i') }}
                                     @else
-                                        <div class="badge badge-success gap-2">
-                                            <i class="fas fa-circle"></i>Aktif
-                                        </div>
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($visitor->check_out_time)
+                                        <span class="badge-finished">
+                                            <i class="fas fa-check-circle me-1"></i>Selesai
+                                        </span>
+                                    @else
+                                        <span class="badge-active">
+                                            <i class="fas fa-circle me-1"></i>Aktif
+                                        </span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-16">
-                                    <div class="avatar mb-4">
-                                        <div class="w-24 rounded-full bg-base-200 text-base-content/50 flex items-center justify-center">
-                                            <i class="fas fa-users text-5xl"></i>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="py-4">
+                                        <div class="mb-3">
+                                            <i class="fas fa-users text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
                                         </div>
+                                        <h4 class="fw-bold">Belum Ada Tamu</h4>
+                                        <p class="text-muted mb-0">Belum ada data tamu untuk tanggal {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
                                     </div>
-                                    <h4 class="text-xl font-bold">Belum Ada Tamu</h4>
-                                    <p>Belum ada data tamu untuk tanggal {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -229,8 +610,8 @@
             </div>
             <!-- Pagination -->
             @if ($visitors->hasPages())
-                <div class="card-actions justify-center mt-4">
-                    {{ $visitors->links('vendor.pagination.daisyui') }}
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $visitors->links() }}
                 </div>
             @endif
         </div>
@@ -238,7 +619,7 @@
 </div>
 
 <script>
-    // Function to obscure a name (corrected)
+    // Function to obscure a name
     function obscureName(name) {
         if (!name) return '';
         const parts = name.split(' ');
@@ -248,27 +629,86 @@
         }).join(' ');
     }
 
+    // Initialize tabs and save active tab to localStorage
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize the active tab
-        const activeTab = localStorage.getItem('activeTab') || '#visitor-form';
-        if(activeTab === '#applicant-form') {
-            const applicantTab = document.getElementById('applicant-tab');
-            if(applicantTab) {
-                applicantTab.click();
+        console.log('🚀 Initializing visitor book tabs...');
+
+        // Force show first tab immediately
+        const firstTab = document.querySelector('#visitor-form');
+        if (firstTab) {
+            firstTab.classList.add('show', 'active');
+            firstTab.style.display = 'block';
+            console.log('✅ First tab force activated');
+        }
+
+        // Check if Bootstrap is loaded
+        if (typeof bootstrap === 'undefined') {
+            console.warn('⚠️ Bootstrap is not loaded, using manual tab switching');
+
+            // Manual tab switching
+            const tabs = document.querySelectorAll('[data-bs-toggle="tab"]');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-bs-target');
+                    console.log('🖱️ Tab clicked:', targetId);
+
+                    // Hide all tab panes
+                    document.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.classList.remove('show', 'active');
+                        pane.style.display = 'none';
+                    });
+
+                    // Show target pane
+                    const targetPane = document.querySelector(targetId);
+                    if (targetPane) {
+                        targetPane.classList.add('show', 'active');
+                        targetPane.style.display = 'block';
+                        console.log('✅ Showed tab:', targetId);
+                    }
+
+                    // Update nav links
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    this.classList.add('active');
+
+                    // Save to localStorage
+                    localStorage.setItem('visitorBookActiveTab', targetId);
+                });
+            });
+            return;
+        }
+
+        const tabs = document.querySelectorAll('[data-bs-toggle="tab"]');
+        console.log('📋 Found tabs:', tabs.length);
+
+        // Load saved tab
+        const savedTab = localStorage.getItem('visitorBookActiveTab');
+        if(savedTab) {
+            const tabToActivate = document.querySelector(`[data-bs-target="${savedTab}"]`);
+            if(tabToActivate) {
+                try {
+                    const tab = new bootstrap.Tab(tabToActivate);
+                    tab.show();
+                    console.log('💾 Loaded saved tab:', savedTab);
+                } catch(e) {
+                    console.error('❌ Error loading saved tab:', e);
+                }
             }
         }
-        
-        // Save the active tab in localStorage
-        const tabs = document.querySelectorAll('.nav-link');
+
+        // Save tab when changed
         tabs.forEach(tab => {
             tab.addEventListener('shown.bs.tab', function(event) {
-                localStorage.setItem('activeTab', event.target.getAttribute('data-bs-target'));
+                const target = event.target.getAttribute('data-bs-target');
+                localStorage.setItem('visitorBookActiveTab', target);
+                console.log('💾 Tab changed to:', target);
             });
         });
+
+        console.log('✅ Visitor book initialization complete!');
     });
 </script>
 
-@push('styles')
-    @vite(['resources/css/visitor-book.css'])
-@endpush
 @endsection

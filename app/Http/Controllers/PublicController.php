@@ -55,6 +55,7 @@ class PublicController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
+            'email' => 'nullable|string|email|max:255',
             'institution' => 'nullable|string|max:255',
             'purpose' => 'required|string|max:500',
             'notes' => 'nullable|string|max:1000',
@@ -64,6 +65,7 @@ class PublicController extends Controller
         Visitor::create([
             'name' => $validated['name'],
             'phone' => $validated['phone'],
+            'email' => $validated['email'] ?? null,
             'institution' => $validated['institution'],
             'purpose' => $validated['purpose'],
             'notes' => $validated['notes'],
@@ -83,6 +85,7 @@ class PublicController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
+            'email' => 'nullable|string|email|max:255',
             'institution' => 'nullable|string|max:255',
             'applicant_type' => 'nullable|string|max:255',
             'target_service' => 'required|string|max:500',
@@ -93,6 +96,7 @@ class PublicController extends Controller
         Visitor::create([
             'name' => $validated['name'],
             'phone' => $validated['phone'],
+            'email' => $validated['email'] ?? null,
             'institution' => $validated['institution'],
             'purpose' => 'Pemohon Layanan: ' . $validated['target_service'], // Combine purpose
             'notes' => $validated['notes'],
