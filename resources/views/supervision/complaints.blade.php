@@ -586,6 +586,13 @@
 
 <!-- Main Content -->
 <div class="container complaint-container">
+    <!-- Add New Complaint Button -->
+    <div class="text-end mb-4">
+        <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus me-2"></i> Buat Pengaduan Baru
+        </a>
+    </div>
+
     <!-- Complaint Types -->
     <div class="row mb-6">
         <div class="col-lg-4 mb-4">
