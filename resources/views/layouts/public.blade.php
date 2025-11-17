@@ -20,18 +20,6 @@
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#14532d">
 
-    {{-- Vite Assets: Bootstrap, Font Awesome, AOS, Tailwind (Local - No CDN) --}}
-    @vite([
-        'resources/css/bootstrap-custom.css',
-        'resources/css/app.css',
-        'resources/css/dark-mode.css',
-        'resources/css/public-layout.css',
-        'resources/css/accessibility.css',
-        'resources/js/bootstrap-bundle.js',
-        'resources/js/app.js',
-        'resources/js/accessibility.js'
-    ])
-
     @stack('styles')
 </head>
 <body class="font-normal">
@@ -372,11 +360,11 @@
 
                 <nav class="bg-transparent">
                     <h6 class="font-bold uppercase mb-4 text-white">Link Terkait</h6> 
-                    <a href="https://kemenag.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kementerian Agama RI</span></a>
-                    <a href="https://kanwil.kemenag.go.id/jatim" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kanwil Kemenag Jatim</span></a>
-                    <a href="https://kankemenag.malangkota.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kemenag Kota Malang</span></a>
-                    <a href="https://lapor.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>SP4N Lapor</span></a>
-                    <a href="https://sippn.menpan.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm text-white hover:text-orange-500 transition-colors"><i class="fas fa-external-link-alt text-orange-500"></i><span>SIPPN Menpan</span></a>
+                    <a href="https://kemenag.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white no-underline"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kementerian Agama RI</span></a>
+                    <a href="https://kanwil.kemenag.go.id/jatim" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white no-underline"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kanwil Kemenag Jatim</span></a>
+                    <a href="https://kankemenag.malangkota.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white no-underline"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kemenag Kota Malang</span></a>
+                    <a href="https://lapor.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white no-underline"><i class="fas fa-external-link-alt text-orange-500"></i><span>SP4N Lapor</span></a>
+                    <a href="https://sippn.menpan.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm text-white no-underline"><i class="fas fa-external-link-alt text-orange-500"></i><span>SIPPN Menpan</span></a>
                 </nav>
             </div>
             <div class="mt-10 pt-10 border-t border-gray-700 dark:border-gray-600">
@@ -657,5 +645,16 @@
 
     </script>
     @stack('scripts')
+    {{-- Vite Assets: Bootstrap, Font Awesome, AOS, Tailwind (Local - No CDN) --}}
+    @vite([
+        'resources/css/bootstrap-custom.css',
+        'resources/css/app.css',
+        'resources/css/dark-mode.css',
+        'resources/css/public-layout.css',
+        'resources/css/accessibility.css',
+        'resources/js/bootstrap-bundle.js',
+        'resources/js/app.js',
+        'resources/js/accessibility.js'
+    ])
 </body>
 </html>
