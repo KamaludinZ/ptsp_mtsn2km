@@ -578,7 +578,7 @@
             </div>
 
             <!-- Tracking Section -->
-            <div class="card mb-4">
+            <div class="card mb-4 bg-success-subtle">
                 <div class="card-body">
                     <h2 class="h3 fw-bold mb-4 text-center">Lacak Status Pengaduan Anda</h2>
                     <p class="text-muted mb-4 text-center">Ketahui status terkini dari pengaduan yang telah Anda sampaikan</p>
