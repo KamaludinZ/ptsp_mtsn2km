@@ -1,0 +1,22 @@
+/**
+ * Bootstrap Custom CSS
+ * Import Bootstrap dan customizations
+ */
+
+/* Import Bootstrap */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* Import Bootstrap Icons */
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+/* Custom Bootstrap Overrides */
+:root {
+    --bs-primary: #667eea;
+    --bs-secondary: #764ba2;
+    --bs-success: #10b981;
+    --bs-danger: #ef4444;
+    --bs-warning: #f59e0b;
+    --bs-info: #3b82f6;
+}
+
+/* Additional custom styles can be added here */

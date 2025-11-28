@@ -1,0 +1,1222 @@
+@extends('layouts.public')
+
+@section('title', 'Katalog Layanan - ' . config('app.name', 'PTSP MTsN 2 Kota Malang'))
+
+@section('content')
+<style>
+    /* Dark mode comprehensive fix for service catalog */
+    [data-theme="dark"] *:not(.btn):not(.badge):not([class*="bg-white"]):not([class*="bg-light"]) {
+        color: #ffffff !important;
+    }
+
+    /* Exception: elements with white/light background should have dark text */
+    [data-theme="dark"] .bg-white,
+    [data-theme="dark"] .bg-light,
+    [data-theme="dark"] [class*="bg-white"],
+    [data-theme="dark"] [class*="bg-light"] {
+        color: #000000 !important;
+    }
+
+    [data-theme="dark"] .bg-white *,
+    [data-theme="dark"] .bg-light *,
+    [data-theme="dark"] [class*="bg-white"] *,
+    [data-theme="dark"] [class*="bg-light"] * {
+        color: #000000 !important;
+    }
+
+    /* Form inputs */
+    [data-theme="dark"] input,
+    [data-theme="dark"] select,
+    [data-theme="dark"] textarea {
+        background-color: #1f2937 !important;
+        color: #ffffff !important;
+        border-color: #374151 !important;
+    }
+
+    [data-theme="dark"] input::placeholder,
+    [data-theme="dark"] textarea::placeholder {
+        color: #9ca3af !important;
+    }
+
+    /* All text elements */
+    [data-theme="dark"] h1,
+    [data-theme="dark"] h2,
+    [data-theme="dark"] h3,
+    [data-theme="dark"] h4,
+    [data-theme="dark"] h5,
+    [data-theme="dark"] h6,
+    [data-theme="dark"] p,
+    [data-theme="dark"] span,
+    [data-theme="dark"] div,
+    [data-theme="dark"] a,
+    [data-theme="dark"] li {
+        color: #ffffff !important;
+    }
+
+    /* Override colored text */
+    [data-theme="dark"] .text-gray-900,
+    [data-theme="dark"] .text-gray-800,
+    [data-theme="dark"] .text-gray-700,
+    [data-theme="dark"] .text-gray-600,
+    [data-theme="dark"] .text-gray-500,
+    [data-theme="dark"] .text-gray-400 {
+        color: #ffffff !important;
+    }
+
+    /* Icons */
+    [data-theme="dark"] i {
+        color: #ffffff !important;
+    }
+
+    /* Buttons - keep original colors */
+    [data-theme="dark"] .btn,
+    [data-theme="dark"] button {
+        color: inherit !important;
+    }
+
+    /* Badges - keep specific colors readable */
+    [data-theme="dark"] .bg-blue-100 {
+        background-color: #1e40af !important;
+        color: #dbeafe !important;
+    }
+
+    [data-theme="dark"] .bg-green-100 {
+        background-color: #166534 !important;
+        color: #bbf7d0 !important;
+    }
+
+    [data-theme="dark"] .bg-purple-100 {
+        background-color: #6b21a8 !important;
+        color: #e9d5ff !important;
+    }
+
+    [data-theme="dark"] .bg-blue-600 {
+        background-color: #2563eb !important;
+    }
+
+    [data-theme="dark"] .bg-blue-100 *,
+    [data-theme="dark"] .bg-green-100 *,
+    [data-theme="dark"] .bg-purple-100 * {
+        color: inherit !important;
+    }
+
+    /* Modal backgrounds */
+    [data-theme="dark"] .bg-gray-100 {
+        background-color: #374151 !important;
+    }
+
+    /* Hover states */
+    [data-theme="dark"] .hover\:bg-blue-200:hover {
+        background-color: #1e40af !important;
+    }
+
+    [data-theme="dark"] .hover\:bg-gray-300:hover {
+        background-color: #4b5563 !important;
+    }
+
+    /* Service card animations */
+    .service-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .service-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Stat card pulse animation */
+    @keyframes pulse-stat {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .stat-card:hover {
+        animation: pulse-stat 0.5s ease-in-out;
+    }
+
+    /* Badge styles */
+    .badge-pill {
+        border-radius: 9999px;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    /* Gradient backgrounds */
+    .gradient-primary {
+        background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
+    }
+
+    .gradient-secondary {
+        background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+    }
+
+    /* Search bar focus effect */
+    .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #3b82f6;
+    }
+
+    /* View toggle active state */
+    .view-toggle-active {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Smooth scroll */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Line clamp utilities */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Card gradient header text shadow */
+    .service-card .bg-gradient-to-r h3,
+    .service-card .bg-gradient-to-br h3 {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Empty state styling */
+    .col-span-full {
+        grid-column: 1 / -1;
+    }
+
+    /* Button text colors for dark mode - exception */
+    [data-theme="dark"] .bg-gradient-to-r span,
+    [data-theme="dark"] .bg-gradient-to-r i {
+        color: white !important;
+    }
+
+    [data-theme="dark"] .bg-green-500,
+    [data-theme="dark"] .bg-green-500 * {
+        color: white !important;
+    }
+
+    /* Ensure badges keep their colors */
+    [data-theme="dark"] .bg-green-100 {
+        background-color: #dcfce7 !important;
+        color: #15803d !important;
+    }
+
+    [data-theme="dark"] .dark\:bg-green-900 {
+        background-color: #14532d !important;
+        color: #bbf7d0 !important;
+    }
+
+    [data-theme="dark"] .bg-red-100 {
+        background-color: #fee2e2 !important;
+        color: #991b1b !important;
+    }
+
+    [data-theme="dark"] .dark\:bg-red-900 {
+        background-color: #7f1d1d !important;
+        color: #fecaca !important;
+    }
+
+    [data-theme="dark"] .bg-yellow-100 {
+        background-color: #fef3c7 !important;
+        color: #92400e !important;
+    }
+
+    [data-theme="dark"] .dark\:bg-yellow-900 {
+        background-color: #78350f !important;
+        color: #fde68a !important;
+    }
+
+    [data-theme="dark"] .bg-indigo-50 {
+        background-color: #eef2ff !important;
+        color: #3730a3 !important;
+    }
+
+    [data-theme="dark"] .dark\:bg-indigo-900 {
+        background-color: #312e81 !important;
+        color: #c7d2fe !important;
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-16 relative overflow-hidden">
+    <!-- Background decorative elements -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 dark:bg-blue-600 rounded-full opacity-10 blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 dark:bg-purple-600 rounded-full opacity-10 blur-3xl"></div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center">
+            <!-- Breadcrumb -->
+            <nav class="flex justify-center mb-6" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="{{ url('/') }}" class="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                            <i class="fas fa-home mr-2"></i>
+                            Beranda
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                            <span class="ml-1 text-sm font-medium text-gray-900 dark:text-white md:ml-2">Katalog Layanan</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Title -->
+            <div class="mb-6">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
+                    <i class="fas fa-folder-open text-white text-3xl"></i>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-extrabold text-gray-900 dark:text-white mb-4 tracking-tight">
+                    Katalog Layanan
+                </h1>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                    Daftar lengkap layanan yang tersedia sesuai dengan
+                    <span class="font-semibold text-blue-600 dark:text-blue-400">Permen PANRB 15/2014</span>
+                    dan kebutuhan masyarakat
+                </p>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-12">
+                <!-- Stat 1 -->
+                <div class="stat-card bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl p-6 border-t-4 border-blue-500 transform hover:scale-105 transition-all duration-300">
+                    <div class="flex items-center justify-center w-14 h-14 bg-blue-100 dark:bg-blue-900 rounded-xl mb-4 mx-auto">
+                        <i class="fas fa-layer-group text-blue-600 dark:text-blue-400 text-2xl"></i>
+                    </div>
+                    <div class="text-4xl font-extrabold text-blue-600 dark:text-blue-400 mb-2">{{ $services->count() }}</div>
+                    <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Layanan</div>
+                </div>
+
+                <!-- Stat 2 -->
+                <div class="stat-card bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl p-6 border-t-4 border-green-500 transform hover:scale-105 transition-all duration-300">
+                    <div class="flex items-center justify-center w-14 h-14 bg-green-100 dark:bg-green-900 rounded-xl mb-4 mx-auto">
+                        <i class="fas fa-th-large text-green-600 dark:text-green-400 text-2xl"></i>
+                    </div>
+                    <div class="text-4xl font-extrabold text-green-600 dark:text-green-400 mb-2">{{ $categories->count() }}</div>
+                    <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Kategori</div>
+                </div>
+
+                <!-- Stat 3 -->
+                <div class="stat-card bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl p-6 border-t-4 border-purple-500 transform hover:scale-105 transition-all duration-300">
+                    <div class="flex items-center justify-center w-14 h-14 bg-purple-100 dark:bg-purple-900 rounded-xl mb-4 mx-auto">
+                        <i class="fas fa-award text-purple-600 dark:text-purple-400 text-2xl"></i>
+                    </div>
+                    <div class="text-4xl font-extrabold text-purple-600 dark:text-purple-400 mb-2">14+</div>
+                    <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Standar Pelayanan</div>
+                </div>
+
+                <!-- Stat 4 -->
+                <div class="stat-card bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl p-6 border-t-4 border-orange-500 transform hover:scale-105 transition-all duration-300">
+                    <div class="flex items-center justify-center w-14 h-14 bg-orange-100 dark:bg-orange-900 rounded-xl mb-4 mx-auto">
+                        <i class="fas fa-clock text-orange-600 dark:text-orange-400 text-2xl"></i>
+                    </div>
+                    <div class="text-4xl font-extrabold text-orange-600 dark:text-orange-400 mb-2">24/7</div>
+                    <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Akses Online</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="py-12 bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Search and Filter Bar -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-10 border border-gray-200 dark:border-gray-700">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                <!-- Search Input -->
+                <div class="md:col-span-5">
+                    <label for="searchInput" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-search mr-2 text-blue-600 dark:text-blue-400"></i>
+                        Cari Layanan
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text"
+                               id="searchInput"
+                               class="search-input block w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                               placeholder="Ketik untuk mencari layanan..."
+                               onkeyup="filterServices()">
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="md:col-span-4">
+                    <label for="categoryFilter" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-filter mr-2 text-green-600 dark:text-green-400"></i>
+                        Filter Kategori
+                    </label>
+                    <div class="relative">
+                        <select id="categoryFilter"
+                                class="block w-full py-3.5 px-4 pr-10 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer transition-all"
+                                onchange="filterServices()">
+                            <option value="">📋 Semua Kategori</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->name }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Toggle -->
+                <div class="md:col-span-3">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-eye mr-2 text-purple-600 dark:text-purple-400"></i>
+                        Tampilan
+                    </label>
+                    <div class="inline-flex rounded-xl shadow-sm w-full" role="group">
+                        <button type="button"
+                                id="gridView"
+                                class="flex-1 px-4 py-3.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-l-xl hover:bg-blue-50 dark:hover:bg-gray-600 focus:z-10 transition-all">
+                            <i class="fas fa-th-large mr-2"></i>
+                            <span class="hidden sm:inline">Grid</span>
+                        </button>
+                        <button type="button"
+                                id="listView"
+                                class="flex-1 px-4 py-3.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-2 border-l-0 border-gray-200 dark:border-gray-600 rounded-r-xl hover:bg-blue-50 dark:hover:bg-gray-600 focus:z-10 transition-all">
+                            <i class="fas fa-list mr-2"></i>
+                            <span class="hidden sm:inline">List</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Info -->
+            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-wrap gap-4 justify-between items-center">
+                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                    <span id="serviceCount">Menampilkan <strong class="text-gray-900 dark:text-white">{{ $services->count() }}</strong> layanan</span>
+                </div>
+                <button onclick="resetFilters()" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-2 transition-colors">
+                    <i class="fas fa-redo-alt"></i>
+                    Reset Filter
+                </button>
+            </div>
+        </div>
+
+        <!-- Services Container -->
+        <div id="servicesContainer" class="services-grid">
+            <!-- Services Grid View -->
+            <div id="servicesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @forelse($services as $service)
+                    <div class="service-card bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border-2 border-gray-100 dark:border-gray-700 group"
+                         data-service="{{ $service->name }}"
+                         data-category="{{ $service->categories->first()->name ?? '' }}">
+
+                        <!-- Card Header with Gradient -->
+                        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-4">
+                            <div class="flex justify-between items-start">
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-white/20 backdrop-blur-sm text-white border border-white/30">
+                                    <i class="fas fa-hashtag mr-1"></i>{{ $service->code }}
+                                </span>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500 text-white shadow-lg">
+                                    <i class="fas fa-check-circle mr-1"></i>Aktif
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 min-h-[3.5rem]">
+                                {{ $service->name }}
+                            </h3>
+
+                            <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3 min-h-[4rem]">
+                                {{ $service->description }}
+                            </p>
+
+                            <!-- Service Mode Badge -->
+                            <div class="flex items-center gap-2 mb-4">
+                                @if($service->mode === 'online')
+                                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 border border-green-200 dark:border-green-800">
+                                        <i class="fas fa-wifi mr-1.5"></i>Online
+                                    </span>
+                                @elseif($service->mode === 'offline')
+                                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 border border-red-200 dark:border-red-800">
+                                        <i class="fas fa-store mr-1.5"></i>Offline
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800">
+                                        <i class="fas fa-sync-alt mr-1.5"></i>Hybrid
+                                    </span>
+                                @endif
+
+                                <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-800">
+                                    <i class="far fa-clock mr-1.5"></i>{{ $service->processing_time ?: '1-3 hari' }}
+                                </span>
+                            </div>
+
+                            <!-- Service Type Tags -->
+                            <div class="flex flex-wrap gap-2 mb-5 min-h-[2rem]">
+                                @php
+                                    $userTypes = json_decode($service->user_types_allowed, true) ?? [];
+                                    $typeIcons = [
+                                        'siswa' => 'fa-user-graduate',
+                                        'alumni' => 'fa-user-tie',
+                                        'umum' => 'fa-users',
+                                        'instansi' => 'fa-building',
+                                        'walimurid' => 'fa-user-friends',
+                                        'pegawai' => 'fa-user-cog',
+                                    ];
+                                    $typeLabels = [
+                                        'siswa' => 'Siswa',
+                                        'alumni' => 'Alumni',
+                                        'umum' => 'Umum',
+                                        'instansi' => 'Instansi',
+                                        'walimurid' => 'Wali Murid',
+                                        'pegawai' => 'Pegawai',
+                                    ];
+                                @endphp
+                                @if(is_array($userTypes) && count($userTypes) > 0)
+                                    @foreach($userTypes as $userType)
+                                        @if(isset($typeIcons[$userType]))
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">
+                                                <i class="fas {{ $typeIcons[$userType] }} mr-1"></i>{{ $typeLabels[$userType] }}
+                                            </span>
+                                        @endif
+                                    @endforeach
+                                @else
+                                    <span class="text-xs text-gray-400">Semua pengguna</span>
+                                @endif
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <button onclick="showServiceDetail('{{ $service->code }}')"
+                                        class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Detail</span>
+                                </button>
+
+                                @auth
+                                    <a href="{{ route('onlineportal.service.apply', $service->slug) }}"
+                                       class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2">
+                                        <i class="fas fa-paper-plane"></i>
+                                        <span>Ajukan</span>
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}"
+                                       class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                        <span>Login</span>
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-span-full text-center py-12">
+                        <i class="fas fa-folder-open text-gray-400 text-6xl mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                            Belum ada layanan tersedia
+                        </h3>
+                        <p class="text-gray-500 dark:text-gray-500">
+                            Layanan akan segera tersedia. Silakan cek kembali nanti.
+                        </p>
+                    </div>
+                @endforelse
+            </div>
+            
+            <!-- Services List View (initially hidden) -->
+            <div id="servicesList" class="hidden space-y-4">
+                @forelse($services as $service)
+                    <div class="service-card bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border-2 border-gray-100 dark:border-gray-700 group"
+                         data-service="{{ $service->name }}"
+                         data-category="{{ $service->categories->first()->name ?? '' }}">
+
+                        <div class="flex flex-col md:flex-row">
+                            <!-- Left Side - Header with Gradient -->
+                            <div class="md:w-48 bg-gradient-to-br from-blue-500 to-indigo-600 p-6 flex flex-col justify-between">
+                                <div>
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-white/20 backdrop-blur-sm text-white border border-white/30 mb-3">
+                                        <i class="fas fa-hashtag mr-1"></i>{{ $service->code }}
+                                    </span>
+                                    <h3 class="text-lg font-bold text-white">
+                                        {{ $service->name }}
+                                    </h3>
+                                </div>
+                                <div class="mt-4">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500 text-white shadow-lg">
+                                        <i class="fas fa-check-circle mr-1"></i>Aktif
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Right Side - Content -->
+                            <div class="flex-1 p-6">
+                                <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                                    {{ $service->description }}
+                                </p>
+
+                                <!-- Service Mode and Type Tags -->
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    @if($service->mode === 'online')
+                                        <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 border border-green-200 dark:border-green-800">
+                                            <i class="fas fa-wifi mr-1.5"></i>Online
+                                        </span>
+                                    @elseif($service->mode === 'offline')
+                                        <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 border border-red-200 dark:border-red-800">
+                                            <i class="fas fa-store mr-1.5"></i>Offline
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800">
+                                            <i class="fas fa-sync-alt mr-1.5"></i>Hybrid
+                                        </span>
+                                    @endif
+
+                                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-800">
+                                        <i class="far fa-clock mr-1.5"></i>{{ $service->processing_time ?: '1-3 hari' }}
+                                    </span>
+
+                                    @php
+                                        $userTypes = json_decode($service->user_types_allowed, true) ?? [];
+                                        $typeIcons = [
+                                            'siswa' => 'fa-user-graduate',
+                                            'alumni' => 'fa-user-tie',
+                                            'umum' => 'fa-users',
+                                            'instansi' => 'fa-building',
+                                            'walimurid' => 'fa-user-friends',
+                                            'pegawai' => 'fa-user-cog',
+                                        ];
+                                        $typeLabels = [
+                                            'siswa' => 'Siswa',
+                                            'alumni' => 'Alumni',
+                                            'umum' => 'Umum',
+                                            'instansi' => 'Instansi',
+                                            'walimurid' => 'Wali Murid',
+                                            'pegawai' => 'Pegawai',
+                                        ];
+                                    @endphp
+                                    @if(is_array($userTypes) && count($userTypes) > 0)
+                                        @foreach($userTypes as $userType)
+                                            @if(isset($typeIcons[$userType]))
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">
+                                                    <i class="fas {{ $typeIcons[$userType] }} mr-1"></i>{{ $typeLabels[$userType] }}
+                                                </span>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <button onclick="showServiceDetail('{{ $service->code }}')"
+                                            class="px-6 py-2.5 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center gap-2">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Lihat Detail</span>
+                                    </button>
+
+                                    @auth
+                                        <a href="{{ route('onlineportal.service.apply', $service->slug) }}"
+                                           class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2">
+                                            <i class="fas fa-paper-plane"></i>
+                                            <span>Ajukan Layanan</span>
+                                        </a>
+                                    @else
+                                        <a href="{{ route('login') }}"
+                                           class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2">
+                                            <i class="fas fa-sign-in-alt"></i>
+                                            <span>Login untuk Mengajukan</span>
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center py-12">
+                        <i class="fas fa-folder-open text-gray-400 text-6xl mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                            Belum ada layanan tersedia
+                        </h3>
+                        <p class="text-gray-500 dark:text-gray-500">
+                            Layanan akan segera tersedia. Silakan cek kembali nanti.
+                        </p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- Standards Compliance Note -->
+        <div class="mt-12 p-6 bg-blue-50 dark:bg-blue-900 rounded-xl">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-blue-500 dark:text-blue-400 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h4 class="text-lg font-medium text-blue-800 dark:text-blue-200">
+                        Kepatuhan Permen PANRB 15/2014
+                    </h4>
+                    <p class="mt-2 text-blue-700 dark:text-blue-300">
+                        Semua layanan ini telah diselaraskan dengan 14 komponen standar pelayanan sesuai Peraturan Menteri PANRB Nomor 15 Tahun 2014 tentang Pedoman Pelayanan Publik.
+                    </p>
+                    <div class="mt-4">
+                        <button onclick="showStandardsModal()" class="inline-flex items-center text-blue-700 dark:text-blue-300 hover:underline font-medium">
+                            <i class="fas fa-list-check mr-2"></i> Lihat 14 Komponen Standar Pelayanan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Service Detail Modal -->
+<div id="serviceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full z-50">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white" id="modalTitle">Detail Layanan</h3>
+                <button onclick="closeServiceModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6" id="modalContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Standards Modal -->
+<div id="standardsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full z-50">
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                    14 Komponen Standar Pelayanan
+                </h3>
+                <button onclick="closeStandardsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <div class="space-y-4">
+                    <!-- Component 1 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            1. Dasar Hukum
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Landasan hukum penyelenggaraan layanan PTSP MTsN 2 Kota Malang sesuai peraturan perundang-undangan yang berlaku.
+                        </p>
+                    </div>
+
+                    <!-- Component 2 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            2. Persyaratan
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Dokumen dan persyaratan yang harus dipenuhi oleh pemohon untuk mendapatkan pelayanan.
+                        </p>
+                    </div>
+
+                    <!-- Component 3 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            3. Sistem, Mekanisme, Prosedur
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Alur dan tata cara pelayanan dari mulai pengajuan hingga selesai.
+                        </p>
+                    </div>
+
+                    <!-- Component 4 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            4. Jangka Waktu Penyelesaian
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Estimasi waktu yang dibutuhkan untuk menyelesaikan setiap layanan.
+                        </p>
+                    </div>
+
+                    <!-- Component 5 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            5. Biaya/Tarif
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Informasi biaya atau tarif layanan yang berlaku (jika ada).
+                        </p>
+                    </div>
+
+                    <!-- Component 6 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            6. Produk Pelayanan
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Hasil akhir dari layanan yang diberikan kepada pemohon.
+                        </p>
+                    </div>
+
+                    <!-- Component 7 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            7. Sarana, Prasarana
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Fasilitas yang mendukung penyelenggaraan layanan.
+                        </p>
+                    </div>
+
+                    <!-- Component 8 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            8. Kompetensi Pelaksana
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Kualifikasi dan kompetensi petugas pelaksana layanan.
+                        </p>
+                    </div>
+
+                    <!-- Component 9 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            9. Pengawasan Internal
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Mekanisme pengawasan internal untuk memastikan kualitas pelayanan.
+                        </p>
+                    </div>
+
+                    <!-- Component 10 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            10. Penanganan Pengaduan
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Proses penanganan keluhan dan pengaduan dari masyarakat.
+                        </p>
+                    </div>
+
+                    <!-- Component 11 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            11. Jumlah Pelaksana
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Jumlah petugas yang tersedia untuk setiap layanan.
+                        </p>
+                    </div>
+
+                    <!-- Component 12 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            12. Jaminan Pelayanan
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Jaminan yang diberikan kepada pemohon terkait kualitas dan waktu pelayanan.
+                        </p>
+                    </div>
+
+                    <!-- Component 13 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            13. Jaminan Keamanan
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Jaminan keamanan data dan informasi pemohon.
+                        </p>
+                    </div>
+
+                    <!-- Component 14 -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                            14. Evaluasi Kinerja
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Mekanisme evaluasi kinerja layanan secara berkala.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Untuk informasi lebih lengkap, silakan hubungi PTSP MTsN 2 Kota Malang.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+    // Service data from controller
+    <?php
+    $servicesArray = $services->map(function($service) {
+        return [
+            'code' => $service->code,
+            'name' => $service->name,
+            'description' => $service->description,
+            'category' => $service->categories->first()->name ?? '',
+            'userTypes' => $service->user_types_allowed,
+            'mode' => $service->mode,
+            'requirements' => $service->requirements,
+            'mechanism' => $service->mechanism,
+            'processingTime' => $service->processing_time,
+            'fee' => $service->fee,
+            'product' => $service->product,
+            'complaint_handling' => $service->complaint_handling,
+        ];
+    })->toArray();
+    ?>
+    const servicesData = @json($servicesArray);
+
+    // View mode functionality
+    let currentViewMode = 'grid'; // Default to grid view
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load saved view mode from localStorage if available
+        const savedViewMode = localStorage.getItem('serviceViewMode');
+        if (savedViewMode) {
+            currentViewMode = savedViewMode;
+            switchViewMode(currentViewMode);
+        } else {
+            switchViewMode('grid');
+        }
+        
+        // Set active state for view toggle buttons
+        updateViewToggleButtons();
+        
+        // Add event listeners for view toggle buttons
+        document.getElementById('gridView').addEventListener('click', function() {
+            switchViewMode('grid');
+            localStorage.setItem('serviceViewMode', 'grid');
+            updateViewToggleButtons();
+        });
+        
+        document.getElementById('listView').addEventListener('click', function() {
+            switchViewMode('list');
+            localStorage.setItem('serviceViewMode', 'list');
+            updateViewToggleButtons();
+        });
+    });
+    
+    function switchViewMode(mode) {
+        currentViewMode = mode;
+        
+        const gridContainer = document.getElementById('servicesGrid');
+        const listContainer = document.getElementById('servicesList');
+        
+        if (mode === 'grid') {
+            gridContainer.classList.remove('hidden');
+            listContainer.classList.add('hidden');
+        } else {
+            gridContainer.classList.add('hidden');
+            listContainer.classList.remove('hidden');
+        }
+    }
+    
+    function updateViewToggleButtons() {
+        const gridView = document.getElementById('gridView');
+        const listView = document.getElementById('listView');
+
+        if (currentViewMode === 'grid') {
+            gridView.classList.add('view-toggle-active');
+            gridView.classList.remove('bg-gray-50', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+            listView.classList.remove('view-toggle-active');
+            listView.classList.add('bg-gray-50', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+        } else {
+            listView.classList.add('view-toggle-active');
+            listView.classList.remove('bg-gray-50', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+            gridView.classList.remove('view-toggle-active');
+            gridView.classList.add('bg-gray-50', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+        }
+    }
+
+    // Reset filters function
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('categoryFilter').value = '';
+        filterServices();
+
+        // Show success message
+        const resetBtn = event.target.closest('button');
+        const originalHTML = resetBtn.innerHTML;
+        resetBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Filter direset!';
+        resetBtn.classList.add('text-green-600', 'dark:text-green-400');
+
+        setTimeout(() => {
+            resetBtn.innerHTML = originalHTML;
+            resetBtn.classList.remove('text-green-600', 'dark:text-green-400');
+        }, 2000);
+    }
+
+    function filterServices() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const categoryFilter = document.getElementById('categoryFilter').value;
+
+        // Filter both grid and list views
+        const gridCards = document.querySelectorAll('#servicesGrid .service-card');
+        const listCards = document.querySelectorAll('#servicesList .service-card');
+
+        let visibleCount = 0;
+
+        // Filter grid view
+        gridCards.forEach(card => {
+            const serviceName = card.getAttribute('data-service').toLowerCase();
+            const serviceCategory = card.getAttribute('data-category');
+
+            const matchesSearch = !searchTerm || serviceName.includes(searchTerm);
+            const matchesCategory = !categoryFilter || serviceCategory === categoryFilter;
+
+            if (matchesSearch && matchesCategory) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Filter list view
+        listCards.forEach(card => {
+            const serviceName = card.getAttribute('data-service').toLowerCase();
+            const serviceCategory = card.getAttribute('data-category');
+
+            const matchesSearch = !searchTerm || serviceName.includes(searchTerm);
+            const matchesCategory = !categoryFilter || serviceCategory === categoryFilter;
+
+            if (matchesSearch && matchesCategory) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Update service count
+        const serviceCountEl = document.getElementById('serviceCount');
+        if (serviceCountEl) {
+            serviceCountEl.innerHTML = `Menampilkan <strong class="text-gray-900 dark:text-white">${visibleCount}</strong> layanan`;
+        }
+
+        // Show "no results" message if needed
+        const noResults = document.querySelector('.no-results');
+        if (visibleCount === 0 && gridCards.length > 0) {
+            if (!noResults) {
+                const noResultsDiv = document.createElement('div');
+                noResultsDiv.className = 'no-results text-center py-12';
+                noResultsDiv.innerHTML = `
+                    <i class="fas fa-search text-gray-400 text-6xl mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                        Tidak ada layanan yang ditemukan
+                    </h3>
+                    <p class="text-gray-500 dark:text-gray-500">
+                        Coba kata kunci atau kategori yang berbeda.
+                    </p>
+                `;
+                document.getElementById('servicesGrid').appendChild(noResultsDiv);
+            }
+        } else if (noResults) {
+            noResults.remove();
+        }
+    }
+
+    function showServiceDetail(serviceCode) {
+        const service = servicesData.find(s => s.code === serviceCode);
+        if (!service) return;
+
+        document.getElementById('modalTitle').textContent = service.name;
+        document.getElementById('modalContent').innerHTML = `
+            <div class="space-y-6">
+                <div>
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Kode Layanan</h4>
+                    <p class="text-gray-600 dark:text-gray-300">\${service.code}</p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Deskripsi</h4>
+                    <p class="text-gray-600 dark:text-gray-300">\${service.description}</p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Mode Pelayanan</h4>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium 
+                        \${service.mode === 'online' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                          service.mode === 'offline' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'}">
+                        \${service.mode === 'online' ? '<i class="fas fa-wifi mr-1"></i>Online' : 
+                          service.mode === 'offline' ? '<i class="fas fa-store mr-1"></i>Offline' : 
+                          '<i class="fas fa-sync-alt mr-1"></i>Hybrid'}
+                    </span>
+                </div>
+
+                <!-- Service Components Section -->
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-4">Komponen Layanan</h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <h5 class="font-medium text-gray-800 dark:text-gray-200 mb-2">1. Persyaratan</h5>
+                            <p class="text-gray-600 dark:text-gray-300">\${service.requirements || '-'}</p>
+                        </div>
+                        
+                        <div>
+                            <h5 class="font-medium text-gray-800 dark:text-gray-200 mb-2">2. Sistem, Mekanisme dan Prosedur</h5>
+                            <p class="text-gray-600 dark:text-gray-300">\${service.mechanism || '-'}</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h5 class="font-medium text-gray-800 dark:text-gray-200 mb-2">3. Waktu Penyelesaian</h5>
+                                <p class="text-gray-600 dark:text-gray-300">\${service.processingTime || 'Tidak disebutkan'}</p>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-medium text-gray-800 dark:text-gray-200 mb-2">4. Biaya / Tarif</h5>
+                                <p class="text-gray-600 dark:text-gray-300">Rp \${service.fee ? parseFloat(service.fee).toLocaleString('id-ID') : 'Gratis'}</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h5 class="font-medium text-gray-800 dark:text-gray-200 mb-2">5. Produk Pelayanan</h5>
+                            <p class="text-gray-600 dark:text-gray-300">\${service.product || '-'}</p>
+                        </div>
+                        
+                        <div>
+                            <h5 class="font-medium text-gray-800 dark:text-gray-200 mb-2">6. Pengaduan Pelayanan</h5>
+                            <p class="text-gray-600 dark:text-gray-300">\${service.complaint_handling || '-'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Kategori</h4>
+                    <p class="text-gray-600 dark:text-gray-300">\${service.category || 'Tidak ada kategori'}</p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Diperuntukan Untuk</h4>
+                    <div class="flex flex-wrap gap-2">
+                        \${service.userTypes.map(type => {
+                            const icons = {
+                                'siswa': 'fa-user-graduate',
+                                'alumni': 'fa-user-tie',
+                                'umum': 'fa-users',
+                                'instansi': 'fa-building',
+                                'walimurid': 'fa-user-friends',
+                                'pegawai': 'fa-user-cog'
+                            };
+                            const labels = {
+                                'siswa': 'Siswa',
+                                'alumni': 'Alumni',
+                                'umum': 'Umum',
+                                'instansi': 'Instansi',
+                                'walimurid': 'Wali Murid',
+                                'pegawai': 'Pegawai'
+                            };
+                            const icon = icons[type] || 'fa-user';
+                            const label = labels[type] || type;
+                            return \`
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                    <i class="fas \${icon} mr-1"></i>\${label}
+                                </span>
+                            \`;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button onclick="closeServiceModal()"
+                            class="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors">
+                        Tutup
+                    </button>
+                    @auth
+                        <button onclick="applyService('\${service.code}')"
+                                class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                            <i class="fas fa-file-medical mr-2"></i>Ajukan Sekarang
+                        </button>
+                    @else
+                        <a href="{{ route('login') }}"
+                           class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center transition-colors">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Login untuk Ajukan
+                        </a>
+                    @endif
+                </div>
+            </div>
+        `;
+
+        document.getElementById('serviceModal').classList.remove('hidden');
+    }
+
+    function closeServiceModal() {
+        document.getElementById('serviceModal').classList.add('hidden');
+    }
+
+    function showStandardsModal() {
+        document.getElementById('standardsModal').classList.remove('hidden');
+    }
+
+    function closeStandardsModal() {
+        document.getElementById('standardsModal').classList.add('hidden');
+    }
+
+    function applyService(serviceCode) {
+        // Redirect to apply page
+        window.location.href = \`{{ url('/services') }}/\${serviceCode}/apply\`;
+    }
+
+    // Auto-filter on page load if URL has search params
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('search')) {
+            document.getElementById('searchInput').value = urlParams.get('search');
+            filterServices();
+        }
+        if (urlParams.get('category')) {
+            document.getElementById('categoryFilter').value = urlParams.get('category');
+            filterServices();
+        }
+    });
+
+    // Update URL when filters change
+    function updateURL() {
+        const searchTerm = document.getElementById('searchInput').value;
+        const categoryFilter = document.getElementById('categoryFilter').value;
+
+        const params = new URLSearchParams();
+        if (searchTerm) params.set('search', searchTerm);
+        if (categoryFilter) params.set('category', categoryFilter);
+
+        const newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        window.history.replaceState({}, '', newURL);
+    }
+
+    // Add event listeners for URL updates
+    document.getElementById('searchInput').addEventListener('input', updateURL);
+    document.getElementById('categoryFilter').addEventListener('change', updateURL);
+</script>
+@endpush
