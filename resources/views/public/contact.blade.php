@@ -65,7 +65,7 @@
                     <h2 class="card-title">Informasi Kontak</h2>
                     <div class="space-y-4">
                         <div class="flex items-start gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <div class="shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-map-marker-alt text-primary"></i>
                             </div>
                             <div>
@@ -74,7 +74,7 @@
                             </div>
                         </div>
                         <div class="flex items-start gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <div class="shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-phone text-primary"></i>
                             </div>
                             <div>
@@ -83,7 +83,7 @@
                             </div>
                         </div>
                         <div class="flex items-start gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <div class="shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                                 <i class="fas fa-envelope text-primary"></i>
                             </div>
                             <div>

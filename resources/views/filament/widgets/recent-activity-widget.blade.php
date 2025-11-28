@@ -4,7 +4,7 @@
     <div class="space-y-4">
         @foreach ($this->getRecentActivities() as $activity)
             <div class="flex items-start space-x-3 p-3 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200">
-                <div class="flex-shrink-0">
+                <div class="shrink-0">
                     @if($activity['type'] === 'ticket')
                         <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                             <x-heroicon-s-ticket class="w-5 h-5 text-blue-600" />
@@ -34,7 +34,7 @@
                     <p class="text-xs text-gray-400 mt-1">{{ $activity['date'] }}</p>
                 </div>
                 
-                <div class="flex-shrink-0">
+                <div class="shrink-0">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $activity['color'] }}-100 text-{{ $activity['color'] }}-800">
                         @if($activity['type'] === 'ticket')
                             Tiket

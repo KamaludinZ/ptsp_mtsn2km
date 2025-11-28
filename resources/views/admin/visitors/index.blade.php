@@ -10,7 +10,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                        <div class="shrink-0">
                             <i class="fas fa-users fa-2x"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
@@ -26,7 +26,7 @@
             <div class="card bg-warning text-white">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                        <div class="shrink-0">
                             <i class="fas fa-running fa-2x"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
@@ -42,7 +42,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                        <div class="shrink-0">
                             <i class="fas fa-sign-out-alt fa-2x"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
@@ -58,7 +58,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                        <div class="shrink-0">
                             <i class="fas fa-calendar-day fa-2x"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">

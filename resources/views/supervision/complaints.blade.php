@@ -370,7 +370,7 @@
                     
                     <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 mb-4">
                         <div class="flex flex-col md:flex-row items-center gap-3">
-                            <div class="flex-shrink-0">
+                            <div class="shrink-0">
                                 <div class="bg-red-100 rounded-full p-3">
                                     <i class="fas fa-shield-alt text-red-600 text-2xl"></i>
                                 </div>
@@ -603,7 +603,7 @@
             <div class="card">
                 <div class="card-body p-4 border-start border-primary border-4">
                     <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                        <div class="shrink-0">
                             <i class="fas fa-info-circle text-primary info-icon-large" style="font-size: 2.5rem;"></i>
                         </div>
                         <div class="ms-4">

@@ -1,0 +1,3 @@
+# Deny all web access to this directory
+RewriteEngine On
+RewriteRule ^(.*)$ - [R=404,L]

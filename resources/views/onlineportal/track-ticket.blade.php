@@ -116,7 +116,7 @@
                                         <h3 class="font-medium text-gray-900 dark:text-white mb-2">Status Terkini</h3>
                                         <div class="space-y-3">
                                             <div class="flex">
-                                                <div class="flex-shrink-0">
+                                                <div class="shrink-0">
                                                     <div class="w-5 h-5 rounded-full bg-green-500"></div>
                                                 </div>
                                                 <div class="ml-3">
@@ -126,7 +126,7 @@
                                             </div>
                                             
                                             <div class="flex">
-                                                <div class="flex-shrink-0">
+                                                <div class="shrink-0">
                                                     <div class="w-5 h-5 rounded-full bg-green-500"></div>
                                                 </div>
                                                 <div class="ml-3">
@@ -136,7 +136,7 @@
                                             </div>
                                             
                                             <div class="flex">
-                                                <div class="flex-shrink-0">
+                                                <div class="shrink-0">
                                                     <div class="w-5 h-5 rounded-full bg-green-500"></div>
                                                 </div>
                                                 <div class="ml-3">

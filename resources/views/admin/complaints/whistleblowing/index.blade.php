@@ -22,7 +22,7 @@
         <div class="card bg-primary text-primary-content shadow-xl">
             <div class="card-body">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 mr-3">
+                    <div class="shrink-0 mr-3">
                         <i class="fas fa-shield-alt fa-2x"></i>
                     </div>
                     <div class="flex-grow-1">
@@ -36,7 +36,7 @@
         <div class="card bg-warning text-warning-content shadow-xl">
             <div class="card-body">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 mr-3">
+                    <div class="shrink-0 mr-3">
                         <i class="fas fa-hourglass-half fa-2x"></i>
                     </div>
                     <div class="flex-grow-1">
@@ -50,7 +50,7 @@
         <div class="card bg-success text-success-content shadow-xl">
             <div class="card-body">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 mr-3">
+                    <div class="shrink-0 mr-3">
                         <i class="fas fa-check-double fa-2x"></i>
                     </div>
                     <div class="flex-grow-1">
@@ -64,7 +64,7 @@
         <div class="card bg-info text-info-content shadow-xl">
             <div class="card-body">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 mr-3">
+                    <div class="shrink-0 mr-3">
                         <i class="fas fa-user-secret fa-2x"></i>
                     </div>
                     <div class="flex-grow-1">

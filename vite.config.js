@@ -27,7 +27,11 @@ export default defineConfig({
     server: {
         host: '127.0.0.1',
         port: 5175,
-
+        hmr: {
+            host: '127.0.0.1',
+            port: 5175,
+        },
+        cors: true,
     },
     build: {
         // Production optimizations

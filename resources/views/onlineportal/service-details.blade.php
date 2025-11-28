@@ -41,7 +41,7 @@
                                     Surat keterangan resmi untuk siswa aktif di MTsN 2 Kota Malang yang dapat digunakan untuk berbagai keperluan seperti beasiswa, pindah sekolah, atau keperluan administrasi lainnya.
                                 </p>
                             </div>
-                            <div class="flex-shrink-0">
+                            <div class="shrink-0">
                                 <div class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-semibold px-3 py-1 rounded-full">
                                     <i class="fas fa-check-circle mr-1"></i> Aktif
                                 </div>

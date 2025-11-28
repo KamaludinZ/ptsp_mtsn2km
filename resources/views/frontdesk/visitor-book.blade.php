@@ -139,7 +139,7 @@
 
                             <div class="mt-8 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6">
                                 <div class="flex">
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <i class="fas fa-info-circle text-green-600 dark:text-green-400 text-xl"></i>
                                     </div>
                                     <div class="ml-4">
@@ -269,7 +269,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm">
                                 <div class="flex items-start">
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <div class="bg-blue-100 dark:bg-blue-900 rounded-lg w-10 h-10 flex items-center justify-center">
                                             <i class="fas fa-id-card text-blue-600 dark:text-blue-400"></i>
                                         </div>
@@ -285,7 +285,7 @@
                             
                             <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm">
                                 <div class="flex items-start">
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <div class="bg-green-100 dark:bg-green-900 rounded-lg w-10 h-10 flex items-center justify-center">
                                             <i class="fas fa-print text-green-600 dark:text-green-400"></i>
                                         </div>
@@ -301,7 +301,7 @@
                             
                             <div class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm">
                                 <div class="flex items-start">
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <div class="bg-purple-100 dark:bg-purple-900 rounded-lg w-10 h-10 flex items-center justify-center">
                                             <i class="fas fa-user-clock text-purple-600 dark:text-purple-400"></i>
                                         </div>

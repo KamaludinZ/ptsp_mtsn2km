@@ -90,7 +90,7 @@
                                 <div class="p-5">
                                     <div class="space-y-3">
                                         <div class="flex items-start">
-                                            <div class="flex-shrink-0">
+                                            <div class="shrink-0">
                                                 <i class="fas fa-file-upload text-green-500 mt-1"></i>
                                             </div>
                                             <div class="ml-3">
@@ -99,7 +99,7 @@
                                             </div>
                                         </div>
                                         <div class="flex items-start">
-                                            <div class="flex-shrink-0">
+                                            <div class="shrink-0">
                                                 <i class="fas fa-file-upload text-green-500 mt-1"></i>
                                             </div>
                                             <div class="ml-3">
@@ -108,7 +108,7 @@
                                             </div>
                                         </div>
                                         <div class="flex items-start">
-                                            <div class="flex-shrink-0">
+                                            <div class="shrink-0">
                                                 <i class="fas fa-file-upload text-green-500 mt-1"></i>
                                             </div>
                                             <div class="ml-3">
@@ -117,7 +117,7 @@
                                             </div>
                                         </div>
                                         <div class="flex items-start">
-                                            <div class="flex-shrink-0">
+                                            <div class="shrink-0">
                                                 <i class="fas fa-file-upload text-green-500 mt-1"></i>
                                             </div>
                                             <div class="ml-3">
@@ -201,7 +201,7 @@
                                 <div class="p-5">
                                     <div class="space-y-3">
                                         <div class="flex items-center">
-                                            <div class="flex-shrink-0">
+                                            <div class="shrink-0">
                                                 <i class="fas fa-file-contract text-purple-500"></i>
                                             </div>
                                             <div class="ml-3">
@@ -210,7 +210,7 @@
                                             </div>
                                         </div>
                                         <div class="flex items-center">
-                                            <div class="flex-shrink-0">
+                                            <div class="shrink-0">
                                                 <i class="fas fa-file-pdf text-red-500"></i>
                                             </div>
                                             <div class="ml-3">

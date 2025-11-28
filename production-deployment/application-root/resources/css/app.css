@@ -1,0 +1,147 @@
+/**
+ * Main Application CSS
+ * Menggunakan Tailwind CSS v4 dengan CSS-first configuration
+ */
+
+/* ALL imports must come first - before plugins and theme */
+/* Tailwind CSS v4 - Import dengan @import tailwindcss */
+@import "tailwindcss";
+
+/* Bootstrap Icons - Local */
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+/* Import public-layout.css after Tailwind but before plugins and theme */
+@import 'public-layout.css';
+
+/* DaisyUI Plugin */
+@plugin "daisyui";
+
+/* Tailwind Theme Configuration */
+@theme {
+  /* Extend default theme jika diperlukan */
+}
+
+/**
+ * Custom Styles
+ * Tambahkan custom CSS di sini
+ */
+
+/* Accessibility Enhancements */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Focus Styles for Accessibility */
+*:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Link Styles - No underline by default, with hover effect */
+a {
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+a:hover {
+    opacity: 0.8;
+}
+
+/* Navigation Menu Styles - Force black color */
+nav .menu li > a {
+    color: #111827 !important;
+    font-weight: 600;
+}
+
+nav .menu li > a:hover {
+    color: #16a34a !important;
+}
+
+/* Navigation horizontal menu */
+nav a[href] {
+    color: #111827 !important;
+}
+
+nav a[href]:hover {
+    color: #16a34a !important;
+}
+
+/* Header Button Borders - Force visible borders */
+nav .btn-circle {
+    border: 2px solid #d1d5db !important;
+    background-color: white !important;
+}
+
+nav .btn-circle:hover {
+    border-color: #111827 !important;
+    background-color: #f9fafb !important;
+}
+
+nav .btn-circle i,
+nav .btn-circle svg {
+    color: #111827 !important;
+}
+
+/* Login and Register buttons */
+nav .btn-sm[href*="login"] {
+    border: 2px solid #111827 !important;
+    background-color: #111827 !important;
+    color: white !important;
+}
+
+nav .btn-sm[href*="login"]:hover {
+    background-color: #374151 !important;
+    border-color: #374151 !important;
+    color: white !important;
+}
+
+nav .btn-sm[href*="login"]:hover span,
+nav .btn-sm[href*="login"]:hover i {
+    color: white !important;
+}
+
+nav .btn-sm[href*="register"] {
+    border: 2px solid #111827 !important;
+    background-color: transparent !important;
+    color: #111827 !important;
+}
+
+nav .btn-sm[href*="register"]:hover {
+    background-color: #111827 !important;
+    color: white !important;
+}
+
+/* Header button alignment fixes */
+nav .btn-circle,
+nav .swap-rotate {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
+}
+
+nav .btn-circle i,
+nav .btn-circle svg,
+nav .swap-rotate svg {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: auto !important;
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
