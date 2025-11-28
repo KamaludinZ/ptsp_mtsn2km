@@ -48,8 +48,18 @@
                             <ul class="space-y-2">
                                 @forelse($recentVisitors ?? [] as $visitor)
                                     <li class="border-b pb-2">
-                                        <span class="font-medium">{{ $visitor->name }}</span> - {{ $visitor->institution }}
-                                        <span class="text-sm text-gray-500 ml-2">{{ $visitor->check_in_time->format('H:i') }}</span>
+                                        @if($visitor)
+                                            <span class="font-medium">{{ $visitor->name ?? 'N/A' }}</span> - {{ $visitor->institution ?? 'N/A' }}
+                                            <span class="text-sm text-gray-500 ml-2">
+                                                @if($visitor->check_in_time)
+                                                    {{ $visitor->check_in_time->format('H:i') }}
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </span>
+                                        @else
+                                            <span class="font-medium">Unknown Visitor</span> - <span>Unknown Institution</span>
+                                        @endif
                                     </li>
                                 @empty
                                     <li class="text-gray-500">No recent visitors</li>

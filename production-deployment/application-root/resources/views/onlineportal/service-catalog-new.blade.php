@@ -152,7 +152,7 @@
                             <!-- Service Type Tags -->
                             <div class="flex flex-wrap gap-2 mb-4">
                                 @php
-                                    $userTypes = json_decode($service->user_types_allowed, true);
+                                    $userTypes = is_string($service->user_types_allowed) ? json_decode($service->user_types_allowed, true) : ($service->user_types_allowed ?? []);
                                     $typeIcons = [
                                         'siswa' => 'fa-user-graduate',
                                         'alumni' => 'fa-user-tie',
@@ -263,7 +263,7 @@
                                     </span>
                                     
                                     @php
-                                        $userTypes = json_decode($service->user_types_allowed, true);
+                                        $userTypes = is_string($service->user_types_allowed) ? json_decode($service->user_types_allowed, true) : ($service->user_types_allowed ?? []);
                                         $typeIcons = [
                                             'siswa' => 'fa-user-graduate',
                                             'alumni' => 'fa-user-tie',

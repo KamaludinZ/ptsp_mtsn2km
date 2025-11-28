@@ -7,12 +7,12 @@ use Illuminate\Foundation\Http\Middleware\RedirectIfAuthenticated as Middleware;
 class RedirectIfAuthenticated extends Middleware
 {
     /**
-     * Get the paths that should be excluded from redirection.
+     * Get the path the user should be redirected to when they are authenticated.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return array<int, string>
+     * @return string|null
      */
-    protected function redirectTo($request)
+    protected function redirectTo($request): ?string
     {
         if ($request->expectsJson()) {
             return null;

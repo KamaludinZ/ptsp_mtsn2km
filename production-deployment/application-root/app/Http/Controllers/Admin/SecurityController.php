@@ -459,7 +459,7 @@ class SecurityController extends Controller
             storage_path(),
             storage_path('framework'),
             storage_path('logs'),
-            bootstrap_path('cache'),
+            base_path('bootstrap/cache'),
         ];
 
         $issues = [];

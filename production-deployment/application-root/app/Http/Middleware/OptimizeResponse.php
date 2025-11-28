@@ -19,36 +19,36 @@ class OptimizeResponse
 
         // Add caching headers for static assets and pages
         if ($this->shouldCache($request)) {
-            $response->header('Cache-Control', 'public, max-age=31536000, immutable');
-            $response->header('Expires', gmdate('D, d M Y H:i:s', time() + 31536000) . ' GMT');
+            $response->headers->set('Cache-Control', 'public, max-age=31536000, immutable');
+            $response->headers->set('Expires', gmdate('D, d M Y H:i:s', time() + 31536000) . ' GMT');
         } elseif ($request->is('api/*')) {
             // API responses: no cache
-            $response->header('Cache-Control', 'no-cache, no-store, must-revalidate');
-            $response->header('Pragma', 'no-cache');
-            $response->header('Expires', '0');
+            $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Expires', '0');
         } else {
             // Regular pages: no cache
-            $response->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-            $response->header('Pragma', 'no-cache');
-            $response->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
+            $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
         }
 
         // Add compression headers
         if ($this->shouldCompress($request) && !$response->headers->has('Content-Encoding')) {
-            $response->header('Vary', 'Accept-Encoding');
+            $response->headers->set('Vary', 'Accept-Encoding');
         }
 
         // Add security headers for performance
-        $response->header('X-Content-Type-Options', 'nosniff');
-        $response->header('X-Frame-Options', 'SAMEORIGIN');
-        $response->header('X-XSS-Protection', '1; mode=block');
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        $response->headers->set('X-XSS-Protection', '1; mode=block');
 
         // Preload critical resources
         if ($response->headers->get('Content-Type') === 'text/html' ||
             str_contains($response->headers->get('Content-Type') ?? '', 'text/html')) {
             $preloadLinks = $this->getPreloadLinks();
             if (!empty($preloadLinks)) {
-                $response->header('Link', implode(', ', $preloadLinks));
+                $response->headers->set('Link', implode(', ', $preloadLinks));
             }
         }
 

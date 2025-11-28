@@ -97,10 +97,10 @@
                                             <div class="d-flex align-items-center">
                                                 <div class="avatar-circle bg-primary bg-opacity-10 me-2" style="width: 36px; height: 36px;">
                                                     <span class="fw-bold" style="color: var(--bs-primary); font-size: 0.875rem;">
-                                                        {{ strtoupper(substr($visitor->name, 0, 2)) }}
+                                                        {{ $visitor->name ? strtoupper(substr($visitor->name, 0, 2)) : '??' }}
                                                     </span>
                                                 </div>
-                                                <span class="fw-semibold">{{ $visitor->name }}</span>
+                                                <span class="fw-semibold">{{ $visitor->name ?? 'N/A' }}</span>
                                             </div>
                                         </td>
                                         <td>{{ $visitor->institution ?? '-' }}</td>
@@ -109,13 +109,13 @@
                                         </td>
                                         <td>
                                             <small class="text-muted">
-                                                <i class="fas fa-clock me-1"></i>{{ $visitor->check_in_time->format('H:i') }}
+                                                <i class="fas fa-clock me-1"></i>{{ $visitor->check_in_time ? $visitor->check_in_time->format('H:i') : 'N/A' }}
                                             </small>
                                         </td>
                                         <td class="text-center">
                                             <button type="button"
                                                     class="btn btn-sm btn-outline-primary"
-                                                    onclick="quickCheckout('{{ $visitor->visitor_card_number }}', '{{ $visitor->name }}')">
+                                                    onclick="quickCheckout('{{ $visitor->visitor_card_number ?? '' }}', '{{ $visitor->name ?? '' }}')">
                                                 <i class="fas fa-sign-out-alt me-1"></i>Checkout
                                             </button>
                                         </td>
