@@ -20,9 +20,11 @@
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#14532d">
 
+    @vite(['resources/css/inline-style-fix.css'])
     @stack('styles')
 </head>
 <body class="font-normal">
+    <!-- MARKER: layouts.public -->
     <!-- Page Loading Overlay -->
     <div id="page-loading-overlay">
         <div class="loading-content">
@@ -101,37 +103,37 @@
                         <i class="fas fa-chevron-down ml-1" id="contactChevron"></i>
                     </button>
                     <ul id="contactDropdownMenu" class="dropdown-content menu menu-sm p-2 shadow bg-gray-800 dark:bg-gray-900 rounded-box w-52 mt-4 z-100 border border-gray-700 dark:border-gray-600" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); border-radius: 0.5rem; padding: 0.5rem; margin-top: 0.25rem; width: 16rem; z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
-                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                        <li class="contact-dropdown-item" style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;">
                             <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
                                 <i class="fas fa-map-marker-alt" style="color: #ea580c;"></i>
                                 <span>{{ $contactAddress }}</span>
                             </div>
                         </li>
-                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                        <li class="contact-dropdown-item" style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;">
                             <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
                                 <i class="fas fa-phone" style="color: #ea580c;"></i>
                                 <span>{{ $contactPhone }}</span>
                             </div>
                         </li>
-                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                        <li class="contact-dropdown-item" style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;">
                             <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
                                 <i class="fas fa-envelope" style="color: #ea580c;"></i>
                                 <span>{{ $contactEmail }}</span>
                             </div>
                         </li>
-                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                        <li class="contact-dropdown-item" style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;">
                             <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
                                 <i class="fas fa-globe" style="color: #ea580c;"></i>
                                 <span>{{ $contactWebsite }}</span>
                             </div>
                         </li>
-                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                        <li class="contact-dropdown-item" style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;">
                             <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
                                 <i class="fas fa-comment" style="color: #ea580c;"></i>
                                 <span>{{ preg_replace('/^62/', '0', $contactWhatsappPtsp) }} (PTSP)</span>
                             </div>
                         </li>
-                        <li style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;" onmouseover="this.style.backgroundColor='#1f2937'" onmouseout="this.style.backgroundColor='transparent'">
+                        <li class="contact-dropdown-item" style="list-style: none; padding: 0.5rem; cursor: pointer; border-radius: 0.25rem;">
                             <div style="display: flex; align-items: center; gap: 0.5rem; color: #d1d5db; font-size: 0.75rem;">
                                 <i class="fas fa-comment" style="color: #ea580c;"></i>
                                 <span>{{ preg_replace('/^62/', '0', $contactWhatsappPengaduan) }} (Pengaduan)</span>

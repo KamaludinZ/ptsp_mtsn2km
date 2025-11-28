@@ -22,9 +22,9 @@
                     </div>
 
                     <!-- Confidentiality Guarantee -->
-                    <div class="bg-gradient-to-br from-red-50 to-orange-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 mb-8">
+                    <div class="bg-linear-to-br from-red-50 to-orange-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 mb-8">
                         <div class="flex flex-col md:flex-row items-center gap-6">
-                            <div class="flex-shrink-0">
+                            <div class="shrink-0">
                                 <div class="bg-red-100 dark:bg-red-900 rounded-full p-4">
                                     <i class="fas fa-shield-alt text-red-600 dark:text-red-400 text-3xl"></i>
                                 </div>
@@ -258,9 +258,9 @@
 
                     <!-- Protection Information -->
                     <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6">
+                        <div class="bg-linear-to-br from-green-50 to-emerald-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6">
                             <div class="flex">
-                                <div class="flex-shrink-0">
+                                <div class="shrink-0">
                                     <i class="fas fa-user-shield text-green-600 dark:text-green-400 text-xl"></i>
                                 </div>
                                 <div class="ml-4">
@@ -274,9 +274,9 @@
                             </div>
                         </div>
 
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6">
+                        <div class="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6">
                             <div class="flex">
-                                <div class="flex-shrink-0">
+                                <div class="shrink-0">
                                     <i class="fas fa-balance-scale text-blue-600 dark:text-blue-400 text-xl"></i>
                                 </div>
                                 <div class="ml-4">

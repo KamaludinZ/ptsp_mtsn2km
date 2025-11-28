@@ -259,6 +259,7 @@
             </div>
 
             <style>
+                <!-- MARKER: layouts.app -->
                 /* 1. Atur pembungkus utama untuk menggunakan Flexbox */
                 .dashboard-layout {
                     display: flex; /* Ini kuncinya! */

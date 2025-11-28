@@ -10,7 +10,7 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
+                        <div class="bg-linear-to-br from-blue-50 to-blue-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
                             <div class="flex items-center">
                                 <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900">
                                     <i class="fas fa-ticket-alt text-blue-600 dark:text-blue-400 text-xl"></i>
@@ -22,7 +22,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
+                        <div class="bg-linear-to-br from-green-50 to-green-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
                             <div class="flex items-center">
                                 <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900">
                                     <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
@@ -34,7 +34,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
+                        <div class="bg-linear-to-br from-purple-50 to-purple-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
                             <div class="flex items-center">
                                 <div class="p-3 rounded-lg bg-purple-100 dark:bg-purple-900">
                                     <i class="fas fa-history text-purple-600 dark:text-purple-400 text-xl"></i>
@@ -49,7 +49,7 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <!-- Welcome Message -->
-                        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
+                        <div class="bg-linear-to-br from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 rounded-xl p-6 shadow">
                             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
                                 Selamat Datang, {{ Auth::user()->name }}!
                             </h3>

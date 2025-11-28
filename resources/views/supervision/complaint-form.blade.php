@@ -1,3 +1,4 @@
+<!-- MARKER: supervision.complaint-form -->
 @extends('layouts.public')
 
 @section('title', 'Formulir Pengaduan')
@@ -94,9 +95,9 @@
                                 <strong>Whistleblowing</strong> - Gunakan formulir ini untuk melaporkan pelanggaran serius seperti korupsi, penipuan, suap, atau penyalahgunaan wewenang yang terjadi di dalam organisasi.
                             </div>
                             
-                            <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 mb-4" style="background: linear-gradient(135deg, #fff5f5, #ffebee); color: var(--bs-emphasis-color, #000000);">
+                            <div class="bg-linear-to-br from-red-50 to-orange-50 rounded-xl p-4 mb-4" style="background: linear-gradient(135deg, #fff5f5, #ffebee); color: var(--bs-emphasis-color, #000000);">
                                 <div class="flex flex-col md:flex-row items-center gap-3">
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <div class="bg-red-100 rounded-full p-3">
                                             <i class="fas fa-shield-alt text-red-600 text-2xl"></i>
                                         </div>
