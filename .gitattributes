@@ -1,7 +1,0 @@
-# Biarkan Git yang mengatur, dan paksa semua file teks
-# untuk menggunakan LF (gaya Linux/Mac) di dalam repositori.
-* text=auto eol=lf
-
-# Laravel
-/vendor/
-.env
