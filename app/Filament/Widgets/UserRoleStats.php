@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Cache;
 
 class UserRoleStats extends BaseWidget
 {
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 21;
 
     protected ?string $pollingInterval = null;
 

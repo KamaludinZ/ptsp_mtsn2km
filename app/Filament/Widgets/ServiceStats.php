@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cache;
 
 class ServiceStats extends BaseWidget
 {
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 31;
 
     protected ?string $pollingInterval = null;
 

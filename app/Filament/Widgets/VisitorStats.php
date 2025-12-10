@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Cache;
 
 class VisitorStats extends BaseWidget
 {
-    protected static ?int $sort = 5;
+    protected static ?int $sort = 41;
 
     protected ?string $pollingInterval = null;
 

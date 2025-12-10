@@ -20,40 +20,38 @@ class Dashboard extends BaseDashboard
     protected function getHeaderWidgets(): array
     {
         return [
-            // ========================================
             // QUICK OVERVIEW (8 Key Metrics in 4x2 grid)
-            // ========================================
             \App\Filament\Widgets\DashboardOverview::class,
 
-            // ========================================
             // DETAILED STATISTICS BY CATEGORY
-            // (No duplication - detailed breakdown only)
-            // ========================================
 
-            // 📊 User Management
-            UserRoleStats::class,        // Breakdown by user roles
-            RegistrationStats::class,    // Registration trends
+            // 📊 User Management Section
+            \App\Filament\Widgets\UserManagementHeading::class,
+            UserRoleStats::class,
+            RegistrationStats::class,
 
-            // 🛠️ Services & Ticketing
-            ServiceStats::class,         // Service types & modes
-            TicketStats::class,          // Ticket lifecycle stats
+            // 🛠️ Services & Ticketing Section
+            \App\Filament\Widgets\ServicesTicketingHeading::class,
+            ServiceStats::class,
+            TicketStats::class,
 
-            // 👥 Visitor Management
-            VisitorStats::class,         // Visitor trends & status
+            // 👥 Visitor Management Section
+            \App\Filament\Widgets\VisitorManagementHeading::class,
+            VisitorStats::class,
 
-            // 📢 Complaints & Reporting
-            ComplaintWhistleblowingStats::class,  // Complaints & WBS
+            // 📢 Complaints & Reporting Section
+            \App\Filament\Widgets\ComplaintsReportingHeading::class,
+            ComplaintWhistleblowingStats::class,
 
-            // 📋 Survey & Feedback
-            SurveyStats::class,          // Survey responses
+            // 📋 Survey & Feedback Section
+            \App\Filament\Widgets\SurveyFeedbackHeading::class,
+            SurveyStats::class,
         ];
     }
 
     protected function getFooterWidgets(): array
     {
         return [
-            // Charts and detailed analytics in footer
-            SkmSpakIndexChart::class,
             // Recent activities
             RecentActivitiesWidget::class,
         ];

@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 class TicketStats extends BaseWidget
 {
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 32;
 
     protected ?string $pollingInterval = null;
 
