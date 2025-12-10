@@ -7,15 +7,13 @@ use Filament\Widgets\Widget;
 class VisitorManagementHeading extends Widget
 {
     protected int | string | array $columnSpan = 'full';
+
     protected static ?int $sort = 40;
 
-    protected function getViewData(): array
-    {
-        return [];
-    }
+    protected static bool $isLazy = false;
 
-    public function render(): \Illuminate\Contracts\View\View
+    public static function getView(): string
     {
-        return view('filament.widgets.visitor-management-heading');
+        return 'filament.widgets.visitor-management-heading';
     }
 }
