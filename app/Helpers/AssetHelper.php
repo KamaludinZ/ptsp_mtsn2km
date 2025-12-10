@@ -14,21 +14,34 @@ class AssetHelper
      */
     public static function asset($path)
     {
-        $mode = config('assets.mode', 'vite');
-        $checkVite = config('assets.check_vite_server', true);
+        try {
+            $mode = config('assets.mode', 'vite');
+            $checkVite = config('assets.check_vite_server', true);
 
-        // Determine if we should use Vite
-        $shouldUseVite = false;
-        if ($mode === 'vite' && config('app.env') === 'local') {
-            $shouldUseVite = $checkVite ? self::isViteRunning() : true;
+            // Determine if we should use Vite
+            $shouldUseVite = false;
+            if ($mode === 'vite' && config('app.env') === 'local') {
+                $shouldUseVite = $checkVite ? self::isViteRunning() : true;
+            }
+
+            if ($shouldUseVite) {
+                return self::viteAsset($path);
+            }
+
+            // In production mode or if Vite is not running, use compiled assets
+            return self::manifestAsset($path);
+        } catch (\Exception $e) {
+            // Log the error but don't break the page
+            \Log::error('AssetHelper::asset error', [
+                'path' => $path,
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
+            // Return a safe fallback - just use Laravel's asset() helper
+            return asset($path);
         }
-
-        if ($shouldUseVite) {
-            return self::viteAsset($path);
-        }
-
-        // In production mode or if Vite is not running, use compiled assets
-        return self::manifestAsset($path);
     }
 
     /**
@@ -52,24 +65,42 @@ class AssetHelper
      */
     public static function css($path)
     {
-        $mode = config('assets.mode', 'vite');
-        $checkVite = config('assets.check_vite_server', true);
+        try {
+            // Validate input parameters
+            if (!is_string($path) || empty($path)) {
+                \Log::warning('AssetHelper::css called with invalid path', [
+                    'path' => $path,
+                    'type' => gettype($path)
+                ]);
+                return '<link rel="stylesheet" href="">'; // Return empty href as safe fallback
+            }
 
-        // Determine if we should use Vite
-        $shouldUseVite = false;
-        if ($mode === 'vite' && config('app.env') === 'local') {
-            $shouldUseVite = $checkVite ? self::isViteRunning() : true;
+            $mode = config('assets.mode', 'vite');
+            $checkVite = config('assets.check_vite_server', true);
+
+            // Determine if we should use Vite
+            $shouldUseVite = false;
+            if ($mode === 'vite' && config('app.env') === 'local') {
+                $shouldUseVite = $checkVite ? self::isViteRunning() : true;
+            }
+
+            // Only allow valid asset paths to prevent injection
+            if (!is_string($path) || empty($path) || !preg_match('/^[a-zA-Z0-9\/_.\-@]+$/', $path)) {
+                return '<link rel="stylesheet" href="">';
+            }
+
+            // Validate path to ensure it's actually an asset file
+            if (!preg_match('/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/i', $path)) {
+                return '<link rel="stylesheet" href="">';
+            }
+
+            // Use manifestAsset to get the correct path
+            $url = self::manifestAsset($path);
+            return '<link rel="stylesheet" href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">';
+        } catch (\Exception $e) {
+            // In case of any error, return a safe empty link tag to avoid breaking page
+            return '<link rel="stylesheet" href="">';
         }
-
-        if ($shouldUseVite) {
-            // For Vite in dev, we return a placeholder since we can't return @vite from helper
-            // The actual @vite should be used directly in blade files
-            return '<!-- VITE_CSS_PLACEHOLDER:' . $path . ' -->';
-        }
-
-        // Use compiled assets
-        $url = self::asset($path);
-        return '<link rel="stylesheet" href="' . $url . '">';
     }
 
     /**
@@ -81,24 +112,26 @@ class AssetHelper
      */
     public static function js($path, $defer = true)
     {
-        $mode = config('assets.mode', 'vite');
-        $checkVite = config('assets.check_vite_server', true);
+        try {
+            // Only allow valid asset paths to prevent injection
+            if (!is_string($path) || empty($path) || !preg_match('/^[a-zA-Z0-9\/_.\-@]+$/', $path)) {
+                return '<script></script>';
+            }
 
-        // Determine if we should use Vite
-        $shouldUseVite = false;
-        if ($mode === 'vite' && config('app.env') === 'local') {
-            $shouldUseVite = $checkVite ? self::isViteRunning() : true;
+            // Validate path to ensure it's actually an asset file
+            if (!preg_match('/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/i', $path)) {
+                return '<script></script>';
+            }
+
+            // Use manifestAsset to get the correct path
+            $url = self::manifestAsset($path);
+
+            $deferAttr = $defer ? ' defer' : '';
+            return '<script src="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . htmlspecialchars($deferAttr, ENT_QUOTES, 'UTF-8') . '></script>';
+        } catch (\Exception $e) {
+            // In case of any error, return a safe empty script tag to avoid breaking page
+            return '<script></script>';
         }
-
-        if ($shouldUseVite) {
-            // For Vite in dev, we return a placeholder since we can't return @vite from helper
-            return '<!-- VITE_JS_PLACEHOLDER:' . $path . ' -->';
-        }
-
-        // Use compiled assets
-        $url = self::asset($path);
-        $deferAttr = $defer ? ' defer' : '';
-        return '<script src="' . $url . '"' . $deferAttr . '></script>';
     }
 
     /**
@@ -127,7 +160,7 @@ class AssetHelper
                     }
                     $attributes['crossorigin'] = 'anonymous';
                 }
-                
+
                 $links[] = '<link' . self::htmlAttributes($attributes) . '>';
             }
         }
@@ -208,7 +241,7 @@ class AssetHelper
         }
         return count($html) > 0 ? ' ' . implode(' ', $html) : '';
     }
-    
+
     /**
      * Build a single attribute element.
      *
@@ -225,7 +258,7 @@ class AssetHelper
             return $value ? $key : '';
         }
         if ($value !== null) {
-            return $key . '="' . e($value, false) . '"';
+            return $key . '="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"';
         }
         return null;
     }
@@ -238,12 +271,87 @@ class AssetHelper
      */
     private static function manifestAsset($path)
     {
+        // Handle vendor/package assets - return them as-is (they manage their own compilation)
+        if (str_starts_with($path, 'vendor/') || str_starts_with($path, '/vendor/')) {
+            return asset($path);
+        }
+
+        // Handle Filament assets - they use their own build system
+        if (str_contains($path, '/filament/') || str_contains($path, 'filament')) {
+            return asset($path);
+        }
+
+        // Handle critical CSS files that contain Font Awesome and other icons
+        if ($path === 'resources/css/vendor.css') {
+            // Ensure vendor CSS (with Font Awesome) is always properly loaded
+            $buildDir = public_path('build/assets');
+            if (File::exists($buildDir)) {
+                $files = File::glob($buildDir . '/vendor-*.css');
+                if (!empty($files)) {
+                    // Return the first vendor CSS file found
+                    $filename = basename($files[0]);
+                    return asset('build/assets/' . $filename);
+                }
+            }
+        }
+
+        // Handle Font Awesome CSS specifically
+        if ($path === 'resources/css/fontawesome.css') {
+            $buildDir = public_path('build/assets');
+            if (File::exists($buildDir)) {
+                $files = File::glob($buildDir . '/fontawesome-*.css');
+                if (!empty($files)) {
+                    // Return the first Font Awesome CSS file found
+                    $filename = basename($files[0]);
+                    return asset('build/assets/' . $filename);
+                }
+            }
+        }
+
+        // Handle specific CSS files that often cause issues in production
+        if ($path === 'resources/css/public-layout.css' || $path === 'resources/css/loading.css') {
+            $filename = pathinfo($path, PATHINFO_BASENAME);
+            $staticPath = 'css/' . $filename;
+            if (File::exists(public_path($staticPath))) {
+                return asset($staticPath);
+            }
+        }
+
+        // Handle specific JS files that should use compiled versions (no ES6 modules)
+        if ($path === 'resources/js/app.js') {
+            $compiledPath = 'js/app-compiled.js';
+            if (File::exists(public_path($compiledPath))) {
+                return asset($compiledPath);
+            }
+        }
+        if ($path === 'resources/js/bootstrap-bundle.js') {
+            $compiledPath = 'js/bootstrap-bundle-compiled.js';
+            if (File::exists(public_path($compiledPath))) {
+                return asset($compiledPath);
+            }
+        }
+        if ($path === 'resources/js/chart-bundle.js') {
+            $compiledPath = 'js/chart-bundle-compiled.js';
+            if (File::exists(public_path($compiledPath))) {
+                return asset($compiledPath);
+            }
+        }
+        if ($path === 'resources/js/accessibility.js') {
+            $compiledPath = 'js/accessibility-compiled.js';
+            if (File::exists(public_path($compiledPath))) {
+                return asset($compiledPath);
+            }
+        }
+
         $manifestPath = public_path('build/manifest.json');
 
         // First, check if there's a configured fallback
-        $fallbackPath = config("assets.production_assets." . pathinfo($path, PATHINFO_EXTENSION) . "." . $path);
-        if ($fallbackPath) {
-            return asset($fallbackPath);
+        if (!empty($path) && is_string($path)) {
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            $fallbackPath = config("assets.production_assets.{$extension}.{$path}");
+            if ($fallbackPath) {
+                return asset($fallbackPath);
+            }
         }
 
         if (!File::exists($manifestPath)) {
@@ -253,12 +361,18 @@ class AssetHelper
 
         $manifest = json_decode(File::get($manifestPath), true);
 
+        // Check if manifest is valid
+        if (!is_array($manifest)) {
+            \Log::warning('Invalid manifest.json', ['path' => $manifestPath]);
+            return self::findAssetFromBuildDir($path);
+        }
+
         // Remove 'resources/' prefix if exists
         $key = str_replace('resources/', '', $path);
 
-        if (isset($manifest[$path])) {
+        if (isset($manifest[$path]) && is_array($manifest[$path]) && isset($manifest[$path]['file'])) {
             return asset('build/' . $manifest[$path]['file']);
-        } elseif (isset($manifest[$key])) {
+        } elseif (isset($manifest[$key]) && is_array($manifest[$key]) && isset($manifest[$key]['file'])) {
             return asset('build/' . $manifest[$key]['file']);
         }
 
@@ -287,7 +401,12 @@ class AssetHelper
         }
 
         $files = File::glob($buildDir . '/*.' . $ext);
-        
+
+        // Ensure $files is an array
+        if (!is_array($files)) {
+            $files = [];
+        }
+
         // Look for the most appropriate file
         foreach ($files as $file) {
             $fileBasename = pathinfo($file, PATHINFO_FILENAME);
@@ -329,7 +448,7 @@ class AssetHelper
      *
      * @return bool
      */
-    private static function isViteRunning()
+    public static function isViteRunning()
     {
         // Check if we're in production environment
         if (config('app.env') !== 'local') {
@@ -347,7 +466,8 @@ class AssetHelper
             $retcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
 
-            return $retcode === 200;
+            // 404 also means Vite server is running (just no route at root)
+            return in_array($retcode, [200, 404]);
         } catch (\Exception $e) {
             // Additional check: try to ping the vite client endpoint
             try {

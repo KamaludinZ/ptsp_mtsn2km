@@ -593,6 +593,66 @@
 
 @push('scripts')
 <script>
+// Session timeout warning - warn 5 minutes before expiration
+const SESSION_LIFETIME = {{ config('session.lifetime', 120) }}; // minutes
+const WARNING_TIME = 5; // minutes before expiration to show warning
+
+let sessionTimeout;
+let warningTimeout;
+
+function resetSessionTimer() {
+    clearTimeout(sessionTimeout);
+    clearTimeout(warningTimeout);
+
+    // Show warning 5 minutes before session expires
+    const warningMs = (SESSION_LIFETIME - WARNING_TIME) * 60 * 1000;
+    warningTimeout = setTimeout(showSessionWarning, warningMs);
+
+    // Session will expire
+    const sessionMs = SESSION_LIFETIME * 60 * 1000;
+    sessionTimeout = setTimeout(handleSessionExpired, sessionMs);
+}
+
+function showSessionWarning() {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Peringatan Session',
+            html: `Session Anda akan berakhir dalam ${WARNING_TIME} menit.<br>Silakan login ulang untuk melanjutkan.`,
+            icon: 'warning',
+            timer: 30000,
+            timerProgressBar: true,
+            showConfirmButton: true,
+            confirmButtonText: 'OK, Saya Mengerti'
+        });
+    } else {
+        alert(`Session Anda akan berakhir dalam ${WARNING_TIME} menit. Silakan login ulang untuk melanjutkan.`);
+    }
+}
+
+function handleSessionExpired() {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Session Berakhir',
+            text: 'Session Anda telah berakhir. Silakan login kembali.',
+            icon: 'info',
+            confirmButtonText: 'Login Kembali'
+        }).then(() => {
+            window.location.reload();
+        });
+    } else {
+        alert('Session Anda telah berakhir. Silakan login kembali.');
+        window.location.reload();
+    }
+}
+
+// Start session timer
+resetSessionTimer();
+
+// Reset timer on any user activity
+['mousedown', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+    document.addEventListener(event, resetSessionTimer, true);
+});
+
 // Refresh captcha using AJAX
 function refreshCaptcha() {
     fetch('/refresh-captcha')

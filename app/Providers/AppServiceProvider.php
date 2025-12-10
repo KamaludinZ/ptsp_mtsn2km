@@ -8,6 +8,7 @@ use App\Helpers\AssetHelper;
 use Illuminate\Support\Facades\View;
 use App\Models\AppSetting;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,12 +23,38 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+    public function boot(Request $request): void
     {
         if (session()->has('locale')) {
             app()->setLocale(session('locale'));
         }
-        
+
+        // Register custom Blade directive for intelligent asset loading
+        Blade::directive('asset', function ($expression) {
+            return "<?php echo App\Helpers\AssetHelper::asset({$expression}); ?>";
+        });
+
+        // Register custom Blade directive for CSS assets
+        Blade::directive('css', function ($expression) {
+            return "<?php echo App\Helpers\AssetHelper::css({$expression}); ?>";
+        });
+
+        // Register custom Blade directive for JS assets
+        Blade::directive('js', function ($expression) {
+            return "<?php echo App\Helpers\AssetHelper::js({$expression}); ?>";
+        });
+
+        // Force HTTPS in production only
+        if (app()->environment('production')) {
+            \URL::forceScheme('https');
+
+            // Set secure headers for production
+            $this->setSecurityHeaders();
+        } else {
+            // Explicitly force HTTP in local/development
+            \URL::forceScheme('http');
+        }
+
         // Share a variable to indicate whether to use Vite or not
         View::composer('*', function ($view) {
             $useVite = (config('app.env') === 'local') && config('assets.mode', 'vite') === 'vite';
@@ -40,5 +67,16 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('themeAdmin', $themeAdmin);
             }
         });
+    }
+
+    /**
+     * Set security headers for production environment
+     */
+    private function setSecurityHeaders(): void
+    {
+        // Force HTTPS in production
+        if (config('app.env') === 'production') {
+            // These headers will be set via middleware and .htaccess in production
+        }
     }
 }

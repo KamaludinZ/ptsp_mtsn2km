@@ -5,8 +5,6 @@ Sistem dashboard PTSP menggunakan bootsrap atau tailwind dengan 8 panel berbeda 
 
 ---
 
-## 1. Super Admin Dashboard (`/suadmin`)
-**Role:** Super Admin
 **Modul:** 12 (Master Konfigurasi) & 13 (Dashboard Eksekutif)
 **Warna:** Amber
 
@@ -470,7 +468,6 @@ app/Filament/
 │       └── MyTicketsWidget.php
 │
 app/Providers/Filament/
-├── AdminPanelProvider.php (Super Admin - /suadmin)
 ├── StaffAdminPanelProvider.php (Admin - /admin)
 ├── KepalaPanelProvider.php (Kepala - /kepala)
 ├── KaTUPanelProvider.php (Kepala TU - /katu)

@@ -96,20 +96,6 @@ class UserSeeder extends Seeder
             ]);
         }
 
-        // Create Super Admin
-        $superAdmin = User::create([
-            'name' => 'Super Admin PTSP',
-            'email' => 'admin@ptsp.mtsn2malang.sch.id',
-            'password' => Hash::make('admin123'),
-            'user_type' => 'pegawai',
-            'registration_code' => 'SA001',
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
-
-        $superAdminRole = Role::where('name', 'super_admin')->first();
-        $superAdmin->assignRole($superAdminRole);
-        $superAdmin->givePermissionTo(Permission::all());
 
         // Create Admin Users
         $adminUsers = [

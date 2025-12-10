@@ -64,7 +64,7 @@ if (!function_exists('get_dashboard_route_for_user')) {
      */
     function get_dashboard_route_for_user(\App\Models\User $user)
     {
-        if ($user->hasAnyRole(['admin', 'super_admin'])) {
+        if ($user->hasRole('admin')) {
             return '/admin';
         } elseif ($user->hasRole('kepala-sekolah')) {
             return '/kepala';

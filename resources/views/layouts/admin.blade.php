@@ -13,8 +13,17 @@
     <title>@yield('title', $appName . ' - Admin')</title>
 
     <!-- Vite Assets (includes Bootstrap Icons locally) -->
-    @vite(['resources/css/app.css', 'resources/css/bootstrap-custom.css', 'resources/css/admin.css', 'resources/js/bootstrap-bundle.js', 'resources/js/chart-bundle.js', 'resources/js/app.js'])
-    
+    @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+        @vite(['resources/css/app.css', 'resources/css/bootstrap-custom.css', 'resources/css/admin.css', 'resources/js/bootstrap-bundle.js', 'resources/js/chart-bundle.js', 'resources/js/app.js'])
+    @else
+        {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/bootstrap-custom.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/admin.css') !!}
+        {!! App\Helpers\AssetHelper::js('resources/js/bootstrap-bundle.js', false) !!}
+        {!! App\Helpers\AssetHelper::js('resources/js/chart-bundle.js', false) !!}
+        {!! App\Helpers\AssetHelper::js('resources/js/app.js', false) !!}
+    @endif
+
     <style>
         /* --- RESPONSIVE BUTTON VISIBILITY --- */
         /* Hide Filament's default sidebar toggle buttons */

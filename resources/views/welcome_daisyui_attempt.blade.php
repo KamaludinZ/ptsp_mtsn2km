@@ -11,7 +11,13 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
     <!-- Aset LOCAL via Vite (Tailwind + DaisyUI + Font Awesome + AOS) -->
-    @vite(['resources/css/app.css', 'resources/css/home.css', 'resources/js/app.js'])
+    @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+        @vite(['resources/css/app.css', 'resources/css/home.css', 'resources/js/app.js'])
+    @else
+        {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/home.css') !!}
+        {!! App\Helpers\AssetHelper::js('resources/js/app.js', false) !!}
+    @endif
 </head>
 <body class="antialiased">
     <!-- Top Bar -->

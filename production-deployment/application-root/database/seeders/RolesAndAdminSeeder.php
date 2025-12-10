@@ -61,12 +61,8 @@ class RolesAndAdminSeeder extends Seeder
             ]
         );
 
-        // Remove old super_admin role if exists and assign admin role
-        if ($admin->hasRole('super_admin')) {
-            $admin->removeRole('super_admin');
-        }
-
-        if (!$admin->hasAnyRole(['admin', 'super_admin'])) {
+        // Assign admin role if the user doesn't have it
+        if (!$admin->hasRole('admin')) {
             $admin->assignRole('admin');
             $this->command->info('Admin user created and role assigned.');
             $this->command->warn('Email: admin@mtsn2kotamalang.sch.id');

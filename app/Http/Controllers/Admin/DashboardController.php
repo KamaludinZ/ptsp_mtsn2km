@@ -108,18 +108,32 @@ class DashboardController extends Controller
         $ticketData = $servicePerformanceData->pluck('count');
 
         // Chart Data: Complaint Follow-up Performance
-        $complaintPerformanceData = Complaint::select(
-            DB::raw("DATE(created_at) as date"),
-            DB::raw("AVG((strftime('%s', resolved_at) - strftime('%s', created_at)) / 3600) as avg_resolution_time")
-        )
-        ->whereNotNull('resolved_at')
-        ->where('created_at', '>=', Carbon::now()->subDays(30))
-        ->groupBy('date')
-        ->orderBy('date', 'asc')
-        ->get();
-        
-        $complaintChartLabels = $complaintPerformanceData->pluck('date');
-        $complaintResolutionData = $complaintPerformanceData->pluck('avg_resolution_time');
+        $complaintsForPerformance = Complaint::select('created_at', 'resolved_at')
+            ->whereNotNull('resolved_at')
+            ->where('created_at', '>=', Carbon::now()->subDays(30))
+            ->get();
+
+        // Group complaints by date and calculate average resolution time per date
+        $complaintPerformanceData = [];
+        $groupedComplaints = $complaintsForPerformance->groupBy(function ($complaint) {
+            return $complaint->created_at->format('Y-m-d');
+        });
+
+        foreach ($groupedComplaints as $date => $complaints) {
+            $totalHours = 0;
+            foreach ($complaints as $complaint) {
+                $totalHours += $complaint->created_at->diffInHours($complaint->resolved_at);
+            }
+            $avgHours = count($complaints) > 0 ? $totalHours / count($complaints) : 0;
+
+            $complaintPerformanceData[] = [
+                'date' => $date,
+                'avg_resolution_time' => $avgHours
+            ];
+        }
+
+        $complaintChartLabels = collect($complaintPerformanceData)->pluck('date');
+        $complaintResolutionData = collect($complaintPerformanceData)->pluck('avg_resolution_time');
 
         try {
             // Chart Data: Survey Results - OPTIMIZED

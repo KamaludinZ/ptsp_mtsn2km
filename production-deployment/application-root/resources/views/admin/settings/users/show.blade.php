@@ -87,7 +87,7 @@
                     <!-- Actions -->
                     <div class="divider"></div>
                     <div class="card-actions flex-col">
-                        @if($user->id !== auth()->id() && !$user->hasAnyRole(['admin', 'super_admin']))
+                        @if($user->id !== auth()->id() && !$user->hasRole('admin'))
                             <form action="{{ route('admin.users.toggle-status', $user) }}" method="POST" class="w-full">
                                 @csrf
                                 <button type="submit" class="btn btn-outline btn-sm w-full">

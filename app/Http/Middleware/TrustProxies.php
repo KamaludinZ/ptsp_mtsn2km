@@ -15,14 +15,24 @@ class TrustProxies extends Middleware
     protected $proxies;
 
     /**
-     * The headers that should be used to detect proxies.
+     * Get the trusted headers.
      *
-     * @var int
+     * @return int
      */
-    protected $headers =
-        Request::HEADER_X_FORWARDED_FOR |
-        Request::HEADER_X_FORWARDED_HOST |
-        Request::HEADER_X_FORWARDED_PORT |
-        Request::HEADER_X_FORWARDED_PROTO |
-        Request::HEADER_X_FORWARDED_AWS_ELB;
+    protected function headers()
+    {
+        // Only trust the protocol header in non-local environments
+        if (app()->environment('local')) {
+            return Request::HEADER_X_FORWARDED_FOR |
+                   Request::HEADER_X_FORWARDED_HOST |
+                   Request::HEADER_X_FORWARDED_PORT |
+                   Request::HEADER_X_FORWARDED_AWS_ELB;
+        } else {
+            return Request::HEADER_X_FORWARDED_FOR |
+                   Request::HEADER_X_FORWARDED_HOST |
+                   Request::HEADER_X_FORWARDED_PORT |
+                   Request::HEADER_X_FORWARDED_PROTO |
+                   Request::HEADER_X_FORWARDED_AWS_ELB;
+        }
+    }
 }

@@ -4,7 +4,11 @@
 @section('title', config('app.name', 'PTSP MTsN 2 Kota Malang') . ' - Beranda')
 
 @push('styles')
-    @vite('resources/css/home.css')
+    @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+        @vite('resources/css/home.css')
+    @else
+        {!! App\Helpers\AssetHelper::css('resources/css/home.css') !!}
+    @endif
 @endpush
 
 @section('content')

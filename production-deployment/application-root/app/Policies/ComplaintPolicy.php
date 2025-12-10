@@ -14,7 +14,7 @@ class ComplaintPolicy
     public function viewAny(User $user): bool
     {
         // Admin dapat melihat semua komplain
-        return $user->hasAnyRole(['admin', 'super_admin']);
+        return $user->hasRole('admin');
     }
 
     /**
@@ -23,7 +23,7 @@ class ComplaintPolicy
     public function view(User $user, Complaint $complaint): bool
     {
         // Admin dapat melihat semua komplain
-        if ($user->hasAnyRole(['admin', 'super_admin'])) {
+        if ($user->hasRole('admin')) {
             return true;
         }
         
@@ -46,7 +46,7 @@ class ComplaintPolicy
     public function update(User $user, Complaint $complaint): bool
     {
         // Admin dapat mengupdate semua komplain
-        if ($user->hasAnyRole(['admin', 'super_admin'])) {
+        if ($user->hasRole('admin')) {
             return true;
         }
         
@@ -60,7 +60,7 @@ class ComplaintPolicy
     public function delete(User $user, Complaint $complaint): bool
     {
         // Admin dapat menghapus semua komplain
-        if ($user->hasAnyRole(['admin', 'super_admin'])) {
+        if ($user->hasRole('admin')) {
             return true;
         }
         
@@ -73,8 +73,8 @@ class ComplaintPolicy
      */
     public function restore(User $user, Complaint $complaint): bool
     {
-        // Hanya super admin yang bisa mengembalikan komplain yang dihapus
-        return $user->hasRole('super_admin');
+        // Hanya admin yang bisa mengembalikan komplain yang dihapus
+        return $user->hasRole('admin');
     }
 
     /**
@@ -82,7 +82,7 @@ class ComplaintPolicy
      */
     public function forceDelete(User $user, Complaint $complaint): bool
     {
-        // Hanya super admin yang bisa menghapus permanen komplain
-        return $user->hasRole('super_admin');
+        // Hanya admin yang bisa menghapus permanen komplain
+        return $user->hasRole('admin');
     }
 }

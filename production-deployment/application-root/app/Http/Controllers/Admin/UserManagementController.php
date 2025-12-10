@@ -112,7 +112,7 @@ class UserManagementController extends Controller
 
             DB::commit();
 
-            return redirect()->route('suadmin.users.index')
+            return redirect()->route('admin.users.index')
                 ->with('success', 'User berhasil ditambahkan!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -192,7 +192,7 @@ class UserManagementController extends Controller
 
             DB::commit();
 
-            return redirect()->route('suadmin.users.index')
+            return redirect()->route('admin.users.index')
                 ->with('success', 'User berhasil diperbarui!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -215,14 +215,14 @@ class UserManagementController extends Controller
             }
 
             // Prevent deleting admin
-            if ($user->hasAnyRole(['admin', 'super_admin'])) {
+            if ($user->hasRole('admin')) {
                 return redirect()->back()
                     ->with('error', 'Admin tidak dapat dihapus!');
             }
 
             $user->delete();
 
-            return redirect()->route('suadmin.users.index')
+            return redirect()->route('admin.users.index')
                 ->with('success', 'User berhasil dihapus!');
         } catch (\Exception $e) {
             return redirect()->back()
@@ -237,7 +237,7 @@ class UserManagementController extends Controller
     {
         try {
             // Prevent deactivating admin
-            if ($user->hasAnyRole(['admin', 'super_admin'])) {
+            if ($user->hasRole('admin')) {
                 return redirect()->back()
                     ->with('error', 'Status Admin tidak dapat diubah!');
             }
@@ -298,7 +298,7 @@ class UserManagementController extends Controller
 
             foreach ($users as $user) {
                 // Skip current user and admin
-                if ($user->id === auth()->id() || $user->hasAnyRole(['admin', 'super_admin'])) {
+                if ($user->id === auth()->id() || $user->hasRole('admin')) {
                     continue;
                 }
 

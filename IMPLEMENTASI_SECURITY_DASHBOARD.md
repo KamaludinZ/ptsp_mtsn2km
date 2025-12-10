@@ -343,7 +343,6 @@ Buat roles di seeder atau manual:
 ```php
 use Spatie\Permission\Models\Role;
 
-Role::create(['name' => 'super_admin']);
 Role::create(['name' => 'admin']);
 Role::create(['name' => 'kepala_sekolah']);
 Role::create(['name' => 'kepala_tu']);
@@ -357,7 +356,7 @@ Role::create(['name' => 'bendahara']);
 
 ```php
 $user = User::find(1);
-$user->assignRole('super_admin');
+$user->assignRole('admin');
 ```
 
 ### 3. Akses Dashboard
@@ -374,7 +373,7 @@ User akan otomatis diarahkan ke dashboard yang sesuai dengan role mereka.
 GET /admin/security/dashboard
 ```
 
-Pastikan user memiliki role admin atau super_admin.
+Pastikan user memiliki role admin.
 
 ### 5. Block IP Address
 
@@ -455,7 +454,7 @@ for i in {1..150}; do curl http://localhost; done
 # Akses /dashboard
 # Pastikan diarahkan ke dashboard yang sesuai
 
-# Test sebagai super_admin
+# Test sebagai admin
 # Test sebagai kepala_sekolah
 # Test sebagai petugas_loket
 # dst.

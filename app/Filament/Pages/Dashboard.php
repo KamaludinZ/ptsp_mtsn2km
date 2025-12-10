@@ -3,39 +3,69 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Dashboard as BaseDashboard;
-use App\Filament\Widgets\StatsOverviewWidget;
-use App\Filament\Widgets\LatestTicketsWidget;
-use App\Filament\Widgets\LatestComplaintsWidget;
-use App\Filament\Widgets\RecentActivityWidget;
-use App\Filament\Widgets\SystemInfoWidget;
+use App\Filament\Widgets\UserRoleStats;
+use App\Filament\Widgets\ServiceStats;
+use App\Filament\Widgets\TicketStats;
+use App\Filament\Widgets\VisitorStats;
+use App\Filament\Widgets\ComplaintWhistleblowingStats;
+use App\Filament\Widgets\SurveyStats;
+use App\Filament\Widgets\SkmSpakIndexChart;
+use App\Filament\Widgets\RecentActivitiesWidget;
+use App\Filament\Widgets\RegistrationStats;
 
 class Dashboard extends BaseDashboard
 {
-    public function getHeaderWidgets(): array
+    protected string $view = 'filament.pages.dashboard';
+
+    protected function getHeaderWidgets(): array
     {
         return [
-            StatsOverviewWidget::class,
+            // ========================================
+            // QUICK OVERVIEW (8 Key Metrics in 4x2 grid)
+            // ========================================
+            \App\Filament\Widgets\DashboardOverview::class,
+
+            // ========================================
+            // DETAILED STATISTICS BY CATEGORY
+            // (No duplication - detailed breakdown only)
+            // ========================================
+
+            // 📊 User Management
+            UserRoleStats::class,        // Breakdown by user roles
+            RegistrationStats::class,    // Registration trends
+
+            // 🛠️ Services & Ticketing
+            ServiceStats::class,         // Service types & modes
+            TicketStats::class,          // Ticket lifecycle stats
+
+            // 👥 Visitor Management
+            VisitorStats::class,         // Visitor trends & status
+
+            // 📢 Complaints & Reporting
+            ComplaintWhistleblowingStats::class,  // Complaints & WBS
+
+            // 📋 Survey & Feedback
+            SurveyStats::class,          // Survey responses
         ];
     }
 
-    public function getHeaderWidgetsColumns(): int
-    {
-        return 2;
-    }
-
-    public function getWidgets(): array
+    protected function getFooterWidgets(): array
     {
         return [
-            RecentActivityWidget::class,
-            SystemInfoWidget::class,
-            LatestTicketsWidget::class,
-            LatestComplaintsWidget::class,
-            // WeeklyPerformanceChart::class,
+            // Charts and detailed analytics in footer
+            SkmSpakIndexChart::class,
+            // Recent activities
+            RecentActivitiesWidget::class,
         ];
     }
 
-    public function getColumns(): int
+    public function getHeading(): string
     {
-        return 1;
+        return 'Dashboard Administrasi PTSP';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Ringkasan sistem pelayanan terpadu satu pintu MTsN 2 Kota Malang';
     }
 }

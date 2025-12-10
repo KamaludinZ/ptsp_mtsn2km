@@ -743,7 +743,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::Q1M1tgm9vvlgk7I6',
+            '_route' => 'generated::dHby1zUgmiO2Nke1',
           ),
           1 => NULL,
           2 => 
@@ -763,7 +763,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::scmUEPuyN0Db2BNZ',
+            '_route' => 'generated::EJc8ImViMJHIHnwR',
           ),
           1 => NULL,
           2 => 
@@ -860,7 +860,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::1245ihJRVuWyqxGc',
+            '_route' => 'generated::kIF4Sm3FkJ575ylH',
           ),
           1 => NULL,
           2 => 
@@ -2375,7 +2375,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'admin.security.maintenance',
+            '_route' => 'admin.security.admin.security.maintenance',
           ),
           1 => NULL,
           2 => 
@@ -2395,7 +2395,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'admin.security.maintenance.enable',
+            '_route' => 'admin.security.admin.security.maintenance.enable',
           ),
           1 => NULL,
           2 => 
@@ -2414,7 +2414,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'admin.security.maintenance.disable',
+            '_route' => 'admin.security.admin.security.maintenance.disable',
           ),
           1 => NULL,
           2 => 
@@ -2439,6 +2439,26 @@ app('router')->setCompiledRoutes(
           2 => 
           array (
             'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/admin/security/api/maintenance-status' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'admin.security.',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
           ),
           3 => NULL,
           4 => false,
@@ -2600,7 +2620,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::kxaFeIc9Va7N82Df',
+            '_route' => 'generated::Vdr12xsDdEFvlq8B',
           ),
           1 => NULL,
           2 => 
@@ -2636,7 +2656,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::y0ClvYckNuF7yTYN',
+            '_route' => 'generated::uNLy7q45YQVaEvVX',
           ),
           1 => NULL,
           2 => 
@@ -2766,7 +2786,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::1OLTEmmuaFsr6C0x',
+            '_route' => 'generated::MwZHiJV6hHehKIEf',
           ),
           1 => NULL,
           2 => 
@@ -2823,7 +2843,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::LTZBzLb85URz6y4d',
+            '_route' => 'generated::ugFRus4iDnV8PRRs',
           ),
           1 => NULL,
           2 => 
@@ -2882,7 +2902,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::ibBX8PygcEH9civL',
+            '_route' => 'generated::m1aClRfhgEYrTCiX',
           ),
           1 => NULL,
           2 => 
@@ -5639,7 +5659,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\DashboardController@index',
         'controller' => 'App\\Http\\Controllers\\Admin\\DashboardController@index',
@@ -5882,7 +5901,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.complaints.index',
         'uses' => 'App\\Http\\Controllers\\Admin\\ComplaintController@index',
@@ -5921,7 +5939,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.complaints.create',
         'uses' => 'App\\Http\\Controllers\\Admin\\ComplaintController@create',
@@ -6623,7 +6640,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.roles.index',
         'uses' => 'App\\Http\\Controllers\\Admin\\RoleController@index',
@@ -6662,7 +6678,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.roles.create',
         'uses' => 'App\\Http\\Controllers\\Admin\\RoleController@create',
@@ -6803,7 +6818,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.service-categories.index',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceCategoryController@index',
@@ -6842,7 +6856,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.service-categories.create',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceCategoryController@create',
@@ -6983,7 +6996,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.services.index',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceController@index',
@@ -7022,7 +7034,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.services.create',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceController@create',
@@ -7316,7 +7327,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.tickets.index',
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@index',
@@ -7355,7 +7365,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.tickets.create',
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@create',
@@ -7445,7 +7454,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.users.index',
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@index',
@@ -7484,7 +7492,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.users.create',
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@create',
@@ -7574,7 +7581,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.visitors.index',
         'uses' => 'App\\Http\\Controllers\\Admin\\VisitorController@index',
@@ -7613,7 +7619,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.visitors.create',
         'uses' => 'App\\Http\\Controllers\\Admin\\VisitorController@create',
@@ -8012,7 +8017,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::Q1M1tgm9vvlgk7I6' => 
+    'generated::dHby1zUgmiO2Nke1' => 
     array (
       'methods' => 
       array (
@@ -8024,7 +8029,7 @@ app('router')->setCompiledRoutes(
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@returnJavaScriptAsFile',
-        'as' => 'generated::Q1M1tgm9vvlgk7I6',
+        'as' => 'generated::dHby1zUgmiO2Nke1',
       ),
       'fallback' => false,
       'defaults' => 
@@ -8040,7 +8045,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::scmUEPuyN0Db2BNZ' => 
+    'generated::EJc8ImViMJHIHnwR' => 
     array (
       'methods' => 
       array (
@@ -8052,7 +8057,7 @@ app('router')->setCompiledRoutes(
       array (
         'uses' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
         'controller' => 'Livewire\\Mechanisms\\FrontendAssets\\FrontendAssets@maps',
-        'as' => 'generated::scmUEPuyN0Db2BNZ',
+        'as' => 'generated::EJc8ImViMJHIHnwR',
       ),
       'fallback' => false,
       'defaults' => 
@@ -8232,7 +8237,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::1245ihJRVuWyqxGc' => 
+    'generated::kIF4Sm3FkJ575ylH' => 
     array (
       'methods' => 
       array (
@@ -8260,8 +8265,8 @@ app('router')->setCompiledRoutes(
                     return response(\\Illuminate\\Support\\Facades\\View::file(\'C:\\\\ptsponline\\\\PTSP-MTsN-2-KOTA-MALANG\\\\vendor\\\\laravel\\\\framework\\\\src\\\\Illuminate\\\\Foundation\\\\Configuration\'.\'/../resources/health-up.blade.php\', [
                         \'exception\' => $exception,
                     ]), status: $exception ? 500 : 200);
-                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"0000000000000f310000000000000000";}}',
-        'as' => 'generated::1245ihJRVuWyqxGc',
+                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"0000000000000f400000000000000000";}}',
+        'as' => 'generated::kIF4Sm3FkJ575ylH',
       ),
       'fallback' => false,
       'defaults' => 
@@ -8548,7 +8553,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\OnlinePortalController@dashboard',
         'controller' => 'App\\Http\\Controllers\\OnlinePortalController@dashboard',
@@ -8587,7 +8592,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\OnlinePortalController@myTickets',
         'controller' => 'App\\Http\\Controllers\\OnlinePortalController@myTickets',
@@ -8626,7 +8631,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\OnlinePortalController@ticketDetail',
         'controller' => 'App\\Http\\Controllers\\OnlinePortalController@ticketDetail',
@@ -8665,7 +8670,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\OnlinePortalController@downloadOutput',
         'controller' => 'App\\Http\\Controllers\\OnlinePortalController@downloadOutput',
@@ -9352,7 +9357,7 @@ app('router')->setCompiledRoutes(
         \'has_survey_completed\' => false,
         \'ticket\' => null
     ]);
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"000000000000106a0000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"000000000000107c0000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -9864,7 +9869,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\FrontDeskController@dashboard',
         'controller' => 'App\\Http\\Controllers\\FrontDeskController@dashboard',
@@ -9903,7 +9908,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\FrontDeskController@triage',
         'controller' => 'App\\Http\\Controllers\\FrontDeskController@triage',
@@ -9941,7 +9946,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\FrontDeskController@processTriage',
         'controller' => 'App\\Http\\Controllers\\FrontDeskController@processTriage',
@@ -9980,7 +9985,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\FrontDeskController@serviceApplication',
         'controller' => 'App\\Http\\Controllers\\FrontDeskController@serviceApplication',
@@ -10018,7 +10023,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\FrontDeskController@submitServiceApplication',
         'controller' => 'App\\Http\\Controllers\\FrontDeskController@submitServiceApplication',
@@ -10057,7 +10062,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\FrontDeskController@serviceSuccess',
         'controller' => 'App\\Http\\Controllers\\FrontDeskController@serviceSuccess',
@@ -10096,7 +10101,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\FrontDeskController@activeVisitors',
         'controller' => 'App\\Http\\Controllers\\FrontDeskController@activeVisitors',
@@ -10134,7 +10139,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\FrontDeskController@checkoutVisitor',
         'controller' => 'App\\Http\\Controllers\\FrontDeskController@checkoutVisitor',
@@ -10173,7 +10178,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\FrontDeskController@printVisitorPass',
         'controller' => 'App\\Http\\Controllers\\FrontDeskController@printVisitorPass',
@@ -10212,7 +10217,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\FrontDeskController@searchVisitors',
         'controller' => 'App\\Http\\Controllers\\FrontDeskController@searchVisitors',
@@ -10251,7 +10256,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@dashboard',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@dashboard',
@@ -10290,7 +10295,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@ticketsQueue',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@ticketsQueue',
@@ -10329,7 +10334,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@myTickets',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@myTickets',
@@ -10368,7 +10373,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@allTickets',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@allTickets',
@@ -10407,7 +10412,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@ticketDetail',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@ticketDetail',
@@ -10446,7 +10451,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@searchTickets',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@searchTickets',
@@ -10485,7 +10490,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@reports',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@reports',
@@ -10523,7 +10528,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@assignTicket',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@assignTicket',
@@ -10561,7 +10566,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@updateStatus',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@updateStatus',
@@ -10599,7 +10604,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@addNote',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@addNote',
@@ -10637,7 +10642,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@uploadFile',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@uploadFile',
@@ -10675,7 +10680,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@uploadOutput',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@uploadOutput',
@@ -10713,7 +10718,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@completeWorkflowStep',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@completeWorkflowStep',
@@ -10752,7 +10757,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@downloadFile',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@downloadFile',
@@ -10791,7 +10796,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\BackOfficeController@downloadOutput',
         'controller' => 'App\\Http\\Controllers\\BackOfficeController@downloadOutput',
@@ -10830,7 +10835,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\SupervisionController@surveyManagement',
         'controller' => 'App\\Http\\Controllers\\SupervisionController@surveyManagement',
@@ -10869,7 +10874,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\SupervisionController@surveyResults',
         'controller' => 'App\\Http\\Controllers\\SupervisionController@surveyResults',
@@ -10908,7 +10913,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\SupervisionController@performance',
         'controller' => 'App\\Http\\Controllers\\SupervisionController@performance',
@@ -10947,7 +10952,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\ProfileController@edit',
         'controller' => 'App\\Http\\Controllers\\ProfileController@edit',
@@ -10985,7 +10990,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\ProfileController@update',
         'controller' => 'App\\Http\\Controllers\\ProfileController@update',
@@ -11023,7 +11028,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\ProfileController@destroy',
         'controller' => 'App\\Http\\Controllers\\ProfileController@destroy',
@@ -11069,7 +11074,7 @@ app('router')->setCompiledRoutes(
         \\app()->setLocale($locale);
     }
     return \\redirect()->back()->withInput();
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"000000000000107f0000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000010910000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -11105,7 +11110,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
+          2 => 'check.email.verification',
         ),
         'uses' => 'App\\Http\\Controllers\\DashboardController@index',
         'controller' => 'App\\Http\\Controllers\\DashboardController@index',
@@ -11144,7 +11149,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\DashboardController@index',
         'controller' => 'App\\Http\\Controllers\\Admin\\DashboardController@index',
@@ -11183,7 +11187,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\DashboardController@getServicePerformanceData',
         'controller' => 'App\\Http\\Controllers\\Admin\\DashboardController@getServicePerformanceData',
@@ -11222,7 +11225,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\DashboardController@getComplaintPerformanceData',
         'controller' => 'App\\Http\\Controllers\\Admin\\DashboardController@getComplaintPerformanceData',
@@ -11261,7 +11263,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\DashboardController@getWhistleblowingPerformanceData',
         'controller' => 'App\\Http\\Controllers\\Admin\\DashboardController@getWhistleblowingPerformanceData',
@@ -11300,7 +11301,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\DashboardController@getSurveyAnalyticsData',
         'controller' => 'App\\Http\\Controllers\\Admin\\DashboardController@getSurveyAnalyticsData',
@@ -11338,7 +11338,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.services.store',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceController@store',
@@ -11377,7 +11376,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.services.show',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceController@show',
@@ -11416,7 +11414,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.services.edit',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceController@edit',
@@ -11455,7 +11452,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.services.update',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceController@update',
@@ -11493,7 +11489,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.services.destroy',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceController@destroy',
@@ -11531,7 +11526,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.service-categories.store',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceCategoryController@store',
@@ -11570,7 +11564,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.service-categories.show',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceCategoryController@show',
@@ -11609,7 +11602,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.service-categories.edit',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceCategoryController@edit',
@@ -11648,7 +11640,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.service-categories.update',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceCategoryController@update',
@@ -11686,7 +11677,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.service-categories.destroy',
         'uses' => 'App\\Http\\Controllers\\Admin\\ServiceCategoryController@destroy',
@@ -11724,7 +11714,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.tickets.store',
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@store',
@@ -11763,7 +11752,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.tickets.show',
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@show',
@@ -11802,7 +11790,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.tickets.edit',
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@edit',
@@ -11841,7 +11828,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.tickets.update',
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@update',
@@ -11879,7 +11865,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.tickets.destroy',
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@destroy',
@@ -11917,7 +11902,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@uploadRequirement',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@uploadRequirement',
@@ -11955,7 +11939,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@uploadOutput',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@uploadOutput',
@@ -11994,7 +11977,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@editOutput',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@editOutput',
@@ -12032,7 +12014,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@updateOutput',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@updateOutput',
@@ -12070,7 +12051,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@sendTicketInfo',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@sendTicketInfo',
@@ -12108,7 +12088,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@sendSurveyInfo',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@sendSurveyInfo',
@@ -12146,7 +12125,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@sendSurvey',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@sendSurvey',
@@ -12184,7 +12162,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@approveTicket',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@approveTicket',
@@ -12222,7 +12199,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@rejectTicket',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@rejectTicket',
@@ -12260,7 +12236,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@uploadResult',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@uploadResult',
@@ -12298,7 +12273,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\TicketController@markReadyForPickup',
         'controller' => 'App\\Http\\Controllers\\Admin\\TicketController@markReadyForPickup',
@@ -12336,7 +12310,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.visitors.store',
         'uses' => 'App\\Http\\Controllers\\Admin\\VisitorController@store',
@@ -12375,7 +12348,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.visitors.show',
         'uses' => 'App\\Http\\Controllers\\Admin\\VisitorController@show',
@@ -12414,7 +12386,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.visitors.edit',
         'uses' => 'App\\Http\\Controllers\\Admin\\VisitorController@edit',
@@ -12453,7 +12424,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.visitors.update',
         'uses' => 'App\\Http\\Controllers\\Admin\\VisitorController@update',
@@ -12491,7 +12461,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.visitors.destroy',
         'uses' => 'App\\Http\\Controllers\\Admin\\VisitorController@destroy',
@@ -12529,7 +12498,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\VisitorController@checkOut',
         'controller' => 'App\\Http\\Controllers\\Admin\\VisitorController@checkOut',
@@ -12567,7 +12535,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.complaints.store',
         'uses' => 'App\\Http\\Controllers\\Admin\\ComplaintController@store',
@@ -12606,7 +12573,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.complaints.show',
         'uses' => 'App\\Http\\Controllers\\Admin\\ComplaintController@show',
@@ -12645,7 +12611,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.complaints.edit',
         'uses' => 'App\\Http\\Controllers\\Admin\\ComplaintController@edit',
@@ -12684,7 +12649,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.complaints.update',
         'uses' => 'App\\Http\\Controllers\\Admin\\ComplaintController@update',
@@ -12722,7 +12686,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.complaints.destroy',
         'uses' => 'App\\Http\\Controllers\\Admin\\ComplaintController@destroy',
@@ -12761,7 +12724,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\ComplaintController@whistleblowingIndex',
         'controller' => 'App\\Http\\Controllers\\Admin\\ComplaintController@whistleblowingIndex',
@@ -12800,7 +12762,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\ComplaintController@whistleblowingShow',
         'controller' => 'App\\Http\\Controllers\\Admin\\ComplaintController@whistleblowingShow',
@@ -12838,7 +12799,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\ComplaintController@updateWhistleblowingStatus',
         'controller' => 'App\\Http\\Controllers\\Admin\\ComplaintController@updateWhistleblowingStatus',
@@ -12877,7 +12837,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@management',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@management',
@@ -12916,7 +12875,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@skmReport',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@skmReport',
@@ -12955,7 +12913,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@spakReport',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@spakReport',
@@ -12994,7 +12951,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@performanceReport',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@performanceReport',
@@ -13033,7 +12989,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@getArchiveDetail',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@getArchiveDetail',
@@ -13072,7 +13027,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@getIdentityQuestions',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@getIdentityQuestions',
@@ -13111,7 +13065,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@getSkmQuestions',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@getSkmQuestions',
@@ -13150,7 +13103,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@getSpakQuestions',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@getSpakQuestions',
@@ -13189,7 +13141,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@getQuestion',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@getQuestion',
@@ -13227,7 +13178,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@createQuestion',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@createQuestion',
@@ -13265,7 +13215,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@updateQuestion',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@updateQuestion',
@@ -13303,7 +13252,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@deleteQuestion',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@deleteQuestion',
@@ -13342,7 +13290,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@getEditions',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@getEditions',
@@ -13380,7 +13327,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@createEdition',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@createEdition',
@@ -13418,7 +13364,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@updateEdition',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@updateEdition',
@@ -13456,7 +13401,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@deleteEdition',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@deleteEdition',
@@ -13495,7 +13439,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@getUnsurs',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@getUnsurs',
@@ -13533,7 +13476,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@createUnsur',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@createUnsur',
@@ -13571,7 +13513,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@updateUnsur',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@updateUnsur',
@@ -13609,7 +13550,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SurveyController@deleteUnsur',
         'controller' => 'App\\Http\\Controllers\\Admin\\SurveyController@deleteUnsur',
@@ -13648,7 +13588,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@dashboard',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@dashboard',
@@ -13686,7 +13625,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@runSecurityScan',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@runSecurityScan',
@@ -13725,7 +13663,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@getScanResults',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@getScanResults',
@@ -13764,7 +13701,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@logs',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@logs',
@@ -13803,7 +13739,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@blockedIPs',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@blockedIPs',
@@ -13841,7 +13776,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@blockIP',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@blockIP',
@@ -13879,7 +13813,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@unblockIP',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@unblockIP',
@@ -13918,7 +13851,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@rateLimitConfig',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@rateLimitConfig',
@@ -13956,7 +13888,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@updateRateLimitConfig',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@updateRateLimitConfig',
@@ -13981,7 +13912,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'admin.security.maintenance' => 
+    'admin.security.admin.security.maintenance' => 
     array (
       'methods' => 
       array (
@@ -13995,11 +13926,10 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@maintenanceMode',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@maintenanceMode',
-        'as' => 'admin.security.maintenance',
+        'as' => 'admin.security.admin.security.maintenance',
         'namespace' => NULL,
         'prefix' => 'admin/security',
         'where' => 
@@ -14020,7 +13950,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'admin.security.maintenance.enable' => 
+    'admin.security.admin.security.maintenance.enable' => 
     array (
       'methods' => 
       array (
@@ -14033,11 +13963,10 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@enableMaintenanceMode',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@enableMaintenanceMode',
-        'as' => 'admin.security.maintenance.enable',
+        'as' => 'admin.security.admin.security.maintenance.enable',
         'namespace' => NULL,
         'prefix' => 'admin/security',
         'where' => 
@@ -14058,7 +13987,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'admin.security.maintenance.disable' => 
+    'admin.security.admin.security.maintenance.disable' => 
     array (
       'methods' => 
       array (
@@ -14071,11 +14000,10 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@disableMaintenanceMode',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@disableMaintenanceMode',
-        'as' => 'admin.security.maintenance.disable',
+        'as' => 'admin.security.admin.security.maintenance.disable',
         'namespace' => NULL,
         'prefix' => 'admin/security',
         'where' => 
@@ -14109,11 +14037,48 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@clearCache',
         'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@clearCache',
         'as' => 'admin.security.cache.clear',
+        'namespace' => NULL,
+        'prefix' => 'admin/security',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'admin.security.' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'admin/security/api/maintenance-status',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Admin\\SecurityController@getMaintenanceStatus',
+        'controller' => 'App\\Http\\Controllers\\Admin\\SecurityController@getMaintenanceStatus',
+        'as' => 'admin.security.',
         'namespace' => NULL,
         'prefix' => 'admin/security',
         'where' => 
@@ -14148,7 +14113,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\PengumumanController@adminIndex',
         'controller' => 'App\\Http\\Controllers\\PengumumanController@adminIndex',
@@ -14187,7 +14151,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\PengumumanController@create',
         'controller' => 'App\\Http\\Controllers\\PengumumanController@create',
@@ -14225,7 +14188,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\PengumumanController@store',
         'controller' => 'App\\Http\\Controllers\\PengumumanController@store',
@@ -14264,7 +14226,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\PengumumanController@edit',
         'controller' => 'App\\Http\\Controllers\\PengumumanController@edit',
@@ -14302,7 +14263,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\PengumumanController@update',
         'controller' => 'App\\Http\\Controllers\\PengumumanController@update',
@@ -14340,7 +14300,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\PengumumanController@destroy',
         'controller' => 'App\\Http\\Controllers\\PengumumanController@destroy',
@@ -14379,7 +14338,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SettingsController@index',
         'controller' => 'App\\Http\\Controllers\\Admin\\SettingsController@index',
@@ -14417,7 +14375,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SettingsController@update',
         'controller' => 'App\\Http\\Controllers\\Admin\\SettingsController@update',
@@ -14455,7 +14412,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\SettingsController@reset',
         'controller' => 'App\\Http\\Controllers\\Admin\\SettingsController@reset',
@@ -14493,7 +14449,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.roles.store',
         'uses' => 'App\\Http\\Controllers\\Admin\\RoleController@store',
@@ -14532,7 +14487,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.roles.show',
         'uses' => 'App\\Http\\Controllers\\Admin\\RoleController@show',
@@ -14571,7 +14525,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.roles.edit',
         'uses' => 'App\\Http\\Controllers\\Admin\\RoleController@edit',
@@ -14610,7 +14563,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.roles.update',
         'uses' => 'App\\Http\\Controllers\\Admin\\RoleController@update',
@@ -14648,7 +14600,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.roles.destroy',
         'uses' => 'App\\Http\\Controllers\\Admin\\RoleController@destroy',
@@ -14686,7 +14637,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\RoleController@clone',
         'controller' => 'App\\Http\\Controllers\\Admin\\RoleController@clone',
@@ -14724,7 +14674,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\RoleController@assignPermissions',
         'controller' => 'App\\Http\\Controllers\\Admin\\RoleController@assignPermissions',
@@ -14763,7 +14712,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\RoleController@getPermissions',
         'controller' => 'App\\Http\\Controllers\\Admin\\RoleController@getPermissions',
@@ -14801,7 +14749,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.users.store',
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@store',
@@ -14840,7 +14787,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.users.show',
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@show',
@@ -14879,7 +14825,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.users.edit',
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@edit',
@@ -14918,7 +14863,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.users.update',
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@update',
@@ -14956,7 +14900,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'as' => 'admin.users.destroy',
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@destroy',
@@ -14994,7 +14937,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@toggleStatus',
         'controller' => 'App\\Http\\Controllers\\Admin\\UserManagementController@toggleStatus',
@@ -15032,7 +14974,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@resetPassword',
         'controller' => 'App\\Http\\Controllers\\Admin\\UserManagementController@resetPassword',
@@ -15070,7 +15011,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@bulkAction',
         'controller' => 'App\\Http\\Controllers\\Admin\\UserManagementController@bulkAction',
@@ -15109,7 +15049,6 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
           1 => 'auth',
-          2 => 'verified',
         ),
         'uses' => 'App\\Http\\Controllers\\Admin\\UserManagementController@export',
         'controller' => 'App\\Http\\Controllers\\Admin\\UserManagementController@export',
@@ -15209,7 +15148,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::kxaFeIc9Va7N82Df' => 
+    'generated::Vdr12xsDdEFvlq8B' => 
     array (
       'methods' => 
       array (
@@ -15230,7 +15169,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::kxaFeIc9Va7N82Df',
+        'as' => 'generated::Vdr12xsDdEFvlq8B',
       ),
       'fallback' => false,
       'defaults' => 
@@ -15284,7 +15223,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::y0ClvYckNuF7yTYN' => 
+    'generated::uNLy7q45YQVaEvVX' => 
     array (
       'methods' => 
       array (
@@ -15305,7 +15244,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::y0ClvYckNuF7yTYN',
+        'as' => 'generated::uNLy7q45YQVaEvVX',
       ),
       'fallback' => false,
       'defaults' => 
@@ -15625,7 +15564,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::1OLTEmmuaFsr6C0x' => 
+    'generated::MwZHiJV6hHehKIEf' => 
     array (
       'methods' => 
       array (
@@ -15646,7 +15585,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::1OLTEmmuaFsr6C0x',
+        'as' => 'generated::MwZHiJV6hHehKIEf',
       ),
       'fallback' => false,
       'defaults' => 
@@ -15736,7 +15675,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::LTZBzLb85URz6y4d' => 
+    'generated::ugFRus4iDnV8PRRs' => 
     array (
       'methods' => 
       array (
@@ -15752,13 +15691,13 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:45:"function () {
     return \\session()->all();
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"0000000000000fa40000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"0000000000000fb50000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
         array (
         ),
-        'as' => 'generated::LTZBzLb85URz6y4d',
+        'as' => 'generated::ugFRus4iDnV8PRRs',
       ),
       'fallback' => false,
       'defaults' => 
@@ -15956,7 +15895,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::ibBX8PygcEH9civL' => 
+    'generated::m1aClRfhgEYrTCiX' => 
     array (
       'methods' => 
       array (
@@ -15973,13 +15912,13 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:77:"function (\\Illuminate\\Http\\Request $request) {
     return $request->user();
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000010550000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000010670000000000000000";}}',
         'namespace' => NULL,
         'prefix' => 'api',
         'where' => 
         array (
         ),
-        'as' => 'generated::ibBX8PygcEH9civL',
+        'as' => 'generated::m1aClRfhgEYrTCiX',
       ),
       'fallback' => false,
       'defaults' => 
@@ -16011,7 +15950,7 @@ app('router')->setCompiledRoutes(
                         $config,
                         $isProduction
                     ))($request, $path);
-                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"0000000000000fa30000000000000000";}}',
+                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"0000000000000fb40000000000000000";}}',
         'as' => 'storage.local',
       ),
       'fallback' => false,

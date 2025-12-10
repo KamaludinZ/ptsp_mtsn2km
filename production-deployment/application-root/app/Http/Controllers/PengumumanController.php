@@ -139,7 +139,7 @@ class PengumumanController extends Controller
     {
         // For public users - only show active announcements
         if (!Auth::check() ||
-            !Auth::user()->hasAnyRole(['admin', 'super_admin'])) {
+            !Auth::user()->hasRole('admin')) {
             // Check if the announcement is active and within the valid date range
             if (!$pengumuman->is_active ||
                 $pengumuman->publish_date > now() ||
@@ -238,7 +238,7 @@ class PengumumanController extends Controller
      */
     private function authorizeAdmin()
     {
-        if (!Auth::check() || !Auth::user()->hasAnyRole(['admin', 'super_admin'])) {
+        if (!Auth::check() || !Auth::user()->hasRole('admin')) {
             abort(403, 'Akses ditolak. Hanya admin yang dapat mengakses fitur ini.');
         }
     }

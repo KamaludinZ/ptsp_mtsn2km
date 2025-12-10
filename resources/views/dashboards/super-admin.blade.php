@@ -687,7 +687,11 @@
 </style>
 
 <!-- Chart.js Library (bundled locally) -->
-@vite(['resources/js/chart-bundle.js'])
+@if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+    @vite(['resources/js/chart-bundle.js'])
+@else
+    {!! App\Helpers\AssetHelper::js('resources/js/chart-bundle.js', false) !!}
+@endif
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

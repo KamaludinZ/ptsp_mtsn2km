@@ -118,7 +118,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
      */
     public function isAdmin()
     {
-        return $this->hasAnyRole(['admin', 'super_admin']);
+        return $this->hasRole('admin');
     }
 
     /**

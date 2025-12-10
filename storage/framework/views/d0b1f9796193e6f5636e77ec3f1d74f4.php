@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>" data-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+
+        <title><?php echo e(config('app.name', 'Laravel')); ?></title>
+
+        
+        <?php if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning()): ?>
+            <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
+        <?php else: ?>
+            <?php echo App\Helpers\AssetHelper::css('resources/css/app.css'); ?>
+
+            <?php echo App\Helpers\AssetHelper::js('resources/js/app.js', false); ?>
+
+        <?php endif; ?>
+    </head>
+    <body class="tw-font-sans tw-text-gray-900 tw-antialiased" x-data="{ theme: localStorage.getItem('theme') || 'light' }" :data-theme="theme">
+        <div class="tw-min-h-screen tw-flex tw-flex-col sm:tw-justify-center tw-items-center tw-pt-6 sm:tw-pt-0 tw-bg-gray-100 dark:tw-bg-gray-900">
+            <div class="tw-w-full sm:tw-max-w-md tw-mt-6 tw-px-6 tw-py-4 tw-bg-white dark:tw-bg-gray-800 tw-shadow-md tw-overflow-hidden sm:tw-rounded-lg">
+                <div class="tw-flex tw-justify-between tw-items-center tw-mb-4">
+                    <!-- Theme toggle button -->
+                    <button 
+                        @click="theme = theme === 'light' ? 'dark' : 'light'; localStorage.setItem('theme', theme)" 
+                        class="tw-p-2 tw-rounded-lg tw-bg-gray-200 dark:tw-bg-gray-700 tw-text-gray-800 dark:tw-text-gray-200 hover:tw-bg-gray-300 dark:hover:tw-bg-gray-600 tw-transition-colors"
+                        aria-label="Toggle theme"
+                    >
+                        <i :class="theme === 'light' ? 'fas fa-moon' : 'fas fa-sun'" aria-hidden="true"></i>
+                    </button>
+                    
+                    <!-- Language switcher -->
+                    <div class="tw-relative" x-data="{ open: false }">
+                        <button 
+                            @click="open = !open" 
+                            class="tw-p-2 tw-rounded-lg tw-bg-gray-200 dark:tw-bg-gray-700 tw-text-gray-800 dark:tw-text-gray-200 hover:tw-bg-gray-300 dark:hover:tw-bg-gray-600 tw-transition-colors"
+                            aria-label="Change language"
+                        >
+                            <i class="fas fa-globe"></i>
+                        </button>
+                        
+                        <div 
+                            x-show="open"
+                            @click.outside="open = false"
+                            x-transition:enter="tw-transition tw-ease-out tw-duration-200"
+                            x-transition:enter-start="tw-transform tw-opacity-0 tw-scale-95"
+                            x-transition:enter-end="tw-transform tw-opacity-100 tw-scale-105"
+                            x-transition:leave="tw-transition tw-ease-in tw-duration-75"
+                            x-transition:leave-start="tw-transform tw-opacity-100 tw-scale-105"
+                            x-transition:leave-end="tw-transform tw-opacity-0 tw-scale-95"
+                            class="tw-absolute tw-right-0 tw-mt-2 tw-w-48 tw-rounded-md tw-shadow-lg tw-bg-white dark:tw-bg-gray-800 tw-ring-1 tw-ring-black dark:tw-ring-gray-700 tw-ring-opacity-5 tw-z-50"
+                        >
+                            <div class="tw-py-1">
+                                <button 
+                                    @click="changeLanguage('id'); open = false" 
+                                    class="tw-block tw-w-full tw-text-left tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 dark:tw-text-gray-300 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-700"
+                                >
+                                    <span class="tw-mr-2">🇮🇩</span> Indonesia
+                                </button>
+                                <button 
+                                    @click="changeLanguage('en'); open = false" 
+                                    class="tw-block tw-w-full tw-text-left tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 dark:tw-text-gray-300 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-700"
+                                >
+                                    <span class="tw-mr-2">🇬🇧</span> English
+                                </button>
+                                <button 
+                                    @click="changeLanguage('ar'); open = false" 
+                                    class="tw-block tw-w-full tw-text-left tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 dark:tw-text-gray-300 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-700"
+                                >
+                                    <span class="tw-mr-2">🇸🇦</span> العربية
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <a href="/">
+                        <?php if (isset($component)) { $__componentOriginal8892e718f3d0d7a916180885c6f012e7 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal8892e718f3d0d7a916180885c6f012e7 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.application-logo','data' => ['class' => 'tw-w-20 tw-h-20 tw-fill-current tw-text-gray-500']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('application-logo'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['class' => 'tw-w-20 tw-h-20 tw-fill-current tw-text-gray-500']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal8892e718f3d0d7a916180885c6f012e7)): ?>
+<?php $attributes = $__attributesOriginal8892e718f3d0d7a916180885c6f012e7; ?>
+<?php unset($__attributesOriginal8892e718f3d0d7a916180885c6f012e7); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal8892e718f3d0d7a916180885c6f012e7)): ?>
+<?php $component = $__componentOriginal8892e718f3d0d7a916180885c6f012e7; ?>
+<?php unset($__componentOriginal8892e718f3d0d7a916180885c6f012e7); ?>
+<?php endif; ?>
+                    </a>
+                </div>
+
+                <?php echo e($slot); ?>
+
+            </div>
+        </div>
+        
+        <script>
+            // Language Toggle
+            function changeLanguage(lang) {
+                console.log('Language changed to:', lang);
+                // Make an AJAX request to change the language
+                fetch(`/set-locale/${lang}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Reload the page to apply the new language
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error changing language:', error);
+                });
+            }
+        </script>
+    </body>
+</html>
+<?php /**PATH C:\ptsponline\PTSP-MTsN-2-KOTA-MALANG\resources\views\layouts\guest.blade.php ENDPATH**/ ?>

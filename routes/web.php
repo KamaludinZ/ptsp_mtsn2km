@@ -32,8 +32,8 @@ Route::get('/application/success/{ticketNumber}', [OnlinePortalController::class
 Route::get('/tracking', [OnlinePortalController::class, 'trackTicketForm'])->name('onlineportal.track.ticket.form');
 Route::post('/tracking', [OnlinePortalController::class, 'trackTicket'])->name('onlineportal.track.ticket.result');
 
-// Online Portal Authenticated Routes (Requires Email Verification)
-Route::middleware(['auth', 'verified'])->prefix('portal')->name('onlineportal.')->group(function () {
+// Online Portal Authenticated Routes (Requires Email Verification for pemohon role only)
+Route::middleware(['auth', 'check.email.verification'])->prefix('portal')->name('onlineportal.')->group(function () {
     Route::get('/dashboard', [OnlinePortalController::class, 'dashboard'])->name('dashboard');
     Route::get('/my-tickets', [OnlinePortalController::class, 'myTickets'])->name('my-tickets');
     Route::get('/tickets/{ticketNumber}', [OnlinePortalController::class, 'ticketDetail'])->name('ticket.detail');
@@ -109,8 +109,8 @@ Route::get('/about', [PublicController::class, 'about'])->name('public.about');
 Route::get('/contact', [PublicController::class, 'contact'])->name('public.contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('public.contact.store');
 
-// Front Desk Authenticated Routes (Requires Email Verification)
-Route::middleware(['auth', 'verified'])->group(function () {
+// Front Desk Authenticated Routes (Requires Email Verification for pemohon role only)
+Route::middleware(['auth', 'check.email.verification'])->group(function () {
     Route::prefix('frontdesk')->name('frontdesk.')->group(function () {
         Route::get('/dashboard', [FrontDeskController::class, 'dashboard'])->name('dashboard');
         Route::get('/triage', [FrontDeskController::class, 'triage'])->name('triage');
@@ -125,8 +125,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-// Back Office Routes (Requires Email Verification)
-Route::middleware(['auth', 'verified'])->prefix('backoffice')->name('backoffice.')->group(function () {
+// Back Office Routes (Requires Email Verification for pemohon role only)
+Route::middleware(['auth', 'check.email.verification'])->prefix('backoffice')->name('backoffice.')->group(function () {
     Route::get('/dashboard', [BackOfficeController::class, 'dashboard'])->name('dashboard');
     Route::get('/tickets/queue', [BackOfficeController::class, 'ticketsQueue'])->name('tickets.queue');
     Route::get('/tickets/my', [BackOfficeController::class, 'myTickets'])->name('tickets.my');
@@ -146,15 +146,15 @@ Route::middleware(['auth', 'verified'])->prefix('backoffice')->name('backoffice.
     Route::get('/tickets/{ticket}/download-output', [BackOfficeController::class, 'downloadOutput'])->name('tickets.download-output');
 });
 
-// Supervision Management Routes (Requires Email Verification)
-Route::middleware(['auth', 'verified'])->prefix('supervision')->name('supervision.')->group(function () {
+// Supervision Management Routes (Requires Email Verification for pemohon role only)
+Route::middleware(['auth', 'check.email.verification'])->prefix('supervision')->name('supervision.')->group(function () {
     Route::get('/management', [SupervisionController::class, 'surveyManagement'])->name('management');
     Route::get('/surveys/{surveyId}/results', [SupervisionController::class, 'surveyResults'])->name('survey.results');
     Route::get('/performance', [SupervisionController::class, 'performance'])->name('performance');
 });
 
-// Profile Routes (Requires Email Verification)
-Route::middleware(['auth', 'verified'])->group(function () {
+// Profile Routes (Requires Email Verification for pemohon role only)
+Route::middleware(['auth', 'check.email.verification'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -169,13 +169,13 @@ Route::get('/set-locale/{locale}', function ($locale) {
     return redirect()->back()->withInput();
 })->name('set-locale');
 
-// Dashboard Route (Requires Email Verification)
-Route::middleware(['auth', 'verified'])->group(function () {
+// Dashboard Route (Requires Email Verification for pemohon role only)
+Route::middleware(['auth', 'check.email.verification'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 // Admin Dashboard Routes (consolidated from suadmin)
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard'); // Main admin dashboard route
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard.alt'); // Keep for compatibility
     Route::get('/api/service-performance-data', [AdminDashboardController::class, 'getServicePerformanceData'])->name('api.service-performance-data');
@@ -255,10 +255,11 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::post('/blocked-ips/unblock', [AdminSecurityController::class, 'unblockIP'])->name('blocked-ips.unblock');
         Route::get('/rate-limiting', [AdminSecurityController::class, 'rateLimitConfig'])->name('rate-limiting');
         Route::post('/rate-limiting/update', [AdminSecurityController::class, 'updateRateLimitConfig'])->name('rate-limiting.update');
-        Route::get('/maintenance', [AdminSecurityController::class, 'maintenanceMode'])->name('maintenance');
-        Route::post('/maintenance/enable', [AdminSecurityController::class, 'enableMaintenanceMode'])->name('maintenance.enable');
-        Route::post('/maintenance/disable', [AdminSecurityController::class, 'disableMaintenanceMode'])->name('maintenance.disable');
+        Route::get('/maintenance', [AdminSecurityController::class, 'maintenanceMode'])->name('admin.security.maintenance');
+        Route::post('/maintenance/enable', [AdminSecurityController::class, 'enableMaintenanceMode'])->name('admin.security.maintenance.enable');
+        Route::post('/maintenance/disable', [AdminSecurityController::class, 'disableMaintenanceMode'])->name('admin.security.maintenance.disable');
         Route::post('/cache/clear', [AdminSecurityController::class, 'clearCache'])->name('cache.clear');
+        Route::get('/api/maintenance-status', [AdminSecurityController::class, 'getMaintenanceStatus']);
     });
 
     // Announcement Management Routes

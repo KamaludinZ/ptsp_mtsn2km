@@ -14,12 +14,19 @@
     <meta name="theme-color" content="#14532d">
 
     {{-- Vite Assets: Bootstrap, Font Awesome, AOS, Tailwind (Local - No CDN) --}}
-    @vite([
-        'resources/css/bootstrap-custom.css',
-        'resources/js/bootstrap-bundle.js',
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ])
+    @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+        @vite([
+            'resources/css/bootstrap-custom.css',
+            'resources/js/bootstrap-bundle.js',
+            'resources/css/app.css',
+            'resources/js/app.js'
+        ])
+    @else
+        {!! App\Helpers\AssetHelper::css('resources/css/bootstrap-custom.css') !!}
+        {!! App\Helpers\AssetHelper::js('resources/js/bootstrap-bundle.js', false) !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
+        {!! App\Helpers\AssetHelper::js('resources/js/app.js', false) !!}
+    @endif
 
     <!-- Custom Styles -->
     <style>

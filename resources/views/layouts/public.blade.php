@@ -20,7 +20,11 @@
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#14532d">
 
-    @vite(['resources/css/inline-style-fix.css'])
+    @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+        @vite(['resources/css/inline-style-fix.css'])
+    @else
+        {{ App\Helpers\AssetHelper::css('resources/css/inline-style-fix.css') }}
+    @endif
     @stack('styles')
 </head>
 <body class="font-normal">
@@ -676,17 +680,29 @@
     </script>
     @stack('scripts')
     {{-- Vite Assets: Bootstrap, Font Awesome, AOS, Tailwind (Local - No CDN) --}}
-    @vite([
-        'resources/css/bootstrap-custom.css',
-        'resources/css/app.css',
-        'resources/css/dark-mode.css',
-        'resources/css/public-layout.css',
-        'resources/css/accessibility.css',
-        'resources/css/loading.css',
-        'resources/js/bootstrap-bundle.js',
-        'resources/js/app.js',
-        'resources/js/accessibility.js'
-    ])
+    @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+        @vite([
+            'resources/css/bootstrap-custom.css',
+            'resources/css/app.css',
+            'resources/css/dark-mode.css',
+            'resources/css/public-layout.css',
+            'resources/css/accessibility.css',
+            'resources/css/loading.css',
+            'resources/js/bootstrap-bundle.js',
+            'resources/js/app.js',
+            'resources/js/accessibility.js'
+        ])
+    @else
+        {!! App\Helpers\AssetHelper::css('resources/css/bootstrap-custom.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/dark-mode.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/public-layout.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/accessibility.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/loading.css') !!}
+        {!! App\Helpers\AssetHelper::js('resources/js/bootstrap-bundle.js', false) !!}
+        {!! App\Helpers\AssetHelper::js('resources/js/app.js', false) !!}
+        {!! App\Helpers\AssetHelper::js('resources/js/accessibility.js', false) !!}
+    @endif
 
     <script>
         // Hide loading overlay when page is fully loaded

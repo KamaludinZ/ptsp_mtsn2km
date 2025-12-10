@@ -3,7 +3,11 @@
 @section('title', 'Tentang Kami - ' . config('app.name', 'PTSP MTsN 2 Kota Malang'))
 
 @push('styles')
-    @vite(['resources/css/about.css'])
+    @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+        @vite(['resources/css/about.css'])
+    @else
+        {!! App\Helpers\AssetHelper::css('resources/css/about.css') !!}
+    @endif
 @endpush
 
 @section('content')

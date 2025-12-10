@@ -3,7 +3,11 @@
 @section('title', 'Hubungi Kami - ' . config('app.name', 'PTSP MTsN 2 Kota Malang'))
 
 @push('styles')
-    @vite(['resources/css/contact.css'])
+    @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+        @vite(['resources/css/contact.css'])
+    @else
+        {!! App\Helpers\AssetHelper::css('resources/css/contact.css') !!}
+    @endif
 @endpush
 
 @section('content')

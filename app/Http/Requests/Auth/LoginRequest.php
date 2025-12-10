@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\LoginAttempt;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -41,26 +42,46 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        $email = $this->input('email');
+
         // Validasi captcha - membandingkan input captcha dengan session
         $captchaInput = $this->input('captcha');
         $storedCaptcha = session('captcha_value'); // Ambil dari session
-        
+
         if (empty($captchaInput) || empty($storedCaptcha) || strtoupper($captchaInput) !== strtoupper($storedCaptcha)) {
+            // Log failed attempt - invalid captcha
+            LoginAttempt::log($email, false, 'Invalid CAPTCHA');
+
             throw ValidationException::withMessages([
-                'captcha' => 'Kode verifikasi tidak valid.',
+                'captcha' => 'Kode verifikasi tidak valid. Silakan coba lagi.',
             ]);
         }
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
+            // Log failed attempt - invalid credentials
+            LoginAttempt::log($email, false, 'Invalid credentials');
+
+            // Get number of recent failed attempts
+            $failedAttempts = LoginAttempt::getRecentFailedAttempts($email, 60);
+            $remainingAttempts = max(0, 5 - $failedAttempts);
+
+            $message = trans('auth.failed');
+            if ($remainingAttempts <= 2 && $remainingAttempts > 0) {
+                $message .= " Tersisa {$remainingAttempts} percobaan sebelum akun diblokir sementara.";
+            }
+
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => $message,
             ]);
         }
 
+        // Log successful login
+        LoginAttempt::log($email, true);
+
         RateLimiter::clear($this->throttleKey());
-        
+
         // Hapus captcha dari session setelah berhasil login
         session()->forget('captcha_value');
     }
@@ -76,15 +97,16 @@ class LoginRequest extends FormRequest
             return;
         }
 
+        // Log rate limit attempt
+        LoginAttempt::log($this->input('email'), false, 'Rate limited');
+
         event(new Lockout($this));
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
+        $minutes = ceil($seconds / 60);
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'email' => "Terlalu banyak percobaan login. Akun Anda diblokir sementara selama {$minutes} menit. Silakan coba lagi nanti.",
         ]);
     }
 

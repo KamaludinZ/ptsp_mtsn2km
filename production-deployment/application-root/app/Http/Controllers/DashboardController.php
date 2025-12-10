@@ -14,7 +14,7 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         // Route to appropriate dashboard based on roles/permissions
-        if ($user->hasAnyRole(['admin', 'super_admin'])) {
+        if ($user->hasRole('admin')) {
             return redirect('/admin');
         } elseif ($user->hasRole('kepala-sekolah')) {
             return redirect('/kepala');

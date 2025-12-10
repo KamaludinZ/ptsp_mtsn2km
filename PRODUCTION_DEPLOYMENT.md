@@ -1,638 +1,225 @@
-# Production Deployment Guide
-## PTSP MTsN 2 Kota Malang
+# PTSP MTsN 2 Kota Malang - Production Deployment Guide
 
-### Vite untuk Development, Static Assets untuk Production
+## PostgreSQL Database Setup
 
----
+### Prerequisites
+- PostgreSQL 12 or higher
+- PHP 8.2 or higher with `pdo_pgsql` extension enabled
+- Composer
+- Web server (Apache/Nginx)
 
-## 📋 Daftar Isi
-1. [Konsep Deployment](#konsep-deployment)
-2. [Development Workflow](#development-workflow)
-3. [Production Build](#production-build)
-4. [Deployment ke Server](#deployment-ke-server)
-5. [Cara Menggunakan Assets](#cara-menggunakan-assets)
-6. [Troubleshooting](#troubleshooting)
+### Database Configuration
 
----
+1. Create PostgreSQL database:
+   ```sql
+   CREATE DATABASE ptspmtsn2;
+   CREATE USER ptspmtsn2 WITH PASSWORD 'your_secure_password_here';
+   GRANT ALL PRIVILEGES ON DATABASE ptspmtsn2 TO ptspmtsn2;
+   ```
 
-## Konsep Deployment
+2. Update your `.env` file:
+   ```
+   DB_CONNECTION=pgsql
+   DB_HOST=127.0.0.1
+   DB_PORT=5432
+   DB_DATABASE=ptspmtsn2
+   DB_USERNAME=ptspmtsn2
+   DB_PASSWORD=your_secure_password_here
+   DB_TIMEOUT=30
+   DB_PERSISTENT=false
+   DB_SSLMODE=prefer
+   ```
 
-### Development (Lokal):
+### Production Deployment Steps
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd PTSP-MTsN-2-KOTA-MALANG
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   composer install --optimize-autoloader --no-dev
+   ```
+
+3. **Set up environment:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your production settings
+   php artisan key:generate
+   ```
+
+4. **Run database migrations:**
+   ```bash
+   php artisan migrate --force
+   ```
+
+5. **Build assets for production (without Vite):**
+   ```bash
+   npm install --production=false  # Install dev dependencies for build
+   npm run build                  # Build assets using Vite in production mode
+   ```
+
+6. **Set proper file permissions:**
+   ```bash
+   chmod -R 755 storage/
+   chmod -R 755 bootstrap/cache/
+   chmod -R 644 .env
+   ```
+
+7. **Run the production build script:**
+   ```bash
+   # On Windows
+   build-production.bat
+
+   # On Linux/Unix
+   # Use the Windows batch file or create a shell script that follows the same steps
+   ```
+
+8. **Configure environment for production asset loading:**
+   Set these values in your .env file:
+   ```
+   APP_ENV=production
+   ASSET_MODE=compiled
+   CHECK_VITE_SERVER=false
+   ```
+
+### Production Security Settings
+
+- HTTPS is enforced in production
+- Security headers are set via `.htaccess`
+- Session security is configured
+- Database connections are secured with SSL
+- File upload restrictions are in place
+
+### PostgreSQL Optimizations
+
+- JSON columns use GIN indexes for better performance
+- PostgreSQL extensions enabled: `uuid-ossp`, `pg_trgm`, `btree_gin`
+- Connection pooling is configurable via environment variables
+
+### Web Server Configuration
+
+#### Apache (.htaccess included)
+
+The application includes a production-ready `.htaccess` file with:
+- Security headers
+- HTTPS enforcement
+- Compression
+- Caching headers
+- File access restrictions
+
+#### Nginx (example configuration)
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name your-domain.com;
+
+    root /path/to/PTSP-MTsN-2-KOTA-MALANG/public;
+    index index.php;
+
+    ssl_certificate /path/to/ssl/cert.pem;
+    ssl_certificate_key /path/to/ssl/private.key;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
 ```
-✅ Vite Dev Server Running (npm run dev)
-✅ Hot Module Replacement (HMR)
-✅ Fast refresh on file changes
-✅ Source maps untuk debugging
-```
 
-### Production (Server):
-```
-✅ NO Vite Server
-✅ NO npm run dev
-✅ NO Node.js required on server
-✅ HANYA compiled static assets
-✅ Assets di-serve langsung dari public/build/
-```
+### Maintenance Mode
 
-### Flow:
-
-```
-Development (Local)                Production (Server)
-├── npm run dev                   ├── (NO npm, NO Vite)
-├── Vite HMR                      ├── Static files only
-├── @vite directive               ├── Helper functions
-└── localhost:5173                └── public/build/assets/
-```
-
----
-
-## Development Workflow
-
-### 1. Setup Development Environment
-
+To enable/disable maintenance mode:
 ```bash
-# Install dependencies
-npm install
-composer install
+# Enable maintenance mode
+php artisan down
 
-# Copy environment file
-copy .env.example .env
-
-# Generate app key
-php artisan key:generate
-
-# Run migrations
-php artisan migrate --seed
+# Disable maintenance mode
+php artisan up
 ```
 
-### 2. Start Development Servers
+### Monitoring and Health Checks
 
-**Opsi A: Menggunakan Script (Recommended)**
-```bash
-dev-server.bat
-```
+The application supports health checks at `/up` endpoint. This endpoint returns 200 status when the application is healthy and 503 when in maintenance mode.
 
-**Opsi B: Manual (2 terminals)**
-```bash
-# Terminal 1: Vite
-npm run dev
-
-# Terminal 2: Laravel
-php artisan serve
-```
-
-### 3. Development dengan @vite Directive
-
-Gunakan `@vite` di layout files untuk development:
-
-```blade
-{{-- resources/views/layouts/app.blade.php --}}
-<!DOCTYPE html>
-<html>
-<head>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    @yield('content')
-</body>
-</html>
-```
-
----
-
-## Production Build
-
-### Langkah 1: Build Assets
-
-```bash
-# Jalankan production build
-build-production.bat
-```
-
-Script ini akan:
-1. ✅ Install npm dependencies
-2. ✅ Compile assets (`npm run build`)
-3. ✅ Optimize Composer autoload
-4. ✅ Clear Laravel caches
-5. ✅ Optimize Laravel (config/route/view cache)
-6. ✅ Verify build
-
-### Langkah 2: Verify Build
-
-```bash
-# Check deployment readiness
-deploy-check.bat
-```
-
-### Langkah 3: Hasil Build
-
-Setelah `npm run build`, assets akan ada di:
-```
-public/build/
-├── manifest.json              ← Asset mapping file
-└── assets/
-    ├── app-[hash].css        ← Compiled Tailwind CSS
-    ├── app-[hash].js         ← Compiled JavaScript
-    ├── bootstrap-custom-[hash].css
-    └── bootstrap-bundle-[hash].js
-```
-
-**PENTING:** Hash berubah setiap build untuk cache busting.
-
----
-
-## Deployment ke Server
-
-### Method 1: Traditional Upload (Cpanel/FTP)
-
-#### Step 1: Build di Local
-
-```bash
-# Build production assets
-npm run build
-
-# Optimize autoload
-composer dump-autoload --optimize
-```
-
-#### Step 2: Upload Files
-
-Upload ke server via FTP/Cpanel:
-```
-✅ app/
-✅ bootstrap/
-✅ config/
-✅ database/
-✅ public/           ← INCLUDING public/build/
-✅ resources/
-✅ routes/
-✅ storage/
-✅ vendor/           ← Hasil composer install
-✅ .env              ← Configure untuk production
-✅ artisan
-✅ composer.json
-✅ composer.lock
-```
-
-**TIDAK PERLU upload:**
-```
-❌ node_modules/    ← Tidak diperlukan di server
-❌ .git/
-❌ tests/
-❌ .env.example
-```
-
-#### Step 3: Set Permissions (di server)
-
-```bash
-# Via SSH
-chmod -R 755 storage
-chmod -R 755 bootstrap/cache
-
-# Via Cpanel File Manager
-# Right click → Change Permissions
-# storage: 755
-# bootstrap/cache: 755
-```
-
-#### Step 4: Configure .env
+### Environment Variables for Production
 
 ```env
-APP_NAME="PTSP MTsN 2 Kota Malang"
 APP_ENV=production
-APP_KEY=base64:... (generate dengan: php artisan key:generate)
-APP_DEBUG=false      ← PENTING: false untuk production
-APP_URL=https://yourdomain.com
+APP_DEBUG=false
+APP_URL=https://your-domain.com
 
-DB_CONNECTION=mysql
+LOG_CHANNEL=stack
+LOG_LEVEL=error
+
+DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=your_database
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_PORT=5432
+DB_DATABASE=ptspmtsn2
+DB_USERNAME=ptspmtsn2
+DB_PASSWORD=your_secure_password_here
+
+# Production-specific settings
+DB_TIMEOUT=30
+DB_PERSISTENT=false
+DB_SSLMODE=prefer
+
+# Asset configuration for production (no Vite)
+ASSET_MODE=compiled
+CHECK_VITE_SERVER=false
+
+CACHE_DRIVER=redis
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+
+# Security
+SESSION_SECURE_COOKIE=true
 ```
 
-#### Step 5: Run Migrations (di server)
+### Troubleshooting
 
-```bash
-php artisan migrate --force
-php artisan db:seed --force
-```
+1. **Database connection issues:**
+   - Ensure PostgreSQL service is running
+   - Verify database credentials in `.env`
+   - Check that PostgreSQL extensions are installed
 
-#### Step 6: Optimize (di server)
+2. **Permission errors:**
+   - Verify storage and bootstrap/cache directories are writable
+   - Ensure proper file permissions are set
 
-```bash
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-```
+3. **SSL/HTTPS issues:**
+   - Check SSL certificates are properly installed
+   - Verify .htaccess rules are working
+   - Confirm APP_URL uses HTTPS
 
-### Method 2: Git Deployment
+### Updating in Production
 
-```bash
-# Di server via SSH
-git clone https://github.com/your-repo/ptsp.git
-cd ptsp
-
-# Install dependencies
-composer install --no-dev --optimize-autoloader
-
-# Setup environment
-cp .env.example .env
-php artisan key:generate
-
-# Build assets (jika ada Node.js di server)
-npm install
-npm run build
-
-# Or upload pre-built assets dari local
-# scp -r public/build user@server:/path/to/project/public/
-
-# Run migrations
-php artisan migrate --force
-
-# Optimize
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Set permissions
-chmod -R 755 storage bootstrap/cache
-```
+1. Backup database and files
+2. Pull latest code changes
+3. Run `composer install` (if dependencies changed)
+4. Run `php artisan migrate` (if database changes)
+5. Clear caches: `php artisan config:clear` and `php artisan cache:clear`
+6. Rebuild assets if needed: `npm run build`
 
 ---
 
-## Cara Menggunakan Assets
-
-### Opsi 1: Helper Functions (Recommended untuk Production)
-
-Update layout files untuk menggunakan helper functions:
-
-**File:** `resources/views/layouts/app.blade.php`
-
-```blade
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name') }}</title>
-
-    {{-- Preload critical assets --}}
-    {!! assets_preload([
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ]) !!}
-
-    {{-- Load CSS --}}
-    {!! asset_css('resources/css/app.css') !!}
-
-    @stack('styles')
-</head>
-<body>
-    @yield('content')
-
-    {{-- Load JS --}}
-    {!! asset_js('resources/js/app.js') !!}
-
-    @stack('scripts')
-</body>
-</html>
-```
-
-### Opsi 2: @vite Directive (Works in Both)
-
-Laravel Vite plugin otomatis detect environment:
-- **Development:** Load dari Vite dev server
-- **Production:** Load dari `public/build/manifest.json`
-
-```blade
-<!DOCTYPE html>
-<html>
-<head>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    @yield('content')
-</body>
-</html>
-```
-
-### Opsi 3: Manual Asset URLs (Untuk kontrolpenuh)
-
-```blade
-<!DOCTYPE html>
-<html>
-<head>
-    @if(app()->environment('local') && file_exists(public_path('hot')))
-        {{-- Development with Vite --}}
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @else
-        {{-- Production with helper --}}
-        {!! asset_css('resources/css/app.css') !!}
-    @endif
-</head>
-<body>
-    @yield('content')
-
-    @if(!app()->environment('local'))
-        {!! asset_js('resources/js/app.js') !!}
-    @endif
-</body>
-</html>
-```
-
----
-
-## Helper Functions Reference
-
-### Available Helpers:
-
-```php
-// Generate CSS link tag
-{!! asset_css('resources/css/app.css') !!}
-// Output: <link rel="stylesheet" href="/build/assets/app-[hash].css">
-
-// Generate JS script tag (deferred)
-{!! asset_js('resources/js/app.js') !!}
-// Output: <script src="/build/assets/app-[hash].js" defer></script>
-
-// Generate JS without defer
-{!! asset_js('resources/js/app.js', false) !!}
-
-// Get asset URL only
-{{ compiled_asset('resources/css/app.css') }}
-// Output: /build/assets/app-[hash].css
-
-// Preload assets
-{!! assets_preload([
-    'resources/css/app.css',
-    'resources/js/app.js'
-]) !!}
-// Output: <link rel="preload" ...>
-```
-
-### How Helpers Work:
-
-1. **Development (dengan Vite running):**
-   - Detect Vite dev server di `localhost:5173`
-   - Return Vite URLs: `http://localhost:5173/resources/css/app.css`
-
-2. **Production (tanpa Vite):**
-   - Read `public/build/manifest.json`
-   - Map `resources/css/app.css` → `build/assets/app-[hash].css`
-   - Return production URL: `/build/assets/app-[hash].css`
-
----
-
-## File Structure di Server
-
-```
-public_html/  (atau htdocs, www)
-├── index.php          ← Laravel entry point
-├── .htaccess
-├── build/             ← Compiled assets (dari npm run build)
-│   ├── manifest.json
-│   └── assets/
-│       ├── app-*.css
-│       ├── app-*.js
-│       ├── bootstrap-*.css
-│       └── bootstrap-*.js
-├── css/
-├── js/
-└── images/
-
-application/  (di luar public_html - AMAN)
-├── app/
-├── bootstrap/
-├── config/
-├── database/
-├── resources/
-├── routes/
-├── storage/
-├── vendor/
-├── .env            ← JANGAN di public_html!
-└── artisan
-```
-
-**Konfigurasi Web Server:**
-
-Point document root ke `/path/to/application/public`, bukan `/path/to/application`.
-
----
-
-## Troubleshooting
-
-### 1. Assets tidak muncul di production
-
-**Cek:**
-```bash
-# Apakah manifest ada?
-ls public/build/manifest.json
-
-# Apakah assets ada?
-ls public/build/assets/
-```
-
-**Solusi:**
-```bash
-# Build ulang
-npm run build
-
-# Upload public/build/ ke server
-```
-
-### 2. Error "Vite manifest not found"
-
-**Penyebab:** `npm run build` belum dijalankan atau `public/build/` tidak ter-upload
-
-**Solusi:**
-```bash
-# Di local
-npm run build
-
-# Upload public/build/ ke server via FTP
-```
-
-### 3. Assets load tapi styling rusak
-
-**Penyebab:** Base URL tidak benar atau .htaccess missing
-
-**Solusi:**
-
-Check `.env`:
-```env
-APP_URL=https://yourdomain.com  ← Sesuaikan dengan domain
-```
-
-Check `.htaccess` di `public/`:
-```apache
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /
-    RewriteRule ^index\.php$ - [L]
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule . /index.php [L]
-</IfModule>
-```
-
-### 4. Helper functions tidak work
-
-**Penyebab:** Autoload tidak ter-update
-
-**Solusi:**
-```bash
-composer dump-autoload
-php artisan config:clear
-```
-
-### 5. CSS/JS cache di browser
-
-**Solusi:** Hash otomatis berubah setiap build untuk cache busting.
-
-Jika masih cache:
-```bash
-# Build ulang dengan hash baru
-npm run build
-
-# Upload ke server
-# Browser akan auto-load versi baru karena hash berbeda
-```
-
----
-
-## Performance Optimization
-
-### 1. Enable Gzip Compression
-
-Tambah di `.htaccess`:
-```apache
-<IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html
-    AddOutputFilterByType DEFLATE text/css
-    AddOutputFilterByType DEFLATE text/javascript
-    AddOutputFilterByType DEFLATE application/javascript
-    AddOutputFilterByType DEFLATE application/x-javascript
-</IfModule>
-```
-
-### 2. Browser Caching
-
-Tambah di `.htaccess`:
-```apache
-<IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresByType text/css "access plus 1 year"
-    ExpiresByType application/javascript "access plus 1 year"
-    ExpiresByType image/png "access plus 1 year"
-    ExpiresByType image/jpg "access plus 1 year"
-    ExpiresByType image/jpeg "access plus 1 year"
-</IfModule>
-```
-
-### 3. Preload Critical Assets
-
-Gunakan preload untuk assets kritikal:
-```blade
-{!! assets_preload([
-    'resources/css/app.css',
-    'resources/js/app.js'
-]) !!}
-```
-
-### 4. Lazy Load Non-Critical JS
-
-```blade
-{!! asset_js('resources/js/app.js', true) !!}  ← defer=true (default)
-```
-
----
-
-## Production Checklist
-
-Sebelum deploy:
-
-- [ ] `npm run build` berhasil
-- [ ] `public/build/manifest.json` exists
-- [ ] `public/build/assets/*.css` exists
-- [ ] `public/build/assets/*.js` exists
-- [ ] `.env` configured untuk production
-- [ ] `APP_ENV=production`
-- [ ] `APP_DEBUG=false`
-- [ ] `APP_KEY` ter-generate
-- [ ] Database configured
-- [ ] `composer install --no-dev --optimize-autoloader`
-- [ ] `php artisan config:cache`
-- [ ] `php artisan route:cache`
-- [ ] `php artisan view:cache`
-- [ ] `chmod -R 755 storage bootstrap/cache`
-- [ ] Test assets loading di browser
-- [ ] Check console (F12) untuk errors
-- [ ] Test semua pages
-- [ ] Test forms (CSRF)
-
----
-
-## Update Workflow
-
-Ketika update aplikasi di production:
-
-```bash
-# 1. Build di local
-npm run build
-
-# 2. Upload files yang berubah
-# - app/
-# - resources/
-# - public/build/  ← PENTING!
-# - routes/
-# - config/
-# - database/migrations (jika ada)
-
-# 3. Di server via SSH
-php artisan migrate --force
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# 4. Test
-# Browse ke website, check console untuk errors
-```
-
----
-
-## FAQ
-
-### Q: Apakah perlu install Node.js di server?
-**A:** TIDAK! Compile di local, upload hasil build.
-
-### Q: Apakah perlu npm run dev di server?
-**A:** TIDAK! Hanya static assets yang di-serve.
-
-### Q: Bagaimana cara update assets?
-**A:** Build di local (`npm run build`), upload `public/build/` ke server.
-
-### Q: Hash assets berubah terus, bagaimana handle cache?
-**A:** Itu fitur! Hash otomatis force browser load versi baru.
-
-### Q: Bisa pakai CDN untuk assets?
-**A:** Bisa, tapi tidak recommended. Local assets lebih secure & cepat.
-
-### Q: Development pakai @vite, production pakai helper, ribet?
-**A:** Gunakan satu method saja (helper atau @vite). Keduanya work di production.
-
----
-
-## Resources
-
-- [Laravel Vite Documentation](https://laravel.com/docs/vite)
-- [Vite Documentation](https://vitejs.dev/)
-- [Asset Helper Code](app/Helpers/AssetHelper.php)
-
----
-
-**Dibuat:** {{ now()->format('d F Y') }}
-**Versi:** 1.0
-**Aplikasi:** PTSP MTsN 2 Kota Malang
+For support and questions, contact the development team.

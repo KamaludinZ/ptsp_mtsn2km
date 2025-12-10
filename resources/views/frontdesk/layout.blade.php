@@ -8,7 +8,17 @@
         <title>{{ config('app.name', 'PTSP MTsN 2 KOTA MALANG') }}</title>
 
         {{-- Vite Assets: Tailwind CSS and Font Awesome (Local - No CDN) --}}
-        @vite(['resources/css/bootstrap-custom.css', 'resources/css/app.css', 'resources/css/dark-mode.css', 'resources/css/accessibility.css', 'resources/js/bootstrap-bundle.js', 'resources/js/app.js', 'resources/js/accessibility.js'])
+        @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+            @vite(['resources/css/bootstrap-custom.css', 'resources/css/app.css', 'resources/css/dark-mode.css', 'resources/css/accessibility.css', 'resources/js/bootstrap-bundle.js', 'resources/js/app.js', 'resources/js/accessibility.js'])
+        @else
+            {!! App\Helpers\AssetHelper::css('resources/css/bootstrap-custom.css') !!}
+            {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
+            {!! App\Helpers\AssetHelper::css('resources/css/dark-mode.css') !!}
+            {!! App\Helpers\AssetHelper::css('resources/css/accessibility.css') !!}
+            {!! App\Helpers\AssetHelper::js('resources/js/bootstrap-bundle.js', false) !!}
+            {!! App\Helpers\AssetHelper::js('resources/js/app.js', false) !!}
+            {!! App\Helpers\AssetHelper::js('resources/js/accessibility.js', false) !!}
+        @endif
 
     </head>
     <body class="font-sans antialiased">

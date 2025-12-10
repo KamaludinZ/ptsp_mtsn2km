@@ -3,7 +3,11 @@
 @section('title', $pengumuman->title . ' - ' . config('app.name', 'PTSP MTsN 2 Kota Malang'))
 
 @push('styles')
-    @vite(['resources/css/pengumuman.css'])
+    @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+        @vite(['resources/css/pengumuman.css'])
+    @else
+        {!! App\Helpers\AssetHelper::css('resources/css/pengumuman.css') !!}
+    @endif
     <style>
         /* Green badge for category */
         .badge-category-green {

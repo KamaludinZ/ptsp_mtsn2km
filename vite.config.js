@@ -16,6 +16,7 @@ export default defineConfig({
                 'resources/css/about.css',
                 'resources/css/contact.css',
                 'resources/css/admin.css',
+                'resources/css/filament/admin/theme.css',
                 'resources/js/app.js',
                 'resources/js/bootstrap-bundle.js',
                 'resources/js/chart-bundle.js',
@@ -26,12 +27,13 @@ export default defineConfig({
     ],
     server: {
         host: '127.0.0.1',
-        port: 5175,
+        port: 5173,
         hmr: {
-            host: '127.0.0.1',
-            port: 5175,
+            host: 'localhost',
+            protocol: 'ws',
         },
         cors: true,
+        strictPort: false, // Allow fallback to different port if 5173 is taken
     },
     build: {
         // Production optimizations

@@ -596,4 +596,17 @@ class SecurityController extends Controller
 
         return $total > 0 ? round(($passed / $total) * 100, 2) : 0;
     }
+
+    /**
+     * Get maintenance mode status
+     */
+    public function getMaintenanceStatus(Request $request)
+    {
+        $isDown = app()->isDownForMaintenance();
+
+        return response()->json([
+            'isDown' => $isDown,
+            'timestamp' => now()->toDateTimeString()
+        ]);
+    }
 }

@@ -32,8 +32,8 @@
             </a>
 
 
-            <!-- SUPER ADMIN & ADMIN MENU -->
-            @if($user->hasAnyRole(['admin', 'super_admin']))
+            <!-- ADMIN MENU -->
+            @if($user->hasRole('admin'))
                 <div class="sidebar-divider">
                     <span>ADMIN</span>
                 </div>
@@ -53,7 +53,7 @@
                     <span>Kelola Pengumuman</span>
                 </a>
 
-                @if($user->hasAnyRole(['admin', 'super_admin']))
+                @if($user->hasRole('admin'))
                     <a href="{{ route('admin.security.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.security.*') ? 'active' : '' }}">
                         <i class="fas fa-shield-alt me-3"></i>
                         <span>Keamanan</span>
@@ -186,99 +186,6 @@
                 </a>
             @endif
 
-            <!-- SUPER ADMIN MENU -->
-            @if($user->hasRole('super_admin'))
-                <div class="sidebar-divider">
-                    <span>SUPER ADMIN</span>
-                </div>
-
-                <a href="{{ route('admin.services.index') }}" class="sidebar-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
-                    <i class="fas fa-concierge-bell me-3"></i>
-                    <span>Kelola Layanan</span>
-                </a>
-
-                <a href="{{ route('admin.service-categories.index') }}" class="sidebar-link {{ request()->routeIs('admin.service-categories.*') ? 'active' : '' }}">
-                    <i class="fas fa-tags me-3"></i>
-                    <span>Kategori Layanan</span>
-                </a>
-
-                <a href="{{ route('admin.pengumuman.index') }}" class="sidebar-link {{ request()->routeIs('admin.pengumuman.*') ? 'active' : '' }}">
-                    <i class="fas fa-bullhorn me-3"></i>
-                    <span>Kelola Pengumuman</span>
-                </a>
-
-                <a href="{{ route('admin.tickets.index') }}" class="sidebar-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
-                    <i class="fas fa-ticket-alt me-3"></i>
-                    <span>Manajemen Tiket</span>
-                </a>
-
-                <a href="{{ route('admin.visitors.index') }}" class="sidebar-link {{ request()->routeIs('admin.visitors.*') ? 'active' : '' }}">
-                    <i class="fas fa-users me-3"></i>
-                    <span>Pengunjung</span>
-                </a>
-
-                <a href="{{ route('admin.complaints.index') }}" class="sidebar-link {{ request()->routeIs('admin.complaints.*') ? 'active' : '' }}">
-                    <i class="fas fa-exclamation-circle me-3"></i>
-                    <span>Pengaduan Masyarakat</span>
-                </a>
-
-                <a href="{{ route('admin.whistleblowing.index') }}" class="sidebar-link {{ request()->routeIs('admin.whistleblowing.*') ? 'active' : '' }}">
-                    <i class="fas fa-user-secret me-3"></i>
-                    <span>Whistleblowing</span>
-                </a>
-
-                <div class="sidebar-divider">
-                    <span>EVALUASI</span>
-                </div>
-
-                <a href="{{ route('admin.survey.management') }}" class="sidebar-link {{ request()->routeIs('admin.survey.management') ? 'active' : '' }}">
-                    <i class="fas fa-clipboard-list me-3"></i>
-                    <span>Manajemen Survey</span>
-                </a>
-
-                <a href="{{ route('admin.skm.report') }}" class="sidebar-link {{ request()->routeIs('admin.skm.report') ? 'active' : '' }}">
-                    <i class="fas fa-chart-bar me-3"></i>
-                    <span>Laporan SKM</span>
-                </a>
-
-                <a href="{{ route('admin.spak.report') }}" class="sidebar-link {{ request()->routeIs('admin.spak.report') ? 'active' : '' }}">
-                    <i class="fas fa-shield-alt me-3"></i>
-                    <span>Laporan SPAK</span>
-                </a>
-
-                <a href="{{ route('admin.performance.report') }}" class="sidebar-link {{ request()->routeIs('admin.performance.report') ? 'active' : '' }}">
-                    <i class="fas fa-chart-pie me-3"></i>
-                    <span>Laporan Kinerja</span>
-                </a>
-
-                <div class="sidebar-divider">
-                    <span>KEAMANAN</span>
-                </div>
-
-                <a href="{{ route('admin.security.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.security.dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-lock me-3"></i>
-                    <span>Dashboard Keamanan</span>
-                </a>
-
-                <div class="sidebar-divider">
-                    <span>PENGATURAN</span>
-                </div>
-
-                <a href="{{ route('admin.settings.index') }}" class="sidebar-link {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
-                    <i class="fas fa-cog me-3"></i>
-                    <span>Pengaturan Umum</span>
-                </a>
-
-                <a href="{{ route('admin.roles.index') }}" class="sidebar-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-                    <i class="fas fa-user-shield me-3"></i>
-                    <span>Hak Akses Role</span>
-                </a>
-
-                <a href="{{ route('admin.users.index') }}" class="sidebar-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                    <i class="fas fa-users-cog me-3"></i>
-                    <span>Manajemen User</span>
-                </a>
-            @endif
 
             <!-- Profile & Settings -->
             <div class="sidebar-divider"></div>

@@ -8,7 +8,12 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         {{-- Vite Assets: Tailwind CSS and Font Awesome (Local - No CDN) --}}
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @else
+            {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
+            {!! App\Helpers\AssetHelper::js('resources/js/app.js', false) !!}
+        @endif
     </head>
     <body class="tw-font-sans tw-text-gray-900 tw-antialiased" x-data="{ theme: localStorage.getItem('theme') || 'light' }" :data-theme="theme">
         <div class="tw-min-h-screen tw-flex tw-flex-col sm:tw-justify-center tw-items-center tw-pt-6 sm:tw-pt-0 tw-bg-gray-100 dark:tw-bg-gray-900">

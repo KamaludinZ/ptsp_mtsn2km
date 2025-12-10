@@ -311,7 +311,7 @@
     'from' => 
     array (
       'address' => 'hello@example.com',
-      'name' => '${APP_NAME}',
+      'name' => 'PTSP MTsN 2 KOTA MALANG',
     ),
     'markdown' => 
     array (
@@ -385,13 +385,13 @@
     ),
     'batching' => 
     array (
-      'database' => 'sqlite',
+      'database' => 'pgsql',
       'table' => 'job_batches',
     ),
     'failed' => 
     array (
       'driver' => 'database-uuids',
-      'database' => 'sqlite',
+      'database' => 'pgsql',
       'table' => 'failed_jobs',
     ),
   ),
@@ -441,7 +441,7 @@
     'fallback_locale' => 'en',
     'faker_locale' => 'en_US',
     'cipher' => 'AES-256-CBC',
-    'key' => 'base64:TCgy3an1kE7WdrQpX0LHO4nLRa7Z8+bZskStF92pLIo=',
+    'key' => 'base64:SzRFh1C69dn/sWKDQXRiVP7NjFGcXuNSkvIpduBvKMs=',
     'previous_keys' => 
     array (
     ),
@@ -563,13 +563,26 @@
         'resources/css/bootstrap-custom.css' => 'build/assets/bootstrap-custom-Bi4iqWMz.css',
         'resources/css/accessibility.css' => 'build/assets/accessibility-Cf8G-GMu.css',
         'resources/css/dark-mode.css' => 'build/assets/all-B7vS8Mbm.css',
+        'resources/css/home.css' => 'build/assets/home-Cf8G-GMu.css',
+        'resources/css/pengumuman.css' => 'build/assets/pengumuman-Cf8G-GMu.css',
+        'resources/css/visitor-book.css' => 'build/assets/visitor-book-Cf8G-GMu.css',
+        'resources/css/about.css' => 'build/assets/about-Cf8G-GMu.css',
+        'resources/css/contact.css' => 'build/assets/contact-Cf8G-GMu.css',
+        'resources/css/admin.css' => 'build/assets/admin-Cf8G-GMu.css',
       ),
       'js' => 
       array (
         'resources/js/app.js' => 'build/assets/app-C_oYXcqv.js',
         'resources/js/bootstrap-bundle.js' => 'build/assets/bootstrap-bundle-DyPRAKW-.js',
+        'resources/js/chart-bundle.js' => 'build/assets/chart-bundle-DyPRAKW-.js',
         'resources/js/accessibility.js' => 'build/assets/accessibility-DT1WHB_J.js',
       ),
+    ),
+    'dev_options' => 
+    array (
+      'auto_detect_vite' => true,
+      'vite_port' => 5173,
+      'vite_host' => '127.0.0.1',
     ),
   ),
   'auth' => 
@@ -695,14 +708,14 @@
   ),
   'database' => 
   array (
-    'default' => 'sqlite',
+    'default' => 'pgsql',
     'connections' => 
     array (
       'sqlite' => 
       array (
         'driver' => 'sqlite',
         'url' => NULL,
-        'database' => 'C:\\ptsponline\\PTSP-MTsN-2-KOTA-MALANG\\database\\database.sqlite',
+        'database' => 'ptspmtsn2',
         'prefix' => '',
         'foreign_key_constraints' => true,
       ),
@@ -711,10 +724,10 @@
         'driver' => 'mysql',
         'url' => NULL,
         'host' => '127.0.0.1',
-        'port' => '3306',
-        'database' => 'forge',
-        'username' => 'forge',
-        'password' => '',
+        'port' => '5432',
+        'database' => 'ptspmtsn2',
+        'username' => 'ptspmtsn2',
+        'password' => 'root',
         'unix_socket' => '',
         'charset' => 'utf8mb4',
         'collation' => 'utf8mb4_unicode_ci',
@@ -731,10 +744,10 @@
         'driver' => 'mariadb',
         'url' => NULL,
         'host' => '127.0.0.1',
-        'port' => '3306',
-        'database' => 'laravel',
-        'username' => 'root',
-        'password' => '',
+        'port' => '5432',
+        'database' => 'ptspmtsn2',
+        'username' => 'ptspmtsn2',
+        'password' => 'root',
         'unix_socket' => '',
         'charset' => 'utf8mb4',
         'collation' => 'utf8mb4_unicode_ci',
@@ -752,24 +765,29 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '5432',
-        'database' => 'forge',
-        'username' => 'forge',
-        'password' => '',
+        'database' => 'ptspmtsn2',
+        'username' => 'ptspmtsn2',
+        'password' => 'root',
         'charset' => 'utf8',
         'prefix' => '',
         'prefix_indexes' => true,
         'search_path' => 'public',
         'sslmode' => 'prefer',
+        'options' => 
+        array (
+          2 => '30',
+          3 => 2,
+        ),
       ),
       'sqlsrv' => 
       array (
         'driver' => 'sqlsrv',
         'url' => NULL,
         'host' => '127.0.0.1',
-        'port' => '1433',
-        'database' => 'forge',
-        'username' => 'forge',
-        'password' => '',
+        'port' => '5432',
+        'database' => 'ptspmtsn2',
+        'username' => 'ptspmtsn2',
+        'password' => 'root',
         'charset' => 'utf8',
         'prefix' => '',
         'prefix_indexes' => true,
@@ -809,6 +827,9 @@
     'allowed_hosts' => 
     array (
     ),
+    'retry_after' => 300,
+    'message' => 'Sistem sedang dalam perawatan untuk meningkatkan kualitas layanan.',
+    'enabled' => false,
   ),
   'media-library' => 
   array (
@@ -963,6 +984,58 @@
       'store' => 'default',
     ),
   ),
+  'production' => 
+  array (
+    'cache' => 
+    array (
+      'default' => 'file',
+      'fallback' => 'file',
+      'prefix' => 'ptsp_prod_',
+    ),
+    'queue' => 
+    array (
+      'default' => 'sync',
+      'failed_job_attempts' => 3,
+      'failed_job_retry_after' => 180,
+    ),
+    'session' => 
+    array (
+      'driver' => 'file',
+      'lifetime' => '120',
+      'secure' => true,
+      'http_only' => true,
+      'same_site' => 'lax',
+    ),
+    'security' => 
+    array (
+      'force_https' => true,
+      'hsts_enabled' => true,
+      'hsts_max_age' => 31536000,
+      'hsts_include_subdomains' => true,
+      'hsts_preload' => false,
+      'csp_enabled' => true,
+    ),
+    'logging' => 
+    array (
+      'default' => 'stack',
+      'deprecations' => NULL,
+      'level' => 'debug',
+    ),
+    'performance' => 
+    array (
+      'enable_query_log' => false,
+      'enable_debugbar' => false,
+      'opcache_enabled' => true,
+      'max_execution_time' => 120,
+      'memory_limit' => '512M',
+    ),
+    'monitoring' => 
+    array (
+      'enable_health_checks' => true,
+      'health_check_timeout' => 30,
+      'enable_downtime_notifications' => true,
+    ),
+  ),
   'sanctum' => 
   array (
     'stateful' => 
@@ -1028,9 +1101,9 @@
   ),
   'whatsapp' => 
   array (
-    'api_url' => NULL,
-    'api_token' => NULL,
-    'sender_id' => NULL,
+    'api_url' => '',
+    'api_token' => '',
+    'sender_id' => '',
   ),
   'filament-tiptap-editor' => 
   array (

@@ -6,7 +6,12 @@
     <title>@yield('title') - {{ config('app.name') }}</title>
 
     {{-- Vite Assets: Tailwind CSS and Font Awesome (Local - No CDN) --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
+        {!! App\Helpers\AssetHelper::js('resources/js/app.js', false) !!}
+    @endif
 
     <style>
         .error-container {
@@ -67,6 +72,10 @@
             justify-content: center;
             font-size: 48px;
             color: #dcfce7;
+        }
+
+        .maintenance-icon {
+            font-size: 3rem !important; /* Larger icon for maintenance */
         }
 
         .error-header-title {
@@ -150,7 +159,7 @@
             {{-- Bagian Header (Kiri di Desktop) --}}
             <div class="error-header">
                 <div class="error-icon-wrapper">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    @yield('icon', '<i class="fa-solid fa-triangle-exclamation"></i>')
                 </div>
                 <h1 class="error-header-title">{{ config('app.name') }}</h1>
                 <p class="error-header-subtitle">Layanan Terpadu Satu Pintu</p>
@@ -162,9 +171,11 @@
                 <h2 class="error-title">@yield('title')</h2>
                 <p class="error-message">@yield('message')</p>
 
+                @if(!isset($hide_back_button) || $hide_back_button !== true)
                 <a href="{{ app('router')->has('home') ? route('home') : url('/') }}" class="btn-back">
                     <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Beranda
                 </a>
+                @endif
 
                 <div class="support-info">
                     <p>Jika masalah berlanjut, silakan hubungi administrator sistem.</p>
@@ -172,5 +183,7 @@
             </div>
         </div>
     </div>
+
+    @stack('scripts')
 </body>
 </html>
