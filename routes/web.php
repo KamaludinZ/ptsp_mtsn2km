@@ -159,6 +159,12 @@ Route::middleware(['auth', 'check.email.verification', 'permission:supervision.a
     Route::get('/performance', [SupervisionController::class, 'performance'])->name('performance');
 });
 
+// Ticket documents: private files served only to the applicant and staff
+Route::middleware('auth')->prefix('documents')->name('documents.')->group(function () {
+    Route::get('/ticket-files/{file}', [\App\Http\Controllers\TicketDocumentController::class, 'file'])->name('ticket-file');
+    Route::get('/ticket-outputs/{output}', [\App\Http\Controllers\TicketDocumentController::class, 'output'])->name('ticket-output');
+});
+
 // Profile Routes (Requires Email Verification for pemohon role only)
 Route::middleware(['auth', 'check.email.verification'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

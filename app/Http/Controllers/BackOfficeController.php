@@ -234,7 +234,7 @@ class BackOfficeController extends Controller
         ]);
 
         $file = $validated['file'];
-        $path = $file->store('ticket-files', 'public');
+        $path = \App\Support\TicketDocuments::store($file, 'ticket-files');
 
         TicketFile::create([
             'ticket_id' => $ticket->id,
@@ -258,17 +258,12 @@ class BackOfficeController extends Controller
     /**
      * Download ticket file
      */
-    public function downloadFile(TicketFile $file)
+    public function downloadFile(Ticket $ticket, TicketFile $file)
     {
-        $this->authorize('view', $file->ticket);
+        abort_unless($file->ticket_id === $ticket->id, 404);
+        $this->authorize('view', $ticket);
 
-        $filePath = storage_path('app/public/' . $file->file_path);
-
-        if (!file_exists($filePath)) {
-            abort(404, 'File tidak ditemukan');
-        }
-
-        return response()->download($filePath, $file->file_name);
+        return \App\Support\TicketDocuments::download($file->file_path, $file->file_name);
     }
 
     /**
@@ -277,16 +272,16 @@ class BackOfficeController extends Controller
     public function uploadOutput(Request $request, Ticket $ticket)
     {
         $validated = $request->validate([
-            'output_file' => 'required|file|max:20480',
+            'output_file' => 'required|file|max:20480|mimes:' . \App\Support\TicketDocuments::MIMES,
             'output_description' => 'nullable|string|max:500',
         ]);
 
         $file = $validated['output_file'];
-        $path = $file->store('ticket-outputs', 'public');
+        $path = \App\Support\TicketDocuments::store($file, 'ticket-outputs');
 
         // Delete old output if exists
         if ($ticket->output) {
-            Storage::disk('public')->delete($ticket->output->file_path);
+            \App\Support\TicketDocuments::delete($ticket->output->file_path);
             $ticket->output->delete();
         }
 
@@ -321,17 +316,9 @@ class BackOfficeController extends Controller
      */
     public function downloadOutput(Ticket $ticket)
     {
-        if (!$ticket->output || !$ticket->output->file_path) {
-            abort(404, 'File output tidak ditemukan');
-        }
+        $this->authorize('view', $ticket);
 
-        $filePath = storage_path('app/public/' . $ticket->output->file_path);
-
-        if (!file_exists($filePath)) {
-            abort(404, 'File tidak ditemukan');
-        }
-
-        return response()->download($filePath, basename($ticket->output->file_path));
+        return \App\Support\TicketDocuments::download(optional($ticket->output)->file_path);
     }
 
     /**

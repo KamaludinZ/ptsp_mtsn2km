@@ -118,14 +118,14 @@ class OnlinePortalController extends Controller
         // Upload files if any
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $path = $file->store('ticket-files', 'public');
+                $path = \App\Support\TicketDocuments::store($file, 'ticket-files');
 
                 TicketFile::create([
                     'ticket_id' => $ticket->id,
                     'file_name' => $file->getClientOriginalName(),
                     'file_path' => $path,
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
+                    'file_type' => $file->getMimeType(),
+                    'uploaded_by' => $user->id,
                 ]);
             }
         }
@@ -326,17 +326,10 @@ class OnlinePortalController extends Controller
             ->where('status', 'completed')
             ->firstOrFail();
 
-        if (!$ticket->output || !$ticket->output->file_path) {
-            abort(404, 'File tidak ditemukan');
-        }
-
-        $filePath = storage_path('app/public/' . $ticket->output->file_path);
-
-        if (!file_exists($filePath)) {
-            abort(404, 'File tidak ditemukan');
-        }
-
-        return response()->download($filePath, $ticket->output->file_name);
+        return \App\Support\TicketDocuments::download(
+            optional($ticket->output)->file_path,
+            optional($ticket->output)->file_name
+        );
     }
 
     /**

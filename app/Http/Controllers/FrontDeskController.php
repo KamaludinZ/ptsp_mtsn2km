@@ -171,14 +171,14 @@ class FrontDeskController extends Controller
         // Upload files
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $path = $file->store('ticket-files', 'public');
+                $path = \App\Support\TicketDocuments::store($file, 'ticket-files');
 
                 TicketFile::create([
                     'ticket_id' => $ticket->id,
                     'file_name' => $file->getClientOriginalName(),
                     'file_path' => $path,
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
+                    'file_type' => $file->getMimeType(),
+                    'uploaded_by' => Auth::id(),
                 ]);
             }
         }

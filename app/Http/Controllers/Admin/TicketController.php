@@ -142,7 +142,7 @@ class TicketController extends Controller
             foreach ($request->file('requirement_files') as $file) {
                 if ($file->isValid()) {
                     $filename = time() . '_' . $file->getClientOriginalName();
-                    $path = $file->store('ticket_requirements/' . $ticket->id, 'public');
+                    $path = \App\Support\TicketDocuments::store($file, 'ticket_requirements/' . $ticket->id);
 
                     // Create ticket file record
                     $ticket->files()->create([
@@ -218,7 +218,7 @@ class TicketController extends Controller
 
         $file = $request->file('requirement_file');
         $filename = time() . '_' . $file->getClientOriginalName();
-        $path = $file->store('ticket_requirements/' . $ticket->id, 'public');
+        $path = \App\Support\TicketDocuments::store($file, 'ticket_requirements/' . $ticket->id);
 
         // Create new ticket file record
         $ticket->files()->create([
@@ -250,7 +250,7 @@ class TicketController extends Controller
         if ($request->hasFile('output_file')) {
             $file = $request->file('output_file');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->store('ticket_outputs/' . $ticket->id, 'public');
+            $path = \App\Support\TicketDocuments::store($file, 'ticket_outputs/' . $ticket->id);
             $outputData['file_path'] = $path;
         }
 
@@ -296,7 +296,7 @@ class TicketController extends Controller
         if ($request->hasFile('output_file')) {
             $file = $request->file('output_file');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->store('ticket_outputs/' . $ticket->id, 'public');
+            $path = \App\Support\TicketDocuments::store($file, 'ticket_outputs/' . $ticket->id);
             $outputData['file_path'] = $path;
         }
 
@@ -412,7 +412,7 @@ class TicketController extends Controller
 
         // Upload file
         $file = $request->file('output_file');
-        $path = $file->store('ticket_outputs/' . $ticket->id, 'public');
+        $path = \App\Support\TicketDocuments::store($file, 'ticket_outputs/' . $ticket->id);
 
         // Create output record
         $ticket->outputs()->create([
