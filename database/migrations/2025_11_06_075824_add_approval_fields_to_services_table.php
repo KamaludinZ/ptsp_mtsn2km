@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('services', function (Blueprint $table) {
-            $table->boolean('approval_required')->default(true)->after('complaint_handling');
-            $table->json('approval_roles')->nullable()->after('approval_required'); // Roles that can approve
-            $table->json('approval_users')->nullable()->after('approval_roles'); // Specific users that can approve
+            $table->boolean('approval_required')->default(true);
+            $table->json('approval_roles')->nullable(); // Roles that can approve
+            $table->json('approval_users')->nullable(); // Specific users that can approve
         });
     }
 

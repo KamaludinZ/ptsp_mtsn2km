@@ -834,3 +834,7 @@ footer a:hover:not(.hover\:text-orange-500) {
 .alert > .btn-close {
     float: right;
 }
+
+/* Service catalog: card titles link to the service standard page */
+.stretched-link-title { text-decoration: none; }
+.stretched-link-title:hover, .stretched-link-title:focus-visible { text-decoration: underline; color: #fff; }

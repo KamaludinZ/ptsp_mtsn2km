@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tickets', function (Blueprint $table) {
-            $table->boolean('approval_required')->default(true)->after('whatsapp_number');
-            $table->boolean('is_approved')->default(false)->after('approval_required');
-            $table->unsignedBigInteger('approved_by')->nullable()->after('is_approved');
-            $table->timestamp('approved_at')->nullable()->after('approved_by');
-            $table->text('approval_notes')->nullable()->after('approved_at');
+            $table->boolean('approval_required')->default(true);
+            $table->boolean('is_approved')->default(false);
+            $table->unsignedBigInteger('approved_by')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->text('approval_notes')->nullable();
             
             // Add foreign key for approved_by
             $table->foreign('approved_by')->references('id')->on('users')->onDelete('set null');

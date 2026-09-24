@@ -23,7 +23,7 @@ class TicketPolicy
     {
         // The applicant, and staff who handle tickets.
         return $user->id === $ticket->user_id
-            || $user->hasAnyRole(['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor', 'petugas_tu', 'petugas_loket', 'back_office', 'front_desk'])
+            || $user->hasAnyRole(User::STAFF_ROLES)
             || $user->can('backoffice.access')
             || $user->can('frontdesk.access');
     }

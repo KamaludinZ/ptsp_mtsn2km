@@ -62,7 +62,7 @@
             @endif
 
             <!-- FRONT DESK MENU (Petugas Loket) -->
-            @if($user->hasRole('petugas-loket'))
+            @if($user->hasAnyRole(['admin', 'front_desk']))
                 <div class="sidebar-divider">
                     <span>LOKET</span>
                 </div>
@@ -84,7 +84,7 @@
             @endif
 
             <!-- BACK OFFICE MENU (Petugas TU) -->
-            @if($user->hasRole('tu'))
+            @if($user->hasAnyRole(['admin', 'back_office', 'kepala_tu']))
                 <div class="sidebar-divider">
                     <span>BACK OFFICE</span>
                 </div>
@@ -106,7 +106,7 @@
             @endif
 
             <!-- APPROVAL MENU (Kepala Sekolah, Waka, Kepala TU) -->
-            @if($user->hasAnyRole(['kepala-sekolah', 'waka-kesiswaan', 'waka-kurikulum', 'waka-sarpras', 'waka-humas', 'kepala-tu']))
+            @if($user->hasAnyRole(\App\Models\User::LEADERSHIP_ROLES))
                 <div class="sidebar-divider">
                     <span>PERSETUJUAN</span>
                 </div>
@@ -123,8 +123,7 @@
             @endif
 
             <!-- PUBLIC USER MENU (Guru, Pegawai, Siswa, Wali Murid, Alumni, Instansi, Umum) -->
-            @if($user->hasRole(['guru', 'pegawai', 'siswa', 'walimurid', 'alumni', 'instansi', 'umum']) ||
-                !$user->hasAnyRole(['admin', 'petugas-loket', 'tu', 'kepala-sekolah', 'waka-kesiswaan', 'waka-kurikulum', 'waka-sarpras', 'waka-humas', 'kepala-tu']))
+            @if(! $user->isStaff())
                 <div class="sidebar-divider">
                     <span>LAYANAN</span>
                 </div>
@@ -170,7 +169,7 @@
                 <span>Survei Kepuasan</span>
             </a>
 
-            @if($user->hasRole(['admin', 'kepala-sekolah', 'kepala-tu']))
+            @if($user->hasAnyRole(['admin', 'kepala_sekolah', 'kepala_tu']))
                 <div class="sidebar-divider">
                     <span>LAPORAN</span>
                 </div>

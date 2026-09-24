@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
         // only; never publish them on the live site.
         if (!app()->isProduction()) {
             $this->call([
+                RegistrationCodeSeeder::class, // well-known demo codes
                 TicketSeeder::class,
                 VisitorSeeder::class,
                 ComplaintSeeder::class,

@@ -4,15 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Complaint;
 use App\Models\Survey;
-use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
-use App\Models\SurveyAnswer;
 use App\Models\Ticket;
-use App\Mail\SurveyThankYouMail;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class SupervisionController extends Controller
@@ -214,155 +209,6 @@ class SupervisionController extends Controller
         // whose questions are managed from the admin survey menu. Keep this
         // URL working for old links and e-mails.
         return redirect()->route('survey.form');
-    }
-
-    /**
-     * Validate ticket code (AJAX)
-     */
-    public function validateTicketCode(Request $request)
-    {
-        $ticketCode = $request->input('ticket_code');
-
-        // Check if ticket exists
-        $ticket = Ticket::where('ticket_number', $ticketCode)->first();
-
-        if (!$ticket) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Kode tiket tidak ditemukan. Pastikan Anda memasukkan kode tiket yang benar.'
-            ]);
-        }
-
-        // Check if ticket is completed
-        if ($ticket->status !== Ticket::STATUS_COMPLETED) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Tiket belum selesai. Survei hanya dapat diisi untuk tiket yang sudah selesai.'
-            ]);
-        }
-
-        // Check if survey has already been filled for this ticket
-        $existingResponse = SurveyResponse::where('ticket_code', $ticketCode)->first();
-
-        if ($existingResponse) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Survei untuk tiket ini sudah pernah diisi. Setiap tiket hanya dapat mengisi survei satu kali.'
-            ]);
-        }
-
-        return response()->json([
-            'valid' => true,
-            'message' => 'Kode tiket valid. Anda dapat melanjutkan mengisi survei.',
-            'data' => [
-                'email' => $ticket->email,
-                'service_type' => $ticket->service_id ? $ticket->service->service_slug : null,
-                'service_name' => $ticket->service_id ? $ticket->service->name : null,
-            ]
-        ]);
-    }
-
-    /**
-     * Submit SKM Survey
-     */
-    public function submitSkmSurvey(Request $request)
-    {
-        // Validate basic respondent data
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'age' => 'required|string|max:255',
-            'gender' => 'required|in:male,female',
-            'education' => 'required|string|max:255',
-            'occupation' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'ticket_code' => 'required|string|exists:tickets,ticket_number',
-            'email' => 'required|email|max:255',
-            'service_type' => 'required|string|max:255',
-            // SKM answers validation
-            'skm_answers' => 'required|array',
-            'skm_answers.*' => 'required|integer|between:1,4',
-            // SPAK answers validation
-            'spak_answers' => 'required|array',
-            'spak_answers.*' => 'required|string',
-            'spak_suggestions' => 'nullable|string|max:1000',
-        ]);
-
-        // Validate ticket code hasn't been used for survey
-        $existingResponse = SurveyResponse::where('ticket_code', $validated['ticket_code'])->first();
-        if ($existingResponse) {
-            return redirect()->back()
-                ->withErrors(['ticket_code' => 'Kode tiket ini sudah pernah digunakan untuk mengisi survei.'])
-                ->withInput();
-        }
-
-        // Get the active survey edition
-        $activeEdition = \App\Models\SurveyEdition::where('is_active', true)->first();
-
-        // Create survey response for SKM
-        $surveyResponse = SurveyResponse::create([
-            'survey_id' => null, // This is not used anymore
-            'survey_edition_id' => $activeEdition ? $activeEdition->id : null,
-            'ticket_code' => $validated['ticket_code'],
-            'respondent_email' => $validated['email'],
-            'respondent_name' => $validated['name'],
-            'respondent_age' => $validated['age'],
-            'respondent_gender' => $validated['gender'],
-            'respondent_education' => $validated['education'],
-            'respondent_occupation' => $validated['occupation'],
-            'respondent_phone' => $validated['phone'] ?? null,
-            'ip_address' => $request->ip(),
-            'completed_at' => now(),
-        ]);
-
-        // Save SKM answers
-        foreach ($validated['skm_answers'] as $questionIndex => $answerValue) {
-            SurveyAnswer::create([
-                'survey_response_id' => $surveyResponse->id,
-                'survey_question_id' => null,
-                'rating_value' => $answerValue,
-                'answer_text' => "SKM Question {$questionIndex}: {$answerValue}",
-            ]);
-        }
-
-        // Save SPAK answers
-        foreach ($validated['spak_answers'] as $questionIndex => $answerValue) {
-            SurveyAnswer::create([
-                'survey_response_id' => $surveyResponse->id,
-                'survey_question_id' => null,
-                'rating_value' => null,
-                'answer_text' => "SPAK Question {$questionIndex}: {$answerValue}",
-            ]);
-        }
-
-        // Save SPAK suggestions if provided
-        if (!empty($validated['spak_suggestions'])) {
-            SurveyAnswer::create([
-                'survey_response_id' => $surveyResponse->id,
-                'survey_question_id' => null,
-                'rating_value' => null,
-                'answer_text' => 'SPAK Suggestions: ' . $validated['spak_suggestions'],
-            ]);
-        }
-
-        // Send thank you email
-        try {
-            Mail::to($validated['email'])->send(new SurveyThankYouMail($surveyResponse, $validated['name']));
-        } catch (\Exception $e) {
-            // Log error but don't fail the submission
-            \Log::error('Failed to send survey thank you email: ' . $e->getMessage());
-        }
-
-        return redirect()->back()->with('success', 'Terima kasih atas partisipasi Anda dalam survei ini. Email ucapan terima kasih telah dikirim ke ' . $validated['email']);
-    }
-
-    /**
-     * Survey success page
-     */
-    public function surveySuccess()
-    {
-        // Deprecated route kept only for backward-compatible links;
-        // the current survey flow's success page lives under survey.success.
-        return redirect()->route('survey.success');
     }
 
     /**

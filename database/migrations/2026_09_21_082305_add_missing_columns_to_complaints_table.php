@@ -12,21 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('complaints', function (Blueprint $table) {
-            $table->string('subject')->nullable()->after('title');
-            $table->string('category')->nullable()->after('subject');
-            $table->string('reporter_name')->nullable()->after('complainant_name');
-            $table->string('reporter_email')->nullable()->after('complainant_email');
-            $table->string('reporter_phone')->nullable()->after('complainant_contact');
-            $table->unsignedBigInteger('service_id')->nullable()->after('user_id');
-            $table->unsignedBigInteger('assigned_to_id')->nullable()->after('assigned_to');
-            $table->text('response')->nullable()->after('resolution_notes');
-            $table->boolean('is_whistleblowing')->default(false)->after('anonymous');
-            $table->string('related_ticket_number')->nullable()->after('complaint_number');
-            $table->date('incident_date')->nullable()->after('is_whistleblowing');
-            $table->string('incident_location')->nullable()->after('incident_date');
-            $table->text('involved_parties')->nullable()->after('incident_location');
-            $table->boolean('is_confidential')->default(false)->after('involved_parties');
-            $table->text('evidence_files')->nullable()->after('is_confidential');
+            $table->string('subject')->nullable();
+            $table->string('category')->nullable();
+            $table->string('reporter_name')->nullable();
+            $table->string('reporter_email')->nullable();
+            $table->string('reporter_phone')->nullable();
+            $table->unsignedBigInteger('service_id')->nullable();
+            $table->unsignedBigInteger('assigned_to_id')->nullable();
+            $table->text('response')->nullable();
+            $table->boolean('is_whistleblowing')->default(false);
+            $table->string('related_ticket_number')->nullable();
+            $table->date('incident_date')->nullable();
+            $table->string('incident_location')->nullable();
+            $table->text('involved_parties')->nullable();
+            $table->boolean('is_confidential')->default(false);
+            $table->text('evidence_files')->nullable();
 
             $table->foreign('service_id')->references('id')->on('services')->nullOnDelete();
             $table->foreign('assigned_to_id')->references('id')->on('users')->nullOnDelete();

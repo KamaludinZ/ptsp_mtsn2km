@@ -97,11 +97,8 @@ Route::get('/api/check-ticket/{ticketNumber}', function($ticketNumber) {
     ]);
 })->middleware('throttle:30,1')->name('api.check.ticket');
 
-// Old survey routes (deprecated, keeping for backward compatibility)
+// Old survey URL: redirects to the 3-step survey
 Route::get('/skm-survey', [SupervisionController::class, 'skmSurveyForm'])->name('supervision.skm.survey');
-Route::post('/skm-survey', [SupervisionController::class, 'submitSkmSurvey'])->name('supervision.skm.submit');
-Route::post('/skm-survey/validate-ticket', [SupervisionController::class, 'validateTicketCode'])->name('supervision.skm.validate-ticket');
-Route::get('/survey/success-old', [SupervisionController::class, 'surveySuccess'])->name('supervision.survey.success');
 
 // Public Routes
 Route::get('/', [PublicController::class, 'home'])->name('home');

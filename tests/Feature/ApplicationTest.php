@@ -75,6 +75,14 @@ class ApplicationTest extends TestCase
             ->assertSee($public->name)
             ->assertDontSee($studentOnly->name);
 
+        $category = \App\Models\ServiceCategory::create(['name' => 'Akademik', 'is_active' => true]);
+        $public->categories()->attach($category);
+
+        $this->get("/services/{$public->slug}")
+            ->assertOk()
+            ->assertSee($public->name);
+        $this->get("/services/{$studentOnly->slug}")->assertNotFound();
+
         $student = User::factory()->create(['user_type' => 'siswa']);
 
         $this->actingAs($student)->get('/services')

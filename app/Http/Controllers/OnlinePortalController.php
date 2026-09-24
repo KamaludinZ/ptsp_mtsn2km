@@ -44,18 +44,11 @@ class OnlinePortalController extends Controller
         $userType = $user ? $user->user_type : 'umum';
 
         $service = Service::where('slug', $slug)
-            ->with(['category', 'requirements', 'components', 'workflow'])
+            ->with(['categories', 'components'])
             ->availableFor($userType)
             ->firstOrFail();
 
-        // Get related services
-        $relatedServices = Service::where('category_id', $service->category_id)
-            ->where('id', '!=', $service->id)
-            ->availableFor($userType)
-            ->limit(4)
-            ->get();
-
-        return view('onlineportal.service-detail', compact('service', 'relatedServices', 'user'));
+        return view('onlineportal.service-detail', compact('service', 'user'));
     }
 
     /**

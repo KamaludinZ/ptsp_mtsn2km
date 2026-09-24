@@ -27,6 +27,22 @@
         <div class="card bg-base-100 shadow-xl" data-aos="fade-right">
             <div class="card-body">
                 <h2 class="card-title">Kirim Pesan</h2>
+                @if (session('success'))
+                    <div class="alert alert-success mb-4" role="status">{{ session('success') }}</div>
+                @endif
+                @if (session('error'))
+                    <div class="alert alert-danger mb-4" role="alert">{{ session('error') }}</div>
+                @endif
+                @if ($errors->any())
+                    <div class="alert alert-danger mb-4" role="alert">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form action="{{ route('public.contact.store') }}" method="POST">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -34,25 +50,25 @@
                             <label class="label">
                                 <span class="label-text">Nama Lengkap *</span>
                             </label>
-                            <input type="text" name="name" class="input input-bordered w-full" required>
+                            <input type="text" name="name" value="{{ old('name') }}" class="input input-bordered w-full" required>
                         </div>
                         <div>
                             <label class="label">
                                 <span class="label-text">Email *</span>
                             </label>
-                            <input type="email" name="email" class="input input-bordered w-full" required>
+                            <input type="email" name="email" value="{{ old('email') }}" class="input input-bordered w-full" required>
                         </div>
                         <div class="col-span-1 md:col-span-2">
                             <label class="label">
                                 <span class="label-text">Subjek *</span>
                             </label>
-                            <input type="text" name="subject" class="input input-bordered w-full" required>
+                            <input type="text" name="subject" value="{{ old('subject') }}" class="input input-bordered w-full" required>
                         </div>
                         <div class="col-span-1 md:col-span-2">
                             <label class="label">
                                 <span class="label-text">Pesan *</span>
                             </label>
-                            <textarea name="message" class="textarea textarea-bordered w-full" rows="5" required></textarea>
+                            <textarea name="message" class="textarea textarea-bordered w-full" rows="5" required>{{ old('message') }}</textarea>
                         </div>
                         <div class="col-span-1 md:col-span-2">
                             <button type="submit" class="btn btn-primary">Kirim Pesan</button>

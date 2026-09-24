@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pengumumen', function (Blueprint $table) {
-            $table->unsignedInteger('view_count')->default(0)->after('url');
+            $table->unsignedInteger('view_count')->default(0);
         });
     }
 

@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('survey_questions', function (Blueprint $table) {
-            $table->string('survey_type')->default('identity')->after('is_active'); // identity, skm, spak
-            $table->string('category')->nullable()->after('survey_type'); // untuk kategori unsur
-            $table->integer('unsur_id')->nullable()->after('category'); // untuk mengelompokkan ke unsur
+            $table->string('survey_type')->default('identity'); // identity, skm, spak
+            $table->string('category')->nullable(); // untuk kategori unsur
+            $table->integer('unsur_id')->nullable(); // untuk mengelompokkan ke unsur
         });
     }
 

@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tickets', function (Blueprint $table) {
-            $table->string('email')->nullable()->after('updated_by');
-            $table->string('whatsapp_number')->nullable()->after('email');
+            $table->string('email')->nullable();
+            $table->string('whatsapp_number')->nullable();
         });
     }
 

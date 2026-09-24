@@ -24,7 +24,7 @@ return new class extends Migration
             $table->timestamps();
         });
         
-        // Add foreign key constraint separately to work with SQLite
+        // Foreign key to the author
         Schema::table('pengumumen', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });

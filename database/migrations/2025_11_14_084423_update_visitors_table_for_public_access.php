@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('visitors', function (Blueprint $table) {
             // Add phone and notes columns
-            $table->string('phone', 20)->nullable()->after('name');
-            $table->text('notes')->nullable()->after('purpose');
+            $table->string('phone', 20)->nullable();
+            $table->text('notes')->nullable();
 
             // Make person_to_meet nullable for public submissions
             $table->string('person_to_meet')->nullable()->change();

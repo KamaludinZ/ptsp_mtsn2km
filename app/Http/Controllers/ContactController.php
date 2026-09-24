@@ -2,23 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ContactFormMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\ContactFormMail;
 
 class ContactController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email',
-            'subject' => 'required',
-            'message' => 'required',
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string|max:5000',
         ]);
 
-        Mail::to(config('mail.from.address'))->send(new ContactFormMail($request->all()));
+        try {
+            Mail::to(config('mail.from.address'))->send(new ContactFormMail($data));
+        } catch (\Throwable $e) {
+            report($e);
 
-        return redirect()->back()->with('success', 'Pesan Anda telah berhasil dikirim!');
+            return back()->withInput()
+                ->with('error', 'Maaf, pesan belum dapat dikirim. Silakan hubungi kami melalui WhatsApp.');
+        }
+
+        return back()->with('success', 'Pesan Anda telah berhasil dikirim!');
     }
 }

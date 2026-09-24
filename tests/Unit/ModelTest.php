@@ -106,4 +106,17 @@ class ModelTest extends TestCase
         $this->assertSame('B**i S*****o', $visitor->publicName());
         $this->assertSame('*********890', $visitor->maskedPhone());
     }
+
+    public function test_faq_answer_is_sanitized_for_public_display(): void
+    {
+        $faq = new \App\Models\Faq();
+        $faq->answer = '<p onclick="x()">Buka <strong>07.00</strong></p><script>alert(1)</script><a href="javascript:alert(1)">klik</a>';
+
+        $html = $faq->safeAnswer();
+
+        $this->assertStringContainsString('<strong>07.00</strong>', $html);
+        $this->assertStringNotContainsString('<script', $html);
+        $this->assertStringNotContainsString('onclick', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
+    }
 }

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('services', function (Blueprint $table) {
-            $table->enum('mode', ['online', 'offline', 'hybrid'])->default('hybrid')->after('description');
+            $table->enum('mode', ['online', 'offline', 'hybrid'])->default('hybrid');
         });
     }
 

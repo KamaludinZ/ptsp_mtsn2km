@@ -123,8 +123,9 @@ class FrontDeskController extends Controller
         $user = Auth::user();
         $userType = 'umum'; // Walk-in treated as general public
 
-        $services = Service::whereJsonContains('user_types_allowed', $userType)
-            ->with(['category', 'requirements'])
+        $services = Service::where('is_active', true)
+            ->availableFor($userType)
+            ->with(['categories', 'requirements'])
             ->orderBy('name')
             ->get();
 
