@@ -5,7 +5,6 @@ namespace App\Filament\Widgets;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use App\Models\Complaint;
-use App\Models\Whistleblowing;
 use Illuminate\Support\Facades\Cache;
 
 class ComplaintWhistleblowingStats extends BaseWidget
@@ -18,41 +17,37 @@ class ComplaintWhistleblowingStats extends BaseWidget
     {
         return Cache::remember('admin_dashboard_complaint_whistleblowing_stats', 120, function () {
             try {
-                $totalComplaints = Complaint::count();
-                $pendingComplaints = Complaint::where('status', 'pending')
-                    ->orWhere('status', 'investigating')
+                // Whistleblowing reports live in the complaints table
+                // (complaint_type = whistleblowing); statuses are
+                // submitted -> in_review/in_progress -> resolved/closed.
+                $count = fn (array $types, array $statuses) => Complaint::whereIn('complaint_type', $types)
+                    ->whereIn('status', $statuses)
                     ->count();
-                $resolvedComplaints = Complaint::where('status', 'resolved')->count();
-                
-                $totalWhistleblowing = Whistleblowing::count();
-                $pendingWhistleblowing = Whistleblowing::where('status', 'pending')
-                    ->orWhere('status', 'investigating')
-                    ->count();
-                $resolvedWhistleblowing = Whistleblowing::where('status', 'resolved')->count();
 
-                // Removed: Total Pengaduan, Pengaduan Pending, WBS Pending (already in DashboardOverview)
+                $dumas = ['complaint', 'suggestion'];
+
                 return [
-                    Stat::make('Pengaduan Selesai', $resolvedComplaints)
-                        ->description('Pengaduan Ditangani')
+                    Stat::make('Pengaduan Diproses', $count($dumas, ['in_review', 'in_progress']))
+                        ->description('Sedang ditindaklanjuti')
+                        ->descriptionIcon('heroicon-m-arrow-path')
+                        ->color('warning'),
+
+                    Stat::make('Pengaduan Selesai', $count($dumas, ['resolved', 'closed']))
+                        ->description('Pengaduan ditangani')
                         ->descriptionIcon('heroicon-m-check-circle')
                         ->color('success'),
 
-                    Stat::make('Pengaduan Ditolak', Complaint::where('status', 'rejected')->count())
-                        ->description('Pengaduan Ditolak')
-                        ->descriptionIcon('heroicon-m-x-circle')
-                        ->color('danger'),
+                    Stat::make('WBS Diproses', $count(['whistleblowing'], ['in_review', 'in_progress']))
+                        ->description('Sedang diinvestigasi')
+                        ->descriptionIcon('heroicon-m-arrow-path')
+                        ->color('warning'),
 
-                    Stat::make('WBS Selesai', $resolvedWhistleblowing)
-                        ->description('WBS Ditangani')
+                    Stat::make('WBS Selesai', $count(['whistleblowing'], ['resolved', 'closed']))
+                        ->description('Laporan ditangani')
                         ->descriptionIcon('heroicon-m-check-circle')
-                        ->color('emerald'),
-
-                    Stat::make('WBS Ditolak', Whistleblowing::where('status', 'rejected')->count())
-                        ->description('WBS Ditolak')
-                        ->descriptionIcon('heroicon-m-x-circle')
-                        ->color('orange'),
+                        ->color('success'),
                 ];
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 report($e);
                 return [
                     Stat::make('Error', 'Database Error')

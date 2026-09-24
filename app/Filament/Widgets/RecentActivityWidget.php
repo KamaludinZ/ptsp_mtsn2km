@@ -30,6 +30,7 @@ class RecentActivityWidget extends Widget
                     'user' => $ticket->user?->name ?? 'N/A',
                     'service' => $ticket->service?->name ?? 'N/A',
                     'date' => $ticket->updated_at->diffForHumans(),
+                    'timestamp' => $ticket->updated_at->getTimestamp(),
                     'color' => $this->getStatusColor($ticket->status),
                     'url' => route('filament.admin.resources.tickets.edit', ['record' => $ticket]),
                 ];
@@ -41,11 +42,12 @@ class RecentActivityWidget extends Widget
             ->map(function ($complaint) {
                 return [
                     'type' => 'complaint',
-                    'title' => 'Pengaduan: ' . $complaint->subject,
+                    'title' => 'Pengaduan: ' . ($complaint->subject ?? $complaint->title),
                     'description' => 'Status: ' . $this->getComplaintStatusText($complaint->status),
-                    'user' => $complaint->applicant_name,
+                    'user' => $complaint->reporter_name ?? $complaint->complainant_name ?? 'Anonim',
                     'service' => 'Pengaduan',
                     'date' => $complaint->updated_at->diffForHumans(),
+                    'timestamp' => $complaint->updated_at->getTimestamp(),
                     'color' => $this->getComplaintStatusColor($complaint->status),
                     'url' => route('filament.admin.resources.complaints.edit', ['record' => $complaint]),
                 ];
@@ -62,6 +64,7 @@ class RecentActivityWidget extends Widget
                     'user' => $user->name,
                     'service' => 'Akun Pengguna',
                     'date' => $user->updated_at->diffForHumans(),
+                    'timestamp' => $user->updated_at->getTimestamp(),
                     'color' => 'success',
                     'url' => route('filament.admin.resources.users.edit', ['record' => $user]),
                 ];
@@ -71,9 +74,7 @@ class RecentActivityWidget extends Widget
 
         // Sort by date and return the most recent 8
         return $allActivities
-            ->sortByDesc(function ($activity) {
-                return Carbon::parse($activity['date']);
-            })
+            ->sortByDesc('timestamp')
             ->take(8)
             ->toArray();
     }

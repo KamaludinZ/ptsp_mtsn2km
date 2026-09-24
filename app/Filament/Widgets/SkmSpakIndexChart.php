@@ -12,14 +12,9 @@ class SkmSpakIndexChart extends ChartWidget
 {
     protected static ?int $sort = 8;
 
-    protected static ?string $heading = null;
+    protected static ?string $heading = 'Indeks SKM & SPAK Triwulan Ini';
 
     protected static ?string $pollingInterval = null;
-
-    public function mount(): void
-    {
-        $this->heading = 'Indeks SKM & SPAK Triwulan Ini';
-    }
 
     protected function getData(): array
     {
