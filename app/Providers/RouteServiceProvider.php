@@ -28,6 +28,12 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Public forms (complaints, whistleblowing, survey, visitor book,
+        // contact, registration): stop spam and automated submissions.
+        RateLimiter::for('public-forms', function (Request $request) {
+            return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
+        });
+
         // Route registration is handled by bootstrap/app.php's withRouting().
         // Registering routes/web.php and routes/api.php here again (as in
         // Laravel <11) duplicated every route, breaking route/name lookups

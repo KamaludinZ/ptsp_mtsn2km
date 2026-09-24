@@ -27,7 +27,7 @@ use App\Http\Controllers\Admin\UserManagementController as AdminUserManagementCo
 Route::get('/services', [OnlinePortalController::class, 'serviceCatalog'])->name('onlineportal.service.catalog');
 Route::get('/services/{slug}', [OnlinePortalController::class, 'serviceDetail'])->name('onlineportal.service.detail');
 Route::get('/services/{slug}/apply', [OnlinePortalController::class, 'applicationForm'])->name('onlineportal.service.apply');
-Route::post('/services/{slug}/apply', [OnlinePortalController::class, 'submitApplication'])->name('onlineportal.service.submit');
+Route::post('/services/{slug}/apply', [OnlinePortalController::class, 'submitApplication'])->middleware('throttle:public-forms')->name('onlineportal.service.submit');
 Route::get('/application/success/{ticketNumber}', [OnlinePortalController::class, 'applicationSuccess'])->name('onlineportal.application.success');
 Route::get('/tracking', [OnlinePortalController::class, 'trackTicketForm'])->name('onlineportal.track.ticket.form');
 Route::post('/tracking', [OnlinePortalController::class, 'trackTicket'])->middleware('throttle:30,1')->name('onlineportal.track.ticket.result');
@@ -43,23 +43,23 @@ Route::middleware(['auth', 'check.email.verification'])->prefix('portal')->name(
 // Supervision Routes
 Route::get('/complaints', [SupervisionController::class, 'complaints'])->name('supervision.complaints.dashboard');
 Route::get('/complaints/submit', [SupervisionController::class, 'submitComplaintForm'])->name('supervision.complaint.submit');
-Route::post('/complaints/submit', [SupervisionController::class, 'submitComplaint'])->name('supervision.complaint.submit.store');
+Route::post('/complaints/submit', [SupervisionController::class, 'submitComplaint'])->middleware('throttle:public-forms')->name('supervision.complaint.submit.store');
 Route::get('/complaints/success/{complaintNumber}', [SupervisionController::class, 'complaintSuccess'])->name('supervision.complaint.success');
 Route::get('/complaints/track', [SupervisionController::class, 'showTrackForm'])->name('supervision.complaint.track.form');
 Route::post('/complaints/track', [SupervisionController::class, 'trackComplaint'])->middleware('throttle:30,1')->name('supervision.complaint.track');
 
 Route::get('/whistleblowing', [SupervisionController::class, 'whistleblowingForm'])->name('supervision.whistleblowing.form');
-Route::post('/whistleblowing', [SupervisionController::class, 'submitWhistleblowing'])->name('supervision.whistleblowing.submit');
+Route::post('/whistleblowing', [SupervisionController::class, 'submitWhistleblowing'])->middleware('throttle:public-forms')->name('supervision.whistleblowing.submit');
 Route::get('/whistleblowing/success/{complaintNumber}', [SupervisionController::class, 'whistleblowingSuccess'])->name('supervision.whistleblowing.success');
 
 // New Survey System Routes (Multi-step: Identity, SKM, SPAK)
 Route::prefix('survey')->name('survey.')->group(function () {
     Route::get('/', [SurveyController::class, 'showForm'])->name('form');
-    Route::post('/step1', [SurveyController::class, 'storeStep1'])->name('step1.store');
+    Route::post('/step1', [SurveyController::class, 'storeStep1'])->middleware('throttle:public-forms')->name('step1.store');
     Route::get('/step2', [SurveyController::class, 'showStep2'])->name('step2');
-    Route::post('/step2', [SurveyController::class, 'storeStep2'])->name('step2.store');
+    Route::post('/step2', [SurveyController::class, 'storeStep2'])->middleware('throttle:public-forms')->name('step2.store');
     Route::get('/step3', [SurveyController::class, 'showStep3'])->name('step3');
-    Route::post('/step3', [SurveyController::class, 'storeStep3'])->name('step3.store');
+    Route::post('/step3', [SurveyController::class, 'storeStep3'])->middleware('throttle:public-forms')->name('step3.store');
     Route::get('/success', [SurveyController::class, 'success'])->name('success');
     Route::get('/results', [SurveyController::class, 'results'])->name('results');
 });
@@ -108,11 +108,11 @@ Route::get('/', [PublicController::class, 'home'])->name('home');
 Route::get('/pengumuman', [PengumumanController::class, 'index'])->name('pengumuman.index');
 Route::get('/pengumuman/{pengumuman}', [PengumumanController::class, 'show'])->name('pengumuman.show');
 Route::get('/visitor-book', [PublicController::class, 'visitorBook'])->name('public.visitor.book');
-Route::post('/visitor-book/submit-visitor', [PublicController::class, 'submitVisitor'])->name('public.visitor.submit');
-Route::post('/visitor-book/submit-applicant', [PublicController::class, 'submitApplicant'])->name('public.applicant.submit');
+Route::post('/visitor-book/submit-visitor', [PublicController::class, 'submitVisitor'])->middleware('throttle:public-forms')->name('public.visitor.submit');
+Route::post('/visitor-book/submit-applicant', [PublicController::class, 'submitApplicant'])->middleware('throttle:public-forms')->name('public.applicant.submit');
 Route::get('/about', [PublicController::class, 'about'])->name('public.about');
 Route::get('/contact', [PublicController::class, 'contact'])->name('public.contact');
-Route::post('/contact', [ContactController::class, 'store'])->name('public.contact.store');
+Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:public-forms')->name('public.contact.store');
 
 // Front Desk Authenticated Routes (Requires Email Verification for pemohon role only)
 Route::middleware(['auth', 'check.email.verification'])->group(function () {

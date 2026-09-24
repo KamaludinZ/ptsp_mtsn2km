@@ -19,11 +19,18 @@ class DatabaseSeeder extends Seeder
             SurveySeeder::class,              // Create default survey
             SurveyUnsurSeeder::class,         // Create survey unsurs
             SurveyQuestionSeeder::class,      // Create survey questions
-            TicketSeeder::class,
-            VisitorSeeder::class,
-            ComplaintSeeder::class,
-            PengumumanSeeder::class,
             FaqSeeder::class,
         ]);
+
+        // Fake tickets, visitors, complaints and announcements are demo data
+        // only; never publish them on the live site.
+        if (!app()->isProduction()) {
+            $this->call([
+                TicketSeeder::class,
+                VisitorSeeder::class,
+                ComplaintSeeder::class,
+                PengumumanSeeder::class,
+            ]);
+        }
     }
 }

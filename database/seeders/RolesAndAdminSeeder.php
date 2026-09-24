@@ -54,7 +54,7 @@ class RolesAndAdminSeeder extends Seeder
             ['email' => 'admin@mtsn2kotamalang.sch.id'],
             [
                 'name' => 'Administrator',
-                'password' => Hash::make('password'),
+                'password' => Hash::make(env('ADMIN_PASSWORD') ?: (app()->isProduction() ? \Illuminate\Support\Str::password(20) : 'password')),
                 'user_type' => 'pegawai',
                 'is_active' => true,
                 'email_verified_at' => now(),

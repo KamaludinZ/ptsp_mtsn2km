@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -102,7 +103,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Admin PTSP',
                 'email' => 'ptsp@mtsn2malang.sch.id',
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make($this->adminPassword()),
                 'user_type' => 'pegawai',
                 'registration_code' => 'ADM001',
             ],
@@ -123,6 +124,13 @@ class UserSeeder extends Seeder
                 'supervision.performance.view',
                 'onlineportal.access',
             ]);
+        }
+
+        // In production only roles, permissions and the admin account are
+        // seeded; staff accounts are created from the admin panel, and the
+        // demo accounts below use publicly known passwords.
+        if (app()->isProduction()) {
+            return;
         }
 
         // Create Leadership
@@ -412,5 +420,25 @@ class UserSeeder extends Seeder
                 'onlineportal.tickets.track',
             ]);
         }
+    }
+
+    /**
+     * Admin password: ADMIN_PASSWORD from the environment, a random one in
+     * production (printed once), or the known demo password locally.
+     */
+    private function adminPassword(): string
+    {
+        if ($password = env('ADMIN_PASSWORD')) {
+            return $password;
+        }
+
+        if (!app()->isProduction()) {
+            return 'admin123';
+        }
+
+        $password = Str::password(20);
+        $this->command?->warn("Password admin (ptsp@mtsn2malang.sch.id): {$password}  -- simpan dan segera ganti.");
+
+        return $password;
     }
 }
