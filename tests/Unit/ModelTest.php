@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Service;
@@ -11,6 +12,8 @@ use App\Models\Survey;
 
 class ModelTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_user_model_creation(): void
     {
         $user = User::factory()->make();
