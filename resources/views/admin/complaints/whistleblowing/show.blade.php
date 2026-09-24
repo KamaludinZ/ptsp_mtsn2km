@@ -194,9 +194,6 @@
                         <button class="btn btn-outline-info" onclick="printReport({{ $complaint->id }})">
                             <i class="fas fa-print me-2"></i>Cetak Laporan
                         </button>
-                        <a href="{{ route('complaints.export', $complaint->id) }}" class="btn btn-outline-success">
-                            <i class="fas fa-file-export me-2"></i>Ekspor
-                        </a>
                     </div>
                 </div>
             </div>
@@ -206,8 +203,7 @@
 
 <script>
 function printReport(reportId) {
-    // Implementasi fungsi cetak laporan
-    alert('Fungsi cetak laporan untuk ID: ' + reportId);
+    window.print();
 }
 </script>
 @endsection
