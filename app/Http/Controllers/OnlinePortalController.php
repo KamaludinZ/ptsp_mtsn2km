@@ -205,14 +205,32 @@ class OnlinePortalController extends Controller
             return response()->json(['message' => 'Nomor tiket tidak ditemukan'], 404);
         }
 
-        // Prepare response data
-        $responseData = $ticket->toArray();
-        
-        // Add additional computed fields
-        $responseData['has_output_file'] = $ticket->output && $ticket->output->file_path ? true : false;
-        
-        // Make sure we return the proper structure for the frontend
-        return response()->json($responseData);
+        // Anyone with the ticket number may track it, so only return progress
+        // information — never the applicant's personal data.
+        return response()->json([
+            'ticket_number' => $ticket->ticket_number,
+            'status' => $ticket->status,
+            'submitted_at' => optional($ticket->created_at)->toIso8601String(),
+            'description' => $ticket->notes,
+            'service' => $ticket->service ? [
+                'name' => $ticket->service->name,
+                'mode' => $ticket->mode,
+                'processing_time' => $ticket->service->processing_time,
+            ] : null,
+            'has_output_file' => (bool) optional($ticket->output)->file_path,
+            'logs' => $ticket->logs->sortBy('created_at')->values()->map(fn ($log) => [
+                'action' => $log->action,
+                'notes' => $log->notes,
+                'created_at' => optional($log->created_at)->toIso8601String(),
+            ]),
+            'workflow_steps' => $ticket->workflowSteps->map(fn ($step) => [
+                'name' => optional($step->workflowStep)->name,
+                'pivot' => [
+                    'completed_at' => optional($step->completed_at)->toIso8601String(),
+                    'notes' => $step->notes,
+                ],
+            ]),
+        ]);
     }
 
     /**

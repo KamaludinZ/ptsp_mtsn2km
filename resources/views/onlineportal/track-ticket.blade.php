@@ -166,7 +166,7 @@
                                 <p class="text-indigo-700 dark:text-indigo-300 text-sm mb-4">
                                     Bantu kami meningkatkan kualitas pelayanan dengan memberikan penilaian Anda.
                                 </p>
-                                <a href="{{ route('supervision.skm.survey') }}" 
+                                <a href="{{ route('survey.form') }}" 
                                    class="block w-full text-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg">
                                     <i class="fas fa-poll mr-2"></i> Isi Survei Sekarang
                                 </a>

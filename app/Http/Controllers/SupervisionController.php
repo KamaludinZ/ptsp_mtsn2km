@@ -208,32 +208,10 @@ class SupervisionController extends Controller
      */
     public function skmSurveyForm()
     {
-        $ticketNumber = request('ticket_number');
-        $ticket = null;
-
-        // Verify ticket exists and is completed
-        if ($ticketNumber) {
-            $ticket = Ticket::where('ticket_number', $ticketNumber)
-                ->where('status', 'completed')
-                ->first();
-
-            if (!$ticket) {
-                return redirect()->route('supervision.skm.survey')
-                    ->with('error', 'Nomor tiket tidak valid atau tiket belum selesai.');
-            }
-        }
-
-        // Get the active survey edition
-        $activeEdition = \App\Models\SurveyEdition::where('is_active', true)->first();
-
-        // Try to get active SKM survey, or continue without it
-        $survey = Survey::where('type', 'skm')
-            ->where('is_active', true)
-            ->with('questions')
-            ->first();
-
-        // We don't fail if no survey is found - the view handles this gracefully
-        return view('supervision.skm-survey', compact('survey', 'ticketNumber', 'ticket', 'activeEdition'));
+        // The public survey is the 3-step SKM/SPAK flow (SurveyController),
+        // whose questions are managed from the admin survey menu. Keep this
+        // URL working for old links and e-mails.
+        return redirect()->route('survey.form');
     }
 
     /**

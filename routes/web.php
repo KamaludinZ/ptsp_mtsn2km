@@ -30,7 +30,7 @@ Route::get('/services/{slug}/apply', [OnlinePortalController::class, 'applicatio
 Route::post('/services/{slug}/apply', [OnlinePortalController::class, 'submitApplication'])->name('onlineportal.service.submit');
 Route::get('/application/success/{ticketNumber}', [OnlinePortalController::class, 'applicationSuccess'])->name('onlineportal.application.success');
 Route::get('/tracking', [OnlinePortalController::class, 'trackTicketForm'])->name('onlineportal.track.ticket.form');
-Route::post('/tracking', [OnlinePortalController::class, 'trackTicket'])->name('onlineportal.track.ticket.result');
+Route::post('/tracking', [OnlinePortalController::class, 'trackTicket'])->middleware('throttle:30,1')->name('onlineportal.track.ticket.result');
 
 // Online Portal Authenticated Routes (Requires Email Verification for pemohon role only)
 Route::middleware(['auth', 'check.email.verification'])->prefix('portal')->name('onlineportal.')->group(function () {
@@ -46,7 +46,7 @@ Route::get('/complaints/submit', [SupervisionController::class, 'submitComplaint
 Route::post('/complaints/submit', [SupervisionController::class, 'submitComplaint'])->name('supervision.complaint.submit.store');
 Route::get('/complaints/success/{complaintNumber}', [SupervisionController::class, 'complaintSuccess'])->name('supervision.complaint.success');
 Route::get('/complaints/track', [SupervisionController::class, 'showTrackForm'])->name('supervision.complaint.track.form');
-Route::post('/complaints/track', [SupervisionController::class, 'trackComplaint'])->name('supervision.complaint.track');
+Route::post('/complaints/track', [SupervisionController::class, 'trackComplaint'])->middleware('throttle:30,1')->name('supervision.complaint.track');
 
 Route::get('/whistleblowing', [SupervisionController::class, 'whistleblowingForm'])->name('supervision.whistleblowing.form');
 Route::post('/whistleblowing', [SupervisionController::class, 'submitWhistleblowing'])->name('supervision.whistleblowing.submit');
@@ -78,7 +78,12 @@ Route::get('/api/check-ticket/{ticketNumber}', function($ticketNumber) {
                     'name' => $ticket->service->name,
                 ],
                 'user' => [
-                    'name' => $ticket->user->name,
+                    // Public endpoint: only a masked name, e.g. "Budi S."
+                    'name' => \Illuminate\Support\Str::of(optional($ticket->user)->name ?? '')
+                        ->explode(' ')
+                        ->filter()
+                        ->map(fn ($part, $i) => $i === 0 ? $part : mb_substr($part, 0, 1) . '.')
+                        ->implode(' '),
                 ],
                 'status' => $ticket->status,
             ]
@@ -90,7 +95,7 @@ Route::get('/api/check-ticket/{ticketNumber}', function($ticketNumber) {
         'has_survey_completed' => false,
         'ticket' => null
     ]);
-})->name('api.check.ticket');
+})->middleware('throttle:30,1')->name('api.check.ticket');
 
 // Old survey routes (deprecated, keeping for backward compatibility)
 Route::get('/skm-survey', [SupervisionController::class, 'skmSurveyForm'])->name('supervision.skm.survey');
@@ -146,8 +151,9 @@ Route::middleware(['auth', 'check.email.verification'])->prefix('backoffice')->n
     Route::get('/tickets/{ticket}/download-output', [BackOfficeController::class, 'downloadOutput'])->name('tickets.download-output');
 });
 
-// Supervision Management Routes (Requires Email Verification for pemohon role only)
-Route::middleware(['auth', 'check.email.verification'])->prefix('supervision')->name('supervision.')->group(function () {
+// Supervision Management Routes (staff only; the public complaint/survey
+// routes above share SupervisionController, so the permission is enforced here)
+Route::middleware(['auth', 'check.email.verification', 'permission:supervision.access'])->prefix('supervision')->name('supervision.')->group(function () {
     Route::get('/management', [SupervisionController::class, 'surveyManagement'])->name('management');
     Route::get('/surveys/{surveyId}/results', [SupervisionController::class, 'surveyResults'])->name('survey.results');
     Route::get('/performance', [SupervisionController::class, 'performance'])->name('performance');

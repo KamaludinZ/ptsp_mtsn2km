@@ -819,7 +819,7 @@
                     </div>
 
                     <div class="col-md-4" data-aos="fade-up" data-aos-delay="600">
-                        <a href="{{ route('supervision.skm.survey') }}" class="text-decoration-none">
+                        <a href="{{ route('survey.form') }}" class="text-decoration-none">
                             <div class="feature-card h-100">
                                 <div class="feature-icon mx-auto" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
                                     <i class="fas fa-poll text-white"></i>

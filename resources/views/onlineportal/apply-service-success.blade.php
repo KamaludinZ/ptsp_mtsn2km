@@ -24,7 +24,7 @@
                             </div>
                             <div>
                                 <p class="font-semibold">Channel:</p>
-                                <p>{{ ucfirst($ticket->channel) }}</p>
+                                <p>{{ $ticket->mode === 'offline' ? 'Offline (Loket)' : 'Online' }}</p>
                             </div>
                             <div>
                                 <p class="font-semibold">Submission Date:</p>

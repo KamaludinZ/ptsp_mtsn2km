@@ -61,18 +61,18 @@ class PublicController extends Controller
             'institution_category' => 'nullable|string|max:255',
             'purpose' => 'required|string|max:500',
             'notes' => 'nullable|string|max:1000',
-            'obscure_name' => 'boolean',
+            'obscure_name' => 'nullable',
         ]);
 
         Visitor::create([
             'name' => $validated['name'],
             'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
-            'institution' => $validated['institution'],
+            'institution' => $validated['institution'] ?? null,
             'institution_category' => $validated['institution_category'] ?? null,
             'purpose' => $validated['purpose'],
-            'notes' => $validated['notes'],
-            'is_obscured' => $request->has('obscure_name'),
+            'notes' => $validated['notes'] ?? null,
+            'is_obscured' => $request->boolean('obscure_name'),
             'check_in_time' => Carbon::now(),
             'status' => 'active',
         ]);
@@ -94,18 +94,18 @@ class PublicController extends Controller
             'applicant_type' => 'nullable|string|max:255',
             'target_service' => 'required|string|max:500',
             'notes' => 'nullable|string|max:1000',
-            'obscure_name' => 'boolean',
+            'obscure_name' => 'nullable',
         ]);
 
         Visitor::create([
             'name' => $validated['name'],
             'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
-            'institution' => $validated['institution'],
+            'institution' => $validated['institution'] ?? null,
             'institution_category' => $validated['institution_category'] ?? null,
             'purpose' => 'Pemohon Layanan: ' . $validated['target_service'], // Combine purpose
-            'notes' => $validated['notes'],
-            'is_obscured' => $request->has('obscure_name'),
+            'notes' => $validated['notes'] ?? null,
+            'is_obscured' => $request->boolean('obscure_name'),
             'check_in_time' => Carbon::now(),
             'status' => 'active',
         ]);

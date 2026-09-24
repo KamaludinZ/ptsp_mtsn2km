@@ -39,8 +39,9 @@ class SurveyController extends Controller
             'answers.*.required' => 'Pertanyaan ini wajib diisi',
         ]);
 
-        // Store in session
-        Session::put('survey_step1', $validated['answers']);
+        // Keep only answers to known identity questions
+        $identityIds = SurveyQuestion::where('type', 'identity')->pluck('id')->flip()->all();
+        Session::put('survey_step1', array_intersect_key($validated['answers'], $identityIds));
 
         return redirect()->route('survey.step2');
     }
@@ -74,17 +75,8 @@ class SurveyController extends Controller
             return redirect()->route('survey.form')->with('error', 'Silakan isi data identitas terlebih dahulu');
         }
 
-        // Validate SKM data
-        $validated = $request->validate([
-            'answers' => 'required|array',
-            'answers.*' => 'required',
-        ], [
-            'answers.required' => 'Semua pertanyaan SKM wajib diisi',
-            'answers.*.required' => 'Pertanyaan ini wajib diisi',
-        ]);
-
         // Store in session
-        Session::put('survey_step2', $validated['answers']);
+        Session::put('survey_step2', $this->validateRatingAnswers($request, 'skm', 'Semua pertanyaan SKM wajib diisi'));
 
         return redirect()->route('survey.step3');
     }
@@ -118,18 +110,10 @@ class SurveyController extends Controller
             return redirect()->route('survey.form')->with('error', 'Silakan lengkapi tahap sebelumnya');
         }
 
-        // Validate SPAK data
-        $validated = $request->validate([
-            'answers' => 'required|array',
-            'answers.*' => 'required',
-            'spak_suggestions' => 'nullable|string|max:1000',
-        ], [
-            'answers.required' => 'Semua pertanyaan SPAK wajib diisi',
-            'answers.*.required' => 'Pertanyaan ini wajib diisi',
-        ]);
+        $request->validate(['spak_suggestions' => 'nullable|string|max:1000']);
 
         // Store in session
-        Session::put('survey_step3', $validated['answers']);
+        Session::put('survey_step3', $this->validateRatingAnswers($request, 'spak', 'Semua pertanyaan SPAK wajib diisi'));
         Session::put('spak_suggestions', $request->spak_suggestions ?? null);
 
         // Save all data to database
@@ -176,18 +160,30 @@ class SurveyController extends Controller
             ]);
 
             // Save all answers
-            $allAnswers = [
-                ...Session::get('survey_step1', []),
-                ...Session::get('survey_step2', []),
-                ...Session::get('survey_step3', []),
-            ];
+            // "+" keeps the question-id keys; spreading (...) would renumber them.
+            $allAnswers = Session::get('survey_step1', [])
+                + Session::get('survey_step2', [])
+                + Session::get('survey_step3', []);
+
+            $questions = SurveyQuestion::whereIn('id', array_keys($allAnswers))->get()->keyBy('id');
 
             foreach ($allAnswers as $questionId => $answer) {
+                $question = $questions->get($questionId);
+                if (!$question) {
+                    continue;
+                }
+
+                // Rating questions score 1..n by option position (Permenpan RB 14/2017).
+                $position = in_array($question->type, ['skm', 'spak'], true)
+                    ? array_search($answer, (array) $question->options, true)
+                    : false;
+
                 SurveyAnswer::create([
                     'survey_response_id' => $surveyResponse->id,
                     'survey_question_id' => $questionId,
                     'selected_option' => is_array($answer) ? json_encode($answer) : $answer,
                     'answer_text' => is_string($answer) ? $answer : null,
+                    'rating_value' => $position === false ? null : $position + 1,
                 ]);
             }
 
@@ -207,9 +203,36 @@ class SurveyController extends Controller
             return redirect()->route('survey.success')->with('success', 'Terima kasih! Survey Anda telah berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
+            report($e);
 
-            return back()->with('error', 'Terima kesalahan: ' . $e->getMessage());
+            return back()->with('error', 'Maaf, survei belum dapat disimpan. Silakan coba lagi.');
         }
+    }
+
+    /**
+     * Validate SKM/SPAK answers against the active questions of that type:
+     * only known question ids are kept and each answer must be one of the
+     * question's options.
+     */
+    private function validateRatingAnswers(Request $request, string $type, string $requiredMessage): array
+    {
+        $questions = SurveyQuestion::active()->byType($type)->get();
+
+        $rules = ['answers' => 'required|array'];
+        foreach ($questions as $question) {
+            $rules['answers.' . $question->id] = [
+                $question->is_required ? 'required' : 'nullable',
+                \Illuminate\Validation\Rule::in((array) $question->options),
+            ];
+        }
+
+        $validated = $request->validate($rules, [
+            'answers.required' => $requiredMessage,
+            'answers.*.required' => 'Pertanyaan ini wajib diisi',
+            'answers.*.in' => 'Pilihan jawaban tidak valid',
+        ]);
+
+        return array_intersect_key($validated['answers'], $questions->keyBy('id')->all());
     }
 
     /**
