@@ -111,6 +111,17 @@
         background-color: var(--bs-primary-dark);
     }
 
+    .tracking-button:focus-visible {
+        outline: 3px solid #1d4ed8;
+        outline-offset: -3px;
+    }
+
+    @media (max-width: 575.98px) {
+        .tracking-input-group { flex-direction: column; }
+        .tracking-input { width: 100%; font-size: 1rem; }
+        .tracking-button { padding: 0.875rem 1rem; }
+    }
+
     .tracking-card {
         background-color: var(--bs-bg);
         border-radius: 1rem;
@@ -252,7 +263,9 @@
                                    class="tracking-input" 
                                    id="ticket_number" 
                                    name="ticket_number" 
-                                   placeholder="Contoh: PTSP-202510-00123" 
+                                   placeholder="Contoh: PTSP-202510-0001"
+                                   autocomplete="off"
+                                   inputmode="text" 
                                    required>
                             <button type="submit" class="tracking-button">
                                 <i class="fas fa-search me-2"></i>Lacak

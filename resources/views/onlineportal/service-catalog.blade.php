@@ -427,6 +427,14 @@
                 <i class="fas fa-redo me-1"></i> Reset
             </button>
         </div>
+        @guest
+            <p class="small text-muted mt-3 mb-0">
+                <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
+                Anda melihat layanan untuk masyarakat umum. Siswa, guru, pegawai, wali murid, alumni, dan instansi
+                dapat <a href="{{ route('login') }}">masuk</a> atau <a href="{{ route('register') }}">mendaftar</a>
+                untuk melihat layanan khusus sesuai peran.
+            </p>
+        @endguest
     </div>
 
     <!-- Grid View -->
