@@ -11,13 +11,13 @@
             <p class="text-gray-600">Informasi lengkap user</p>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('suadmin.users.edit', $user) }}" class="btn btn-primary">
+            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
                 Edit User
             </a>
-            <a href="{{ route('suadmin.users.index') }}" class="btn btn-ghost">
+            <a href="{{ route('admin.users.index') }}" class="btn btn-ghost">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
@@ -229,7 +229,7 @@
 <dialog id="resetPasswordModal" class="modal">
     <div class="modal-box">
         <h3 class="font-bold text-lg mb-4">Reset Password User</h3>
-        <form action="{{ route('suadmin.users.reset-password', $user) }}" method="POST">
+        <form action="{{ route('admin.users.reset-password', $user) }}" method="POST">
             @csrf
             <div class="form-control w-full mb-4">
                 <label class="label" for="new_password">
@@ -259,7 +259,7 @@
     <div class="modal-box">
         <h3 class="font-bold text-lg mb-4">Hapus User</h3>
         <p class="mb-4">Apakah Anda yakin ingin menghapus user <strong>{{ $user->name }}</strong>? Tindakan ini tidak dapat dibatalkan.</p>
-        <form action="{{ route('suadmin.users.destroy', $user) }}" method="POST">
+        <form action="{{ route('admin.users.destroy', $user) }}" method="POST">
             @csrf
             @method('DELETE')
             <div class="modal-action">

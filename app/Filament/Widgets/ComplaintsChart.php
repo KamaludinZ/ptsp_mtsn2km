@@ -9,10 +9,10 @@ use Filament\Forms\Components\Select;
 
 class ComplaintsChart extends ChartWidget
 {
-    protected ?string $heading = 'Statistik Pengaduan';
+    protected static ?string $heading = 'Statistik Pengaduan';
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 'full';
-    protected ?string $maxHeight = '300px';
+    protected static ?string $maxHeight = '300px';
     protected static bool $isLazy = true;
 
     public ?string $filter = 'semester'; // Default filter

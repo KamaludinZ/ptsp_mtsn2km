@@ -149,9 +149,9 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]));
 
-            $roleName = $userData['user_type'] === 'pegawai' &&
-                      (strpos($userData['email'], 'kepsek') !== false ? 'kepala_sekolah' :
-                       (strpos($userData['email'], 'katu') !== false ? 'kepala_tu' : 'pegawai'));
+            $roleName = str_contains($userData['email'], 'kepsek')
+                ? 'kepala_sekolah'
+                : (str_contains($userData['email'], 'katu') ? 'kepala_tu' : 'pegawai');
             $role = Role::where('name', $roleName)->first();
             $user->assignRole($role);
             $user->givePermissionTo([

@@ -10,10 +10,10 @@ use Illuminate\Support\Carbon;
 
 class SpakChart extends ChartWidget
 {
-    protected ?string $heading = 'Statistik Indeks Survei Persepsi Anti Korupsi (SPAK)';
+    protected static ?string $heading = 'Statistik Indeks Survei Persepsi Anti Korupsi (SPAK)';
     protected static ?int $sort = 6;
     protected int | string | array $columnSpan = 'full';
-    protected ?string $maxHeight = '300px';
+    protected static ?string $maxHeight = '300px';
     protected static bool $isLazy = true;
 
     public ?string $filter = 'semester'; // Default filter

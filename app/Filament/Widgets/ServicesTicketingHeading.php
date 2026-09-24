@@ -12,8 +12,5 @@ class ServicesTicketingHeading extends Widget
 
     protected static bool $isLazy = false;
 
-    public static function getView(): string
-    {
-        return 'filament.widgets.services-ticketing-heading';
-    }
+    protected static string $view = 'filament.widgets.services-ticketing-heading';
 }

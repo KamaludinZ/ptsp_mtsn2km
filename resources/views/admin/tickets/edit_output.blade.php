@@ -8,14 +8,14 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h3">Edit Dokumen Hasil</h1>
-                <a href="{{ route('suadmin.tickets.show', $ticket) }}" class="btn btn-secondary">
+                <a href="{{ route('admin.tickets.show', $ticket) }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left me-2"></i>Kembali
                 </a>
             </div>
 
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <form action="{{ route('suadmin.tickets.output.update', [$ticket, $output]) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.tickets.output.update', [$ticket, $output]) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -90,7 +90,7 @@
                         </div>
 
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('suadmin.tickets.show', $ticket) }}" class="btn btn-secondary">Batal</a>
+                            <a href="{{ route('admin.tickets.show', $ticket) }}" class="btn btn-secondary">Batal</a>
                             <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                         </div>
                     </form>

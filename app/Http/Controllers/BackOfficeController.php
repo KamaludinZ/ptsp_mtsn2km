@@ -19,7 +19,7 @@ class BackOfficeController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('permission:backoffice-access');
+        $this->middleware('permission:backoffice.access');
     }
 
     /**
@@ -35,10 +35,10 @@ class BackOfficeController extends Controller
 
         $stats = [
             'total_tickets' => $ticketCounts->sum(),
-            'pending_tickets' => $ticketCounts->get('pending', 0),
-            'processing_tickets' => $ticketCounts->get('processing', 0),
+            'pending_tickets' => $ticketCounts->get('submitted', 0),
+            'in_progress_tickets' => $ticketCounts->get('in_process', 0),
             'completed_tickets' => $ticketCounts->get('completed', 0),
-            'my_tickets' => Ticket::where('assigned_to', $user->id)->count(),
+            'my_tickets' => Ticket::where('assigned_to_id', $user->id)->count(),
         ];
 
         // Recent tickets
@@ -60,9 +60,12 @@ class BackOfficeController extends Controller
             ->limit(5)
             ->get();
 
+        $tickets = $recentTickets;
+
         return view('backoffice.dashboard', compact(
             'stats',
             'recentTickets',
+            'tickets',
             'ticketsByStatus',
             'ticketsByService'
         ));
@@ -74,7 +77,7 @@ class BackOfficeController extends Controller
     public function ticketsQueue()
     {
         $tickets = Ticket::with(['user', 'service', 'assignedTo'])
-            ->whereIn('status', ['pending', 'processing'])
+            ->whereIn('status', ['submitted', 'verified', 'in_process'])
             ->orderBy('priority', 'desc')
             ->orderBy('created_at', 'asc')
             ->paginate(20);
@@ -90,7 +93,7 @@ class BackOfficeController extends Controller
         $user = Auth::user();
 
         $tickets = Ticket::with(['user', 'service'])
-            ->where('assigned_to', $user->id)
+            ->where('assigned_to_id', $user->id)
             ->orderBy('priority', 'desc')
             ->orderBy('created_at', 'asc')
             ->paginate(20);
@@ -125,8 +128,7 @@ class BackOfficeController extends Controller
                 $query->orderBy('created_at', 'desc');
             },
             'workflowSteps' => function($query) {
-                $query->withPivot('completed_at', 'notes');
-                $query->orderBy('order');
+                $query->with('workflowStep')->orderBy('id');
             }
         ])
         ->where('ticket_number', $ticketNumber)
@@ -153,16 +155,16 @@ class BackOfficeController extends Controller
         $staff = User::findOrFail($validated['assigned_to']);
 
         $ticket->update([
-            'assigned_to' => $staff->id,
-            'assigned_at' => now(),
-            'status' => 'processing',
+            'assigned_to_id' => $staff->id,
+            'current_handler_id' => $staff->id,
+            'status' => 'in_process',
         ]);
 
         // Log assignment
         TicketLog::create([
             'ticket_id' => $ticket->id,
             'action' => 'assigned',
-            'description' => "Tiket ditugaskan kepada {$staff->name}. " . ($validated['notes'] ?? ''),
+            'notes' => "Tiket ditugaskan kepada {$staff->name}. " . ($validated['notes'] ?? ''),
             'performed_by' => Auth::id(),
         ]);
 
@@ -175,7 +177,7 @@ class BackOfficeController extends Controller
     public function updateStatus(Request $request, Ticket $ticket)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,processing,completed,rejected,cancelled',
+            'status' => 'required|in:submitted,verified,in_process,approved,rejected,completed,cancelled',
             'notes' => 'required|string|max:1000',
         ]);
 
@@ -186,14 +188,16 @@ class BackOfficeController extends Controller
 
         // Handle completed status
         if ($validated['status'] === 'completed') {
-            $ticket->update(['completed_at' => now()]);
+            $ticket->update(['actual_completion_date' => now()]);
         }
 
         // Log status change
         TicketLog::create([
             'ticket_id' => $ticket->id,
             'action' => 'status_changed',
-            'description' => "Status diubah dari {$oldStatus} menjadi {$validated['status']}. {$validated['notes']}",
+            'from_status' => $oldStatus,
+            'to_status' => $validated['status'],
+            'notes' => $validated['notes'],
             'performed_by' => Auth::id(),
         ]);
 
@@ -212,7 +216,7 @@ class BackOfficeController extends Controller
         TicketLog::create([
             'ticket_id' => $ticket->id,
             'action' => 'note_added',
-            'description' => $validated['note'],
+            'notes' => $validated['note'],
             'performed_by' => Auth::id(),
         ]);
 
@@ -225,7 +229,7 @@ class BackOfficeController extends Controller
     public function uploadFile(Request $request, Ticket $ticket)
     {
         $validated = $request->validate([
-            'file' => 'required|file|max:10240',
+            'file' => 'required|file|max:10240|mimes:jpg,jpeg,png,pdf,doc,docx',
             'description' => 'nullable|string|max:255',
         ]);
 
@@ -236,9 +240,7 @@ class BackOfficeController extends Controller
             'ticket_id' => $ticket->id,
             'file_name' => $file->getClientOriginalName(),
             'file_path' => $path,
-            'file_size' => $file->getSize(),
-            'mime_type' => $file->getMimeType(),
-            'description' => $validated['description'] ?? null,
+            'file_type' => $file->getClientOriginalExtension(),
             'uploaded_by' => Auth::id(),
         ]);
 
@@ -246,7 +248,7 @@ class BackOfficeController extends Controller
         TicketLog::create([
             'ticket_id' => $ticket->id,
             'action' => 'file_uploaded',
-            'description' => "File {$file->getClientOriginalName()} diunggah.",
+            'notes' => "File {$file->getClientOriginalName()} diunggah. " . ($validated['description'] ?? ''),
             'performed_by' => Auth::id(),
         ]);
 
@@ -290,19 +292,16 @@ class BackOfficeController extends Controller
 
         $output = TicketOutput::create([
             'ticket_id' => $ticket->id,
-            'file_name' => $file->getClientOriginalName(),
+            'output_type' => $file->getClientOriginalExtension(),
             'file_path' => $path,
-            'file_size' => $file->getSize(),
-            'mime_type' => $file->getMimeType(),
-            'description' => $validated['output_description'] ?? null,
-            'created_by' => Auth::id(),
+            'output_description' => $validated['output_description'] ?? null,
         ]);
 
         // Update ticket status if not completed
         if ($ticket->status !== 'completed') {
             $ticket->update([
                 'status' => 'completed',
-                'completed_at' => now(),
+                'actual_completion_date' => now(),
             ]);
         }
 
@@ -310,7 +309,7 @@ class BackOfficeController extends Controller
         TicketLog::create([
             'ticket_id' => $ticket->id,
             'action' => 'output_uploaded',
-            'description' => "Output {$file->getClientOriginalName()} diunggah.",
+            'notes' => "Output {$file->getClientOriginalName()} diunggah.",
             'performed_by' => Auth::id(),
         ]);
 
@@ -332,7 +331,7 @@ class BackOfficeController extends Controller
             abort(404, 'File tidak ditemukan');
         }
 
-        return response()->download($filePath, $ticket->output->file_name);
+        return response()->download($filePath, basename($ticket->output->file_path));
     }
 
     /**
@@ -346,12 +345,14 @@ class BackOfficeController extends Controller
         ]);
 
         $step = $ticket->workflowSteps()
-            ->wherePivot('workflow_step_id', $validated['step_id'])
+            ->where('workflow_step_id', $validated['step_id'])
+            ->with('workflowStep')
             ->firstOrFail();
 
-        $ticket->workflowSteps()->updateExistingPivot($step->id, [
+        $step->update([
+            'status' => 'completed',
             'completed_at' => now(),
-            'notes' => $validated['notes'],
+            'notes' => $validated['notes'] ?? null,
             'completed_by' => Auth::id(),
         ]);
 
@@ -359,24 +360,22 @@ class BackOfficeController extends Controller
         TicketLog::create([
             'ticket_id' => $ticket->id,
             'action' => 'workflow_step_completed',
-            'description' => "Langkah workflow '{$step->name}' diselesaikan. " . ($validated['notes'] ?? ''),
+            'notes' => "Langkah workflow '{$step->workflowStep->name}' diselesaikan. " . ($validated['notes'] ?? ''),
             'performed_by' => Auth::id(),
         ]);
 
         // Check if all steps are completed
         $totalSteps = $ticket->service->workflow->steps()->count();
-        $completedSteps = $ticket->workflowSteps()->wherePivotNotNull('completed_at')->count();
+        $completedSteps = $ticket->workflowSteps()->whereNotNull('completed_at')->count();
 
         if ($completedSteps === $totalSteps) {
-            $ticket->update([
-                'status' => 'processing',
-                'workflow_completed_at' => now(),
-            ]);
+            $ticket->update(['status' => 'completed', 'actual_completion_date' => now()]);
+            $ticket->ticketWorkflows()->latest()->first()?->update(['completed_at' => now()]);
 
             TicketLog::create([
                 'ticket_id' => $ticket->id,
                 'action' => 'workflow_completed',
-                'description' => 'Seluruh workflow telah diselesaikan.',
+                'notes' => 'Seluruh workflow telah diselesaikan.',
                 'performed_by' => Auth::id(),
             ]);
         }
@@ -459,7 +458,7 @@ class BackOfficeController extends Controller
     {
         $completedTickets = Ticket::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', 'completed')
-            ->whereNotNull('completed_at')
+            ->whereNotNull('actual_completion_date')
             ->get();
 
         if ($completedTickets->isEmpty()) {
@@ -467,7 +466,7 @@ class BackOfficeController extends Controller
         }
 
         $totalMinutes = $completedTickets->sum(function($ticket) {
-            return $ticket->created_at->diffInMinutes($ticket->completed_at);
+            return $ticket->created_at->diffInMinutes($ticket->actual_completion_date);
         });
 
         return round($totalMinutes / $completedTickets->count(), 2);

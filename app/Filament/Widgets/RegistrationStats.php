@@ -11,7 +11,7 @@ class RegistrationStats extends BaseWidget
 {
     protected static ?int $sort = 22;
 
-    protected ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = null;
 
     protected function getStats(): array
     {

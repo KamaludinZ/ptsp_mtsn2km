@@ -10,10 +10,10 @@
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="card-title mb-0">Detail Layanan: {{ $service->name }}</h4>
                     <div>
-                        <a href="{{ route('suadmin.services.edit', $service) }}" class="btn btn-light me-2">
+                        <a href="{{ route('admin.services.edit', $service) }}" class="btn btn-light me-2">
                             <i class="fas fa-edit"></i> Edit
                         </a>
-                        <a href="{{ route('suadmin.services.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('admin.services.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Kembali
                         </a>
                     </div>
@@ -173,10 +173,10 @@
                     </div>
                     
                     <div class="d-flex justify-content-end mt-4">
-                        <a href="{{ route('suadmin.services.edit', $service) }}" class="btn btn-primary me-2">
+                        <a href="{{ route('admin.services.edit', $service) }}" class="btn btn-primary me-2">
                             <i class="fas fa-edit"></i> Edit Layanan
                         </a>
-                        <a href="{{ route('suadmin.services.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('admin.services.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Kembali ke Daftar
                         </a>
                     </div>

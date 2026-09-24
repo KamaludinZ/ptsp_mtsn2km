@@ -15,7 +15,7 @@ use App\Filament\Widgets\RegistrationStats;
 
 class Dashboard extends BaseDashboard
 {
-    protected string $view = 'filament.pages.dashboard';
+    protected static string $view = 'filament.pages.dashboard';
 
     protected function getHeaderWidgets(): array
     {

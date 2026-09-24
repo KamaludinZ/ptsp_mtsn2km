@@ -258,8 +258,11 @@ class ComplaintResource extends Resource
                         'urgent' => 'Darurat',
                     ]),
                 Tables\Filters\Filter::make('created_at')
-                    ->label('Tanggal Dibuat')
-                    ->date(),
+                    ->form([Forms\Components\DatePicker::make('created_at')->label('Tanggal Dibuat')])
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        $data['created_at'],
+                        fn (Builder $query, $date): Builder => $query->whereDate('created_at', $date)
+                    )),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

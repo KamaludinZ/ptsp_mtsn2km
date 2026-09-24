@@ -7,6 +7,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
+                'resources/css/fontawesome.css',
                 'resources/css/bootstrap-custom.css',
                 'resources/css/dark-mode.css',
                 'resources/css/accessibility.css',
@@ -15,6 +16,9 @@ export default defineConfig({
                 'resources/css/visitor-book.css',
                 'resources/css/about.css',
                 'resources/css/contact.css',
+                'resources/css/public-layout.css',
+                'resources/css/loading.css',
+                'resources/css/inline-style-fix.css',
                 'resources/css/admin.css',
                 'resources/css/filament/admin/theme.css',
                 'resources/js/app.js',

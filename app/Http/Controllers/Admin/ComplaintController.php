@@ -76,7 +76,7 @@ class ComplaintController extends Controller
 
         Complaint::create($request->all());
 
-        return redirect()->route('suadmin.complaints.index')->with('success', 'Pengaduan berhasil ditambahkan.');
+        return redirect()->route('admin.complaints.index')->with('success', 'Pengaduan berhasil ditambahkan.');
     }
 
     public function show(Complaint $complaint)
@@ -113,14 +113,14 @@ class ComplaintController extends Controller
 
         $complaint->update($request->all());
 
-        return redirect()->route('suadmin.complaints.index')->with('success', 'Pengaduan berhasil diperbarui.');
+        return redirect()->route('admin.complaints.index')->with('success', 'Pengaduan berhasil diperbarui.');
     }
 
     public function destroy(Complaint $complaint)
     {
         $complaint->delete();
 
-        return redirect()->route('suadmin.complaints.index')->with('success', 'Pengaduan berhasil dihapus.');
+        return redirect()->route('admin.complaints.index')->with('success', 'Pengaduan berhasil dihapus.');
     }
 
     /**
@@ -161,6 +161,24 @@ class ComplaintController extends Controller
     }
 
     /**
+     * Download an evidence file attached to a complaint/whistleblowing report.
+     * Files are stored on the private disk; only authenticated admin staff
+     * (already gated by the route's role:admin middleware) may reach this.
+     */
+    public function downloadEvidence(Complaint $complaint, int $index)
+    {
+        $this->authorize('view', $complaint);
+
+        $files = json_decode($complaint->evidence_files ?? '[]', true) ?? [];
+
+        if (!isset($files[$index])) {
+            abort(404);
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->response($files[$index]);
+    }
+
+    /**
      * Update whistleblowing report status
      */
     public function updateWhistleblowingStatus(Request $request, Complaint $complaint)
@@ -183,6 +201,6 @@ class ComplaintController extends Controller
             'closed_at' => $request->status === 'completed' ? now() : null,
         ]);
 
-        return redirect()->route('suadmin.whistleblowing.index')->with('success', 'Status whistleblowing berhasil diperbarui.');
+        return redirect()->route('admin.whistleblowing.index')->with('success', 'Status whistleblowing berhasil diperbarui.');
     }
 }

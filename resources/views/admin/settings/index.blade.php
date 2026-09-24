@@ -30,7 +30,7 @@
     @endif
 
     <!-- Settings Form -->
-    <form action="{{ route('suadmin.settings.update') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <!-- Tabs -->

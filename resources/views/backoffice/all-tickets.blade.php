@@ -38,10 +38,10 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                    @if($ticket->channel === 'online') bg-blue-100 text-blue-800
+                                                    @if($ticket->mode === 'online') bg-blue-100 text-blue-800
                                                     @else bg-green-100 text-green-800
                                                     @endif">
-                                                    {{ ucfirst($ticket->channel) }}
+                                                    {{ ucfirst($ticket->mode) }}
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
@@ -62,7 +62,7 @@
                                                 {{ $ticket->created_at->format('d M Y') }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <a href="{{ route('backoffice.process.ticket', $ticket->id) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                                <a href="{{ route('backoffice.tickets.detail', $ticket->ticket_number) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
                                             </td>
                                         </tr>
                                     @endforeach

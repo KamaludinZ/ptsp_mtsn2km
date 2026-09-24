@@ -155,11 +155,17 @@ class RegistrationCodeResource extends Resource
                     ->label('Aktif')
                     ->query(fn (Builder $query): Builder => $query->where('is_active', true)),
                 Tables\Filters\Filter::make('valid_from')
-                    ->label('Mulai Berlaku')
-                    ->date(),
+                    ->form([Forms\Components\DatePicker::make('valid_from')->label('Mulai Berlaku')])
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        $data['valid_from'],
+                        fn (Builder $query, $date): Builder => $query->whereDate('valid_from', $date)
+                    )),
                 Tables\Filters\Filter::make('valid_until')
-                    ->label('Sampai Berlaku')
-                    ->date(),
+                    ->form([Forms\Components\DatePicker::make('valid_until')->label('Sampai Berlaku')])
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        $data['valid_until'],
+                        fn (Builder $query, $date): Builder => $query->whereDate('valid_until', $date)
+                    )),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

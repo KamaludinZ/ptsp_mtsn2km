@@ -15,10 +15,10 @@
             <p class="text-base-content/70">Kelola sistem survei untuk evaluasi kinerja pelayanan.</p>
         </div>
         <div class="mt-3 md:mt-0">
-            <a href="{{ route('suadmin.skm.report') }}" class="btn btn-outline btn-primary shadow-sm">
+            <a href="{{ route('admin.skm.report') }}" class="btn btn-outline btn-primary shadow-sm">
                 <i class="bi bi-file-earmark-bar-graph-fill mr-2"></i>Laporan SKM
             </a>
-            <a href="{{ route('suadmin.spak.report') }}" class="btn btn-primary shadow-sm">
+            <a href="{{ route('admin.spak.report') }}" class="btn btn-primary shadow-sm">
                 <i class="bi bi-shield-check mr-2"></i>Laporan SPAK
             </a>
         </div>
@@ -139,7 +139,7 @@
                                                 <td>{{ $question->unsur->name ?? '-' }}</td>
                                                 <td><span class="badge badge-success">SKM</span></td>
                                                 <td>{{ $question->field_type }}</td>
-                                                <td>{{ $question->options ? implode(', ', json_decode($question->options)) : '-' }}</td>
+                                                <td>{{ $question->options ? implode(', ', $question->options) : '-' }}</td>
                                                 <td><span class="badge @if($question->is_required) badge-error @else badge-neutral @endif">{{ $question->is_required ? 'Ya' : 'Tidak' }}</span></td>
                                                 <td><span class="badge @if($question->is_active) badge-success @else badge-neutral @endif">{{ $question->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
                                                 <td class="text-right">
@@ -202,7 +202,7 @@
                                                 <td>{{ $question->unsur->name ?? '-' }}</td>
                                                 <td><span class="badge badge-error">SPAK</span></td>
                                                 <td>{{ $question->field_type }}</td>
-                                                <td>{{ $question->options ? implode(', ', json_decode($question->options)) : '-' }}</td>
+                                                <td>{{ $question->options ? implode(', ', $question->options) : '-' }}</td>
                                                 <td><span class="badge @if($question->is_required) badge-error @else badge-neutral @endif">{{ $question->is_required ? 'Ya' : 'Tidak' }}</span></td>
                                                 <td><span class="badge @if($question->is_active) badge-success @else badge-neutral @endif">{{ $question->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
                                                 <td class="text-right">
@@ -318,7 +318,7 @@
         e.preventDefault();
         const formData = new FormData(this);
         $.ajax({
-            url: '{{ route('suadmin.survey.api.editions.create') }}',
+            url: '{{ route('admin.survey.api.editions.create') }}',
             method: 'POST',
             data: formData,
             processData: false,
@@ -348,7 +348,7 @@
     function deleteEdition(id) {
         if (confirm('Are you sure you want to delete this edition?')) {
             $.ajax({
-                url: `/suadmin/survey/api/editions/${id}`,
+                url: `/admin/survey/api/editions/${id}`,
                 method: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'
@@ -372,7 +372,7 @@
         e.preventDefault();
         const formData = new FormData(this);
         $.ajax({
-            url: '{{ route('suadmin.survey.api.questions.create') }}',
+            url: '{{ route('admin.survey.api.questions.create') }}',
             method: 'POST',
             data: formData,
             processData: false,
@@ -394,7 +394,7 @@
         e.preventDefault();
         const formData = new FormData(this);
         $.ajax({
-            url: '{{ route('suadmin.survey.api.questions.create') }}',
+            url: '{{ route('admin.survey.api.questions.create') }}',
             method: 'POST',
             data: formData,
             processData: false,
@@ -416,7 +416,7 @@
         e.preventDefault();
         const formData = new FormData(this);
         $.ajax({
-            url: '{{ route('suadmin.survey.api.questions.create') }}',
+            url: '{{ route('admin.survey.api.questions.create') }}',
             method: 'POST',
             data: formData,
             processData: false,
@@ -435,7 +435,7 @@
 
     function editQuestion(type, id) {
         $.ajax({
-            url: `/suadmin/survey/api/questions/${id}`,
+            url: `/admin/survey/api/questions/${id}`,
             method: 'GET',
             success: function(response) {
                 $('#edit-question-id').val(response.id);
@@ -475,7 +475,7 @@
         const id = $('#edit-question-id').val();
         const formData = new FormData(this);
         $.ajax({
-            url: `/suadmin/survey/api/questions/${id}`,
+            url: `/admin/survey/api/questions/${id}`,
             method: 'POST',
             data: formData,
             processData: false,
@@ -495,7 +495,7 @@
     function deleteQuestion(id) {
         if (confirm('Are you sure you want to delete this question?')) {
             $.ajax({
-                url: `/suadmin/survey/api/questions/${id}`,
+                url: `/admin/survey/api/questions/${id}`,
                 method: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'

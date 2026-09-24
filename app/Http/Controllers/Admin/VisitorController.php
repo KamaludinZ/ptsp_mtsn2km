@@ -73,7 +73,7 @@ class VisitorController extends Controller
 
         Visitor::create($data);
 
-        return redirect()->route('suadmin.visitors.index')->with('success', 'Visitor berhasil ditambahkan.');
+        return redirect()->route('admin.visitors.index')->with('success', 'Visitor berhasil ditambahkan.');
     }
 
     public function show(Visitor $visitor)
@@ -114,7 +114,7 @@ class VisitorController extends Controller
 
         $visitor->update($data);
 
-        return redirect()->route('suadmin.visitors.index')->with('success', 'Visitor berhasil diperbarui.');
+        return redirect()->route('admin.visitors.index')->with('success', 'Visitor berhasil diperbarui.');
     }
 
     public function destroy(Visitor $visitor)
@@ -126,7 +126,7 @@ class VisitorController extends Controller
         
         $visitor->delete();
 
-        return redirect()->route('suadmin.visitors.index')->with('success', 'Visitor berhasil dihapus.');
+        return redirect()->route('admin.visitors.index')->with('success', 'Visitor berhasil dihapus.');
     }
     
     public function checkOut(Request $request, Visitor $visitor)
@@ -140,6 +140,6 @@ class VisitorController extends Controller
             'notes' => $request->notes,
         ]);
         
-        return redirect()->route('suadmin.visitors.index')->with('success', 'Visitor berhasil checkout.');
+        return redirect()->route('admin.visitors.index')->with('success', 'Visitor berhasil checkout.');
     }
 }

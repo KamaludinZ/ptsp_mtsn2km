@@ -12,9 +12,9 @@ class SkmSpakIndexChart extends ChartWidget
 {
     protected static ?int $sort = 8;
 
-    protected ?string $heading = null;
+    protected static ?string $heading = null;
 
-    protected ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = null;
 
     public function mount(): void
     {

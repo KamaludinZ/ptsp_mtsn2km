@@ -24,10 +24,12 @@ class Survey extends Model
         'end_date' => 'date',
     ];
 
-    // Relationship with survey questions
+    // Relationship with survey questions (matched by survey type, since
+    // survey_questions is shared across surveys of the same type rather
+    // than owned by a single survey via foreign key).
     public function questions()
     {
-        return $this->hasMany(SurveyQuestion::class);
+        return $this->hasMany(SurveyQuestion::class, 'survey_type', 'type');
     }
 
     // Relationship with survey responses

@@ -141,7 +141,7 @@
     <div class="card bg-base-100 shadow-xl">
         <div class="card-header bg-primary text-primary-content flex justify-between items-center">
             <h4 class="card-title mb-0">Manajemen Tiket</h4>
-            <a href="{{ route('suadmin.tickets.create') }}" class="btn btn-neutral">
+            <a href="{{ route('admin.tickets.create') }}" class="btn btn-neutral">
                 <i class="fas fa-plus"></i> Tambah Tiket Baru
             </a>
         </div>
@@ -294,17 +294,17 @@
                                         </label>
                                         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32">
                                             <li>
-                                                <a href="{{ route('suadmin.tickets.show', $ticket) }}">
+                                                <a href="{{ route('admin.tickets.show', $ticket) }}">
                                                     <i class="fas fa-eye"></i> Lihat
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="{{ route('suadmin.tickets.edit', $ticket) }}">
+                                                <a href="{{ route('admin.tickets.edit', $ticket) }}">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="{{ route('suadmin.tickets.show', $ticket) }}" title="Kirim Info Tiket">
+                                                <a href="{{ route('admin.tickets.show', $ticket) }}" title="Kirim Info Tiket">
                                                     <i class="fas fa-envelope"></i> Info
                                                 </a>
                                             </li>
@@ -322,7 +322,7 @@
                                                 </li>
                                             @endif
                                             <li>
-                                                <form action="{{ route('suadmin.tickets.destroy', $ticket) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tiket ini?')">
+                                                <form action="{{ route('admin.tickets.destroy', $ticket) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tiket ini?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-error">
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const mode = document.getElementById('modeFilter').value;
         const approval = document.getElementById('approvalFilter').value;
         
-        let url = '{{ route('suadmin.tickets.index') }}';
+        let url = '{{ route('admin.tickets.index') }}';
         const params = [];
         
         if (status) params.push('status=' + status);
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function sendSurveyInfo(ticketId) {
     if (confirm('Kirim informasi survei melalui email?')) {
         // This would make an AJAX call to send the survey info email
-        fetch(`/suadmin/tickets/${ticketId}/send-survey-info`, {
+        fetch(`/admin/tickets/${ticketId}/send-survey-info`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),

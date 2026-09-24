@@ -12,7 +12,7 @@
                     <p class="text-muted mb-0">Informasi lengkap tentang tiket layanan</p>
                 </div>
                 <div class="mt-3 mt-md-0">
-                    <a href="{{ route('suadmin.tickets.index') }}" class="btn btn-secondary shadow-sm">
+                    <a href="{{ route('admin.tickets.index') }}" class="btn btn-secondary shadow-sm">
                         <i class="fas fa-arrow-left me-2"></i>Kembali
                     </a>
                 </div>
@@ -205,7 +205,7 @@
                         <!-- File Upload Form -->
                         <div class="mt-3 p-3 border rounded bg-light">
                             <h6 class="mb-3"><i class="fas fa-upload me-2"></i>Upload Berkas Persyaratan</h6>
-                            <form action="{{ route('suadmin.tickets.upload.requirement', $ticket) }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('admin.tickets.upload.requirement', $ticket) }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 <div class="row">
                                     <div class="col-md-8">
@@ -277,7 +277,7 @@
                                                     <i class="fas fa-download me-1"></i>Lihat
                                                 </a>
                                                 @endif
-                                                <a href="{{ route('suadmin.tickets.output.edit', [$ticket, $output]) }}" 
+                                                <a href="{{ route('admin.tickets.output.edit', [$ticket, $output]) }}" 
                                                    class="btn btn-outline-warning btn-sm">
                                                     <i class="fas fa-edit me-1"></i>Edit
                                                 </a>
@@ -297,7 +297,7 @@
                         <!-- Output Upload Form -->
                         <div class="mt-3 p-3 border rounded bg-light">
                             <h6 class="mb-3"><i class="fas fa-file-upload me-2"></i>Upload Dokumen Hasil</h6>
-                            <form action="{{ route('suadmin.tickets.upload.output', $ticket) }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('admin.tickets.upload.output', $ticket) }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 <div class="row">
                                     <div class="col-md-4">
@@ -382,11 +382,11 @@
                     </div>
                     
                     <div class="d-flex flex-wrap justify-content-end gap-2">
-                        <a href="{{ route('suadmin.tickets.index') }}" class="btn btn-secondary shadow-sm">
+                        <a href="{{ route('admin.tickets.index') }}" class="btn btn-secondary shadow-sm">
                             <i class="fas fa-arrow-left me-2"></i>Kembali
                         </a>
 
-                        <a href="{{ route('suadmin.tickets.edit', $ticket) }}" class="btn btn-primary shadow-sm">
+                        <a href="{{ route('admin.tickets.edit', $ticket) }}" class="btn btn-primary shadow-sm">
                             <i class="fas fa-edit me-2"></i>Edit
                         </a>
 
@@ -428,7 +428,7 @@
                             </button>
                         @endif
 
-                        <form action="{{ route('suadmin.tickets.destroy', $ticket) }}" method="POST" class="d-inline">
+                        <form action="{{ route('admin.tickets.destroy', $ticket) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger shadow-sm"
@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Simple confirmation, in a real implementation you might want a modal with notes
             if (confirm('Apakah Anda yakin ingin menyetujui tiket ini?')) {
-                fetch(`/suadmin/tickets/${ticketId}/approve`, {
+                fetch(`/admin/tickets/${ticketId}/approve`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Simple confirmation, in a real implementation you might want a modal for notes
             if (confirm('Apakah Anda yakin ingin menolak tiket ini?')) {
-                fetch(`/suadmin/tickets/${ticketId}/reject`, {
+                fetch(`/admin/tickets/${ticketId}/reject`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -512,7 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const ticketId = this.getAttribute('data-ticket-id');
 
             if (confirm('Kirim informasi tiket ke pemohon?')) {
-                fetch(`/suadmin/tickets/${ticketId}/send-ticket-info`, {
+                fetch(`/admin/tickets/${ticketId}/send-ticket-info`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -542,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const ticketNumber = this.getAttribute('data-ticket-number');
 
             if (confirm('Kirim link survei kepuasan masyarakat ke pemohon?')) {
-                fetch(`/suadmin/tickets/${ticketId}/send-survey`, {
+                fetch(`/admin/tickets/${ticketId}/send-survey`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const ticketId = this.getAttribute('data-ticket-id');
 
             if (confirm('Tandai dokumen siap diambil di PTSP? Notifikasi akan dikirim kepada pemohon.')) {
-                fetch(`/suadmin/tickets/${ticketId}/mark-ready-pickup`, {
+                fetch(`/admin/tickets/${ticketId}/mark-ready-pickup`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),

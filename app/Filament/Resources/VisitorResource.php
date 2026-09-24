@@ -186,8 +186,11 @@ class VisitorResource extends Resource
                     ->label('Sudah Check-out')
                     ->query(fn (Builder $query): Builder => $query->where('is_checked_out', true)),
                 Tables\Filters\Filter::make('check_in_time')
-                    ->label('Tanggal Check-in')
-                    ->date(),
+                    ->form([Forms\Components\DatePicker::make('check_in_time')->label('Tanggal Check-in')])
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        $data['check_in_time'],
+                        fn (Builder $query, $date): Builder => $query->whereDate('check_in_time', $date)
+                    )),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

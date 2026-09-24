@@ -10,7 +10,7 @@
             <h4 class="text-2xl font-bold text-base-content">Daftar Laporan Whistleblowing</h4>
             <div class="text-sm breadcrumbs">
                 <ul>
-                    <li><a href="{{ route('suadmin.dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                     <li>Whistleblowing</li>
                 </ul>
             </div>
@@ -68,7 +68,7 @@
                         <i class="fas fa-user-secret fa-2x"></i>
                     </div>
                     <div class="flex-grow-1">
-                        <h4 class="text-2xl font-bold">{{ \App\Models\Complaint::where('complaint_type', 'whistleblowing')->where('is_anonymous', true)->count() }}</h4>
+                        <h4 class="text-2xl font-bold">{{ \App\Models\Complaint::where('complaint_type', 'whistleblowing')->where('anonymous', true)->count() }}</h4>
                         <p class="mb-0">Anonim</p>
                     </div>
                 </div>
@@ -81,7 +81,7 @@
             <h4 class="card-title mb-4">Daftar Laporan Whistleblowing</h4>
             
             <!-- Filter Form -->
-            <form method="GET" action="{{ route('suadmin.whistleblowing.index') }}" class="mb-4">
+            <form method="GET" action="{{ route('admin.whistleblowing.index') }}" class="mb-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                         <label for="status" class="label">
@@ -165,7 +165,7 @@
                                 </span>
                             </td>
                             <td>
-                                @if($report->is_anonymous)
+                                @if($report->anonymous)
                                     <span class="badge badge-info">Ya</span>
                                 @else
                                     <span class="badge badge-neutral">Tidak</span>
@@ -179,17 +179,12 @@
                                     </label>
                                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32">
                                         <li>
-                                            <a href="{{ route('suadmin.whistleblowing.show', $report) }}">
+                                            <a href="{{ route('admin.whistleblowing.show', $report) }}">
                                                 <i class="fas fa-eye"></i> Lihat
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('suadmin.whistleblowing.edit', $report) }}">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <form action="{{ route('suadmin.complaints.destroy', $report) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini?')">
+                                            <form action="{{ route('admin.complaints.destroy', $report) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-error">

@@ -9,7 +9,7 @@
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="card-title mb-0">Manajemen Kategori Layanan</h4>
-                    <a href="{{ route('suadmin.service-categories.create') }}" class="btn btn-light">
+                    <a href="{{ route('admin.service-categories.create') }}" class="btn btn-light">
                         <i class="fas fa-plus"></i> Tambah Kategori
                     </a>
                 </div>
@@ -62,13 +62,13 @@
                                         </td>
                                         <td>{{ $category->created_at->format('d M Y') }}</td>
                                         <td>
-                                            <a href="{{ route('suadmin.service-categories.show', $category) }}" class="btn btn-sm btn-info">
+                                            <a href="{{ route('admin.service-categories.show', $category) }}" class="btn btn-sm btn-info">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('suadmin.service-categories.edit', $category) }}" class="btn btn-sm btn-primary">
+                                            <a href="{{ route('admin.service-categories.edit', $category) }}" class="btn btn-sm btn-primary">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <form action="{{ route('suadmin.service-categories.destroy', $category) }}" method="POST" class="d-inline">
+                                            <form action="{{ route('admin.service-categories.destroy', $category) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus kategori ini?')">
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('applyFilters').addEventListener('click', function() {
         const search = document.getElementById('searchInput').value;
         
-        let url = '{{ route('suadmin.service-categories.index') }}';
+        let url = '{{ route('admin.service-categories.index') }}';
         const params = [];
         
         if (search) params.push('search=' + encodeURIComponent(search));

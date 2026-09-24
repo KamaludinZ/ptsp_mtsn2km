@@ -17,7 +17,7 @@
             <p class="text-base-content/70">Kelola semua layanan yang tersedia di sistem PTSP</p>
         </div>
         <div class="mt-3 md:mt-0">
-            <a href="{{ route('suadmin.services.create') }}" class="btn btn-primary shadow-sm">
+            <a href="{{ route('admin.services.create') }}" class="btn btn-primary shadow-sm">
                 <i class="bi bi-plus-circle-fill mr-2"></i>Tambah Layanan Baru
             </a>
         </div>
@@ -108,7 +108,7 @@
                         <li><a href="?approval=required">Memerlukan Approval</a></li>
                         <li><a href="?approval=not_required">Tidak Perlu Approval</a></li>
                         <li><div class="divider"></div></li>
-                        <li><a href="{{ route('suadmin.services.index') }}">Tampilkan Semua</a></li>
+                        <li><a href="{{ route('admin.services.index') }}">Tampilkan Semua</a></li>
                     </ul>
                 </div>
             </div> 
@@ -244,17 +244,17 @@
                                         </label>
                                         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32">
                                             <li>
-                                                <a href="{{ route('suadmin.services.show', $service) }}">
+                                                <a href="{{ route('admin.services.show', $service) }}">
                                                     <i class="fas fa-eye"></i> Lihat
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="{{ route('suadmin.services.edit', $service) }}">
+                                                <a href="{{ route('admin.services.edit', $service) }}">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
                                             </li>
                                             <li>
-                                                <form action="{{ route('suadmin.services.destroy', $service) }}"
+                                                <form action="{{ route('admin.services.destroy', $service) }}"
                                                       method="POST"
                                                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus layanan ini?')">
                                                     @csrf
@@ -275,7 +275,7 @@
                                         <i class="fas fa-inbox fa-5x text-base-content/20 mb-3"></i>
                                         <h5 class="text-lg font-bold text-base-content/70">Tidak Ada Layanan Ditemukan</h5>
                                         <p class="text-base-content/50">Silakan tambahkan layanan baru atau sesuaikan filter pencarian Anda</p>
-                                        <a href="{{ route('suadmin.services.create') }}" class="btn btn-primary mt-4">
+                                        <a href="{{ route('admin.services.create') }}" class="btn btn-primary mt-4">
                                             <i class="fas fa-plus mr-2"></i>Tambah Layanan
                                         </a>
                                     </div>
@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const category = document.getElementById('categoryFilter').value;
         const search = document.getElementById('searchInput').value;
         
-        let url = '{{ route('suadmin.services.index') }}';
+        let url = '{{ route('admin.services.index') }}';
         const params = [];
         
         if (category) params.push('category=' + category);

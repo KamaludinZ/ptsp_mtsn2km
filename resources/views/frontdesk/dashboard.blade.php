@@ -11,7 +11,7 @@
                         <div class="bg-blue-50 p-6 rounded-lg shadow">
                             <h2 class="text-lg font-semibold mb-2">Active Visitors</h2>
                             <p class="text-3xl font-bold text-blue-600">{{ $activeVisitorsCount ?? 0 }}</p>
-                            <a href="{{ route('frontdesk.active.visitors') }}" class="text-blue-500 hover:underline mt-2 inline-block">View Details</a>
+                            <a href="{{ route('frontdesk.active-visitors') }}" class="text-blue-500 hover:underline mt-2 inline-block">View Details</a>
                         </div>
                         
                         <div class="bg-green-50 p-6 rounded-lg shadow">
@@ -34,10 +34,10 @@
                                 <a href="{{ route('frontdesk.triage') }}" class="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
                                     Triage Visitor
                                 </a>
-                                <a href="{{ route('frontdesk.visitor.checkin.form') }}" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
+                                <a href="{{ route('frontdesk.triage') }}" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
                                     Visitor Check-in
                                 </a>
-                                <a href="{{ route('frontdesk.register.offline.service.form') }}" class="block w-full text-center bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded">
+                                <a href="{{ route('frontdesk.service.application') }}" class="block w-full text-center bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded">
                                     Register Offline Service
                                 </a>
                             </div>

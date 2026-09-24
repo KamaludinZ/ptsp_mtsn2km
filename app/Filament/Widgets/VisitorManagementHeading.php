@@ -12,8 +12,5 @@ class VisitorManagementHeading extends Widget
 
     protected static bool $isLazy = false;
 
-    public static function getView(): string
-    {
-        return 'filament.widgets.visitor-management-heading';
-    }
+    protected static string $view = 'filament.widgets.visitor-management-heading';
 }

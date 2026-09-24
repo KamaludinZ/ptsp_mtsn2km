@@ -110,13 +110,19 @@ class LogSuspiciousActivity
 
         // Log suspicious activity
         if ($suspicious) {
+            $redactedInput = collect($allInput)->map(function ($value, $key) {
+                return preg_match('/password|token|secret|captcha/i', (string) $key)
+                    ? '[REDACTED]'
+                    : $value;
+            })->all();
+
             Log::warning('Suspicious activity detected', [
                 'ip' => $ip,
                 'url' => $url,
                 'method' => $request->method(),
                 'user_agent' => $request->userAgent(),
                 'patterns' => $matchedPatterns,
-                'input' => $allInput,
+                'input' => $redactedInput,
             ]);
 
             // Increment daily counter

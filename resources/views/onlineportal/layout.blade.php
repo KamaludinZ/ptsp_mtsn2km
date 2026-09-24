@@ -169,7 +169,7 @@
 
     <!-- Page Content -->
     <main id="main-content" class="py-4">
-        {{ $slot }}
+        @yield('content')
     </main>
 
     <!-- Footer -->

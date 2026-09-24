@@ -11,7 +11,7 @@
                     <h4 class="card-title mb-0">Edit Kategori Layanan: {{ $serviceCategory->name }}</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('suadmin.service-categories.update', $serviceCategory) }}" method="POST">
+                    <form action="{{ route('admin.service-categories.update', $serviceCategory) }}" method="POST">
                         @csrf
                         @method('PUT')
                         <div class="row">
@@ -91,7 +91,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-end">
-                            <a href="{{ route('suadmin.service-categories.index') }}" class="btn btn-secondary me-2">Batal</a>
+                            <a href="{{ route('admin.service-categories.index') }}" class="btn btn-secondary me-2">Batal</a>
                             <button type="submit" class="btn btn-primary">Update Kategori</button>
                         </div>
                     </form>

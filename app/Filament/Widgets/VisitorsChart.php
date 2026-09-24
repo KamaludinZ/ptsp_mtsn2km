@@ -8,10 +8,10 @@ use Illuminate\Support\Carbon;
 
 class VisitorsChart extends ChartWidget
 {
-    protected ?string $heading = 'Statistik Pengunjung Berdasarkan Jenis Instansi';
+    protected static ?string $heading = 'Statistik Pengunjung Berdasarkan Jenis Instansi';
     protected static ?int $sort = 4;
     protected int | string | array $columnSpan = 'full';
-    protected ?string $maxHeight = '300px';
+    protected static ?string $maxHeight = '300px';
     protected static bool $isLazy = true;
 
     public ?string $filter = 'semester'; // Default filter

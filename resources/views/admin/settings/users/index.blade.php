@@ -10,14 +10,14 @@
             <h4 class="text-2xl font-bold text-base-content">Manajemen User</h4>
             <div class="text-sm breadcrumbs">
                 <ul>
-                    <li><a href="{{ route('suadmin.dashboard') }}">Dashboard</a></li>
-                    <li><a href="{{ route('suadmin.settings.index') }}">Pengaturan</a></li>
+                    <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ route('admin.settings.index') }}">Pengaturan</a></li>
                     <li>Manajemen User</li>
                 </ul>
             </div>
         </div>
         <div class="mt-3 md:mt-0">
-            <a href="{{ route('suadmin.users.create') }}" class="btn btn-primary shadow-sm">
+            <a href="{{ route('admin.users.create') }}" class="btn btn-primary shadow-sm">
                 <i class="fas fa-plus mr-2"></i>Tambah User Baru
             </a>
         </div>
@@ -28,7 +28,7 @@
             <h4 class="card-title mb-4">Daftar User</h4>
             
             <!-- Filter Form -->
-            <form method="GET" action="{{ route('suadmin.users.index') }}" class="mb-4">
+            <form method="GET" action="{{ route('admin.users.index') }}" class="mb-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                         <label for="role" class="label">
@@ -119,17 +119,17 @@
                                         </label>
                                         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32">
                                             <li>
-                                                <a href="{{ route('suadmin.users.show', $user) }}">
+                                                <a href="{{ route('admin.users.show', $user) }}">
                                                     <i class="fas fa-eye"></i> Lihat
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="{{ route('suadmin.users.edit', $user) }}">
+                                                <a href="{{ route('admin.users.edit', $user) }}">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
                                             </li>
                                             <li>
-                                                <form action="{{ route('suadmin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini?')">
+                                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-error">

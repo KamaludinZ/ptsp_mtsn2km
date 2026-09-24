@@ -125,17 +125,19 @@ class Ticket extends Model implements HasMedia
         return $this->hasOne(TicketOutput::class, 'ticket_id')->latestOfMany();
     }
 
-    // Relationship to get workflow steps through ticket workflows
+    // Relationship to get ticket workflow step progress records. There is no
+    // direct ticket_id on ticket_workflow_steps — it hangs off ticket_workflows
+    // instead, so this has to traverse that intermediate table.
     public function workflowSteps()
     {
-        return $this->belongsToMany(
-            WorkflowStep::class,
-            'ticket_workflow_steps', // intermediate table
-            'ticket_id',            // foreign key for current model (Ticket)
-            'workflow_step_id'      // foreign key for related model (WorkflowStep)
-        )
-        ->withPivot(['completed_at', 'notes']) // pivot table columns
-        ->withTimestamps();
+        return $this->hasManyThrough(
+            TicketWorkflowStep::class,
+            TicketWorkflow::class,
+            'ticket_id',           // FK on ticket_workflows -> tickets
+            'ticket_workflow_id',  // FK on ticket_workflow_steps -> ticket_workflows
+            'id',
+            'id'
+        );
     }
 
     // Relationship with ticket workflows
@@ -235,7 +237,7 @@ class Ticket extends Model implements HasMedia
         
         // Get the next sequence number - now with the new format (F-202511-001)
         $lastTicket = static::where('ticket_number', 'LIKE', "{$prefix}-{$yearMonth}-%")
-            ->orderByRaw("CAST(SUBSTR(ticket_number, -3) AS INTEGER) DESC")
+            ->orderByRaw("CAST(RIGHT(ticket_number, 3) AS INTEGER) DESC")
             ->first();
         
         $sequence = 1;

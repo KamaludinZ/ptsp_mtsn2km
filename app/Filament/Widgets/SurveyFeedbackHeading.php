@@ -12,8 +12,5 @@ class SurveyFeedbackHeading extends Widget
 
     protected static bool $isLazy = false;
 
-    public static function getView(): string
-    {
-        return 'filament.widgets.survey-feedback-heading';
-    }
+    protected static string $view = 'filament.widgets.survey-feedback-heading';
 }

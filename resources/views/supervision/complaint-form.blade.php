@@ -22,24 +22,25 @@
                 <div class="card-header bg-white py-4 border-bottom-0">
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs nav-fill border-0" id="complaintTab" role="tablist">
+                        @php $activeTab = $activeTab ?? 'dumas'; @endphp
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active bg-gradient" id="dumas-tab" data-bs-toggle="tab" data-bs-target="#dumas" type="button" role="tab" aria-controls="dumas" aria-selected="true" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: 1px solid #2980b9; border-radius: 8px 8px 0 0; transition: all 0.3s ease;">
+                            <button class="nav-link {{ $activeTab === 'dumas' ? 'active' : '' }}" id="dumas-tab" data-bs-toggle="tab" data-bs-target="#dumas" type="button" role="tab" aria-controls="dumas" aria-selected="{{ $activeTab === 'dumas' ? 'true' : 'false' }}" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: 1px solid #2980b9; border-radius: 8px 8px 0 0; transition: all 0.3s ease;">
                                 <i class="fas fa-comment me-2"></i>Pengaduan Masyarakat
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link bg-gradient" id="whistleblowing-tab" data-bs-toggle="tab" data-bs-target="#whistleblowing" type="button" role="tab" aria-controls="whistleblowing" aria-selected="false" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: 1px solid #c0392b; border-radius: 8px 8px 0 0; transition: all 0.3s ease;">
+                            <button class="nav-link {{ $activeTab === 'whistleblowing' ? 'active' : '' }}" id="whistleblowing-tab" data-bs-toggle="tab" data-bs-target="#whistleblowing" type="button" role="tab" aria-controls="whistleblowing" aria-selected="{{ $activeTab === 'whistleblowing' ? 'true' : 'false' }}" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: 1px solid #c0392b; border-radius: 8px 8px 0 0; transition: all 0.3s ease;">
                                 <i class="fas fa-user-secret me-2"></i>Whistleblowing
                             </button>
                         </li>
                     </ul>
                 </div>
-                
+
                 <div class="card-body p-4 bg-light" style="background-color: var(--bs-gray-100);">
                     <!-- Tab panes -->
-                    <div class="tab-content" id="complaintTabContent">
+                    <div class="tab-content" id="complaintTabContent" style="display: block;">
                         <!-- Dumas Tab -->
-                        <div class="tab-pane fade show active p-4 rounded" id="dumas" role="tabpanel" aria-labelledby="dumas-tab" style="background-color: var(--bs-white, #ffffff); border: 1px solid var(--bs-border-color, #dee2e6); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <div class="tab-pane fade p-4 rounded {{ $activeTab === 'dumas' ? 'show active' : '' }}" id="dumas" role="tabpanel" aria-labelledby="dumas-tab" style="background-color: var(--bs-white, #ffffff); border: 1px solid var(--bs-border-color, #dee2e6); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                             <div class="alert alert-info mb-4" role="alert" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 1px solid #90caf9; color: #000000;">
                                 <i class="fas fa-info-circle me-2"></i>
                                 <strong>Pengaduan Masyarakat</strong> - Gunakan formulir ini untuk melaporkan keluhan terkait pelayanan publik, seperti pelayanan lambat, prosedur berbelit, petugas tidak ramah, dan sebagainya.
@@ -89,7 +90,7 @@
                         </div>
                         
                         <!-- Whistleblowing Tab -->
-                        <div class="tab-pane fade p-4 rounded" id="whistleblowing" role="tabpanel" aria-labelledby="whistleblowing-tab" style="background-color: var(--bs-white, #ffffff); border: 1px solid var(--bs-border-color, #dee2e6); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <div class="tab-pane fade p-4 rounded {{ $activeTab === 'whistleblowing' ? 'show active' : '' }}" id="whistleblowing" role="tabpanel" aria-labelledby="whistleblowing-tab" style="background-color: var(--bs-white, #ffffff); border: 1px solid var(--bs-border-color, #dee2e6); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                             <div class="alert alert-danger mb-4" role="alert" style="background: linear-gradient(135deg, #ffebee, #ffcdd2); border: 1px solid #ef9a9a; color: #000000;">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
                                 <strong>Whistleblowing</strong> - Gunakan formulir ini untuk melaporkan pelanggaran serius seperti korupsi, penipuan, suap, atau penyalahgunaan wewenang yang terjadi di dalam organisasi.

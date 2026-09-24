@@ -155,7 +155,7 @@ class TicketController extends Controller
             }
         }
 
-        return redirect()->route('suadmin.tickets.index')->with('success', 'Ticket created successfully.');
+        return redirect()->route('admin.tickets.index')->with('success', 'Ticket created successfully.');
     }
 
     public function show(Ticket $ticket)
@@ -204,7 +204,7 @@ class TicketController extends Controller
             'updated_by' => auth()->id(),
         ]);
 
-        return redirect()->route('suadmin.tickets.index')->with('success', 'Ticket updated successfully.');
+        return redirect()->route('admin.tickets.index')->with('success', 'Ticket updated successfully.');
     }
 
     /**
@@ -302,14 +302,14 @@ class TicketController extends Controller
 
         $output->update($outputData);
 
-        return redirect()->route('suadmin.tickets.show', $ticket)->with('success', 'Dokumen hasil berhasil diperbarui.');
+        return redirect()->route('admin.tickets.show', $ticket)->with('success', 'Dokumen hasil berhasil diperbarui.');
     }
 
     public function destroy(Ticket $ticket)
     {
         $ticket->delete();
 
-        return redirect()->route('suadmin.tickets.index')->with('success', 'Ticket deleted successfully.');
+        return redirect()->route('admin.tickets.index')->with('success', 'Ticket deleted successfully.');
     }
 
     /**

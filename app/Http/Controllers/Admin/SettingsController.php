@@ -16,6 +16,9 @@ class SettingsController extends Controller
     public function index()
     {
         $settings = AppSetting::all()->groupBy('category');
+        foreach (['general', 'branding', 'contact', 'social', 'operating_hours', 'related_links', 'integration', 'theme'] as $category) {
+            $settings->put($category, $settings->get($category, collect()));
+        }
 
         // Available DaisyUI themes (32 official themes)
         $themes = [

@@ -10,7 +10,7 @@
             <h1 class="text-3xl font-bold text-gray-900 mb-2">Edit User</h1>
             <p class="text-gray-600">Perbarui informasi user</p>
         </div>
-        <a href="{{ route('suadmin.users.index') }}" class="btn btn-ghost">
+        <a href="{{ route('admin.users.index') }}" class="btn btn-ghost">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -56,7 +56,7 @@
     <!-- Edit Form -->
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <form action="{{ route('suadmin.users.update', $user) }}" method="POST">
+            <form action="{{ route('admin.users.update', $user) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -180,7 +180,7 @@
 
                 <!-- Action Buttons -->
                 <div class="card-actions justify-end mt-6">
-                    <a href="{{ route('suadmin.users.index') }}" class="btn btn-ghost">
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-ghost">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>

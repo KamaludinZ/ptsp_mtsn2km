@@ -126,8 +126,7 @@ class AssetHelper
             // Use manifestAsset to get the correct path
             $url = self::manifestAsset($path);
 
-            $deferAttr = $defer ? ' defer' : '';
-            return '<script src="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . htmlspecialchars($deferAttr, ENT_QUOTES, 'UTF-8') . '></script>';
+            return '<script type="module" src="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"></script>';
         } catch (\Exception $e) {
             // In case of any error, return a safe empty script tag to avoid breaking page
             return '<script></script>';

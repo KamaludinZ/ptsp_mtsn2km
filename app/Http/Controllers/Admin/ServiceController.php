@@ -40,8 +40,10 @@ class ServiceController extends Controller
         // Additional metrics for the stats cards
         $totalServices = Service::count();
         $activeServices = Service::where('is_active', true)->count();
-        $onlineServices = Service::whereIn('mode', ['online', 'both'])->count();
-        $avgEstimatedDays = Service::avg('estimated_days') ?: 0;
+        $onlineServices = Service::whereIn('mode', ['online', 'hybrid'])->count();
+        // No numeric duration column exists on services (only the free-text
+        // "processing_time" field), so there is nothing to average here.
+        $avgEstimatedDays = 0;
         
         return view('admin.services.index', compact(
             'services', 
@@ -121,7 +123,7 @@ class ServiceController extends Controller
             'evaluasi_kinerja' => $request->evaluasi_kinerja,
         ]);
 
-        return redirect()->route('suadmin.services.index')->with('success', 'Layanan berhasil ditambahkan.');
+        return redirect()->route('admin.services.index')->with('success', 'Layanan berhasil ditambahkan.');
     }
 
     public function show(Service $service)
@@ -197,13 +199,13 @@ class ServiceController extends Controller
             'evaluasi_kinerja' => $request->evaluasi_kinerja,
         ]);
 
-        return redirect()->route('suadmin.services.index')->with('success', 'Layanan berhasil diperbarui.');
+        return redirect()->route('admin.services.index')->with('success', 'Layanan berhasil diperbarui.');
     }
 
     public function destroy(Service $service)
     {
         $service->delete();
 
-        return redirect()->route('suadmin.services.index')->with('success', 'Layanan berhasil dihapus.');
+        return redirect()->route('admin.services.index')->with('success', 'Layanan berhasil dihapus.');
     }
 }

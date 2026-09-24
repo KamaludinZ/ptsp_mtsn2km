@@ -23,7 +23,7 @@
     @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
         @vite(['resources/css/inline-style-fix.css'])
     @else
-        {{ App\Helpers\AssetHelper::css('resources/css/inline-style-fix.css') }}
+        {!! App\Helpers\AssetHelper::css('resources/css/inline-style-fix.css') !!}
     @endif
     @stack('styles')
 </head>
@@ -684,6 +684,7 @@
         @vite([
             'resources/css/bootstrap-custom.css',
             'resources/css/app.css',
+            'resources/css/fontawesome.css',
             'resources/css/dark-mode.css',
             'resources/css/public-layout.css',
             'resources/css/accessibility.css',
@@ -695,6 +696,7 @@
     @else
         {!! App\Helpers\AssetHelper::css('resources/css/bootstrap-custom.css') !!}
         {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/fontawesome.css') !!}
         {!! App\Helpers\AssetHelper::css('resources/css/dark-mode.css') !!}
         {!! App\Helpers\AssetHelper::css('resources/css/public-layout.css') !!}
         {!! App\Helpers\AssetHelper::css('resources/css/accessibility.css') !!}

@@ -8,10 +8,10 @@ use Illuminate\Support\Carbon;
 
 class TicketsChart extends ChartWidget
 {
-    protected ?string $heading = 'Statistik Layanan';
+    protected static ?string $heading = 'Statistik Layanan';
     protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 'full';
-    protected ?string $maxHeight = '300px';
+    protected static ?string $maxHeight = '300px';
     protected static bool $isLazy = true;
 
     public ?string $filter = 'semester'; // Default filter

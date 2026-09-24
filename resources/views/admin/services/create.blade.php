@@ -11,7 +11,7 @@
                     <h4 class="card-title mb-0">Tambah Layanan Baru</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('suadmin.services.store') }}" method="POST">
+                    <form action="{{ route('admin.services.store') }}" method="POST">
                         @csrf
                         
                         <ul class="nav nav-tabs" id="serviceTab" role="tablist">
@@ -321,7 +321,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-end mt-4">
-                            <a href="{{ route('suadmin.services.index') }}" class="btn btn-secondary me-2">Batal</a>
+                            <a href="{{ route('admin.services.index') }}" class="btn btn-secondary me-2">Batal</a>
                             <button type="submit" class="btn btn-primary">Simpan Layanan</button>
                         </div>
                     </form>

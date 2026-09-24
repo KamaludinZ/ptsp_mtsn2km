@@ -112,7 +112,7 @@ class UserManagementController extends Controller
 
             DB::commit();
 
-            return redirect()->route('suadmin.users.index')
+            return redirect()->route('admin.users.index')
                 ->with('success', 'User berhasil ditambahkan!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -192,7 +192,7 @@ class UserManagementController extends Controller
 
             DB::commit();
 
-            return redirect()->route('suadmin.users.index')
+            return redirect()->route('admin.users.index')
                 ->with('success', 'User berhasil diperbarui!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -222,7 +222,7 @@ class UserManagementController extends Controller
 
             $user->delete();
 
-            return redirect()->route('suadmin.users.index')
+            return redirect()->route('admin.users.index')
                 ->with('success', 'User berhasil dihapus!');
         } catch (\Exception $e) {
             return redirect()->back()

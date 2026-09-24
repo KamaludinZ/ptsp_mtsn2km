@@ -44,7 +44,10 @@
                                             {{ $visitor->check_in_time->format('d M Y H:i') }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="{{ route('frontdesk.visitor.checkout.form') }}" class="text-indigo-600 hover:text-indigo-900">Check-out</a>
+                                            <form method="POST" action="{{ route('frontdesk.visitors.checkout', $visitor) }}">
+                                                @csrf
+                                                <button type="submit" class="text-indigo-600 hover:text-indigo-900">Check-out</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @empty
@@ -57,8 +60,8 @@
                     </div>
                     
                     <div class="mt-6">
-                        <a href="{{ route('frontdesk.visitor.checkout.form') }}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
-                            Process Check-out
+                        <a href="{{ route('frontdesk.search-visitors') }}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+                            Cari Pengunjung
                         </a>
                         <a href="{{ route('frontdesk.dashboard') }}" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded ml-2">
                             Back to Dashboard

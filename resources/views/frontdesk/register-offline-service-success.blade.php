@@ -39,7 +39,7 @@
                     </div>
                     
                     <div class="flex justify-between">
-                        <a href="{{ route('frontdesk.register.offline.service.form') }}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+                        <a href="{{ route('frontdesk.service.application') }}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
                             Register Another Service
                         </a>
                         <a href="{{ route('frontdesk.dashboard') }}" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded">

@@ -11,7 +11,7 @@ class VisitorStats extends BaseWidget
 {
     protected static ?int $sort = 41;
 
-    protected ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = null;
 
     protected function getStats(): array
     {

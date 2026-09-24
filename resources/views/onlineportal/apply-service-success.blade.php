@@ -40,7 +40,7 @@
                     
                     <div class="flex flex-col sm:flex-row justify-between gap-4">
                         <div class="flex gap-2">
-                            <a href="{{ route('onlineportal.my.services') }}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+                            <a href="{{ route('onlineportal.my-tickets') }}" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
                                 My Services
                             </a>
                             <a href="{{ route('onlineportal.track.ticket.form') }}" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">

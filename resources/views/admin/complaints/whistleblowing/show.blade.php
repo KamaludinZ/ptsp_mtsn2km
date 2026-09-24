@@ -11,7 +11,7 @@
             <p class="text-muted mb-0">Nomor Tiket: <strong>{{ $complaint->complaint_number }}</strong></p>
         </div>
         <div>
-            <a href="{{ route('suadmin.whistleblowing.index') }}" class="btn btn-outline-primary">
+            <a href="{{ route('admin.whistleblowing.index') }}" class="btn btn-outline-primary">
                 <i class="fas fa-arrow-left me-2"></i>Kembali
             </a>
         </div>
@@ -95,13 +95,13 @@
                         <div class="mb-4">
                             <h5 class="mb-3">📁 Bukti-Bukti</h5>
                             <div class="row">
-                                @foreach(json_decode($complaint->evidence_files) as $file)
+                                @foreach(json_decode($complaint->evidence_files) as $index => $file)
                                 <div class="col-md-4 mb-3">
                                     <div class="card border h-100 shadow-sm">
                                         <div class="card-body text-center">
                                             <i class="fas fa-file-pdf fa-3x text-danger mb-2"></i>
                                             <p class="card-text small mb-1">{{ basename($file) }}</p>
-                                            <a href="{{ Storage::url($file) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <a href="{{ route('admin.complaints.evidence', [$complaint, $index]) }}" target="_blank" class="btn btn-outline-primary btn-sm">
                                                 <i class="fas fa-download me-1"></i>Lihat
                                             </a>
                                         </div>
@@ -125,7 +125,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('suadmin.whistleblowing.update-status', $complaint->id) }}" method="POST">
+                    <form action="{{ route('admin.whistleblowing.update-status', $complaint->id) }}" method="POST">
                         @csrf
                         @method('PUT')
                         

@@ -10,8 +10,8 @@
             <h4 class="text-2xl font-bold text-base-content">Blocked IP Addresses</h4>
             <div class="text-sm breadcrumbs">
                 <ul>
-                    <li><a href="{{ route('suadmin.dashboard') }}">Dashboard</a></li>
-                    <li><a href="{{ route('suadmin.security.dashboard') }}">Security</a></li>
+                    <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ route('admin.security.dashboard') }}">Security</a></li>
                     <li>Blocked IPs</li>
                 </ul>
             </div>
@@ -23,7 +23,7 @@
             <h4 class="card-title mb-4">Manage Blocked IP Addresses</h4>
             
             <!-- Block IP Form -->
-            <form action="{{ route('suadmin.security.block-ip') }}" method="POST" class="mb-8">
+            <form action="{{ route('admin.security.blocked-ips.block') }}" method="POST" class="mb-8">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -78,7 +78,7 @@
                                 </td>
                                 <td>{{ $data['blocked_by'] }}</td>
                                 <td>
-                                    <form action="{{ route('suadmin.security.unblock-ip') }}" method="POST" onsubmit="return confirm('Are you sure you want to unblock this IP address?')">
+                                    <form action="{{ route('admin.security.blocked-ips.unblock') }}" method="POST" onsubmit="return confirm('Are you sure you want to unblock this IP address?')">
                                         @csrf
                                         <input type="hidden" name="ip_address" value="{{ $ip }}">
                                         <button type="submit" class="btn btn-success btn-sm">Unblock</button>

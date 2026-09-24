@@ -112,7 +112,7 @@ class OnlinePortalController extends Controller
 
         $validated = $request->validate([
             'description' => 'required|string|max:1000',
-            'files.*' => 'nullable|file|max:10240', // Max 10MB
+            'files.*' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf,doc,docx', // Max 10MB
             'urgency_level' => 'nullable|in:normal,high,urgent',
         ]);
 
@@ -124,10 +124,11 @@ class OnlinePortalController extends Controller
             'ticket_number' => $ticketNumber,
             'service_id' => $service->id,
             'user_id' => $user->id,
-            'status' => 'pending',
+            'created_by' => $user->id,
+            'mode' => 'online',
+            'status' => 'submitted',
             'priority' => $validated['urgency_level'] ?? 'normal',
-            'description' => $validated['description'],
-            'submitted_at' => now(),
+            'notes' => $validated['description'],
         ]);
 
         // Upload files if any
@@ -149,8 +150,13 @@ class OnlinePortalController extends Controller
         if ($service->workflow) {
             $firstStep = $service->workflow->steps()->orderBy('order')->first();
             if ($firstStep) {
-                $ticket->workflowSteps()->attach($firstStep->id, [
-                    'completed_at' => null,
+                $ticketWorkflow = $ticket->ticketWorkflows()->create([
+                    'workflow_id' => $service->workflow->id,
+                    'current_step_id' => $firstStep->id,
+                ]);
+                $ticketWorkflow->ticketWorkflowSteps()->create([
+                    'workflow_step_id' => $firstStep->id,
+                    'status' => 'pending',
                     'notes' => 'Application submitted',
                 ]);
             }
@@ -169,7 +175,7 @@ class OnlinePortalController extends Controller
             ->where('ticket_number', $ticketNumber)
             ->firstOrFail();
 
-        return view('onlineportal.application-success', compact('ticket'));
+        return view('onlineportal.apply-service-success', compact('ticket'));
     }
 
     /**
@@ -196,8 +202,7 @@ class OnlinePortalController extends Controller
             'logs', 
             'files',
             'workflowSteps' => function($query) {
-                $query->withPivot('completed_at', 'notes');
-                $query->orderBy('order');
+                $query->with('workflowStep')->orderBy('id');
             },
             'output' // Include output file info
         ])
@@ -249,8 +254,9 @@ class OnlinePortalController extends Controller
 
         $stats = [
             'total' => $ticketCounts->sum(),
-            'pending' => $ticketCounts->get('pending', 0),
-            'processing' => $ticketCounts->get('processing', 0),
+            'pending' => $ticketCounts->get('submitted', 0),
+            'processing' => $ticketCounts->get('verified', 0),
+            'in_progress' => $ticketCounts->get('in_process', 0),
             'completed' => $ticketCounts->get('completed', 0),
         ];
 
@@ -289,8 +295,7 @@ class OnlinePortalController extends Controller
                 $query->orderBy('created_at', 'desc');
             },
             'workflowSteps' => function($query) {
-                $query->withPivot('completed_at', 'notes');
-                $query->orderBy('order');
+                $query->with('workflowStep')->orderBy('id');
             }
         ])
         ->where('ticket_number', $ticketNumber)
@@ -339,9 +344,13 @@ class OnlinePortalController extends Controller
     {
         $prefix = 'PTSP';
         $date = Carbon::now()->format('Ym');
-        $sequence = Ticket::whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->count() + 1;
+
+        $lastNumber = Ticket::withTrashed()
+            ->where('ticket_number', 'like', "{$prefix}-{$date}-%")
+            ->orderByRaw("CAST(RIGHT(ticket_number, 4) AS INTEGER) DESC")
+            ->value('ticket_number');
+
+        $sequence = $lastNumber ? ((int) substr($lastNumber, -4)) + 1 : 1;
 
         return sprintf('%s-%s-%04d', $prefix, $date, $sequence);
     }

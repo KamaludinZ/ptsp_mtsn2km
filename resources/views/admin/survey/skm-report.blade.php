@@ -211,7 +211,7 @@
 @push('scripts')
 <script>
 function loadArchiveDetails(archiveId) {
-    fetch(`/suadmin/survey/archive/${archiveId}`)
+    fetch(`/admin/survey/archive/${archiveId}`)
         .then(response => response.json())
         .then(data => {
             let html = '';

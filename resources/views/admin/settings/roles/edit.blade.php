@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="mb-6">
         <div class="flex items-center gap-2 mb-2">
-            <a href="{{ route('suadmin.roles.index') }}" class="btn btn-ghost btn-sm">
+            <a href="{{ route('admin.roles.index') }}" class="btn btn-ghost btn-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
@@ -34,7 +34,7 @@
     </div>
     @endif
 
-    <form action="{{ route('suadmin.roles.update', $role) }}" method="POST">
+    <form action="{{ route('admin.roles.update', $role) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -131,7 +131,7 @@
 
                     <!-- Action Buttons -->
                     <div class="card-actions justify-end px-6 pb-6">
-                        <a href="{{ route('suadmin.roles.index') }}" class="btn btn-ghost">
+                        <a href="{{ route('admin.roles.index') }}" class="btn btn-ghost">
                             Batal
                         </a>
                         <button type="submit" class="btn btn-primary">

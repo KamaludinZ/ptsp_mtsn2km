@@ -60,7 +60,7 @@ class RoleController extends Controller
 
             DB::commit();
 
-            return redirect()->route('suadmin.roles.index')
+            return redirect()->route('admin.roles.index')
                 ->with('success', 'Role berhasil ditambahkan!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -118,7 +118,7 @@ class RoleController extends Controller
 
             DB::commit();
 
-            return redirect()->route('suadmin.roles.index')
+            return redirect()->route('admin.roles.index')
                 ->with('success', 'Role berhasil diperbarui!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -148,7 +148,7 @@ class RoleController extends Controller
 
             $role->delete();
 
-            return redirect()->route('suadmin.roles.index')
+            return redirect()->route('admin.roles.index')
                 ->with('success', 'Role berhasil dihapus!');
         } catch (\Exception $e) {
             return redirect()->back()
@@ -208,7 +208,7 @@ class RoleController extends Controller
 
             DB::commit();
 
-            return redirect()->route('suadmin.roles.index')
+            return redirect()->route('admin.roles.index')
                 ->with('success', 'Role berhasil diduplikasi!');
         } catch (\Exception $e) {
             DB::rollBack();

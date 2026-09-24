@@ -11,8 +11,8 @@
                 
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('suadmin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('suadmin.complaints.index') }}">Pengaduan</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.complaints.index') }}">Pengaduan</a></li>
                         <li class="breadcrumb-item active">Edit</li>
                     </ol>
                 </div>
@@ -25,12 +25,12 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="card-title mb-0">Nomor Pengaduan: {{ $complaint->complaint_number }}</h4>
-                    <a href="{{ route('suadmin.complaints.show', $complaint) }}" class="btn btn-secondary">
+                    <a href="{{ route('admin.complaints.show', $complaint) }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Kembali
                     </a>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('suadmin.complaints.update', $complaint) }}" method="POST">
+                    <form action="{{ route('admin.complaints.update', $complaint) }}" method="POST">
                         @csrf
                         @method('PUT')
                         
@@ -194,7 +194,7 @@
                         </div>
                         
                         <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('suadmin.complaints.show', $complaint) }}" class="btn btn-secondary">Batal</a>
+                            <a href="{{ route('admin.complaints.show', $complaint) }}" class="btn btn-secondary">Batal</a>
                             <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                         </div>
                     </form>

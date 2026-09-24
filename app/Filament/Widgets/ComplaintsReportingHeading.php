@@ -12,8 +12,5 @@ class ComplaintsReportingHeading extends Widget
 
     protected static bool $isLazy = false;
 
-    public static function getView(): string
-    {
-        return 'filament.widgets.complaints-reporting-heading';
-    }
+    protected static string $view = 'filament.widgets.complaints-reporting-heading';
 }

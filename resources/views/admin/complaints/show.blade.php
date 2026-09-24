@@ -11,8 +11,8 @@
                 
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('suadmin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('suadmin.complaints.index') }}">Pengaduan</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.complaints.index') }}">Pengaduan</a></li>
                         <li class="breadcrumb-item active">Detail</li>
                     </ol>
                 </div>
@@ -26,10 +26,10 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="card-title mb-0">Nomor Pengaduan: {{ $complaint->complaint_number }}</h4>
                     <div>
-                        <a href="{{ route('suadmin.complaints.edit', $complaint) }}" class="btn btn-warning">
+                        <a href="{{ route('admin.complaints.edit', $complaint) }}" class="btn btn-warning">
                             <i class="fas fa-edit me-1"></i> Edit
                         </a>
-                        <a href="{{ route('suadmin.complaints.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('admin.complaints.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-1"></i> Kembali
                         </a>
                     </div>

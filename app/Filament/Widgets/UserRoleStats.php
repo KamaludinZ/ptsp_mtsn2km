@@ -11,7 +11,7 @@ class UserRoleStats extends BaseWidget
 {
     protected static ?int $sort = 21;
 
-    protected ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = null;
 
     protected function getStats(): array
     {

@@ -75,7 +75,7 @@
                                                     {{ $ticket->created_at->format('d M Y') }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <a href="{{ route('backoffice.process.ticket', $ticket->id) }}" class="text-indigo-600 hover:text-indigo-900">Process</a>
+                                                    <a href="{{ route('backoffice.tickets.detail', $ticket->ticket_number) }}" class="text-indigo-600 hover:text-indigo-900">Process</a>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -89,7 +89,7 @@
                     <div class="bg-white p-6 rounded-lg shadow border">
                         <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <a href="{{ route('backoffice.all.tickets') }}" class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded">
+                            <a href="{{ route('backoffice.tickets.all') }}" class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded">
                                 View All Tickets
                             </a>
                             <a href="#" class="block text-center bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded">

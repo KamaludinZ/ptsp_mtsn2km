@@ -16,7 +16,7 @@ class ServiceCategoryController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
         
-        $categories = $query->with('parent')->orderBy('sort_order')->latest()->paginate(15);
+        $categories = $query->with('parent')->orderBy('order')->latest()->paginate(15);
         
         return view('admin.service_categories.index', compact('categories'));
     }
@@ -34,14 +34,14 @@ class ServiceCategoryController extends Controller
             'slug' => 'required|string|max:255|unique:service_categories',
             'description' => 'nullable|string',
             'icon' => 'nullable|string|max:255',
-            'sort_order' => 'nullable|integer',
+            'order' => 'nullable|integer',
             'parent_id' => 'nullable|exists:service_categories,id',
             'is_active' => 'boolean',
         ]);
 
         ServiceCategory::create($request->all());
 
-        return redirect()->route('suadmin.service-categories.index')->with('success', 'Kategori layanan berhasil ditambahkan.');
+        return redirect()->route('admin.service-categories.index')->with('success', 'Kategori layanan berhasil ditambahkan.');
     }
 
     public function show(ServiceCategory $serviceCategory)
@@ -62,20 +62,20 @@ class ServiceCategoryController extends Controller
             'slug' => 'required|string|max:255|unique:service_categories,slug,' . $serviceCategory->id,
             'description' => 'nullable|string',
             'icon' => 'nullable|string|max:255',
-            'sort_order' => 'nullable|integer',
+            'order' => 'nullable|integer',
             'parent_id' => 'nullable|exists:service_categories,id|not_in:' . $serviceCategory->id,
             'is_active' => 'boolean',
         ]);
 
         $serviceCategory->update($request->all());
 
-        return redirect()->route('suadmin.service-categories.index')->with('success', 'Kategori layanan berhasil diperbarui.');
+        return redirect()->route('admin.service-categories.index')->with('success', 'Kategori layanan berhasil diperbarui.');
     }
 
     public function destroy(ServiceCategory $serviceCategory)
     {
         $serviceCategory->delete();
 
-        return redirect()->route('suadmin.service-categories.index')->with('success', 'Kategori layanan berhasil dihapus.');
+        return redirect()->route('admin.service-categories.index')->with('success', 'Kategori layanan berhasil dihapus.');
     }
 }

@@ -11,7 +11,7 @@
                     <h4 class="card-title mb-0">Tambah Pengunjung Baru</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('suadmin.visitors.store') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.visitors.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row">
                             <div class="col-md-6">
@@ -110,7 +110,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-end">
-                            <a href="{{ route('suadmin.visitors.index') }}" class="btn btn-secondary me-2">Batal</a>
+                            <a href="{{ route('admin.visitors.index') }}" class="btn btn-secondary me-2">Batal</a>
                             <button type="submit" class="btn btn-primary">Simpan Pengunjung</button>
                         </div>
                     </form>

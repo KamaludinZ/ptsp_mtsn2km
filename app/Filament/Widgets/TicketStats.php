@@ -12,7 +12,7 @@ class TicketStats extends BaseWidget
 {
     protected static ?int $sort = 32;
 
-    protected ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = null;
 
     protected function getStats(): array
     {

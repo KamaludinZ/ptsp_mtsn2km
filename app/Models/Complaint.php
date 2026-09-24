@@ -15,6 +15,7 @@ class Complaint extends Model
     protected $fillable = [
         'complaint_type',
         'title',
+        'subject',
         'description',
         'complainant_name',
         'complainant_contact',
@@ -28,6 +29,7 @@ class Complaint extends Model
         'resolved_by',
         'anonymous',
         'complaint_number',
+        'related_ticket_number',
         'type',
         'reporter_name',
         'reporter_email',
@@ -36,12 +38,20 @@ class Complaint extends Model
         'category',
         'assigned_to_id',
         'response',
-        'is_whistleblowing'
+        'is_whistleblowing',
+        'incident_date',
+        'incident_location',
+        'involved_parties',
+        'is_confidential',
+        'evidence_files',
     ];
 
     protected $casts = [
         'resolved_at' => 'datetime',
+        'incident_date' => 'date',
         'anonymous' => 'boolean',
+        'is_whistleblowing' => 'boolean',
+        'is_confidential' => 'boolean',
     ];
 
     // Relationship with user who made the complaint
@@ -119,7 +129,7 @@ class Complaint extends Model
         
         // Get the next sequence number
         $lastComplaint = static::where('complaint_number', 'LIKE', "{$prefix}-{$yearMonth}-%")
-            ->orderByRaw("CAST(SUBSTR(complaint_number, -3) AS INTEGER) DESC")
+            ->orderByRaw("CAST(RIGHT(complaint_number, 3) AS INTEGER) DESC")
             ->first();
         
         $sequence = 1;

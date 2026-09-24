@@ -12,7 +12,7 @@ class ServiceStats extends BaseWidget
 {
     protected static ?int $sort = 31;
 
-    protected ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = null;
 
     protected function getStats(): array
     {

@@ -10,8 +10,8 @@
             <h4 class="text-2xl font-bold text-base-content">Security Logs</h4>
             <div class="text-sm breadcrumbs">
                 <ul>
-                    <li><a href="{{ route('suadmin.dashboard') }}">Dashboard</a></li>
-                    <li><a href="{{ route('suadmin.security.dashboard') }}">Security</a></li>
+                    <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ route('admin.security.dashboard') }}">Security</a></li>
                     <li>Logs</li>
                 </ul>
             </div>
@@ -23,7 +23,7 @@
             <h4 class="card-title mb-4">Recent Security Events</h4>
             
             <!-- Filter Form -->
-            <form method="GET" action="{{ route('suadmin.security.logs') }}" class="mb-4">
+            <form method="GET" action="{{ route('admin.security.logs') }}" class="mb-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
                         <label for="search" class="label">

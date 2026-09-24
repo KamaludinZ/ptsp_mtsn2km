@@ -52,44 +52,57 @@ class SupervisionController extends Controller
         $validated = $request->validate([
             'complaint_type' => 'required|in:complaint,suggestion,whistleblowing',
             'reporter_name' => 'required|string|max:255',
-            'reporter_email' => 'nullable|email|max:255',
+            'reporter_email' => 'required|email|max:255',
             'reporter_phone' => 'nullable|string|max:20',
-            'subject' => 'required|string|max:255',
-            'description' => 'required|string|max:2000',
-            'related_ticket_number' => 'nullable|string|max:50',
-            'evidence_files.*' => 'nullable|file|max:10240',
-            'is_anonymous' => 'nullable|boolean',
+            'complaint_title' => 'required|string|max:255',
+            'complaint_description' => 'required|string|max:2000',
+            'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf',
         ]);
 
         $complaint = Complaint::create([
             'complaint_number' => $this->generateComplaintNumber(),
             'complaint_type' => $validated['complaint_type'],
-            'reporter_name' => $validated['is_anonymous'] ? 'Anonim' : $validated['reporter_name'],
-            'reporter_email' => $validated['is_anonymous'] ? null : $validated['reporter_email'],
-            'reporter_phone' => $validated['is_anonymous'] ? null : $validated['reporter_phone'],
-            'subject' => $validated['subject'],
-            'description' => $validated['description'],
-            'related_ticket_number' => $validated['related_ticket_number'] ?? null,
-            'status' => 'pending',
-            'is_anonymous' => $validated['is_anonymous'] ?? false,
+            'reporter_name' => $validated['reporter_name'],
+            'reporter_email' => $validated['reporter_email'],
+            'reporter_phone' => $validated['reporter_phone'] ?? null,
+            'complainant_name' => $validated['reporter_name'],
+            'complainant_email' => $validated['reporter_email'],
+            'complainant_contact' => $validated['reporter_phone'] ?? null,
+            'title' => $validated['complaint_title'],
+            'subject' => $validated['complaint_title'],
+            'description' => $validated['complaint_description'],
+            'status' => 'submitted',
+            'anonymous' => false,
         ]);
 
-        // Handle evidence files
-        if ($request->hasFile('evidence_files')) {
-            foreach ($request->file('evidence_files') as $file) {
-                $path = $file->store('complaint-evidence', 'public');
-
-                $complaint->evidenceFiles()->create([
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_path' => $path,
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
-                ]);
-            }
-        }
+        $this->storeEvidenceFile($request, $complaint);
 
         return redirect()->route('supervision.complaint.success', $complaint->complaint_number)
             ->with('success', 'Pengaduan berhasil disimpan dengan nomor: ' . $complaint->complaint_number);
+    }
+
+    /**
+     * Store the (optional) single evidence attachment as a JSON-encoded
+     * array of storage paths on the complaint's evidence_files column.
+     */
+    private function storeEvidenceFile(Request $request, Complaint $complaint): void
+    {
+        if (!$request->hasFile('attachment')) {
+            return;
+        }
+
+        $files = $request->file('attachment');
+        $files = is_array($files) ? $files : [$files];
+
+        $paths = [];
+        foreach ($files as $file) {
+            // Stored privately — evidence (especially whistleblowing) must not
+            // be reachable via a guessable public URL. Served only through
+            // Admin\ComplaintController::downloadEvidence() to admin staff.
+            $paths[] = $file->store('complaint-evidence', 'local');
+        }
+
+        $complaint->update(['evidence_files' => json_encode($paths)]);
     }
 
     /**
@@ -116,17 +129,17 @@ class SupervisionController extends Controller
     {
         $validated = $request->validate([
             'complaint_number' => 'required|string',
-            'reporter_email' => 'nullable|email',
+            'reporter_email' => 'required|email',
         ]);
 
-        $complaint = Complaint::where('complaint_number', $validated['complaint_number']);
-
-        // If email provided, verify ownership (unless anonymous)
-        if (!empty($validated['reporter_email']) && !$complaint->is_anonymous) {
-            $complaint->where('reporter_email', $validated['reporter_email']);
-        }
-
-        $complaint = $complaint->firstOrFail();
+        // Ownership must always be verified by the reporter's own email —
+        // never look up a complaint (especially whistleblowing) by number alone.
+        $complaint = Complaint::where('complaint_number', $validated['complaint_number'])
+            ->where(function ($q) use ($validated) {
+                $q->where('reporter_email', $validated['reporter_email'])
+                  ->orWhere('complainant_email', $validated['reporter_email']);
+            })
+            ->firstOrFail();
 
         return view('supervision.complaint-track-result', compact('complaint'));
     }
@@ -136,7 +149,7 @@ class SupervisionController extends Controller
      */
     public function whistleblowingForm()
     {
-        return view('supervision.whistleblowing-form');
+        return view('supervision.complaint-form', ['activeTab' => 'whistleblowing']);
     }
 
     /**
@@ -145,42 +158,37 @@ class SupervisionController extends Controller
     public function submitWhistleblowing(Request $request)
     {
         $validated = $request->validate([
-            'reporter_name' => 'required|string|max:255', // Will be marked as anonymous
-            'subject' => 'required|string|max:255',
-            'description' => 'required|string|max:2000',
-            'involved_parties' => 'nullable|string|max:500',
+            'violation_category' => 'nullable|string|max:255',
+            'complaint_title' => 'required|string|max:255',
+            'complaint_description' => 'required|string|max:2000',
             'incident_date' => 'nullable|date',
-            'incident_location' => 'nullable|string|max:255',
-            'evidence_files.*' => 'nullable|file|max:10240',
+            'anonymous' => 'nullable|boolean',
+            'reporter_name' => 'nullable|string|max:255',
+            'reporter_email' => 'nullable|email|max:255',
+            'reporter_phone' => 'nullable|string|max:20',
+            'attachment.*' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf',
         ]);
+
+        $isAnonymous = (bool) ($validated['anonymous'] ?? false);
 
         $complaint = Complaint::create([
             'complaint_number' => $this->generateComplaintNumber(),
             'complaint_type' => 'whistleblowing',
-            'reporter_name' => 'Anonim', // Always anonymous for whistleblowing
-            'subject' => $validated['subject'],
-            'description' => $validated['description'],
-            'involved_parties' => $validated['involved_parties'] ?? null,
+            'category' => $validated['violation_category'] ?? null,
+            'title' => $validated['complaint_title'],
+            'subject' => $validated['complaint_title'],
+            'description' => $validated['complaint_description'],
             'incident_date' => $validated['incident_date'] ?? null,
-            'incident_location' => $validated['incident_location'] ?? null,
-            'status' => 'pending',
-            'is_anonymous' => true,
+            'reporter_name' => $isAnonymous ? 'Anonim' : ($validated['reporter_name'] ?? 'Anonim'),
+            'reporter_email' => $isAnonymous ? null : ($validated['reporter_email'] ?? null),
+            'reporter_phone' => $isAnonymous ? null : ($validated['reporter_phone'] ?? null),
+            'status' => 'submitted',
+            'anonymous' => $isAnonymous,
+            'is_whistleblowing' => true,
             'is_confidential' => true,
         ]);
 
-        // Handle evidence files
-        if ($request->hasFile('evidence_files')) {
-            foreach ($request->file('evidence_files') as $file) {
-                $path = $file->store('whistleblowing-evidence', 'public');
-
-                $complaint->evidenceFiles()->create([
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_path' => $path,
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
-                ]);
-            }
-        }
+        $this->storeEvidenceFile($request, $complaint);
 
         return redirect()->route('supervision.whistleblowing.success', $complaint->complaint_number)
             ->with('success', 'Laporan whistleblowing berhasil disimpan dengan nomor: ' . $complaint->complaint_number);
@@ -372,7 +380,9 @@ class SupervisionController extends Controller
      */
     public function surveySuccess()
     {
-        return view('supervision.survey-success');
+        // Deprecated route kept only for backward-compatible links;
+        // the current survey flow's success page lives under survey.success.
+        return redirect()->route('survey.success');
     }
 
     /**
@@ -410,7 +420,7 @@ class SupervisionController extends Controller
         // Calculate results
         $results = [];
         foreach ($survey->questions as $question) {
-            $answers = $question->answers()->pluck('answer');
+            $answers = $question->answers()->whereNotNull('rating_value')->pluck('rating_value');
             $totalAnswers = $answers->count();
 
             if ($totalAnswers > 0) {
@@ -419,10 +429,10 @@ class SupervisionController extends Controller
                     'total_responses' => $totalAnswers,
                     'average_score' => round($answers->avg(), 2),
                     'distribution' => [
-                        1 => $answers->where('answer', 1)->count(),
-                        2 => $answers->where('answer', 2)->count(),
-                        3 => $answers->where('answer', 3)->count(),
-                        4 => $answers->where('answer', 4)->count(),
+                        1 => $answers->where(fn ($v) => (int) $v === 1)->count(),
+                        2 => $answers->where(fn ($v) => (int) $v === 2)->count(),
+                        3 => $answers->where(fn ($v) => (int) $v === 3)->count(),
+                        4 => $answers->where(fn ($v) => (int) $v === 4)->count(),
                     ],
                 ];
             }
@@ -508,9 +518,16 @@ class SupervisionController extends Controller
         };
 
         $date = Carbon::now()->format('Ym');
-        $sequence = Complaint::whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->count() + 1;
+
+        // Count alone can collide with a soft-deleted row still holding a
+        // number (unique constraint applies regardless of deleted_at), so
+        // derive the next sequence from the highest existing number instead.
+        $lastNumber = Complaint::withTrashed()
+            ->where('complaint_number', 'like', "{$prefix}-{$date}-%")
+            ->orderByRaw("CAST(RIGHT(complaint_number, 4) AS INTEGER) DESC")
+            ->value('complaint_number');
+
+        $sequence = $lastNumber ? ((int) substr($lastNumber, -4)) + 1 : 1;
 
         return sprintf('%s-%s-%04d', $prefix, $date, $sequence);
     }
@@ -522,7 +539,7 @@ class SupervisionController extends Controller
     {
         $completedTickets = Ticket::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', 'completed')
-            ->whereNotNull('completed_at')
+            ->whereNotNull('actual_completion_date')
             ->get();
 
         if ($completedTickets->isEmpty()) {
@@ -530,7 +547,7 @@ class SupervisionController extends Controller
         }
 
         $totalMinutes = $completedTickets->sum(function($ticket) {
-            return $ticket->created_at->diffInMinutes($ticket->completed_at);
+            return $ticket->created_at->diffInMinutes($ticket->actual_completion_date);
         });
 
         return round($totalMinutes / $completedTickets->count(), 2);

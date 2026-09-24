@@ -12,7 +12,7 @@ class ComplaintWhistleblowingStats extends BaseWidget
 {
     protected static ?int $sort = 51;
 
-    protected ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = null;
 
     protected function getStats(): array
     {

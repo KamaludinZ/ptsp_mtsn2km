@@ -11,8 +11,8 @@
                 
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('suadmin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('suadmin.complaints.index') }}">Pengaduan</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.complaints.index') }}">Pengaduan</a></li>
                         <li class="breadcrumb-item active">Tambah</li>
                     </ol>
                 </div>
@@ -27,7 +27,7 @@
                     <h4 class="card-title mb-0">Form Tambah Pengaduan</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('suadmin.complaints.store') }}" method="POST">
+                    <form action="{{ route('admin.complaints.store') }}" method="POST">
                         @csrf
                         
                         <div class="row">
@@ -181,7 +181,7 @@
                         </div>
                         
                         <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('suadmin.complaints.index') }}" class="btn btn-secondary">Batal</a>
+                            <a href="{{ route('admin.complaints.index') }}" class="btn btn-secondary">Batal</a>
                             <button type="submit" class="btn btn-primary">Simpan</button>
                         </div>
                     </form>

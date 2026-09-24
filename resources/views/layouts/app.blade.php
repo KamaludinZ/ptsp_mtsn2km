@@ -9,10 +9,11 @@
 
         {{-- Vite Assets: Tailwind CSS and Font Awesome (Local - No CDN) --}}
         @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
-            @vite(['resources/css/bootstrap-custom.css', 'resources/css/app.css', 'resources/css/dark-mode.css', 'resources/css/public-layout.css', 'resources/css/accessibility.css', 'resources/css/loading.css', 'resources/js/bootstrap-bundle.js', 'resources/js/app.js', 'resources/js/accessibility.js'])
+            @vite(['resources/css/bootstrap-custom.css', 'resources/css/app.css', 'resources/css/fontawesome.css', 'resources/css/dark-mode.css', 'resources/css/public-layout.css', 'resources/css/accessibility.css', 'resources/css/loading.css', 'resources/js/bootstrap-bundle.js', 'resources/js/app.js', 'resources/js/accessibility.js'])
         @else
             {!! App\Helpers\AssetHelper::css('resources/css/bootstrap-custom.css') !!}
             {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
+            {!! App\Helpers\AssetHelper::css('resources/css/fontawesome.css') !!}
             {!! App\Helpers\AssetHelper::css('resources/css/dark-mode.css') !!}
             {!! App\Helpers\AssetHelper::css('resources/css/public-layout.css') !!}
             {!! App\Helpers\AssetHelper::css('resources/css/accessibility.css') !!}

@@ -10,8 +10,8 @@
             <h4 class="text-2xl font-bold text-base-content">Security Scan Results</h4>
             <div class="text-sm breadcrumbs">
                 <ul>
-                    <li><a href="{{ route('suadmin.dashboard') }}">Dashboard</a></li>
-                    <li><a href="{{ route('suadmin.security.dashboard') }}">Security</a></li>
+                    <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ route('admin.security.dashboard') }}">Security</a></li>
                     <li>Scan Results</li>
                 </ul>
             </div>

@@ -175,7 +175,7 @@ Route::middleware(['auth', 'check.email.verification'])->group(function () {
 });
 
 // Admin Dashboard Routes (consolidated from suadmin)
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard'); // Main admin dashboard route
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard.alt'); // Keep for compatibility
     Route::get('/api/service-performance-data', [AdminDashboardController::class, 'getServicePerformanceData'])->name('api.service-performance-data');
@@ -212,6 +212,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/whistleblowing', [AdminComplaintController::class, 'whistleblowingIndex'])->name('whistleblowing.index');
     Route::get('/whistleblowing/{complaint}', [AdminComplaintController::class, 'whistleblowingShow'])->name('whistleblowing.show');
     Route::put('/whistleblowing/{complaint}/status', [AdminComplaintController::class, 'updateWhistleblowingStatus'])->name('whistleblowing.update-status');
+    Route::get('/complaints/{complaint}/evidence/{index}', [AdminComplaintController::class, 'downloadEvidence'])->name('complaints.evidence');
 
     // Survey Management
     Route::get('/survey-management', [AdminSurveyController::class, 'management'])->name('survey.management');
@@ -255,9 +256,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/blocked-ips/unblock', [AdminSecurityController::class, 'unblockIP'])->name('blocked-ips.unblock');
         Route::get('/rate-limiting', [AdminSecurityController::class, 'rateLimitConfig'])->name('rate-limiting');
         Route::post('/rate-limiting/update', [AdminSecurityController::class, 'updateRateLimitConfig'])->name('rate-limiting.update');
-        Route::get('/maintenance', [AdminSecurityController::class, 'maintenanceMode'])->name('admin.security.maintenance');
-        Route::post('/maintenance/enable', [AdminSecurityController::class, 'enableMaintenanceMode'])->name('admin.security.maintenance.enable');
-        Route::post('/maintenance/disable', [AdminSecurityController::class, 'disableMaintenanceMode'])->name('admin.security.maintenance.disable');
+        Route::get('/maintenance', [AdminSecurityController::class, 'maintenanceMode'])->name('maintenance');
+        Route::post('/maintenance/enable', [AdminSecurityController::class, 'enableMaintenanceMode'])->name('maintenance.enable');
+        Route::post('/maintenance/disable', [AdminSecurityController::class, 'disableMaintenanceMode'])->name('maintenance.disable');
         Route::post('/cache/clear', [AdminSecurityController::class, 'clearCache'])->name('cache.clear');
         Route::get('/api/maintenance-status', [AdminSecurityController::class, 'getMaintenanceStatus']);
     });
@@ -282,11 +283,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/roles/{role}/permissions', [AdminRoleController::class, 'getPermissions'])->name('roles.permissions');
 
     // User Management
+    // /users/export must be registered before the resource route below,
+    // otherwise GET /users/{user} greedily matches "export" as the id.
+    Route::get('/users/export', [AdminUserManagementController::class, 'export'])->name('users.export');
     Route::resource('users', AdminUserManagementController::class);
     Route::post('/users/{user}/toggle-status', [AdminUserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::post('/users/{user}/reset-password', [AdminUserManagementController::class, 'resetPassword'])->name('users.reset-password');
     Route::post('/users/bulk-action', [AdminUserManagementController::class, 'bulkAction'])->name('users.bulk-action');
-    Route::get('/users/export', [AdminUserManagementController::class, 'export'])->name('users.export');
 });
 
 
@@ -294,7 +297,3 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
 // Authentication Routes (these will be handled by Laravel Breeze)
 require __DIR__.'/auth.php';
-
-Route::get('/debug-session', function () {
-    return session()->all();
-});

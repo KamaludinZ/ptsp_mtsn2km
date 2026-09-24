@@ -76,7 +76,7 @@
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="card-title mb-0">Buku Tamu & Pengunjung</h4>
-                    <a href="{{ route('suadmin.visitors.create') }}" class="btn btn-light">
+                    <a href="{{ route('admin.visitors.create') }}" class="btn btn-light">
                         <i class="fas fa-plus"></i> Tambah Pengunjung
                     </a>
                 </div>
@@ -145,13 +145,13 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ route('suadmin.visitors.show', $visitor) }}" class="btn btn-sm btn-info">
+                                            <a href="{{ route('admin.visitors.show', $visitor) }}" class="btn btn-sm btn-info">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('suadmin.visitors.edit', $visitor) }}" class="btn btn-sm btn-primary">
+                                            <a href="{{ route('admin.visitors.edit', $visitor) }}" class="btn btn-sm btn-primary">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <form action="{{ route('suadmin.visitors.destroy', $visitor) }}" method="POST" class="d-inline">
+                                            <form action="{{ route('admin.visitors.destroy', $visitor) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus data pengunjung ini?')">
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const dateTo = document.getElementById('dateToFilter').value;
         const search = document.getElementById('searchInput').value;
         
-        let url = '{{ route('suadmin.visitors.index') }}';
+        let url = '{{ route('admin.visitors.index') }}';
         const params = [];
         
         if (status) params.push('status=' + status);

@@ -17,7 +17,7 @@ class FrontDeskController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('permission:frontdesk-access');
+        $this->middleware('permission:frontdesk.access');
     }
 
     /**
@@ -30,12 +30,12 @@ class FrontDeskController extends Controller
         $stats = [
             'visitors_today' => Visitor::whereDate('created_at', $today)->count(),
             'active_visitors' => Visitor::whereDate('created_at', $today)
-                ->whereNull('checkout_at')->count(),
+                ->whereNull('check_out_time')->count(),
             'tickets_today' => Ticket::whereDate('created_at', $today)->count(),
-            'pending_tickets' => Ticket::where('status', 'pending')->count(),
+            'pending_tickets' => Ticket::where('status', 'submitted')->count(),
         ];
 
-        $recentVisitors = Visitor::with('targetUser')
+        $recentVisitors = Visitor::with('staff')
             ->whereDate('created_at', $today)
             ->orderBy('created_at', 'desc')
             ->limit(10)
@@ -80,17 +80,19 @@ class FrontDeskController extends Controller
         ]);
 
         if ($validated['visitor_type'] === 'guest') {
+            $targetUser = User::find($validated['target_user_id']);
+
             // Create visitor record
             $visitor = Visitor::create([
                 'name' => $validated['visitor_name'],
                 'email' => $validated['visitor_email'] ?? null,
                 'phone' => $validated['visitor_phone'] ?? null,
-                'institution' => $validated['visitor_institution'] ?? null,
+                'institution' => $validated['visitor_institution'] ?? '-',
                 'purpose' => $validated['purpose'],
-                'target_user_id' => $validated['target_user_id'],
-                'checkin_at' => now(),
-                'checked_in_by' => Auth::id(),
-                'type' => 'guest',
+                'person_to_meet' => $targetUser->name ?? null,
+                'check_in_time' => now(),
+                'created_by' => Auth::id(),
+                'status' => 'active',
             ]);
 
             // Handle photo upload
@@ -141,7 +143,7 @@ class FrontDeskController extends Controller
             'applicant_phone' => 'required|string|max:20',
             'applicant_type' => 'required|in:guru,pegawai,siswa,walimurid,alumni,instansi,umum',
             'description' => 'required|string|max:1000',
-            'files.*' => 'nullable|file|max:10240',
+            'files.*' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf,doc,docx',
             'urgency_level' => 'nullable|in:normal,high,urgent',
         ]);
 
@@ -158,12 +160,12 @@ class FrontDeskController extends Controller
             'ticket_number' => $ticketNumber,
             'service_id' => $service->id,
             'user_id' => $user->id,
-            'status' => 'pending',
+            'created_by' => Auth::id(),
+            'current_handler_id' => Auth::id(),
+            'mode' => 'offline',
+            'status' => 'submitted',
             'priority' => $validated['urgency_level'] ?? 'normal',
-            'description' => $validated['description'],
-            'submitted_at' => now(),
-            'submitted_via' => 'walk_in',
-            'processed_by' => Auth::id(),
+            'notes' => $validated['description'],
         ]);
 
         // Upload files
@@ -194,7 +196,7 @@ class FrontDeskController extends Controller
             ->where('ticket_number', $ticketNumber)
             ->firstOrFail();
 
-        return view('frontdesk.service-success', compact('ticket'));
+        return view('frontdesk.register-offline-service-success', compact('ticket'));
     }
 
     /**
@@ -204,7 +206,7 @@ class FrontDeskController extends Controller
     {
         $date = request('date', Carbon::today()->toDateString());
 
-        $visitors = Visitor::with(['targetUser', 'checkedInBy', 'checkedOutBy'])
+        $visitors = Visitor::with('staff')
             ->whereDate('created_at', $date)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -217,13 +219,12 @@ class FrontDeskController extends Controller
      */
     public function checkoutVisitor(Visitor $visitor)
     {
-        if ($visitor->checkout_at) {
+        if ($visitor->check_out_time) {
             return back()->with('error', 'Tamu sudah check out.');
         }
 
         $visitor->update([
-            'checkout_at' => now(),
-            'checked_out_by' => Auth::id(),
+            'check_out_time' => now(),
         ]);
 
         return back()->with('success', 'Tamu berhasil check out.');
@@ -242,12 +243,14 @@ class FrontDeskController extends Controller
      */
     public function activeVisitors()
     {
-        $activeVisitors = Visitor::with(['targetUser', 'checkedInBy'])
-            ->whereNull('checkout_at')
+        $activeVisitors = Visitor::with('staff')
+            ->whereNull('check_out_time')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('frontdesk.active-visitors', compact('activeVisitors'));
+        $visitors = $activeVisitors;
+
+        return view('frontdesk.active-visitors', compact('activeVisitors', 'visitors'));
     }
 
     /**
@@ -257,7 +260,7 @@ class FrontDeskController extends Controller
     {
         $search = $request->get('search');
 
-        $visitors = Visitor::with(['targetUser'])
+        $visitors = Visitor::with('staff')
             ->where(function($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
@@ -276,23 +279,27 @@ class FrontDeskController extends Controller
      */
     private function findOrCreateUser($data)
     {
-        // Try to find existing user by email or phone
+        // Try to find existing user by email or WhatsApp number
         $user = User::where(function($query) use ($data) {
                 if (!empty($data['applicant_email'])) {
                     $query->where('email', $data['applicant_email']);
                 }
                 if (!empty($data['applicant_phone'])) {
-                    $query->orWhere('phone', $data['applicant_phone']);
+                    $query->orWhere('whatsapp_number', $data['applicant_phone']);
                 }
             })
             ->first();
 
         if (!$user) {
+            // email is NOT NULL/unique on users; walk-in applicants aren't
+            // always able to give one, so synthesize one from their phone.
+            $email = $data['applicant_email'] ?? ($data['applicant_phone'] . '@walkin.local');
+
             // Create new user
             $user = User::create([
                 'name' => $data['applicant_name'],
-                'email' => $data['applicant_email'] ?? null,
-                'phone' => $data['applicant_phone'] ?? null,
+                'email' => $email,
+                'whatsapp_number' => $data['applicant_phone'] ?? null,
                 'user_type' => $data['applicant_type'],
                 'password' => bcrypt(str()->random(10)), // Random password
                 'is_active' => true,
@@ -319,9 +326,13 @@ class FrontDeskController extends Controller
     {
         $prefix = 'PTSP';
         $date = Carbon::now()->format('Ym');
-        $sequence = Ticket::whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->count() + 1;
+
+        $lastNumber = Ticket::withTrashed()
+            ->where('ticket_number', 'like', "{$prefix}-{$date}-%")
+            ->orderByRaw("CAST(RIGHT(ticket_number, 4) AS INTEGER) DESC")
+            ->value('ticket_number');
+
+        $sequence = $lastNumber ? ((int) substr($lastNumber, -4)) + 1 : 1;
 
         return sprintf('%s-%s-%04d', $prefix, $date, $sequence);
     }

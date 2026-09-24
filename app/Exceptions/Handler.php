@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -153,7 +154,7 @@ class Handler extends ExceptionHandler
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => collect($e->getTrace())->map(function ($trace) {
-                    return array_only($trace, ['file', 'line']);
+                    return Arr::only($trace, ['file', 'line']);
                 })->all(),
             ];
         }

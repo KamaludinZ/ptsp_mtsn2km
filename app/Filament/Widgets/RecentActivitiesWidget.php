@@ -14,14 +14,9 @@ class RecentActivitiesWidget extends Widget
 {
     protected static ?int $sort = 9;
 
-    protected string $view;
+    protected static string $view = 'filament.widgets.recent-activities';
 
-    protected ?string $pollingInterval = null;
-
-    public function __construct()
-    {
-        $this->view = 'filament.widgets.recent-activities';
-    }
+    protected static ?string $pollingInterval = null;
 
     protected function getViewData(): array
     {

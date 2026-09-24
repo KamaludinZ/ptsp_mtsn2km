@@ -14,7 +14,7 @@
             <h4 class="text-2xl font-bold text-base-content">Daftar Pengaduan</h4>
             <div class="text-sm breadcrumbs">
                 <ul>
-                    <li><a href="{{ route('suadmin.dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                     <li>Pengaduan</li>
                 </ul>
             </div>
@@ -72,7 +72,7 @@
                         <i class="fas fa-bullhorn fa-2x"></i>
                     </div>
                     <div class="flex-grow-1">
-                        <h4 class="text-2xl font-bold">{{ \App\Models\Complaint::where(function($q) { $q->where('is_whistleblowing', false)->orWhere('is_whistleblowing', null); })->where('type', 'saran')->count() }}</h4>
+                        <h4 class="text-2xl font-bold">{{ \App\Models\Complaint::where(function($q) { $q->where('is_whistleblowing', false)->orWhere('is_whistleblowing', null); })->where('complaint_type', 'suggestion')->count() }}</h4>
                         <p class="mb-0">Saran/Masukan</p>
                     </div>
                 </div>
@@ -83,13 +83,13 @@
     <div class="card bg-base-100 shadow-xl">
         <div class="card-header bg-base-200 text-base-content">
             <h4 class="card-title mb-0">Daftar Pengaduan</h4>
-            <a href="{{ route('suadmin.complaints.create') }}" class="btn btn-primary">
+            <a href="{{ route('admin.complaints.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus mr-1"></i> Tambah Pengaduan
             </a>
         </div>
         <div class="card-body">
             <!-- Filter Form -->
-            <form method="GET" action="{{ route('suadmin.complaints.index') }}" class="mb-4">
+            <form method="GET" action="{{ route('admin.complaints.index') }}" class="mb-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                         <label for="status" class="label">
@@ -199,17 +199,17 @@
                                     </label>
                                     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32">
                                         <li>
-                                            <a href="{{ route('suadmin.complaints.show', $complaint) }}">
+                                            <a href="{{ route('admin.complaints.show', $complaint) }}">
                                                 <i class="fas fa-eye"></i> Lihat
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('suadmin.complaints.edit', $complaint) }}">
+                                            <a href="{{ route('admin.complaints.edit', $complaint) }}">
                                                 <i class="fas fa-edit"></i> Edit
                                             </a>
                                         </li>
                                         <li>
-                                            <form action="{{ route('suadmin.complaints.destroy', $complaint) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengaduan ini?')">
+                                            <form action="{{ route('admin.complaints.destroy', $complaint) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengaduan ini?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-error">
@@ -251,11 +251,11 @@
             <div class="flex flex-wrap justify-center gap-2 mt-3">
                 <div class="badge badge-outline badge-primary">
                     <i class="fas fa-exclamation-circle mr-1"></i>
-                    {{ \App\Models\Complaint::where('type', 'pengaduan')->where(function($q) { $q->where('is_whistleblowing', false)->orWhere('is_whistleblowing', null); })->count() }} Pengaduan
+                    {{ \App\Models\Complaint::where('complaint_type', 'complaint')->where(function($q) { $q->where('is_whistleblowing', false)->orWhere('is_whistleblowing', null); })->count() }} Pengaduan
                 </div>
                 <div class="badge badge-outline badge-success">
                     <i class="fas fa-lightbulb mr-1"></i>
-                    {{ \App\Models\Complaint::where('type', 'saran')->where(function($q) { $q->where('is_whistleblowing', false)->orWhere('is_whistleblowing', null); })->count() }} Saran
+                    {{ \App\Models\Complaint::where('complaint_type', 'suggestion')->where(function($q) { $q->where('is_whistleblowing', false)->orWhere('is_whistleblowing', null); })->count() }} Saran
                 </div>
                 <div class="badge badge-outline badge-info">
                     <i class="fas fa-comments mr-1"></i>

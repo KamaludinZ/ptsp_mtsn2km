@@ -17,7 +17,7 @@ class SurveyQuestionSeeder extends Seeder
             [
                 'survey_type' => 'identity',
                 'question' => 'Pilih Jenis Pelayanan',
-                'options' => json_encode([
+                'options' => [
                     'Mutasi Siswa Masuk',
                     'Mutasi Siswa Keluar',
                     'Penerbitan Surat Rekomendasi Siswa',
@@ -35,7 +35,7 @@ class SurveyQuestionSeeder extends Seeder
                     'SOP Kerjasama dengan Wartawan',
                     'Screening Kesehatan Siswa',
                     'Penerimaan Iuran Komite'
-                ]),
+                ],
                 'field_type' => 'select',
                 'order' => 1,
             ],
@@ -49,41 +49,41 @@ class SurveyQuestionSeeder extends Seeder
             [
                 'survey_type' => 'identity',
                 'question' => 'Usia',
-                'options' => json_encode([
+                'options' => [
                     'Dibawah 20 Tahun',
                     '21 s.d 30 Tahun',
                     '31 s.d 40 Tahun',
                     '41 s.d 50 Tahun',
                     'Diatas 50 Tahun'
-                ]),
+                ],
                 'field_type' => 'radio',
                 'order' => 3,
             ],
             [
                 'survey_type' => 'identity',
                 'question' => 'Jenis Kelamin',
-                'options' => json_encode(['Laki-laki', 'Perempuan']),
+                'options' => ['Laki-laki', 'Perempuan'],
                 'field_type' => 'radio',
                 'order' => 4,
             ],
             [
                 'survey_type' => 'identity',
                 'question' => 'Pendidikan',
-                'options' => json_encode(['SD', 'SMP', 'SMA', 'D3', 'D4/S1', 'S2', 'S3']),
+                'options' => ['SD', 'SMP', 'SMA', 'D3', 'D4/S1', 'S2', 'S3'],
                 'field_type' => 'select',
                 'order' => 5,
             ],
             [
                 'survey_type' => 'identity',
                 'question' => 'Pekerjaan',
-                'options' => json_encode([
+                'options' => [
                     'PNS/TNI/POLRI',
                     'Pegawai Swasta',
                     'Wiraswasta',
                     'Petani/Pekebun',
                     'Pelajar/Mahasiswa',
                     'Lainnya'
-                ]),
+                ],
                 'field_type' => 'select',
                 'order' => 6,
             ],
@@ -114,47 +114,47 @@ class SurveyQuestionSeeder extends Seeder
         $skmQuestions = [
             [
                 'question' => 'Bagaimana pendapat Saudara tentang kesesuaian persyaratan layanan di MTsN 2 Kota Malang dengan jenis pelayanannya?',
-                'options' => json_encode(['Tidak Sesuai', 'Kurang Sesuai', 'Sesuai', 'Sangat Sesuai']),
+                'options' => ['Tidak Sesuai', 'Kurang Sesuai', 'Sesuai', 'Sangat Sesuai'],
                 'unsur' => 'Persyaratan',
             ],
             [
                 'question' => 'Bagaimana pemahaman Saudara tentang kemudahan prosedur pelayanan di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Tidak Mudah', 'Kurang Mudah', 'Mudah', 'Sangat Mudah']),
+                'options' => ['Tidak Mudah', 'Kurang Mudah', 'Mudah', 'Sangat Mudah'],
                 'unsur' => 'Prosedur',
             ],
             [
                 'question' => 'Bagaimana pendapat Saudara tentang kecepatan pelayanan di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Tidak Cepat', 'Kurang Cepat', 'Cepat', 'Sangat Cepat']),
+                'options' => ['Tidak Cepat', 'Kurang Cepat', 'Cepat', 'Sangat Cepat'],
                 'unsur' => 'Waktu Pelayanan',
             ],
             [
                 'question' => 'Bagaimana pendapat Saudara tentang Jenis pelayanan ini di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Tidak Bagus', 'Kurang Bagus', 'Bagus', 'Sangat Bagus']),
+                'options' => ['Tidak Bagus', 'Kurang Bagus', 'Bagus', 'Sangat Bagus'],
                 'unsur' => 'Produk Spesifikasi Jenis Pelayanan',
             ],
             [
                 'question' => 'Bagaimana pendapat Saudara tentang kemampuan petugas di MTsN 2 Kota Malang dalam memberikan pelayanan?',
-                'options' => json_encode(['Tidak Mampu', 'Kurang Mampu', 'Mampu', 'Sangat Mampu']),
+                'options' => ['Tidak Mampu', 'Kurang Mampu', 'Mampu', 'Sangat Mampu'],
                 'unsur' => 'Kompetensi Pelaksana',
             ],
             [
                 'question' => 'Bagaimana pendapat Saudara tentang kesopanan dan keramahan petugas di MTsN 2 Kota Malang dalam memberikan pelayanan?',
-                'options' => json_encode(['Tidak Sopan', 'Kurang Sopan', 'Sopan', 'Sangat Sopan']),
+                'options' => ['Tidak Sopan', 'Kurang Sopan', 'Sopan', 'Sangat Sopan'],
                 'unsur' => 'Perilaku Pelaksana',
             ],
             [
                 'question' => 'Bagaimana pendapat Saudara tentang maklumat pelayanan di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Tidak Jelas', 'Kurang Jelas', 'Jelas', 'Sangat Jelas']),
+                'options' => ['Tidak Jelas', 'Kurang Jelas', 'Jelas', 'Sangat Jelas'],
                 'unsur' => 'Maklumat Pelayanan',
             ],
             [
                 'question' => 'Bagaimana pendapat Saudara tentang Sarana dan Penanganan atas Pengaduan, Kritik dan Saran pelayanan di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Tidak Bagus', 'Kurang Bagus', 'Bagus', 'Sangat Bagus']),
+                'options' => ['Tidak Bagus', 'Kurang Bagus', 'Bagus', 'Sangat Bagus'],
                 'unsur' => 'Penanganan Pengaduan, Saran, dan Masukan',
             ],
             [
                 'question' => 'Bagaimana pendapat Saudara tentang kesesuaian antara biaya pelayanan dengan yang ada pada standar pelayanan di MTsN 2 Kota Malang (semua jenis layanan gratis)?',
-                'options' => json_encode(['Selalu Tidak Sesuai', 'Terkadang Sesuai', 'Sesuai', 'Selalu Sesuai']),
+                'options' => ['Selalu Tidak Sesuai', 'Terkadang Sesuai', 'Sesuai', 'Selalu Sesuai'],
                 'unsur' => 'Biaya/Tarif',
             ],
         ];
@@ -163,52 +163,52 @@ class SurveyQuestionSeeder extends Seeder
         $spakQuestions = [
             [
                 'question' => 'Apakah Saudara pernah mengalami atau mengetahui adanya manipulasi peraturan di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah']),
+                'options' => ['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah'],
                 'unsur' => 'Manipulasi peraturan',
             ],
             [
                 'question' => 'Apakah Saudara pernah mengalami atau mengetahui adanya petugas yang menyalahgunaan jabatan di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah']),
+                'options' => ['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah'],
                 'unsur' => 'Penyalahgunaan jabatan',
             ],
             [
                 'question' => 'Apakah Saudara pernah mengalami atau mengetahui adanya petugas yang menjual pengaruh di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah']),
+                'options' => ['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah'],
                 'unsur' => 'Menjual pengaruh',
             ],
             [
                 'question' => 'Bagaimana menurut Saudara dengan transparansi biaya yang ada di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Tidak Transparan', 'Kurang Transparan', 'Transparan', 'Sangat Transparan']),
+                'options' => ['Tidak Transparan', 'Kurang Transparan', 'Transparan', 'Sangat Transparan'],
                 'unsur' => 'Transparansi biaya',
             ],
             [
                 'question' => 'Apakah Saudara pernah mengalami atau mengetahui adanya petugas yang meminta biaya tambahan diluar ketentuan dan standar pelayanan di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah']),
+                'options' => ['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah'],
                 'unsur' => 'Biaya tambahan',
             ],
             [
                 'question' => 'Apakah Saudara pernah mengetahui adanya pemberian hadiah kepada petugas di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah']),
+                'options' => ['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah'],
                 'unsur' => 'Pemberian hadiah',
             ],
             [
                 'question' => 'Bagaimana menurut Saudara dengan transparansi transaksi pembayaran yang ada di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Tidak Transparan', 'Kurang Transparan', 'Transparan', 'Sangat Transparan']),
+                'options' => ['Tidak Transparan', 'Kurang Transparan', 'Transparan', 'Sangat Transparan'],
                 'unsur' => 'Transparansi transaksi',
             ],
             [
                 'question' => 'Apakah Saudara pernah mengalami atau mengetahui adanya petugas yang melakukan praktik percaloan di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah']),
+                'options' => ['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah'],
                 'unsur' => 'Praktik percaloan',
             ],
             [
                 'question' => 'Apakah Saudara pernah mengalami atau mengetahui adanya petugas yang melakukan kecurangan dalam pelayanan di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah']),
+                'options' => ['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah'],
                 'unsur' => 'Kecurangan pelayanan',
             ],
             [
                 'question' => 'Apakah Saudara pernah mengalami atau mengetahui adanya petugas yang melakukan transaksi rahasia dalam melayani di MTsN 2 Kota Malang?',
-                'options' => json_encode(['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah']),
+                'options' => ['Sangat sering', 'Sering', 'Jarang', 'Tidak Pernah'],
                 'unsur' => 'Transaksi rahasia',
             ],
         ];

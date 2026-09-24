@@ -11,7 +11,7 @@
                     <h4 class="card-title mb-0">Tambah Kategori Layanan Baru</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('suadmin.service-categories.store') }}" method="POST">
+                    <form action="{{ route('admin.service-categories.store') }}" method="POST">
                         @csrf
                         <div class="row">
                             <div class="col-md-6">
@@ -90,7 +90,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-end">
-                            <a href="{{ route('suadmin.service-categories.index') }}" class="btn btn-secondary me-2">Batal</a>
+                            <a href="{{ route('admin.service-categories.index') }}" class="btn btn-secondary me-2">Batal</a>
                             <button type="submit" class="btn btn-primary">Simpan Kategori</button>
                         </div>
                     </form>

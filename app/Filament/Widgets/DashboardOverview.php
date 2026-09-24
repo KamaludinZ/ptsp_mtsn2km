@@ -9,7 +9,6 @@ use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\Visitor;
 use App\Models\Complaint;
-use App\Models\Whistleblowing;
 use App\Models\SurveyResponse;
 use Illuminate\Support\Facades\Cache;
 
@@ -17,7 +16,7 @@ class DashboardOverview extends BaseWidget
 {
     protected static ?int $sort = 1;
 
-    protected ?string $pollingInterval = null;
+    protected static ?string $pollingInterval = null;
 
     protected int | string | array $columnSpan = 'full';
 
@@ -37,8 +36,12 @@ class DashboardOverview extends BaseWidget
                 $todayVisitors = Visitor::whereDate('created_at', now()->today())->count();
 
                 // Complaint & WBS
-                $pendingComplaints = Complaint::whereIn('status', ['pending', 'investigating'])->count();
-                $pendingWBS = Whistleblowing::whereIn('status', ['pending', 'investigating'])->count();
+                $pendingComplaints = Complaint::where('complaint_type', '!=', 'whistleblowing')
+                    ->whereIn('status', ['submitted', 'in_review', 'in_progress'])
+                    ->count();
+                $pendingWBS = Complaint::where('complaint_type', 'whistleblowing')
+                    ->whereIn('status', ['submitted', 'in_review', 'in_progress'])
+                    ->count();
 
                 // Survey responses this month
                 $surveyResponsesMonth = SurveyResponse::whereMonth('created_at', now()->month)
@@ -47,8 +50,7 @@ class DashboardOverview extends BaseWidget
 
                 // Recent activity (last 7 days)
                 $recentActivity = Ticket::where('created_at', '>', now()->subDays(7))->count() +
-                                 Complaint::where('created_at', '>', now()->subDays(7))->count() +
-                                 Whistleblowing::where('created_at', '>', now()->subDays(7))->count();
+                                 Complaint::where('created_at', '>', now()->subDays(7))->count();
 
                 return [
                     // Row 1: Core System Metrics

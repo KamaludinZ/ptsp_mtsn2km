@@ -13,7 +13,7 @@
                         <div class="bg-blue-50 p-6 rounded-lg shadow text-center">
                             <h2 class="text-xl font-semibold mb-4">TAMU</h2>
                             <p class="mb-4">For guests such as meeting attendees, vendors, official visitors, etc.</p>
-                            <a href="{{ route('frontdesk.visitor.checkin.form') }}" class="inline-block bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+                            <a href="{{ route('frontdesk.triage') }}" class="inline-block bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
                                 Check-in as Guest
                             </a>
                         </div>
@@ -21,7 +21,7 @@
                         <div class="bg-green-50 p-6 rounded-lg shadow text-center">
                             <h2 class="text-xl font-semibold mb-4">PEMOHON LAYANAN</h2>
                             <p class="mb-4">For those seeking services such as students requesting letters, parents requesting certification, etc.</p>
-                            <a href="{{ route('frontdesk.register.offline.service.form') }}" class="inline-block bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
+                            <a href="{{ route('frontdesk.service.application') }}" class="inline-block bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
                                 Register Service Request
                             </a>
                         </div>

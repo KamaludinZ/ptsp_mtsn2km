@@ -12,7 +12,7 @@
                     <p class="text-muted mb-0">Perbarui informasi pengunjung</p>
                 </div>
                 <div class="mt-3 mt-md-0">
-                    <a href="{{ route('suadmin.visitors.index') }}" class="btn btn-secondary shadow-sm">
+                    <a href="{{ route('admin.visitors.index') }}" class="btn btn-secondary shadow-sm">
                         <i class="fas fa-arrow-left me-2"></i>Kembali
                     </a>
                 </div>
@@ -29,7 +29,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('suadmin.visitors.update', $visitor) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.visitors.update', $visitor) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <div class="row">
@@ -154,7 +154,7 @@
                         </div>
                         
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('suadmin.visitors.index') }}" class="btn btn-secondary shadow-sm">
+                            <a href="{{ route('admin.visitors.index') }}" class="btn btn-secondary shadow-sm">
                                 Batal
                             </a>
                             <button type="submit" class="btn btn-primary shadow-sm">
