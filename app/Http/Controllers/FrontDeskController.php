@@ -262,10 +262,10 @@ class FrontDeskController extends Controller
 
         $visitors = Visitor::with('staff')
             ->where(function($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('institution', 'like', "%{$search}%");
+                $query->where('name', 'ilike', "%{$search}%")
+                    ->orWhere('email', 'ilike', "%{$search}%")
+                    ->orWhere('phone', 'ilike', "%{$search}%")
+                    ->orWhere('institution', 'ilike', "%{$search}%");
             })
             ->orderBy('created_at', 'desc')
             ->limit(20)

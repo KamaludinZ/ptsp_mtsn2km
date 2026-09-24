@@ -25,12 +25,11 @@ class OnlinePortalController extends Controller
         // Get categories
         $categories = ServiceCategory::orderBy('name')->get();
 
-        // Get services based on user type with SQLite compatibility
-        // Using LIKE for JSON search in SQLite
+        // Get services allowed for this user type (user_types_allowed is a jsonb array)
         $services = Service::where('is_active', true)
             ->where(function($query) use ($userType) {
-                $query->where('user_types_allowed', 'LIKE', '%'.$userType.'%')
-                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
+                $query->whereJsonContains('user_types_allowed', $userType)
+                      ->orWhereJsonContains('user_types_allowed', 'umum');
             })
             ->with(['categories'])
             ->orderBy('name')

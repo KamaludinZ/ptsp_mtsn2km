@@ -36,10 +36,10 @@ class ComplaintController extends Controller
         
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
-                $q->where('subject', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%')
-                  ->orWhere('reporter_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('reporter_email', 'like', '%' . $request->search . '%');
+                $q->where('subject', 'ilike', '%' . $request->search . '%')
+                  ->orWhere('description', 'ilike', '%' . $request->search . '%')
+                  ->orWhere('reporter_name', 'ilike', '%' . $request->search . '%')
+                  ->orWhere('reporter_email', 'ilike', '%' . $request->search . '%');
             });
         }
 

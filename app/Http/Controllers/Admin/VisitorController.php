@@ -33,10 +33,10 @@ class VisitorController extends Controller
         // Search filter
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%')
-                  ->orWhere('phone', 'like', '%' . $request->search . '%')
-                  ->orWhere('institution', 'like', '%' . $request->search . '%');
+                $q->where('name', 'ilike', '%' . $request->search . '%')
+                  ->orWhere('email', 'ilike', '%' . $request->search . '%')
+                  ->orWhere('phone', 'ilike', '%' . $request->search . '%')
+                  ->orWhere('institution', 'ilike', '%' . $request->search . '%');
             });
         }
         

@@ -395,10 +395,10 @@ class BackOfficeController extends Controller
         $tickets = Ticket::with(['user', 'service', 'assignedTo'])
             ->when($search, function($query, $search) {
                 $query->where(function($q) use ($search) {
-                    $q->where('ticket_number', 'like', "%{$search}%")
+                    $q->where('ticket_number', 'ilike', "%{$search}%")
                       ->orWhereHas('user', function($userQuery) use ($search) {
-                          $userQuery->where('name', 'like', "%{$search}%")
-                                   ->orWhere('email', 'like', "%{$search}%");
+                          $userQuery->where('name', 'ilike', "%{$search}%")
+                                   ->orWhere('email', 'ilike', "%{$search}%");
                       });
                 });
             })
