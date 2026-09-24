@@ -64,8 +64,8 @@
                                         <input type="tel" class="form-control" id="reporter_phone" name="reporter_phone" style="color: var(--bs-body-color, #212529);">
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="complaint_date" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Tanggal Kejadian <span class="text-danger">*</span></label>
-                                        <input type="date" class="form-control" id="complaint_date" name="complaint_date" required style="color: var(--bs-body-color, #212529);">
+                                        <label for="dumas_incident_date" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Tanggal Kejadian <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="dumas_incident_date" name="incident_date" max="{{ now()->toDateString() }}" required style="color: var(--bs-body-color, #212529);">
                                     </div>
                                     <div class="col-12">
                                         <label for="complaint_title" class="form-label" style="color: var(--bs-emphasis-color, #000000);">Judul Pengaduan <span class="text-danger">*</span></label>

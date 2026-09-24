@@ -36,6 +36,12 @@
         margin-bottom: 1rem;
     }
 
+    .visitor-hero .breadcrumb a {
+        color: #fff !important;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
     .visitor-hero .breadcrumb-item + .breadcrumb-item::before {
         color: rgba(255, 255, 255, 0.6);
     }
@@ -117,6 +123,36 @@
         background: white;
         color: var(--bs-primary);
         border-color: var(--bs-gray-300) var(--bs-gray-300) white;
+    }
+
+    @media (max-width: 767.98px) {
+        .stat-card-visitor {
+            padding: 1rem 0.5rem;
+            border-radius: 14px;
+            height: 100%;
+        }
+        .stat-card-visitor .stat-icon {
+            width: 42px;
+            height: 42px;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+        }
+        .stat-card-visitor .stat-value { font-size: 1.75rem; }
+        .stat-card-visitor .stat-label { font-size: 0.7rem; letter-spacing: 0; }
+        .nav.nav-tabs-visitor {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .nav-tabs-visitor .nav-link {
+            width: 100%;
+            height: 100%;
+            padding: 0.75rem 0.5rem;
+            font-size: 0.85rem;
+            white-space: normal;
+        }
+        .visitor-form-card { border-radius: 0 0 16px 16px; }
     }
 
     /* Form Card */
@@ -302,8 +338,8 @@
         </div>
 
         <!-- Stats -->
-        <div class="row g-4 justify-content-center mt-4">
-            <div class="col-md-4 col-lg-3">
+        <div class="row g-2 g-md-4 justify-content-center mt-4">
+            <div class="col-4 col-lg-3">
                 <div class="stat-card-visitor">
                     <div class="stat-icon" style="background: linear-gradient(135deg, #15803d 0%, #166534 100%);">
                         <i class="fas fa-users text-white"></i>
@@ -312,21 +348,21 @@
                     <div class="stat-label">Total Tamu</div>
                 </div>
             </div>
-            <div class="col-md-4 col-lg-3">
+            <div class="col-4 col-lg-3">
                 <div class="stat-card-visitor">
                     <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                         <i class="fas fa-user-check text-white"></i>
                     </div>
-                    <div class="stat-value">{{ $visitors->whereNull('check_out_time')->count() }}</div>
+                    <div class="stat-value">{{ $activeCount }}</div>
                     <div class="stat-label">Sedang Aktif</div>
                 </div>
             </div>
-            <div class="col-md-4 col-lg-3">
+            <div class="col-4 col-lg-3">
                 <div class="stat-card-visitor">
                     <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                         <i class="fas fa-calendar-check text-white"></i>
                     </div>
-                    <div class="stat-value">{{ $visitors->whereNotNull('check_out_time')->count() }}</div>
+                    <div class="stat-value">{{ $finishedCount }}</div>
                     <div class="stat-label">Selesai</div>
                 </div>
             </div>
@@ -556,6 +592,13 @@
                 <i class="fas fa-list me-2 text-primary"></i>Daftar Tamu
                 <span class="text-primary">{{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }}</span>
             </h2>
+            @if ($visitors->isEmpty())
+                <div class="text-center py-5">
+                    <i class="fas fa-users text-muted mb-3" style="font-size: 4rem; opacity: 0.3;" aria-hidden="true"></i>
+                    <h3 class="h4 fw-bold">Belum Ada Tamu</h3>
+                    <p class="text-muted mb-0">Belum ada data tamu untuk tanggal {{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }}</p>
+                </div>
+            @else
             <div class="table-responsive">
                 <table class="table visitor-table table-hover align-middle">
                     <thead>
@@ -570,19 +613,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($visitors as $index => $visitor)
+                        @foreach ($visitors as $index => $visitor)
                             <tr>
                                 <td class="fw-semibold text-muted">{{ ($visitors->currentPage() - 1) * $visitors->perPage() + $index + 1 }}</td>
                                 <td>
                                     <div class="fw-bold">
-                                        @if ($visitor->is_obscured)
-                                            <script>document.write(obscureName("{{ $visitor->name }}"))</script>
-                                        @else
-                                            {{ $visitor->name }}
-                                        @endif
+                                        {{ $visitor->publicName() }}
                                     </div>
                                     <div class="small text-muted">
-                                        <i class="fas fa-phone me-1"></i>{{ $visitor->phone }}
+                                        <i class="fas fa-phone me-1" aria-hidden="true"></i>{{ $visitor->maskedPhone() }}
                                     </div>
                                 </td>
                                 <td>{{ $visitor->institution ?: '-' }}</td>
@@ -611,22 +650,11 @@
                                     @endif
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center py-5">
-                                    <div class="py-4">
-                                        <div class="mb-3">
-                                            <i class="fas fa-users text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
-                                        </div>
-                                        <h4 class="fw-bold">Belum Ada Tamu</h4>
-                                        <p class="text-muted mb-0">Belum ada data tamu untuk tanggal {{ \Carbon\Carbon::parse($date)->format('d F Y') }}</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
+            @endif
             <!-- Pagination -->
             @if ($visitors->hasPages())
                 <div class="d-flex justify-content-center mt-4">

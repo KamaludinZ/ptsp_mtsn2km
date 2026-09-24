@@ -42,4 +42,36 @@ class Visitor extends Model
     // Constants for status
     const STATUS_ACTIVE = 'active';
     const STATUS_CHECKED_OUT = 'checked_out';
+
+    /**
+     * Name for the public visitor book: "Budi Santoso" -> "B**i S*****o"
+     * when the visitor asked to hide it. Done server-side so the real name
+     * never reaches the page.
+     */
+    public function publicName(): string
+    {
+        if (!$this->is_obscured) {
+            return (string) $this->name;
+        }
+
+        return collect(preg_split('/\s+/u', trim((string) $this->name)))
+            ->map(function ($part) {
+                $length = mb_strlen($part);
+
+                return $length <= 2
+                    ? $part
+                    : mb_substr($part, 0, 1) . str_repeat('*', $length - 2) . mb_substr($part, -1);
+            })
+            ->implode(' ');
+    }
+
+    /**
+     * Phone number for public listings: only the last three digits.
+     */
+    public function maskedPhone(): string
+    {
+        $digits = preg_replace('/\D/', '', (string) $this->phone);
+
+        return $digits === '' ? '-' : str_repeat('*', max(0, strlen($digits) - 3)) . substr($digits, -3);
+    }
 }

@@ -56,6 +56,7 @@ class SupervisionController extends Controller
             'reporter_phone' => 'nullable|string|max:20',
             'complaint_title' => 'required|string|max:255',
             'complaint_description' => 'required|string|max:2000',
+            'incident_date' => 'nullable|date|before_or_equal:today',
             'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf',
         ]);
 
@@ -71,6 +72,7 @@ class SupervisionController extends Controller
             'title' => $validated['complaint_title'],
             'subject' => $validated['complaint_title'],
             'description' => $validated['complaint_description'],
+            'incident_date' => $validated['incident_date'] ?? null,
             'status' => 'submitted',
             'anonymous' => false,
         ]);

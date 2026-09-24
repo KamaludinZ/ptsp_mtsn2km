@@ -95,4 +95,15 @@ class ModelTest extends TestCase
         $this->assertEquals('suggestion', Complaint::TYPE_SUGGESTION);
         $this->assertEquals('whistleblowing', Complaint::TYPE_WHISTLEBLOWING);
     }
+
+    public function test_visitor_public_name_and_phone_are_masked(): void
+    {
+        $visitor = new \App\Models\Visitor(['name' => 'Budi Santoso', 'phone' => '0812-3456-7890']);
+
+        $this->assertSame('Budi Santoso', $visitor->publicName());
+
+        $visitor->is_obscured = true;
+        $this->assertSame('B**i S*****o', $visitor->publicName());
+        $this->assertSame('*********890', $visitor->maskedPhone());
+    }
 }

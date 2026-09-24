@@ -822,3 +822,15 @@ body.keyboard-navigation *:focus {
 footer a:hover:not(.hover\:text-orange-500) {
     color: white !important;
 }
+
+/* DaisyUI also defines .alert (a centered grid); the public pages use
+   Bootstrap alerts, which must stay a normal left-aligned block. */
+.alert {
+    display: block;
+    text-align: left;
+    grid-auto-flow: row;
+}
+
+.alert > .btn-close {
+    float: right;
+}
