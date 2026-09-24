@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Service;
@@ -16,15 +18,20 @@ class ApplicationTest extends TestCase
 
     public function test_user_can_register_and_login(): void
     {
+        Http::fake();
+        Role::findOrCreate('umum');
+
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'whatsapp_number' => '081234567890',
+            'user_type' => 'umum',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
-        $response->assertRedirect('/dashboard');
-        
+        $response->assertRedirect(route('verification.notice', absolute: false));
+
         $this->assertAuthenticated();
     }
 
