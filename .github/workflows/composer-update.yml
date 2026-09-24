@@ -1,0 +1,36 @@
+name: Composer update (one-off)
+
+# Refreshes composer.lock within the composer.json constraints to pick up
+# security fixes, and commits it back to the branch. Runs only for commits
+# whose message contains [composer-update].
+on:
+  push:
+    branches: [ "claude/**" ]
+
+permissions:
+  contents: write
+
+jobs:
+  update-lock:
+    if: contains(github.event.head_commit.message, '[composer-update]')
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref_name }}
+    - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
+      with:
+        php-version: '8.2'
+        extensions: pdo_pgsql, pgsql, gd, zip, intl
+    - name: Update dependencies within constraints
+      run: composer update --with-all-dependencies --no-interaction --no-scripts --no-progress --prefer-dist
+    - name: Audit after update
+      run: composer audit --locked --no-interaction || true
+    - name: Commit composer.lock
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add composer.lock
+        git diff --cached --quiet && echo "No changes" && exit 0
+        git commit -m "chore: Update composer.lock for security fixes"
+        git push origin HEAD:${{ github.ref_name }}
