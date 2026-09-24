@@ -4,7 +4,6 @@
 /vendor
 npm-debug.log
 yarn-error.log
-resources/css/home.css
 /public/hot
 /public/storage
 /storage/*.key
@@ -15,3 +14,4 @@ resources/css/home.css
 /storage/app/public/*
 /bootstrap/cache/*
 !.gitignore
+/.phpunit.result.cache

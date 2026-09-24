@@ -27,10 +27,7 @@ class OnlinePortalController extends Controller
 
         // Get services allowed for this user type (user_types_allowed is a jsonb array)
         $services = Service::where('is_active', true)
-            ->where(function($query) use ($userType) {
-                $query->whereJsonContains('user_types_allowed', $userType)
-                      ->orWhereJsonContains('user_types_allowed', 'umum');
-            })
+            ->availableFor($userType)
             ->with(['categories'])
             ->orderBy('name')
             ->get();
@@ -48,19 +45,13 @@ class OnlinePortalController extends Controller
 
         $service = Service::where('slug', $slug)
             ->with(['category', 'requirements', 'components', 'workflow'])
-            ->where(function($query) use ($userType) {
-                $query->where('user_types_allowed', 'LIKE', '%'.$userType.'%')
-                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
-            })
+            ->availableFor($userType)
             ->firstOrFail();
 
         // Get related services
         $relatedServices = Service::where('category_id', $service->category_id)
             ->where('id', '!=', $service->id)
-            ->where(function($query) use ($userType) {
-                $query->where('user_types_allowed', 'LIKE', '%'.$userType.'%')
-                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
-            })
+            ->availableFor($userType)
             ->limit(4)
             ->get();
 
@@ -81,10 +72,7 @@ class OnlinePortalController extends Controller
 
         $service = Service::where('slug', $slug)
             ->with(['requirements', 'components'])
-            ->where(function($query) use ($user) {
-                $query->where('user_types_allowed', 'LIKE', '%'.$user->user_type.'%')
-                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
-            })
+            ->availableFor($user->user_type)
             ->firstOrFail();
 
         return view('onlineportal.application-form', compact('service', 'user'));
@@ -103,10 +91,7 @@ class OnlinePortalController extends Controller
         }
 
         $service = Service::where('slug', $slug)
-            ->where(function($query) use ($user) {
-                $query->where('user_types_allowed', 'LIKE', '%'.$user->user_type.'%')
-                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
-            })
+            ->availableFor($user->user_type)
             ->firstOrFail();
 
         $validated = $request->validate([

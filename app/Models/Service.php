@@ -57,6 +57,21 @@ class Service extends Model
         });
     }
 
+    /**
+     * Services a given user type may apply for; services open to "umum" are
+     * available to everyone. user_types_allowed is a jsonb array.
+     */
+    public function scopeAvailableFor($query, ?string $userType)
+    {
+        return $query->where(function ($query) use ($userType) {
+            $query->whereJsonContains('user_types_allowed', 'umum');
+
+            if ($userType && $userType !== 'umum') {
+                $query->orWhereJsonContains('user_types_allowed', $userType);
+            }
+        });
+    }
+
     // Relationship with users who created the service
     public function creator()
     {
