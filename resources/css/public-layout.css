@@ -1170,7 +1170,7 @@ footer a:hover:not(.hover\:text-orange-500) {
 .site-footer-stats dd { margin: 0; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
 
 /* Keep the last footer line clear of the floating buttons */
-body > footer[role="contentinfo"] { padding-bottom: 4.5rem; }
+body > footer[role="contentinfo"] { padding-bottom: 1.25rem; }
 
 .site-footer-bottom {
     display: flex;
