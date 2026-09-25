@@ -24,51 +24,41 @@
         margin-bottom: 2rem;
     }
 
-    /* Filter Card Enhancement */
-    .filter-card-enhanced {
-        background: linear-gradient(135deg, rgba(20, 83, 45, 0.03) 0%, rgba(234, 88, 12, 0.03) 100%);
-        border: 2px solid rgba(20, 83, 45, 0.1);
-        border-radius: 16px;
-    }
+    /* Filter bar */
+    .ann-filter { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 1.25rem; margin-bottom: 2rem; box-shadow: 0 1px 2px rgba(15,23,42,.05); }
+    .ann-filter__form { display: grid; gap: 1rem; grid-template-columns: 1fr; align-items: end; }
+    .ann-filter__field label { display: block; margin-bottom: .375rem; font-size: .8125rem; font-weight: 600; color: #374151; }
+    .ann-filter__control { position: relative; display: flex; align-items: center; }
+    .ann-filter__control > i { position: absolute; left: .875rem; color: #6b7280; pointer-events: none; font-size: .85rem; }
+    .ann-filter__control input,
+    .ann-filter__control select { width: 100%; height: 2.75rem; padding: 0 .875rem; border: 1px solid #d1d5db; border-radius: 10px; background-color: #fff; color: #111827; font-size: .9rem; line-height: 1; transition: border-color .15s, box-shadow .15s; }
+    .ann-filter__control > i + input { padding-left: 2.4rem; }
+    .ann-filter__control select { appearance: none; -webkit-appearance: none; padding-right: 2.25rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .875rem center; }
+    .ann-filter__control input:hover,
+    .ann-filter__control select:hover { border-color: #9ca3af; }
+    .ann-filter__control input:focus,
+    .ann-filter__control select:focus { outline: none; border-color: #166534; box-shadow: 0 0 0 3px rgba(22,101,52,.18); }
+    .ann-filter__actions { display: flex; gap: .5rem; }
+    .ann-btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 2.75rem; padding: 0 1.1rem; border-radius: 10px; border: 1px solid #166534; font-size: .9rem; font-weight: 600; white-space: nowrap; text-decoration: none; cursor: pointer; transition: background-color .15s, color .15s; }
+    .ann-btn--solid { flex: 1; background: #166534; color: #fff; }
+    .ann-btn--solid:hover { background: #14532d; color: #fff; }
+    .ann-btn--ghost { background: transparent; color: #166534; border-color: #d1d5db; }
+    .ann-btn--ghost:hover { background: #ecfdf3; border-color: #166534; color: #166534; }
+    .ann-btn:focus-visible, .ann-chip:focus-visible { outline: 2px solid #ea580c; outline-offset: 2px; }
+    .ann-filter__chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
+    .ann-chip { display: inline-flex; align-items: center; gap: .5rem; padding: .3rem .7rem; border-radius: 999px; background: #ecfdf3; color: #14532d; border: 1px solid #bbf7d0; font-size: .8125rem; font-weight: 500; text-decoration: none; }
+    .ann-chip:hover { background: #dcfce7; color: #14532d; }
+    @media (min-width: 640px) { .ann-filter__form { grid-template-columns: repeat(2, 1fr); } .ann-filter__field--search, .ann-filter__actions { grid-column: 1 / -1; } .ann-btn--solid { flex: 0 0 auto; } .ann-filter__actions { justify-content: flex-end; } }
+    @media (min-width: 1024px) { .ann-filter__form { grid-template-columns: minmax(0, 2fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr) auto; } .ann-filter__field--search { grid-column: auto; } .ann-filter__actions { grid-column: auto; } }
 
-    /* Form control styling to match services */
-    .filter-card-enhanced .form-control {
-        margin-bottom: 0;
-    }
-
-    .filter-card-enhanced .input-group {
-        border-radius: 8px;
-        overflow: hidden;
-        border: 1px solid rgba(20, 83, 45, 0.2);
-    }
-
-    .filter-card-enhanced .input-group span {
-        background-color: rgba(20, 83, 45, 0.1);
-        border-color: rgba(20, 83, 45, 0.2);
-    }
-
-    .filter-card-enhanced .select {
-        border-radius: 8px;
-        border: 1px solid rgba(20, 83, 45, 0.2);
-    }
-
-    .filter-card-enhanced .input {
-        border-radius: 8px;
-        border: 1px solid rgba(20, 83, 45, 0.2);
-    }
-
-    /* Search input styling */
-    .search-input-enhanced {
-        border: 1px solid rgba(20, 83, 45, 0.2) !important;
-        border-left: none !important;
-        padding-left: 12px !important;
-    }
-
-    .search-input-enhanced:focus {
-        outline: none !important;
-        border-color: rgba(20, 83, 45, 0.5) !important;
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
-    }
+    [data-theme="dark"] .ann-filter { background: #1f2937; border-color: #374151; }
+    [data-theme="dark"] .ann-filter__field label { color: #e5e7eb; }
+    [data-theme="dark"] .ann-filter__control input,
+    [data-theme="dark"] .ann-filter__control select { background-color: #111827; border-color: #4b5563; color: #f3f4f6; color-scheme: dark; }
+    [data-theme="dark"] .ann-btn--solid { background: #22c55e; border-color: #22c55e; color: #052e16; }
+    [data-theme="dark"] .ann-btn--ghost { color: #86efac; border-color: #4b5563; }
+    [data-theme="dark"] .ann-chip { background: rgba(34,197,94,.14); border-color: rgba(34,197,94,.35); color: #bbf7d0; }
+    [data-theme="dark"] .ann-filter__chips { border-color: #374151; }
 
     /* Announcement title styling */
     .announcement-title {
@@ -159,85 +149,64 @@
     </div>
 
     <!-- Filter and Search Section - maintaining original functionality with enhanced UI -->
-    <div class="filter-card-enhanced p-5 mb-8" data-aos="fade-up">
-        <form method="GET" action="{{ route('pengumuman.index') }}">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div class="lg:col-span-2">
-                    <label class="form-label fw-semibold block mb-2">
-                        <i class="fas fa-search me-2" style="color: var(--bs-primary);"></i>
-                        Cari Pengumuman
-                    </label>
-                    <input type="text" name="search" placeholder="Ketik judul pengumuman..." class="input input-bordered w-full search-input-enhanced focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent rounded-lg" value="{{ request('search') }}">
+    @php
+        $categoryOptions = ['akademik' => 'Akademik', 'administrasi' => 'Administrasi', 'kegiatan' => 'Kegiatan', 'lainnya' => 'Lainnya'];
+        $activeFilters = array_filter([
+            'search' => request('search') ? 'Cari: ' . request('search') : null,
+            'category' => request('category') ? 'Kategori: ' . ($categoryOptions[request('category')] ?? request('category')) : null,
+            'start_date' => request('start_date') ? 'Dari: ' . request('start_date') : null,
+            'end_date' => request('end_date') ? 'Sampai: ' . request('end_date') : null,
+        ]);
+    @endphp
+    <div class="ann-filter" data-aos="fade-up">
+        <form method="GET" action="{{ route('pengumuman.index') }}" class="ann-filter__form" role="search" aria-label="Filter pengumuman">
+            <div class="ann-filter__field ann-filter__field--search">
+                <label for="ann-search">Cari pengumuman</label>
+                <div class="ann-filter__control">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input id="ann-search" type="search" name="search" value="{{ request('search') }}" placeholder="Judul, isi, atau penulis..." autocomplete="off">
                 </div>
-                <div>
-                    <label class="form-label fw-semibold block mb-2">
-                        <i class="fas fa-filter me-2" style="color: var(--bs-secondary);"></i>
-                        Kategori
-                    </label>
-                    <select name="category" class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent rounded-lg">
-                        <option value="">Semua Kategori</option>
-                        <option value="akademik" {{ request('category') == 'akademik' ? 'selected' : '' }}>Akademik</option>
-                        <option value="administrasi" {{ request('category') == 'administrasi' ? 'selected' : '' }}>Administrasi</option>
-                        <option value="kegiatan" {{ request('category') == 'kegiatan' ? 'selected' : '' }}>Kegiatan</option>
-                        <option value="lainnya" {{ request('category') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+            </div>
+            <div class="ann-filter__field">
+                <label for="ann-category">Kategori</label>
+                <div class="ann-filter__control">
+                    <select id="ann-category" name="category">
+                        <option value="">Semua kategori</option>
+                        @foreach($categoryOptions as $value => $label)
+                            <option value="{{ $value }}" @selected(request('category') === $value)>{{ $label }}</option>
+                        @endforeach
                     </select>
                 </div>
-                <div>
-                    <label class="form-label fw-semibold block mb-2">
-                        <i class="fas fa-calendar me-2" style="color: #10b981;"></i>
-                        Tanggal Awal
-                    </label>
-                    <input type="date" name="start_date" class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent rounded-lg" value="{{ request('start_date') }}">
-                </div>
-                <div>
-                    <label class="form-label fw-semibold block mb-2">
-                        <i class="fas fa-calendar me-2" style="color: #3b82f6;"></i>
-                        Tanggal Akhir
-                    </label>
-                    <input type="date" name="end_date" class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent rounded-lg" value="{{ request('end_date') }}">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="btn btn-primary w-full flex items-center justify-center h-[46px]">
-                        <i class="fas fa-filter mr-2"></i> Filter
-                    </button>
+            </div>
+            <div class="ann-filter__field">
+                <label for="ann-start">Tanggal awal</label>
+                <div class="ann-filter__control">
+                    <input id="ann-start" type="date" name="start_date" value="{{ request('start_date') }}" max="{{ request('end_date') }}">
                 </div>
             </div>
-
-            <!-- Reset and Active Filters -->
-            @if(request()->query())
-            <div class="mt-4 flex flex-wrap items-center gap-2 pt-4 border-t border-base-content/10">
-                <a href="{{ route('pengumuman.index') }}" class="btn btn-sm btn-outline btn-primary">
-                    <i class="fas fa-redo mr-1"></i>
-                    Reset Filter
-                </a>
-                <div class="text-sm text-base-content/70">Filter aktif:</div>
-                @if(request('search'))
-                <div class="badge badge-category-green gap-2">
-                    Cari: {{ request('search') }}
-                    <a href="{{ route('pengumuman.index', array_diff_key(request()->query(), ['search' => ''])) }}"><i class="fas fa-times"></i></a>
+            <div class="ann-filter__field">
+                <label for="ann-end">Tanggal akhir</label>
+                <div class="ann-filter__control">
+                    <input id="ann-end" type="date" name="end_date" value="{{ request('end_date') }}" min="{{ request('start_date') }}">
                 </div>
-                @endif
-                @if(request('category'))
-                <div class="badge badge-category-green gap-2">
-                    Kategori: {{ request('category') }}
-                    <a href="{{ route('pengumuman.index', array_diff_key(request()->query(), ['category' => ''])) }}"><i class="fas fa-times"></i></a>
-                </div>
-                @endif
-                @if(request('start_date'))
-                <div class="badge badge-category-green gap-2">
-                    Tgl Awal: {{ request('start_date') }}
-                    <a href="{{ route('pengumuman.index', array_diff_key(request()->query(), ['start_date' => ''])) }}"><i class="fas fa-times"></i></a>
-                </div>
-                @endif
-                @if(request('end_date'))
-                <div class="badge badge-category-green gap-2">
-                    Tgl Akhir: {{ request('end_date') }}
-                    <a href="{{ route('pengumuman.index', array_diff_key(request()->query(), ['end_date' => ''])) }}"><i class="fas fa-times"></i></a>
-                </div>
+            </div>
+            <div class="ann-filter__actions">
+                <button type="submit" class="ann-btn ann-btn--solid"><i class="fas fa-filter" aria-hidden="true"></i>Terapkan</button>
+                @if($activeFilters)
+                    <a href="{{ route('pengumuman.index') }}" class="ann-btn ann-btn--ghost"><i class="fas fa-rotate-left" aria-hidden="true"></i>Reset</a>
                 @endif
             </div>
-            @endif
         </form>
+
+        @if($activeFilters)
+            <div class="ann-filter__chips" aria-label="Filter aktif">
+                @foreach($activeFilters as $key => $label)
+                    <a class="ann-chip" href="{{ route('pengumuman.index', array_diff_key(request()->query(), [$key => ''])) }}" title="Hapus filter ini">
+                        <span>{{ \Illuminate\Support\Str::limit($label, 40) }}</span><i class="fas fa-xmark" aria-hidden="true"></i>
+                    </a>
+                @endforeach
+            </div>
+        @endif
     </div>
 
     <!-- Announcements Section -->

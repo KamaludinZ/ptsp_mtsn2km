@@ -25,9 +25,9 @@ class PengumumanController extends Controller
         if ($request->filled('search')) {
             $searchTerm = trim($request->search);
             $query->where(function($q) use ($searchTerm) {
-                $q->where('title', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('content', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('author', 'LIKE', "%{$searchTerm}%");
+                $q->where('title', 'ILIKE', "%{$searchTerm}%")
+                  ->orWhere('content', 'ILIKE', "%{$searchTerm}%")
+                  ->orWhere('author', 'ILIKE', "%{$searchTerm}%");
             });
         }
 
