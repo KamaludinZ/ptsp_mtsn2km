@@ -10,25 +10,33 @@
                         <span class="block sm:inline">Service registration was successful.</span>
                     </div>
                     
-                    <h1 class="text-2xl font-bold mb-6">Service Registration Confirmation</h1>
+                    <h1 class="text-2xl font-bold mb-6">Tanda Terima Registrasi Layanan</h1>
                     
                     <div class="border border-gray-200 rounded-lg p-6 mb-6">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <p class="font-semibold">Ticket Number:</p>
+                                <p class="font-semibold">Nomor Tiket:</p>
                                 <p class="text-xl font-bold text-blue-600">{{ $ticket->ticket_number }}</p>
                             </div>
                             <div>
-                                <p class="font-semibold">Applicant:</p>
+                                <p class="font-semibold">Pemohon:</p>
                                 <p>{{ $ticket->user->name }}</p>
                             </div>
                             <div>
-                                <p class="font-semibold">Service:</p>
+                                <p class="font-semibold">Layanan:</p>
                                 <p>{{ $ticket->service->name }}</p>
                             </div>
                             <div>
-                                <p class="font-semibold">Registration Date:</p>
+                                <p class="font-semibold">Tanggal Registrasi:</p>
                                 <p>{{ $ticket->created_at->format('d M Y H:i') }}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Perkiraan Selesai:</p>
+                                <p>{{ $ticket->estimated_completion_date?->translatedFormat('d F Y') ?? 'Sesuai jadwal layanan' }}
+                                    @if ($ticket->service?->processing_time)
+                                        <span class="text-sm text-gray-500">({{ $ticket->service->processing_time }})</span>
+                                    @endif
+                                </p>
                             </div>
                         </div>
                     </div>

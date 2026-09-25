@@ -849,71 +849,203 @@ footer .text-sm:hover {
     color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* Step icons for "Cara Menggunakan Aplikasi" section */
-.steps-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+/* "Cara Menggunakan Aplikasi PTSP": two step-by-step guide cards */
+.guide-card {
+    --guide-color: var(--bs-primary);
+    --guide-soft: rgba(20, 83, 45, 0.1);
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-top: 4px solid var(--guide-color);
+    border-radius: 1rem;
+    padding: 1.75rem;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
 
-.step-item {
+.guide-card.guide-secondary {
+    --guide-color: var(--bs-secondary);
+    --guide-soft: rgba(234, 88, 12, 0.1);
+}
+
+.guide-header {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
-.step-icon {
-    min-width: 48px;
-    height: 48px;
-    background-color: rgba(20, 83, 45, 0.1);
-    border-radius: 50%;
-    display: flex;
+.guide-header > div {
+    flex: 1;
+    min-width: 0;
+}
+
+.guide-header-icon {
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+    border-radius: 0.75rem;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    font-size: 1.25rem;
+    color: #fff;
+    background: var(--guide-color);
+}
+
+.guide-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--guide-color);
+    margin: 0 0 0.25rem;
+}
+
+.guide-intro {
+    margin: 0;
+    color: var(--bs-secondary-text, #6b7280);
+}
+
+.guide-count {
+    margin-left: auto;
     flex-shrink: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    color: var(--guide-color);
+    background: var(--guide-soft);
+    white-space: nowrap;
+}
+
+.guide-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.guide-step {
     position: relative;
-    z-index: 1;
+    display: flex;
+    gap: 1rem;
+    padding-bottom: 1.5rem;
 }
 
-.step-icon.text-primary {
-    background-color: rgba(20, 83, 45, 0.1);
+.guide-step:last-child {
+    padding-bottom: 0;
 }
 
-.step-icon.text-secondary {
-    background-color: rgba(234, 88, 12, 0.1);
-}
-
-.step-icon .step-number {
-    font-weight: bold;
-    font-size: 1.1rem;
-    color: inherit;
-}
-
-.step-content {
-    flex: 1;
-}
-
-/* Connecting line between steps */
-.steps-container:not(:last-child) .step-item:not(:last-child)::after {
+/* Line joining each number to the next one */
+.guide-step:not(:last-child)::before {
     content: '';
     position: absolute;
-    left: 24px;
-    top: 56px;
-    bottom: -56px;
+    left: 1.25rem;
+    top: 2.75rem;
+    bottom: 0.25rem;
     width: 2px;
-    background: linear-gradient(to bottom, var(--bs-primary), transparent);
-    z-index: 0;
+    transform: translateX(-50%);
+    background: var(--guide-soft);
 }
 
-/* Dark mode styles for step icons */
-[data-theme="dark"] .step-icon {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+.guide-step-number {
+    position: relative;
+    z-index: 1;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+    background: var(--guide-color);
+    box-shadow: 0 0 0 4px var(--guide-soft);
+    font-variant-numeric: tabular-nums;
 }
 
-[data-theme="dark"] .step-icon .step-number {
-    color: var(--bs-gray-100) !important;
+.guide-step-body {
+    flex: 1;
+    min-width: 0;
+    padding-top: 0.35rem;
 }
 
-[data-theme="dark"] .step-content .text-muted {
-    color: var(--bs-gray-400) !important;
+.guide-step-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+    color: var(--bs-text, #1f2937);
+}
+
+.guide-step-icon {
+    font-size: 0.9rem;
+    color: var(--guide-color);
+    opacity: 0.8;
+}
+
+.guide-step-text {
+    margin: 0;
+    color: var(--bs-secondary-text, #6b7280);
+    line-height: 1.6;
+}
+
+.guide-step-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--guide-color);
+    text-decoration: none;
+}
+
+.guide-step-link:hover,
+.guide-step-link:focus-visible {
+    text-decoration: underline;
+}
+
+@media (max-width: 575.98px) {
+    .guide-card {
+        padding: 1.25rem;
+    }
+
+    .guide-header {
+        flex-wrap: wrap;
+    }
+
+    /* Title block takes the row beside the icon; the step count drops below it */
+    .guide-header > div {
+        flex-basis: calc(100% - 4rem);
+    }
+
+    .guide-count {
+        margin-left: 4rem;
+    }
+
+    .guide-title {
+        font-size: 1.25rem;
+    }
+}
+
+[data-theme="dark"] .guide-card {
+    background: var(--bs-gray-800, #1f2937);
+    border-color: rgba(255, 255, 255, 0.08);
+    border-top-color: var(--guide-color);
+}
+
+[data-theme="dark"] .guide-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .guide-step-title {
+    color: var(--bs-gray-100, #f3f4f6);
+}
+
+[data-theme="dark"] .guide-intro,
+[data-theme="dark"] .guide-step-text {
+    color: var(--bs-gray-400, #9ca3af);
 }

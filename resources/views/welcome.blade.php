@@ -417,142 +417,83 @@
                     </p>
                 </div>
 
-                <div class="row g-4 g-lg-5">
-                    <div class="col-lg-6" data-aos="fade-right">
-                        <h3 class="h2 fw-bold mb-4 text-primary">Pelayanan Online</h3>
-                        <p class="mb-4">
-                            Dapatkan layanan kapan saja dan di mana saja melalui portal online kami.
-                        </p>
-                        <div class="steps-container">
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">1</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Daftar Akun / Login</h5>
-                                    <p class="mb-0 text-muted">Daftarkan akun Anda atau login jika sudah memiliki akun untuk mengakses layanan online.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">2</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Pilih Layanan</h5>
-                                    <p class="mb-0 text-muted">Kunjungi halaman "Lihat Semua Layanan" dan pilih jenis layanan yang Anda butuhkan.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">3</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Isi Formulir Permohonan</h5>
-                                    <p class="mb-0 text-muted">Lengkapi formulir permohonan dengan data yang benar, wajib menyertakan email dan nomor WhatsApp aktif, serta unggah dokumen persyaratan yang diperlukan.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">4</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Dapatkan Nomor Tiket</h5>
-                                    <p class="mb-0 text-muted">Setelah permohonan diajukan, Anda akan menerima nomor tiket melalui email/WhatsApp untuk melacak status layanan Anda.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">5</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Lacak Status</h5>
-                                    <p class="mb-0 text-muted">Gunakan fitur "Lacak Status Tiket" untuk memantau perkembangan permohonan Anda secara real-time.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">6</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Ambil Hasil Layanan</h5>
-                                    <p class="mb-0 text-muted">Jika layanan sudah selesai, Anda akan diberitahu melalui email/WhatsApp untuk mengambil hasilnya secara online atau di loket PTSP.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">7</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Isi Survei Penilaian Layanan</h5>
-                                    <p class="mb-0 text-muted">Berikan penilaian Anda terhadap layanan yang telah diterima untuk membantu kami meningkatkan kualitas.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                @php
+                    // Alur sesuai docs/rancangan_app.md: portal (Modul 3-6) dan loket (Modul 1-2),
+                    // lalu diproses TU (Modul 7), disetujui pimpinan (Modul 8), hasil (Modul 9), survei (Modul 11).
+                    $guides = [
+                        'online' => [
+                            'tone' => 'primary',
+                            'icon' => 'fa-laptop',
+                            'title' => 'Pelayanan Online',
+                            'intro' => 'Ajukan layanan kapan saja dan dari mana saja melalui portal.',
+                            'steps' => [
+                                ['fa-user-plus', 'Daftar akun atau masuk', 'Buat akun dengan email dan nomor WhatsApp aktif. Siswa, guru, dan pegawai memakai kode registrasi dari madrasah.', route('register'), 'Daftar akun'],
+                                ['fa-list-check', 'Pilih layanan', 'Buka katalog, lalu baca persyaratan, biaya, dan jangka waktu penyelesaian setiap layanan.', route('onlineportal.service.catalog'), 'Lihat katalog'],
+                                ['fa-file-arrow-up', 'Isi formulir & unggah berkas', 'Lengkapi formulir permohonan dan unggah dokumen persyaratan (PDF atau foto).', null, null],
+                                ['fa-ticket', 'Terima nomor tiket', 'Nomor tiket dan perkiraan tanggal selesai tampil di layar serta di dashboard Anda.', null, null],
+                                ['fa-magnifying-glass', 'Pantau status', 'Permohonan diverifikasi petugas TU dan disetujui pimpinan. Pantau tahapannya dari dashboard atau fitur Lacak Tiket.', route('onlineportal.track.ticket.form'), 'Lacak tiket'],
+                                ['fa-file-circle-check', 'Terima hasil layanan', 'Dokumen digital dapat diunduh dari dashboard. Dokumen fisik diambil di loket PTSP.', null, null],
+                                ['fa-star', 'Isi survei kepuasan', 'Beri penilaian SKM & SPAK agar pelayanan terus membaik.', route('survey.form'), 'Isi survei'],
+                            ],
+                        ],
+                        'offline' => [
+                            'tone' => 'secondary',
+                            'icon' => 'fa-building',
+                            'title' => 'Pelayanan Offline',
+                            'intro' => 'Datang langsung ke loket PTSP untuk dibantu petugas secara tatap muka.',
+                            'steps' => [
+                                ['fa-door-open', 'Datang ke loket PTSP', 'Kunjungi loket PTSP MTsN 2 Kota Malang pada jam layanan.', null, null],
+                                ['fa-clipboard-question', 'Sampaikan keperluan', 'Petugas menanyakan keperluan Anda. Tamu dicatat di buku tamu, sedangkan pemohon diarahkan ke pendaftaran layanan.', null, null],
+                                ['fa-folder-open', 'Serahkan data & berkas', 'Petugas mengisi permohonan atas nama Anda dan memindai dokumen persyaratan. Siapkan nomor WhatsApp atau email aktif.', null, null],
+                                ['fa-receipt', 'Terima tanda terima', 'Anda menerima nomor tiket beserta perkiraan tanggal selesai.', null, null],
+                                ['fa-magnifying-glass', 'Pantau status', 'Gunakan nomor tiket untuk melacak proses tanpa perlu datang kembali.', route('onlineportal.track.ticket.form'), 'Lacak tiket'],
+                                ['fa-box-open', 'Ambil hasil di loket', 'Setelah selesai, hasil layanan diserahkan kepada Anda di loket PTSP.', null, null],
+                                ['fa-star', 'Isi survei kepuasan', 'Beri penilaian SKM & SPAK agar pelayanan terus membaik.', route('survey.form'), 'Isi survei'],
+                            ],
+                        ],
+                    ];
+                @endphp
 
-                    <div class="col-lg-6" data-aos="fade-left">
-                        <h3 class="h2 fw-bold mb-4 text-secondary">Pelayanan Offline</h3>
-                        <p class="mb-4">
-                            Kunjungi loket PTSP kami untuk pelayanan tatap muka yang ramah dan efisien. Anda juga dapat mendaftar akun terlebih dahulu untuk kemudahan administrasi.
-                        </p>
-                        <div class="steps-container">
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">1</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Datang ke Loket PTSP</h5>
-                                    <p class="mb-0 text-muted">Kunjungi loket Pelayanan Terpadu Satu Pintu MTsN 2 Kota Malang pada jam operasional.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">2</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Ambil Nomor Antrean</h5>
-                                    <p class="mb-0 text-muted">Ambil nomor antrean dan tunggu panggilan dari petugas layanan.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">3</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Sampaikan Kebutuhan & Data Diri</h5>
-                                    <p class="mb-0 text-muted">Sampaikan jenis layanan yang Anda butuhkan kepada petugas, serahkan dokumen persyaratan, serta berikan email dan nomor WhatsApp aktif Anda.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">4</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Proses Layanan & Nomor Tiket</h5>
-                                    <p class="mb-0 text-muted">Petugas akan memproses permohonan Anda. Anda akan menerima nomor tiket melalui email/WhatsApp dan diberitahu estimasi waktu penyelesaian.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">5</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Ambil Hasil Layanan</h5>
-                                    <p class="mb-0 text-muted">Setelah layanan selesai, Anda akan diberitahu melalui email/WhatsApp untuk mengambil hasilnya di loket PTSP.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">6</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Isi Survei Penilaian Layanan</h5>
-                                    <p class="mb-0 text-muted">Berikan penilaian Anda terhadap layanan yang telah diterima untuk membantu kami meningkatkan kualitas.</p>
-                                </div>
-                            </div>
+                <div class="row g-4 align-items-stretch">
+                    @foreach ($guides as $key => $guide)
+                        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                            <article class="guide-card guide-{{ $guide['tone'] }} h-100" aria-labelledby="guide-{{ $key }}">
+                                <header class="guide-header">
+                                    <span class="guide-header-icon" aria-hidden="true"><i class="fas {{ $guide['icon'] }}"></i></span>
+                                    <div>
+                                        <h3 id="guide-{{ $key }}" class="guide-title">{{ $guide['title'] }}</h3>
+                                        <p class="guide-intro">{{ $guide['intro'] }}</p>
+                                    </div>
+                                    <span class="guide-count">{{ count($guide['steps']) }} langkah</span>
+                                </header>
+
+                                <ol class="guide-steps">
+                                    @foreach ($guide['steps'] as [$icon, $title, $text, $url, $label])
+                                        <li class="guide-step">
+                                            <span class="guide-step-number" aria-hidden="true">{{ $loop->iteration }}</span>
+                                            <div class="guide-step-body">
+                                                <h4 class="guide-step-title">
+                                                    <span class="visually-hidden">Langkah {{ $loop->iteration }}: </span>{{ $title }}
+                                                    <i class="fas {{ $icon }} guide-step-icon" aria-hidden="true"></i>
+                                                </h4>
+                                                <p class="guide-step-text">{{ $text }}</p>
+                                                @if ($url)
+                                                    <a href="{{ $url }}" class="guide-step-link">{{ $label }} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                                                @endif
+                                            </div>
+                                        </li>
+                                    @endforeach
+                                </ol>
+                            </article>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
+
+                <p class="text-center text-muted mt-4 mb-0" data-aos="fade-up">
+                    <i class="fas fa-circle-info me-1" aria-hidden="true"></i>
+                    Setiap permohonan diverifikasi petugas TU dan disetujui pimpinan sesuai standar pelayanan.
+                    Ada kendala? <a href="{{ route('supervision.complaint.submit') }}">Sampaikan pengaduan atau saran</a>.
+                </p>
             </div>
         </section>
 
