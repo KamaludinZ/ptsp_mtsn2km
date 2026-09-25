@@ -5,7 +5,12 @@
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             @if(session('success'))
-                <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">{{ session('success') }}</div>
+                <div class="alert alert-success" role="status">{{ session('success') }}</div>
+            @endif
+            @if($errors->any())
+                <div class="alert alert-danger" role="alert">
+                    <ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                </div>
             @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -15,11 +20,24 @@
                             <h1 class="text-2xl font-bold">{{ $ticket->ticket_number }}</h1>
                             <p class="text-gray-500">{{ $ticket->service->name ?? '-' }} &middot; {{ $ticket->user->name ?? '-' }}</p>
                         </div>
-                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
-                        </span>
+                        <x-ticket-status :status="$ticket->status" />
                     </div>
                     <p class="text-gray-700 mb-2"><strong>Petugas:</strong> {{ $ticket->assignedTo->name ?? 'Belum ditugaskan' }}</p>
+                    <p class="text-gray-700 mb-2"><strong>Target selesai:</strong> <x-sla-due :ticket="$ticket" /> ({{ $ticket->service->processing_time ?? 'standar belum diisi' }})</p>
+                    <p class="text-gray-700 mb-2"><strong>Persetujuan pimpinan:</strong>
+                        @if (! $ticket->approval_required)
+                            Tidak diperlukan
+                        @elseif ($ticket->approval_status === 'approved')
+                            <span class="text-success">Disetujui{{ $ticket->signature_type ? ' (' . strtoupper($ticket->signature_type) . ')' : '' }}</span>
+                        @elseif ($ticket->approval_status === 'rejected')
+                            <span class="text-danger">Ditolak</span>{{ $ticket->approval_notes ? ': ' . $ticket->approval_notes : '' }}
+                        @else
+                            Menunggu{{ in_array($ticket->status, ['verified', 'in_process']) ? '' : ' (tiket perlu diverifikasi dulu)' }}
+                            @if (auth()->user()->hasAnyRole(\App\Support\RoleAccess::LEADERSHIP) && auth()->user()->can('approve', $ticket))
+                                · <a href="{{ route('leadership.approvals') }}">Putuskan di menu Persetujuan</a>
+                            @endif
+                        @endif
+                    </p>
                     <p class="text-gray-700"><strong>Keterangan:</strong> {{ $ticket->notes }}</p>
                 </div>
             </div>
@@ -48,9 +66,12 @@
                         <form method="POST" action="{{ route('backoffice.tickets.update-status', $ticket) }}">
                             @csrf
                             <select name="status" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm mb-3">
-                                @foreach(['submitted' => 'Diajukan', 'verified' => 'Diverifikasi', 'in_process' => 'Diproses', 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'completed' => 'Selesai', 'cancelled' => 'Dibatalkan'] as $key => $label)
+                                @foreach(['submitted' => 'Diajukan', 'verified' => 'Diverifikasi', 'in_process' => 'Diproses', 'rejected' => 'Ditolak', 'completed' => 'Selesai', 'cancelled' => 'Dibatalkan'] as $key => $label)
                                     <option value="{{ $key }}" {{ $ticket->status === $key ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
+                                @if ($ticket->status === 'approved')
+                                    <option value="approved" selected disabled>Disetujui (oleh pimpinan)</option>
+                                @endif
                             </select>
                             <textarea name="notes" required placeholder="Keterangan perubahan status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm mb-3"></textarea>
                             <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Perbarui Status</button>

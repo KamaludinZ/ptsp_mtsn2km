@@ -104,9 +104,15 @@ class ServiceResource extends Resource
                         Forms\Components\Toggle::make('approval_required')
                             ->label('Memerlukan Persetujuan')
                             ->live(),
-                        Forms\Components\TagsInput::make('approval_roles')
-                            ->label('Role yang Bisa Menyetujui')
-                            ->placeholder('Ketik nama role dan tekan Enter')
+                        Forms\Components\CheckboxList::make('approval_roles')
+                            ->label('Pimpinan yang Menyetujui')
+                            ->helperText('Kosongkan untuk mengizinkan Kepala Sekolah, Kepala TU, dan Admin.')
+                            ->options([
+                                'kepala_sekolah' => 'Kepala Sekolah',
+                                'kepala_tu' => 'Kepala TU',
+                                'admin' => 'Admin',
+                            ])
+                            ->columns(3)
                             ->visible(fn ($get) => $get('approval_required')),
                         Forms\Components\TagsInput::make('approval_users')
                             ->label('User ID yang Bisa Menyetujui')

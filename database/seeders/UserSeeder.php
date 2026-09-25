@@ -98,6 +98,9 @@ class UserSeeder extends Seeder
         }
 
 
+        // Area permissions belong to roles (see App\Support\RoleAccess)
+        \App\Support\RoleAccess::sync();
+
         // Create Admin Users
         $adminUsers = [
             [
@@ -119,7 +122,6 @@ class UserSeeder extends Seeder
             $user->assignRole($role);
             $user->givePermissionTo([
                 'dashboard.view',
-                'supervision.access',
                 'supervision.complaints.view',
                 'supervision.performance.view',
                 'onlineportal.access',
@@ -164,12 +166,21 @@ class UserSeeder extends Seeder
             $user->assignRole($role);
             $user->givePermissionTo([
                 'dashboard.view',
-                'frontdesk.access',
-                'backoffice.access',
-                'supervision.access',
                 'onlineportal.access',
             ]);
         }
+
+        // Create Supervisor (Pengawas internal, Modul 10-11)
+        $supervisor = User::create([
+            'name' => 'Pengawas Internal',
+            'email' => 'pengawas@mtsn2malang.sch.id',
+            'password' => Hash::make('pengawas123'),
+            'user_type' => 'pegawai',
+            'registration_code' => 'PGW001',
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $supervisor->assignRole('supervisor');
 
         // Create Front Desk Staff
         $frontDeskUsers = [
@@ -199,7 +210,6 @@ class UserSeeder extends Seeder
             $user->assignRole($role);
             $user->givePermissionTo([
                 'dashboard.view',
-                'frontdesk.access',
                 'frontdesk.triage',
                 'frontdesk.visitor.manage',
                 'frontdesk.service.create',
@@ -242,7 +252,6 @@ class UserSeeder extends Seeder
             $user->assignRole($role);
             $user->givePermissionTo([
                 'dashboard.view',
-                'backoffice.access',
                 'backoffice.tickets.view',
                 'backoffice.tickets.assign',
                 'backoffice.tickets.process',

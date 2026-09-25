@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Complaint;
 use App\Models\Survey;
-use App\Models\SurveyResponse;
-use App\Models\Ticket;
+use App\Support\ServiceMetrics;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class SupervisionController extends Controller
@@ -212,27 +210,26 @@ class SupervisionController extends Controller
     }
 
     /**
-     * Survey management (admin only)
+     * Supervision dashboard: SKM/SPAK indexes, complaint follow-up and the
+     * survey editions.
      */
     public function surveyManagement()
     {
-        $surveys = Survey::with('questions')
+        $surveys = Survey::withCount(['questions', 'responses'])
             ->orderBy('type')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $stats = [
-            'total_surveys' => Survey::count(),
-            'total_responses' => SurveyResponse::count(),
-            'skm_responses' => SurveyResponse::whereHas('survey', function($query) {
-                $query->where('type', 'skm');
-            })->count(),
-            'spak_responses' => SurveyResponse::whereHas('survey', function($query) {
-                $query->where('type', 'spak');
-            })->count(),
-        ];
+        $survey = ServiceMetrics::survey(now()->startOfYear());
+        $complaints = ServiceMetrics::complaints(now()->startOfYear());
 
-        return view('supervision.survey-management', compact('surveys', 'stats'));
+        // Reports still waiting for someone to pick them up (Modul 10)
+        $newComplaints = Complaint::where('status', 'submitted')
+            ->latest()
+            ->limit(8)
+            ->get(['id', 'complaint_number', 'complaint_type', 'title', 'created_at']);
+
+        return view('supervision.survey-management', compact('surveys', 'survey', 'complaints', 'newComplaints'));
     }
 
     /**
@@ -272,8 +269,8 @@ class SupervisionController extends Controller
             $overallScore = round($totalScore / $totalQuestions, 2);
         }
 
-        // Convert to satisfaction index (1-4 scale to 0-100 scale)
-        $satisfactionIndex = round(($overallScore - 1) / 3 * 100, 2);
+        // Index on a 0-100 scale (average unsur score x 25, Permenpan RB 14/2017)
+        $satisfactionIndex = round($overallScore * 25, 2);
 
         return view('supervision.survey-results', compact(
             'survey',
@@ -288,48 +285,7 @@ class SupervisionController extends Controller
      */
     public function performance()
     {
-        $period = request('period', 'month');
-        $startDate = match($period) {
-            'week' => Carbon::now()->startOfWeek(),
-            'month' => Carbon::now()->startOfMonth(),
-            'quarter' => Carbon::now()->startOfQuarter(),
-            'year' => Carbon::now()->startOfYear(),
-            default => Carbon::now()->startOfMonth(),
-        };
-
-        $endDate = Carbon::now();
-
-        // Ticket performance
-        $ticketStats = [
-            'total' => Ticket::whereBetween('created_at', [$startDate, $endDate])->count(),
-            'completed' => Ticket::whereBetween('created_at', [$startDate, $endDate])
-                ->where('status', 'completed')->count(),
-            'average_time' => $this->calculateAverageCompletionTime($startDate, $endDate),
-        ];
-
-        // Complaint performance
-        $complaintStats = [
-            'total' => Complaint::whereBetween('created_at', [$startDate, $endDate])->count(),
-            'completed' => Complaint::whereBetween('created_at', [$startDate, $endDate])
-                ->where('status', 'completed')->count(),
-            'by_type' => Complaint::select('complaint_type', DB::raw('count(*) as count'))
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->groupBy('complaint_type')
-                ->get(),
-        ];
-
-        // Survey performance
-        $surveyStats = [
-            'total_responses' => SurveyResponse::whereBetween('created_at', [$startDate, $endDate])->count(),
-            'satisfaction_index' => $this->calculateSatisfactionIndex($startDate, $endDate),
-        ];
-
-        return view('supervision.performance', compact(
-            'period',
-            'ticketStats',
-            'complaintStats',
-            'surveyStats'
-        ));
+        return view('supervision.performance', ServiceMetrics::overview(ServiceMetrics::period(request('periode'))));
     }
 
     /**
@@ -356,60 +312,5 @@ class SupervisionController extends Controller
         $sequence = $lastNumber ? ((int) substr($lastNumber, -4)) + 1 : 1;
 
         return sprintf('%s-%s-%04d', $prefix, $date, $sequence);
-    }
-
-    /**
-     * Calculate average completion time
-     */
-    private function calculateAverageCompletionTime($startDate, $endDate)
-    {
-        $completedTickets = Ticket::whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'completed')
-            ->whereNotNull('actual_completion_date')
-            ->get();
-
-        if ($completedTickets->isEmpty()) {
-            return 0;
-        }
-
-        $totalMinutes = $completedTickets->sum(function($ticket) {
-            return $ticket->created_at->diffInMinutes($ticket->actual_completion_date);
-        });
-
-        return round($totalMinutes / $completedTickets->count(), 2);
-    }
-
-    /**
-     * Calculate satisfaction index
-     */
-    private function calculateSatisfactionIndex($startDate, $endDate)
-    {
-        $surveyResponses = SurveyResponse::whereBetween('created_at', [$startDate, $endDate])
-            ->whereHas('survey', function($query) {
-                $query->where('type', 'skm');
-            })
-            ->with('answers.question')
-            ->get();
-
-        if ($surveyResponses->isEmpty()) {
-            return 0;
-        }
-
-        $totalScore = 0;
-        $totalAnswers = 0;
-
-        foreach ($surveyResponses as $response) {
-            foreach ($response->answers as $answer) {
-                $totalScore += $answer->answer;
-                $totalAnswers++;
-            }
-        }
-
-        if ($totalAnswers === 0) {
-            return 0;
-        }
-
-        $averageScore = $totalScore / $totalAnswers;
-        return round(($averageScore - 1) / 3 * 100, 2);
     }
 }

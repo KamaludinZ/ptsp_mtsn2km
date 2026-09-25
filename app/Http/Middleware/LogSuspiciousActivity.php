@@ -36,7 +36,6 @@ class LogSuspiciousActivity
         '/(\.\.\\\\)/i',
 
         // Command injection
-        '/(\||;|`|\$\(|\${)/i',
 
         // File inclusion
         '/(php:\/\/)/i',
@@ -73,13 +72,15 @@ class LogSuspiciousActivity
         }
 
         // Check all input data for suspicious patterns
+        // Form input is free text (complaints, survey answers, notes), so it
+        // is only logged: it never counts towards blocking the IP.
         $allInput = $request->all();
+        $logOnly = [];
         foreach ($allInput as $key => $value) {
             if (is_string($value)) {
                 foreach ($this->suspiciousPatterns as $pattern) {
                     if (preg_match($pattern, $value)) {
-                        $suspicious = true;
-                        $matchedPatterns[] = "$key: $pattern";
+                        $logOnly[] = "$key: $pattern";
                     }
                 }
             }
@@ -93,22 +94,26 @@ class LogSuspiciousActivity
 
         // Check for missing User-Agent (common in bot attacks)
         if (empty($request->userAgent())) {
-            $suspicious = true;
-            $matchedPatterns[] = 'Missing User-Agent';
+            $logOnly[] = 'Missing User-Agent';
         }
 
         // Check for excessive request rate from same IP
         $requestKey = 'request_count_' . $ip;
         $requestCount = Cache::get($requestKey, 0);
 
-        if ($requestCount > 100) { // More than 100 requests per minute
-            $suspicious = true;
-            $matchedPatterns[] = 'Excessive request rate: ' . $requestCount . ' requests/minute';
+        // Many users share the school's public IP, so a high request rate is
+        // logged only; per-route rate limiters protect the forms.
+        if ($requestCount > 300) {
+            $logOnly[] = 'High request rate: ' . $requestCount . ' requests/minute';
         }
 
         Cache::put($requestKey, $requestCount + 1, now()->addMinutes(1));
 
         // Log suspicious activity
+        if (! $suspicious && $logOnly) {
+            Log::info('Unusual request (not blocked)', ['ip' => $ip, 'url' => $url, 'signals' => $logOnly]);
+        }
+
         if ($suspicious) {
             $redactedInput = collect($allInput)->map(function ($value, $key) {
                 return preg_match('/password|token|secret|captcha/i', (string) $key)
@@ -148,7 +153,8 @@ class LogSuspiciousActivity
             $suspiciousCount = Cache::get($suspiciousKey, 0);
             Cache::put($suspiciousKey, $suspiciousCount + 1, now()->addHours(1));
 
-            if ($suspiciousCount + 1 >= 10) { // 10 suspicious activities in 1 hour
+            // Attack signatures in the URL only; signed-in users are never auto-blocked
+            if ($suspiciousCount + 1 >= 10 && ! $request->user()) { // 10 in 1 hour
                 $this->autoBlockIP($ip, 'Auto-blocked due to excessive suspicious activities');
             }
         }

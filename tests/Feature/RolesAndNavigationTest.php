@@ -13,6 +13,13 @@ class RolesAndNavigationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        \App\Support\RoleAccess::sync();
+    }
+
     private function userWithRole(string $role): User
     {
         $user = User::factory()->create(['user_type' => 'pegawai']);
@@ -25,8 +32,8 @@ class RolesAndNavigationTest extends TestCase
     {
         $expected = [
             'admin' => '/admin',
-            'kepala_sekolah' => '/backoffice/dashboard',
-            'kepala_tu' => '/backoffice/dashboard',
+            'kepala_sekolah' => '/pimpinan',
+            'kepala_tu' => '/pimpinan',
             'back_office' => '/backoffice/dashboard',
             'front_desk' => '/frontdesk/dashboard',
             'supervisor' => '/supervision/management',
@@ -49,10 +56,50 @@ class RolesAndNavigationTest extends TestCase
             ->assertSee(route('backoffice.tickets.queue'), false)
             ->assertDontSee(route('frontdesk.triage'), false);
 
+        $this->actingAs($this->userWithRole('kepala_sekolah'))->get('/profile')
+            ->assertOk()
+            ->assertSee(route('leadership.approvals'), false)
+            ->assertSee(route('backoffice.tickets.queue'), false)
+            ->assertSee(route('admin.complaints.index'), false)
+            ->assertDontSee(route('frontdesk.triage'), false)
+            ->assertDontSee(route('admin.services.index'), false);
+
+        $this->actingAs($this->userWithRole('supervisor'))->get('/profile')
+            ->assertOk()
+            ->assertSee(route('supervision.performance'), false)
+            ->assertSee(route('admin.complaints.index'), false)
+            ->assertDontSee(route('leadership.approvals'), false)
+            ->assertDontSee(route('backoffice.tickets.queue'), false);
+
         $this->actingAs($this->userWithRole('umum'))->get('/profile')
             ->assertOk()
             ->assertSee(route('onlineportal.service.catalog'), false)
-            ->assertDontSee(route('backoffice.tickets.queue'), false);
+            ->assertSee(route('survey.form'), false)
+            ->assertDontSee(route('backoffice.tickets.queue'), false)
+            ->assertDontSee(route('admin.complaints.index'), false);
+    }
+
+    public function test_each_area_is_limited_to_its_roles(): void
+    {
+        $matrix = [
+            '/pimpinan' => ['admin', 'kepala_sekolah', 'kepala_tu'],
+            '/frontdesk/dashboard' => ['admin', 'kepala_tu', 'front_desk'],
+            '/backoffice/dashboard' => ['admin', 'kepala_sekolah', 'kepala_tu', 'back_office'],
+            '/supervision/management' => ['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor'],
+            '/admin/complaints' => ['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor'],
+            '/admin/services' => ['admin'],
+        ];
+        $roles = ['admin', 'kepala_sekolah', 'kepala_tu', 'back_office', 'front_desk', 'supervisor', 'umum'];
+        $users = collect($roles)->mapWithKeys(fn ($role) => [$role => $this->userWithRole($role)]);
+
+        foreach ($matrix as $url => $allowed) {
+            foreach ($users as $role => $user) {
+                $status = $this->actingAs($user)->get($url)->getStatusCode();
+                in_array($role, $allowed, true)
+                    ? $this->assertSame(200, $status, "{$role} should open {$url}")
+                    : $this->assertSame(403, $status, "{$role} must not open {$url}");
+            }
+        }
     }
 
     public function test_contact_form_sends_mail_to_school(): void

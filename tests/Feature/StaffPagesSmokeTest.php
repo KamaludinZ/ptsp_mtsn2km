@@ -10,7 +10,6 @@ use App\Models\Visitor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -25,20 +24,18 @@ class StaffPagesSmokeTest extends TestCase
 
     public function test_staff_pages_render_without_server_errors(): void
     {
-        foreach (['frontdesk.access', 'backoffice.access', 'supervision.access'] as $permission) {
-            Permission::findOrCreate($permission);
-        }
+        \App\Support\RoleAccess::sync();
 
         Service::factory()->count(2)->create();
-        Ticket::factory()->count(3)->create();
-        Complaint::factory()->count(3)->create();
+        $tickets = Ticket::factory()->count(3)->create();
+        $complaints = Complaint::factory()->count(3)->create(['complaint_type' => 'complaint']);
+        $whistleblowing = Complaint::factory()->create(['complaint_type' => 'whistleblowing']);
         Visitor::factory()->count(3)->create();
 
         $users = [];
-        foreach (['admin', 'back_office', 'front_desk', 'supervisor'] as $role) {
+        foreach (['admin', 'kepala_sekolah', 'back_office', 'front_desk', 'supervisor'] as $role) {
             $user = User::factory()->create(['user_type' => 'pegawai']);
             $user->assignRole(Role::findOrCreate($role));
-            $user->givePermissionTo(['frontdesk.access', 'backoffice.access', 'supervision.access']);
             $users[$role] = $user;
         }
 
@@ -46,8 +43,13 @@ class StaffPagesSmokeTest extends TestCase
             ->filter(fn ($route) => in_array('GET', $route->methods(), true))
             ->map(fn ($route) => $route->uri())
             ->filter(fn ($uri) => ! str_contains($uri, '{')
-                && Str::startsWith($uri, ['admin', 'backoffice', 'frontdesk', 'supervision', 'portal', 'profile'])
+                && Str::startsWith($uri, ['admin', 'backoffice', 'frontdesk', 'supervision', 'pimpinan', 'portal', 'profile'])
                 && ! Str::contains($uri, ['export', 'download', 'logout']))
+            ->merge([
+                'backoffice/tickets/' . $tickets->first()->ticket_number,
+                'admin/complaints/' . $complaints->first()->id,
+                'admin/whistleblowing/' . $whistleblowing->id,
+            ])
             ->unique()
             ->values();
 

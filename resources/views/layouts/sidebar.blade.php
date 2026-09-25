@@ -23,168 +23,227 @@
         <nav class="sidebar-nav">
             @php
                 $user = Auth::user();
+                $homeUrl = get_dashboard_route_for_user($user);
+                $isLeader = $user->hasAnyRole(\App\Support\RoleAccess::LEADERSHIP);
+                $pendingApprovals = $isLeader ? \App\Models\Ticket::approvableBy($user)->count() : 0;
+                $link = fn (string $pattern) => request()->routeIs($pattern) ? 'active' : '';
             @endphp
 
-            <!-- Dashboard (All Roles) -->
-            <a href="{{ get_dashboard_route_for_user($user) }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="fas fa-tachometer-alt me-3"></i>
+            <!-- Dashboard utama sesuai peran -->
+            <a href="{{ $homeUrl }}" class="sidebar-link {{ request()->is(ltrim($homeUrl, '/')) ? 'active' : '' }}">
+                <i class="fas fa-tachometer-alt me-3" aria-hidden="true"></i>
                 <span>Dashboard</span>
             </a>
 
+            <!-- PIMPINAN: dashboard eksekutif (Modul 13) & persetujuan (Modul 8) -->
+            @if ($isLeader)
+                <div class="sidebar-divider"><span>PIMPINAN</span></div>
 
-            <!-- ADMIN MENU -->
-            @if($user->hasRole('admin'))
-                <div class="sidebar-divider">
-                    <span>ADMIN</span>
-                </div>
+                @if ($homeUrl !== '/pimpinan')
+                    <a href="{{ route('leadership.dashboard') }}" class="sidebar-link {{ $link('leadership.dashboard') }}">
+                        <i class="fas fa-chart-line me-3" aria-hidden="true"></i>
+                        <span>Dashboard Eksekutif</span>
+                    </a>
+                @endif
 
-                <a href="{{ route('admin.services.index') }}" class="sidebar-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
-                    <i class="fas fa-concierge-bell me-3"></i>
-                    <span>Kelola Layanan</span>
+                <a href="{{ route('leadership.approvals') }}" class="sidebar-link {{ $link('leadership.approvals') }}">
+                    <i class="fas fa-clipboard-check me-3" aria-hidden="true"></i>
+                    <span>Persetujuan</span>
+                    @if ($pendingApprovals)
+                        <span class="badge rounded-pill bg-warning text-dark ms-auto">{{ $pendingApprovals }}<span class="visually-hidden"> menunggu</span></span>
+                    @endif
+                </a>
+            @endif
+
+            <!-- LOKET (Modul 1-2) -->
+            @can('frontdesk.access')
+                <div class="sidebar-divider"><span>LOKET</span></div>
+
+                @if ($homeUrl !== '/frontdesk/dashboard')
+                    <a href="{{ route('frontdesk.dashboard') }}" class="sidebar-link {{ $link('frontdesk.dashboard') }}">
+                        <i class="fas fa-desktop me-3" aria-hidden="true"></i>
+                        <span>Dashboard Loket</span>
+                    </a>
+                @endif
+
+                <a href="{{ route('frontdesk.triage') }}" class="sidebar-link {{ $link('frontdesk.triage') }}">
+                    <i class="fas fa-user-check me-3" aria-hidden="true"></i>
+                    <span>Triage Pengunjung</span>
                 </a>
 
-                <a href="{{ route('admin.service-categories.index') }}" class="sidebar-link {{ request()->routeIs('admin.service-categories.*') ? 'active' : '' }}">
-                    <i class="fas fa-tags me-3"></i>
-                    <span>Kategori Layanan</span>
+                <a href="{{ route('frontdesk.service.application') }}" class="sidebar-link {{ $link('frontdesk.service.*') }}">
+                    <i class="fas fa-file-circle-plus me-3" aria-hidden="true"></i>
+                    <span>Registrasi Layanan</span>
                 </a>
 
-                <a href="{{ route('admin.pengumuman.index') }}" class="sidebar-link {{ request()->routeIs('admin.pengumuman.*') ? 'active' : '' }}">
-                    <i class="fas fa-bullhorn me-3"></i>
-                    <span>Kelola Pengumuman</span>
+                <a href="{{ route('frontdesk.visitor-book') }}" class="sidebar-link {{ $link('frontdesk.visitor-book') }}">
+                    <i class="fas fa-book me-3" aria-hidden="true"></i>
+                    <span>Buku Tamu</span>
                 </a>
 
-                @if($user->hasRole('admin'))
-                    <a href="{{ route('admin.security.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.security.*') ? 'active' : '' }}">
-                        <i class="fas fa-shield-alt me-3"></i>
-                        <span>Keamanan</span>
+                <a href="{{ route('frontdesk.active-visitors') }}" class="sidebar-link {{ $link('frontdesk.active-visitors') }}">
+                    <i class="fas fa-users me-3" aria-hidden="true"></i>
+                    <span>Tamu Aktif</span>
+                </a>
+            @endcan
+
+            <!-- BACK OFFICE (Modul 7 & 9) -->
+            @can('backoffice.access')
+                <div class="sidebar-divider"><span>BACK OFFICE</span></div>
+
+                @if ($homeUrl !== '/backoffice/dashboard')
+                    <a href="{{ route('backoffice.dashboard') }}" class="sidebar-link {{ $link('backoffice.dashboard') }}">
+                        <i class="fas fa-briefcase me-3" aria-hidden="true"></i>
+                        <span>Dashboard Back Office</span>
+                    </a>
+                @endif
+
+                <a href="{{ route('backoffice.tickets.queue') }}" class="sidebar-link {{ $link('backoffice.tickets.queue') }}">
+                    <i class="fas fa-inbox me-3" aria-hidden="true"></i>
+                    <span>Antrian Tugas</span>
+                </a>
+
+                <a href="{{ route('backoffice.tickets.my') }}" class="sidebar-link {{ $link('backoffice.tickets.my') }}">
+                    <i class="fas fa-tasks me-3" aria-hidden="true"></i>
+                    <span>Tugas Saya</span>
+                </a>
+
+                <a href="{{ route('backoffice.tickets.all') }}" class="sidebar-link {{ $link('backoffice.tickets.all') }}">
+                    <i class="fas fa-list me-3" aria-hidden="true"></i>
+                    <span>Semua Tiket</span>
+                </a>
+
+                <a href="{{ route('backoffice.tickets.search') }}" class="sidebar-link {{ $link('backoffice.tickets.search') }}">
+                    <i class="fas fa-magnifying-glass me-3" aria-hidden="true"></i>
+                    <span>Cari Tiket</span>
+                </a>
+
+                <a href="{{ route('backoffice.reports') }}" class="sidebar-link {{ $link('backoffice.reports') }}">
+                    <i class="fas fa-chart-bar me-3" aria-hidden="true"></i>
+                    <span>Laporan Layanan</span>
+                </a>
+            @endcan
+
+            <!-- PENGAWASAN (Modul 10-11) -->
+            @if ($user->can('supervision.access') || $user->hasAnyRole(\App\Support\RoleAccess::COMPLAINT_HANDLERS))
+                <div class="sidebar-divider"><span>PENGAWASAN</span></div>
+
+                @can('supervision.access')
+                    @if ($homeUrl !== '/supervision/management')
+                        <a href="{{ route('supervision.management') }}" class="sidebar-link {{ $link('supervision.management') }}">
+                            <i class="fas fa-binoculars me-3" aria-hidden="true"></i>
+                            <span>Dashboard Pengawasan</span>
+                        </a>
+                    @endif
+
+                    <a href="{{ route('supervision.performance') }}" class="sidebar-link {{ $link('supervision.performance') }}">
+                        <i class="fas fa-gauge-high me-3" aria-hidden="true"></i>
+                        <span>Kinerja Pelayanan</span>
+                    </a>
+                @endcan
+
+                @if ($user->hasAnyRole(\App\Support\RoleAccess::COMPLAINT_HANDLERS))
+                    <a href="{{ route('admin.complaints.index') }}" class="sidebar-link {{ $link('admin.complaints.*') }}">
+                        <i class="fas fa-comments me-3" aria-hidden="true"></i>
+                        <span>Tindak Lanjut Pengaduan</span>
+                    </a>
+
+                    <a href="{{ route('admin.whistleblowing.index') }}" class="sidebar-link {{ $link('admin.whistleblowing.*') }}">
+                        <i class="fas fa-user-secret me-3" aria-hidden="true"></i>
+                        <span>Whistleblowing</span>
+                    </a>
+
+                    <a href="{{ route('admin.performance.report') }}" class="sidebar-link {{ request()->routeIs('admin.performance.report', 'admin.skm.report', 'admin.spak.report') ? 'active' : '' }}">
+                        <i class="fas fa-chart-pie me-3" aria-hidden="true"></i>
+                        <span>Laporan SKM &amp; SPAK</span>
                     </a>
                 @endif
             @endif
 
-            <!-- FRONT DESK MENU (Petugas Loket) -->
-            @if($user->hasAnyRole(['admin', 'front_desk']))
-                <div class="sidebar-divider">
-                    <span>LOKET</span>
-                </div>
+            <!-- ADMIN (Modul 12) -->
+            @if ($user->hasRole('admin'))
+                <div class="sidebar-divider"><span>ADMIN</span></div>
 
-                <a href="{{ route('frontdesk.triage') }}" class="sidebar-link {{ request()->routeIs('frontdesk.triage') ? 'active' : '' }}">
-                    <i class="fas fa-user-check me-3"></i>
-                    <span>Triage & Buku Tamu</span>
+                <a href="{{ route('admin.services.index') }}" class="sidebar-link {{ $link('admin.services.*') }}">
+                    <i class="fas fa-concierge-bell me-3" aria-hidden="true"></i>
+                    <span>Kelola Layanan</span>
                 </a>
 
-                <a href="{{ route('frontdesk.active-visitors') }}" class="sidebar-link {{ request()->routeIs('frontdesk.active-visitors') ? 'active' : '' }}">
-                    <i class="fas fa-users me-3"></i>
-                    <span>Tamu Aktif</span>
+                <a href="{{ route('admin.tickets.index') }}" class="sidebar-link {{ $link('admin.tickets.*') }}">
+                    <i class="fas fa-ticket me-3" aria-hidden="true"></i>
+                    <span>Kelola Tiket</span>
                 </a>
 
-                <a href="{{ route('frontdesk.service.application') }}" class="sidebar-link {{ request()->routeIs('frontdesk.service.*') ? 'active' : '' }}">
-                    <i class="fas fa-file-alt me-3"></i>
-                    <span>Registrasi Layanan</span>
-                </a>
-            @endif
-
-            <!-- BACK OFFICE MENU (Petugas TU) -->
-            @if($user->hasAnyRole(['admin', 'back_office', 'kepala_tu']))
-                <div class="sidebar-divider">
-                    <span>BACK OFFICE</span>
-                </div>
-
-                <a href="{{ route('backoffice.tickets.queue') }}" class="sidebar-link {{ request()->routeIs('backoffice.tickets.queue') ? 'active' : '' }}">
-                    <i class="fas fa-inbox me-3"></i>
-                    <span>Antrian Tugas</span>
+                <a href="{{ route('admin.users.index') }}" class="sidebar-link {{ $link('admin.users.*') }}">
+                    <i class="fas fa-users-cog me-3" aria-hidden="true"></i>
+                    <span>Pengguna</span>
                 </a>
 
-                <a href="{{ route('backoffice.tickets.my') }}" class="sidebar-link {{ request()->routeIs('backoffice.tickets.my') ? 'active' : '' }}">
-                    <i class="fas fa-tasks me-3"></i>
-                    <span>Tugas Saya</span>
+                <a href="{{ route('admin.survey.management') }}" class="sidebar-link {{ $link('admin.survey.*') }}">
+                    <i class="fas fa-poll me-3" aria-hidden="true"></i>
+                    <span>Kelola Survei</span>
                 </a>
 
-                <a href="{{ route('backoffice.tickets.all') }}" class="sidebar-link {{ request()->routeIs('backoffice.tickets.all') ? 'active' : '' }}">
-                    <i class="fas fa-list me-3"></i>
-                    <span>Semua Tiket</span>
+                <a href="{{ route('admin.pengumuman.index') }}" class="sidebar-link {{ $link('admin.pengumuman.*') }}">
+                    <i class="fas fa-bullhorn me-3" aria-hidden="true"></i>
+                    <span>Kelola Pengumuman</span>
+                </a>
+
+                <a href="{{ route('admin.security.dashboard') }}" class="sidebar-link {{ $link('admin.security.*') }}">
+                    <i class="fas fa-shield-alt me-3" aria-hidden="true"></i>
+                    <span>Keamanan</span>
                 </a>
             @endif
 
-            <!-- APPROVAL MENU (Kepala Sekolah, Waka, Kepala TU) -->
-            @if($user->hasAnyRole(\App\Models\User::LEADERSHIP_ROLES))
-                <div class="sidebar-divider">
-                    <span>PERSETUJUAN</span>
-                </div>
-
-                <a href="{{ route('backoffice.tickets.queue') }}" class="sidebar-link {{ request()->routeIs('backoffice.tickets.queue') ? 'active' : '' }}">
-                    <i class="fas fa-clipboard-check me-3"></i>
-                    <span>Pending Approval</span>
-                </a>
-
-                <a href="{{ route('backoffice.tickets.all') }}" class="sidebar-link {{ request()->routeIs('backoffice.tickets.*') ? 'active' : '' }}">
-                    <i class="fas fa-history me-3"></i>
-                    <span>Riwayat Persetujuan</span>
+            @if ($user->canAccessPanel(\Filament\Facades\Filament::getPanel('admin')))
+                <a href="{{ url('/cp') }}" class="sidebar-link">
+                    <i class="fas fa-sliders me-3" aria-hidden="true"></i>
+                    <span>Panel Kontrol</span>
                 </a>
             @endif
 
-            <!-- PUBLIC USER MENU (Guru, Pegawai, Siswa, Wali Murid, Alumni, Instansi, Umum) -->
-            @if(! $user->isStaff())
-                <div class="sidebar-divider">
-                    <span>LAYANAN</span>
-                </div>
+            <!-- LAYANAN: pemohon (guru, pegawai, siswa, wali murid, alumni, instansi, umum) -->
+            @if (! $user->isStaff())
+                <div class="sidebar-divider"><span>LAYANAN</span></div>
 
-                <a href="{{ route('onlineportal.service.catalog') }}" class="sidebar-link {{ request()->routeIs('onlineportal.service.*') ? 'active' : '' }}">
-                    <i class="fas fa-concierge-bell me-3"></i>
+                <a href="{{ route('onlineportal.service.catalog') }}" class="sidebar-link {{ $link('onlineportal.service.*') }}">
+                    <i class="fas fa-concierge-bell me-3" aria-hidden="true"></i>
                     <span>Katalog Layanan</span>
                 </a>
 
-                <a href="{{ route('onlineportal.my-tickets') }}" class="sidebar-link {{ request()->routeIs('onlineportal.my-tickets') || request()->routeIs('onlineportal.ticket.*') ? 'active' : '' }}">
-                    <i class="fas fa-ticket-alt me-3"></i>
+                <a href="{{ route('onlineportal.my-tickets') }}" class="sidebar-link {{ request()->routeIs('onlineportal.my-tickets', 'onlineportal.ticket.*') ? 'active' : '' }}">
+                    <i class="fas fa-ticket-alt me-3" aria-hidden="true"></i>
                     <span>Tiket Saya</span>
                 </a>
 
-                <a href="{{ route('onlineportal.track.ticket.form') }}" class="sidebar-link {{ request()->routeIs('onlineportal.track.*') ? 'active' : '' }}">
-                    <i class="fas fa-search me-3"></i>
+                <a href="{{ route('onlineportal.track.ticket.form') }}" class="sidebar-link {{ $link('onlineportal.track.*') }}">
+                    <i class="fas fa-search me-3" aria-hidden="true"></i>
                     <span>Lacak Tiket</span>
                 </a>
+
+                <a href="{{ route('survey.form') }}" class="sidebar-link {{ $link('survey.*') }}">
+                    <i class="fas fa-star-half-stroke me-3" aria-hidden="true"></i>
+                    <span>Survei Kepuasan</span>
+                </a>
+
+                <a href="{{ route('supervision.complaint.submit') }}" class="sidebar-link {{ $link('supervision.complaint.*') }}">
+                    <i class="fas fa-comments me-3" aria-hidden="true"></i>
+                    <span>Pengaduan &amp; Saran</span>
+                </a>
+
+                <a href="{{ route('supervision.whistleblowing.form') }}" class="sidebar-link {{ $link('supervision.whistleblowing.*') }}">
+                    <i class="fas fa-user-secret me-3" aria-hidden="true"></i>
+                    <span>Whistleblowing</span>
+                </a>
             @endif
 
-            <!-- COMMON MENU (All Authenticated Users) -->
-            <div class="sidebar-divider">
-                <span>UMUM</span>
-            </div>
+            <!-- UMUM -->
+            <div class="sidebar-divider"><span>UMUM</span></div>
 
-            <a href="{{ route('pengumuman.index') }}" class="sidebar-link {{ request()->routeIs('pengumuman.*') ? 'active' : '' }}">
-                <i class="fas fa-bullhorn me-3"></i>
+            <a href="{{ route('pengumuman.index') }}" class="sidebar-link {{ $link('pengumuman.*') }}">
+                <i class="fas fa-bullhorn me-3" aria-hidden="true"></i>
                 <span>Pengumuman</span>
             </a>
-
-            <a href="{{ route('supervision.complaints.dashboard') }}" class="sidebar-link {{ request()->routeIs('supervision.complaints.*') || request()->routeIs('supervision.complaint.*') ? 'active' : '' }}">
-                <i class="fas fa-comments me-3"></i>
-                <span>Pengaduan</span>
-            </a>
-
-            <a href="{{ route('supervision.whistleblowing.form') }}" class="sidebar-link {{ request()->routeIs('supervision.whistleblowing.*') ? 'active' : '' }}">
-                <i class="fas fa-user-secret me-3"></i>
-                <span>Whistleblowing</span>
-            </a>
-
-            <a href="{{ route('supervision.skm.survey') }}" class="sidebar-link {{ request()->routeIs('supervision.skm.*') ? 'active' : '' }}">
-                <i class="fas fa-poll me-3"></i>
-                <span>Survei Kepuasan</span>
-            </a>
-
-            @if($user->hasAnyRole(['admin', 'kepala_sekolah', 'kepala_tu']))
-                <div class="sidebar-divider">
-                    <span>LAPORAN</span>
-                </div>
-
-                <a href="{{ route('backoffice.reports') }}" class="sidebar-link {{ request()->routeIs('backoffice.reports') ? 'active' : '' }}">
-                    <i class="fas fa-chart-bar me-3"></i>
-                    <span>Laporan Kinerja</span>
-                </a>
-
-                <a href="{{ route('supervision.management') }}" class="sidebar-link {{ request()->routeIs('supervision.*') && !request()->routeIs('supervision.complaints.*') && !request()->routeIs('supervision.whistleblowing.*') && !request()->routeIs('supervision.skm.*') ? 'active' : '' }}">
-                    <i class="fas fa-chart-pie me-3"></i>
-                    <span>Dashboard SKM/SPAK</span>
-                </a>
-            @endif
-
 
             <!-- Profile & Settings -->
             <div class="sidebar-divider"></div>

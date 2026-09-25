@@ -12,8 +12,8 @@ Didefinisikan di `App\Models\User::STAFF_ROLES`.
 | Peran | Untuk | Halaman utama | Panel `/cp` |
 | --- | --- | --- | --- |
 | `admin` | Administrator sistem: master layanan, pengguna, peran, pengaturan, keamanan | `/admin` | Ya |
-| `kepala_sekolah` | Monitoring, persetujuan layanan, laporan SKM/SPAK | `/backoffice/dashboard` | Ya |
-| `kepala_tu` | Kontrol pelayanan, koordinasi petugas, persetujuan administratif | `/backoffice/dashboard` | Ya |
+| `kepala_sekolah` | Dashboard eksekutif (Modul 13), persetujuan layanan (Modul 8), laporan SKM/SPAK | `/pimpinan` | Ya |
+| `kepala_tu` | Dashboard eksekutif, persetujuan, kontrol pelayanan loket & back office | `/pimpinan` | Ya |
 | `back_office` | Petugas TU: verifikasi, disposisi, status tiket, unggah hasil layanan | `/backoffice/dashboard` | Ya |
 | `front_desk` | Petugas loket: triage, buku tamu, registrasi layanan offline | `/frontdesk/dashboard` | Ya |
 | `supervisor` | Pengawasan: manajemen survei, kinerja, pengaduan | `/supervision/management` | Tidak |
@@ -33,14 +33,40 @@ Pengalihan setelah login ada di satu tempat, yaitu `get_dashboard_route_for_user
 
 ## Permission area staf
 
-| Permission | Melindungi |
-| --- | --- |
-| `frontdesk.access` | `FrontDeskController` (`/frontdesk/*`) |
-| `backoffice.access` | `BackOfficeController` (`/backoffice/*`) |
-| `supervision.access` | `/supervision/management`, hasil survei, kinerja |
+Permission area dimiliki **peran**, bukan pengguna. Pemetaannya ada di satu tempat,
+`App\Support\RoleAccess::ROLE_PERMISSIONS`, dan diterapkan oleh seeder serta migration
+`2026_09_25_100000_grant_area_permissions_to_roles`.
 
-Area `/admin/*` mewajibkan peran `admin`. Panel Filament `/cp` diatur oleh
-`User::canAccessPanel()`.
+| Permission | Melindungi | Peran |
+| --- | --- | --- |
+| `frontdesk.access` | `/frontdesk/*` (loket, buku tamu, registrasi offline, serah produk) | admin, kepala_tu, front_desk |
+| `backoffice.access` | `/backoffice/*` (antrian tugas, proses tiket, unggah hasil) | admin, kepala_sekolah, kepala_tu, back_office |
+| `supervision.access` | `/supervision/*` (dashboard pengawasan, kinerja pelayanan) | admin, kepala_sekolah, kepala_tu, supervisor |
+
+Area lain:
+
+| Area | Peran |
+| --- | --- |
+| `/pimpinan` (dashboard eksekutif) dan `/pimpinan/persetujuan` | admin, kepala_sekolah, kepala_tu |
+| Tindak lanjut pengaduan & whistleblowing, laporan SKM/SPAK/kinerja (`/admin/complaints`, `/admin/whistleblowing`, `/admin/*-report`) | admin, supervisor, kepala_sekolah, kepala_tu |
+| Sisa `/admin/*` (master data, pengguna, keamanan, pengaturan) | admin |
+
+Panel Filament `/cp` diatur oleh `User::canAccessPanel()`. Menu samping hanya menampilkan
+menu yang boleh dibuka peran tersebut; `tests/Feature/DashboardNavigationTest` memastikan
+setiap tautan di dashboard setiap peran bisa dibuka.
+
+## Alur tiket & persetujuan
+
+1. Pemohon mengajukan online, atau petugas loket mendaftarkannya offline. Target selesai
+   (`estimated_completion_date`) dihitung dari jangka waktu standar layanan (hari kerja).
+2. Petugas TU memverifikasi (`verified`) lalu memproses (`in_process`).
+3. Pimpinan memutuskan di `/pimpinan/persetujuan`: **setujui**, dengan memilih tanda tangan TTE
+   atau TTD, atau **tolak** dengan alasan. Yang boleh memutuskan adalah peran di
+   `services.approval_roles` atau pengguna di `approval_users`. Bila keduanya kosong, yang
+   memutuskan adalah kepala_sekolah, kepala_tu, atau admin.
+4. Setelah disetujui, petugas TU mengunggah hasil atau menandai tiket selesai. Tiket yang
+   belum disetujui tidak bisa diselesaikan. Tiket offline dan produk fisik masuk daftar
+   **siap diambil** di dashboard loket sampai diserahkan.
 
 ## Tiket & dokumen
 

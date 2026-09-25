@@ -14,10 +14,11 @@
 
     <!-- Vite Assets (includes Bootstrap Icons locally) -->
     @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
-        @vite(['resources/css/app.css', 'resources/css/bootstrap-custom.css', 'resources/css/admin.css', 'resources/js/bootstrap-bundle.js', 'resources/js/chart-bundle.js', 'resources/js/app.js'])
+        @vite(['resources/css/app.css', 'resources/css/bootstrap-custom.css', 'resources/css/fontawesome.css', 'resources/css/admin.css', 'resources/js/bootstrap-bundle.js', 'resources/js/chart-bundle.js', 'resources/js/app.js'])
     @else
         {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
         {!! App\Helpers\AssetHelper::css('resources/css/bootstrap-custom.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/fontawesome.css') !!}
         {!! App\Helpers\AssetHelper::css('resources/css/admin.css') !!}
         {!! App\Helpers\AssetHelper::js('resources/js/bootstrap-bundle.js', false) !!}
         {!! App\Helpers\AssetHelper::js('resources/js/chart-bundle.js', false) !!}
@@ -145,6 +146,7 @@
             z-index: 100;
         }
     </style>
+    @include('partials.dashboard-styles')
 </head>
 <body class="bg-base-200">
     <div 
@@ -174,7 +176,7 @@
                         <!-- Our custom desktop collapse button will be in the sidebar -->
                     </div>
                     <div class="flex-1 px-2 mx-2">
-                        <a href="{{ route('admin.dashboard') }}" class="text-xl font-bold text-primary">PTSP MTsN 2 KOTA MALANG</a>
+                        <a href="{{ get_dashboard_route_for_user(auth()->user()) }}" class="text-xl font-bold text-primary">PTSP MTsN 2 KOTA MALANG</a>
                     </div>
                     <div class="flex-none">
                         <!-- Notifications -->
@@ -183,10 +185,28 @@
                                 <div class="indicator">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                                     @php
-                                        $pendingTicketsCount = \App\Models\Ticket::where('status', 'pending')->count();
-                                        $pendingApprovalsCount = \App\Models\Ticket::where('status', 'pending_approval')->count();
-                                        $complaintsCount = \App\Models\Complaint::where('status', 'pending')->count();
-                                        $totalUnreadNotifications = $pendingTicketsCount + $pendingApprovalsCount + $complaintsCount;
+                                        // Real work waiting for this user, linked to pages their role can open.
+                                        $navUser = auth()->user();
+                                        $notifications = [];
+                                        if ($navUser->can('backoffice.access')) {
+                                            $newTickets = \App\Models\Ticket::where('status', 'submitted')->count();
+                                            if ($newTickets) {
+                                                $notifications[] = ['count' => $newTickets, 'title' => 'Tiket baru', 'hint' => 'Menunggu verifikasi petugas TU', 'icon' => 'bi-ticket-perforated', 'tone' => 'warning', 'url' => route('backoffice.tickets.queue')];
+                                            }
+                                        }
+                                        if ($navUser->hasAnyRole(\App\Support\RoleAccess::LEADERSHIP)) {
+                                            $approvals = \App\Models\Ticket::approvableBy($navUser)->count();
+                                            if ($approvals) {
+                                                $notifications[] = ['count' => $approvals, 'title' => 'Persetujuan menunggu', 'hint' => 'Perlu keputusan pimpinan', 'icon' => 'bi-check-circle', 'tone' => 'primary', 'url' => route('leadership.approvals')];
+                                            }
+                                        }
+                                        if ($navUser->hasAnyRole(\App\Support\RoleAccess::COMPLAINT_HANDLERS)) {
+                                            $newComplaints = \App\Models\Complaint::where('status', 'submitted')->count();
+                                            if ($newComplaints) {
+                                                $notifications[] = ['count' => $newComplaints, 'title' => 'Pengaduan masuk', 'hint' => 'Belum ditindaklanjuti', 'icon' => 'bi-exclamation-triangle', 'tone' => 'error', 'url' => route('admin.complaints.index', ['status' => 'submitted'])];
+                                            }
+                                        }
+                                        $totalUnreadNotifications = array_sum(array_column($notifications, 'count'));
                                     @endphp
                                     @if($totalUnreadNotifications > 0)
                                         <span class="badge badge-xs badge-error indicator-item">{{ $totalUnreadNotifications }}</span>
@@ -194,51 +214,21 @@
                                 </div>
                             </label>
                             <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-72" role="menu">
-                                @if($pendingTicketsCount > 0)
+                                @foreach($notifications as $notification)
                                     <li>
-                                        <a href="{{ route('admin.tickets.index') }}?status=pending" role="menuitem">
+                                        <a href="{{ $notification['url'] }}" role="menuitem">
                                             <div class="flex items-center">
-                                                <div class="mr-3 p-2 rounded-full bg-warning/10 text-warning">
-                                                    <i class="bi bi-ticket-perforated"></i>
+                                                <div class="mr-3 p-2 rounded-full bg-{{ $notification['tone'] }}/10 text-{{ $notification['tone'] }}">
+                                                    <i class="bi {{ $notification['icon'] }}"></i>
                                                 </div>
                                                 <div>
-                                                    <div class="font-medium">{{ $pendingTicketsCount }} Tiket Baru</div>
-                                                    <div class="text-xs text-base-content/70">Menunggu verifikasi</div>
+                                                    <div class="font-medium">{{ $notification['count'] }} {{ $notification['title'] }}</div>
+                                                    <div class="text-xs text-base-content/70">{{ $notification['hint'] }}</div>
                                                 </div>
                                             </div>
                                         </a>
                                     </li>
-                                @endif
-                                @if($pendingApprovalsCount > 0)
-                                    <li>
-                                        <a href="{{ route('admin.tickets.index') }}?status=pending_approval" role="menuitem">
-                                            <div class="flex items-center">
-                                                <div class="mr-3 p-2 rounded-full bg-primary/10 text-primary">
-                                                    <i class="bi bi-check-circle"></i>
-                                                </div>
-                                                <div>
-                                                    <div class="font-medium">{{ $pendingApprovalsCount }} Persetujuan Menunggu</div>
-                                                    <div class="text-xs text-base-content/70">Menunggu approval</div>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </li>
-                                @endif
-                                @if($complaintsCount > 0)
-                                    <li>
-                                        <a href="{{ route('admin.complaints.index') }}?status=pending" role="menuitem">
-                                            <div class="flex items-center">
-                                                <div class="mr-3 p-2 rounded-full bg-error/10 text-error">
-                                                    <i class="bi bi-exclamation-triangle"></i>
-                                                </div>
-                                                <div>
-                                                    <div class="font-medium">{{ $complaintsCount }} Pengaduan Masuk</div>
-                                                    <div class="text-xs text-base-content/70">Menunggu ditanggapi</div>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </li>
-                                @endif
+                                @endforeach
                                 @if($totalUnreadNotifications === 0)
                                     <li><span class="text-center text-base-content/70" role="menuitem">Tidak ada notifikasi baru</span></li>
                                 @endif
@@ -253,14 +243,13 @@
                             </label>
                             <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52" role="menu">
                                 <li>
-                                    <a href="{{ route('admin.dashboard') }}" role="menuitem">
+                                    <a href="{{ get_dashboard_route_for_user(auth()->user()) }}" role="menuitem">
                                         <i class="bi bi-speedometer2 me-2"></i> Dashboard
                                     </a>
                                 </li>
                                 <li>
                                     <a class="justify-between" href="{{ route('profile.edit') }}" role="menuitem">
                                         Profil Saya
-                                        <span class="badge">New</span>
                                     </a>
                                 </li>
                                 <li>
@@ -307,7 +296,7 @@
             <div class="overflow-x-clip">
                 <header class="fi-sidebar-header flex h-16 items-center bg-white px-6 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 lg:shadow-sm">
                     <div x-show="Alpine.store('sidebar.isOpen')" x-transition:enter="lg:transition lg:delay-100" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
-                        <a {{ \Filament\Support\generate_href_html(route('admin.dashboard')) }}>
+                        <a {{ \Filament\Support\generate_href_html(url(get_dashboard_route_for_user(auth()->user()))) }}>
                             <x-filament-panels::logo />
                         </a>
                     </div>
@@ -316,33 +305,41 @@
             <nav class="fi-sidebar-nav flex-grow flex flex-col gap-y-7 overflow-y-auto overflow-x-hidden px-6 py-8" style="scrollbar-gutter: stable">
                 <!-- Our existing menu items will go here -->
                 <ul class="min-h-full bg-base-200 text-base-content" role="navigation" aria-label="Main navigation">
+                    @php $isAdmin = auth()->user()->hasRole('admin'); @endphp
                     <li class="menu-title">Menu</li>
-                    <li><a class="@if(request()->routeIs('admin.dashboard')) active @endif" href="{{ route('admin.dashboard') }}" role="menuitem"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
-                    <li class="menu-title">Master Data</li>
-                    <li><a class="@if(request()->routeIs('admin.services.*')) active @endif" href="{{ route('admin.services.index') }}" role="menuitem"><i class="bi bi-cone-striped"></i> <span>Layanan</span></a></li>
-                    <li><a class="@if(request()->routeIs('admin.service-categories.*')) active @endif" href="{{ route('admin.service-categories.index') }}" role="menuitem"><i class="bi bi-tags"></i> <span>Kategori Layanan</span></a></li>
-                    <li><a class="@if(request()->routeIs('admin.pengumuman.*')) active @endif" href="{{ route('admin.pengumuman.index') }}" role="menuitem"><i class="bi bi-megaphone"></i> <span>Pengumuman</span></a></li>
-                    <li class="menu-title">Manajemen Tiket</li>
-                    <li><a class="@if(request()->routeIs('admin.tickets.*')) active @endif" href="{{ route('admin.tickets.index') }}" role="menuitem"><i class="bi bi-ticket-detailed"></i> <span>Tiket Layanan</span></a></li>
-                    <li class="menu-title">Pengunjung</li>
-                    <li><a class="@if(request()->routeIs('admin.visitors.*')) active @endif" href="{{ route('admin.visitors.index') }}" role="menuitem"><i class="bi bi-person-walking"></i> <span>Buku Tamu</span></a></li>
+                    <li><a class="@if(request()->is(ltrim(get_dashboard_route_for_user(auth()->user()), '/'))) active @endif" href="{{ get_dashboard_route_for_user(auth()->user()) }}" role="menuitem"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+                    @if(auth()->user()->hasAnyRole(\App\Support\RoleAccess::LEADERSHIP))
+                        <li><a href="{{ route('leadership.approvals') }}" role="menuitem"><i class="bi bi-check2-square"></i> <span>Persetujuan</span></a></li>
+                    @endif
+                    @if($isAdmin)
+                        <li class="menu-title">Master Data</li>
+                        <li><a class="@if(request()->routeIs('admin.services.*')) active @endif" href="{{ route('admin.services.index') }}" role="menuitem"><i class="bi bi-cone-striped"></i> <span>Layanan</span></a></li>
+                        <li><a class="@if(request()->routeIs('admin.service-categories.*')) active @endif" href="{{ route('admin.service-categories.index') }}" role="menuitem"><i class="bi bi-tags"></i> <span>Kategori Layanan</span></a></li>
+                        <li><a class="@if(request()->routeIs('admin.pengumuman.*')) active @endif" href="{{ route('admin.pengumuman.index') }}" role="menuitem"><i class="bi bi-megaphone"></i> <span>Pengumuman</span></a></li>
+                        <li class="menu-title">Manajemen Tiket</li>
+                        <li><a class="@if(request()->routeIs('admin.tickets.*')) active @endif" href="{{ route('admin.tickets.index') }}" role="menuitem"><i class="bi bi-ticket-detailed"></i> <span>Tiket Layanan</span></a></li>
+                        <li class="menu-title">Pengunjung</li>
+                        <li><a class="@if(request()->routeIs('admin.visitors.*')) active @endif" href="{{ route('admin.visitors.index') }}" role="menuitem"><i class="bi bi-person-walking"></i> <span>Buku Tamu</span></a></li>
+                    @endif
                     <li class="menu-title">Pengaduan</li>
-                    <li><a class="@if(request()->routeIs('admin.complaints.*') && !request()->routeIs('admin.whistleblowing.*')) active @endif" href="{{ route('admin.complaints.index') }}" role="menuitem"><i class="bi bi-chat-left-text"></i> <span>Pengaduan Masyarakat</span></a></li>
+                    <li><a class="@if(request()->routeIs('admin.complaints.*')) active @endif" href="{{ route('admin.complaints.index') }}" role="menuitem"><i class="bi bi-chat-left-text"></i> <span>Pengaduan Masyarakat</span></a></li>
                     <li><a class="@if(request()->routeIs('admin.whistleblowing.*')) active @endif" href="{{ route('admin.whistleblowing.index') }}" role="menuitem"><i class="bi bi-shield-exclamation"></i> <span>Whistleblowing</span></a></li>
                     <li class="menu-title">Pengawasan & Evaluasi</li>
-                    <li><a class="@if(request()->routeIs('admin.survey.management')) active @endif" href="{{ route('admin.survey.management') }}" role="menuitem"><i class="bi bi-clipboard-check"></i> <span>Manajemen Survey</span></a></li>
+                    @if($isAdmin)
+                        <li><a class="@if(request()->routeIs('admin.survey.management')) active @endif" href="{{ route('admin.survey.management') }}" role="menuitem"><i class="bi bi-clipboard-check"></i> <span>Manajemen Survey</span></a></li>
+                    @endif
                     <li><a class="@if(request()->routeIs('admin.skm.*')) active @endif" href="{{ route('admin.skm.report') }}" role="menuitem"><i class="bi bi-graph-up"></i> <span>Laporan SKM</span></a></li>
                     <li><a class="@if(request()->routeIs('admin.spak.*')) active @endif" href="{{ route('admin.spak.report') }}" role="menuitem"><i class="bi bi-shield-check"></i> <span>Laporan SPAK</span></a></li>
                     <li><a class="@if(request()->routeIs('admin.performance.*')) active @endif" href="{{ route('admin.performance.report') }}" role="menuitem"><i class="bi bi-bar-chart-line"></i> <span>Laporan Kinerja</span></a></li>
-                    <li class="menu-title">Manajemen Pengguna</li>
-                    <li><a class="@if(request()->routeIs('admin.users.*')) active @endif" href="{{ route('admin.users.index') }}" role="menuitem"><i class="bi bi-people"></i> <span>Manajemen User</span></a></li>
-                    <li><a class="@if(request()->routeIs('admin.roles.*')) active @endif" href="{{ route('admin.roles.index') }}" role="menuitem"><i class="bi bi-person-check"></i> <span>Manajemen Role</span></a></li>
-                    <li class="menu-title">Keamanan</li>
-                    <li><a class="@if(request()->routeIs('admin.security.*')) active @endif" href="{{ route('admin.security.dashboard') }}" role="menuitem"><i class="bi bi-shield-lock"></i> <span>Security Dashboard</span></a></li>
-                    <li class="menu-title">Konfigurasi</li>
-                    <li><a class="@if(request()->routeIs('admin.settings.*')) active @endif" href="{{ route('admin.settings.index') }}" role="menuitem"><i class="bi bi-gear"></i> <span>Pengaturan Umum</span></a></li>
-                    <li><a class="@if(request()->routeIs('admin.roles.*')) active @endif" href="{{ route('admin.roles.index') }}" role="menuitem"><i class="bi bi-person-check"></i> <span>Hak Akses</span></a></li>
-                    <li><a class="@if(request()->routeIs('admin.users.*')) active @endif" href="{{ route('admin.users.index') }}" role="menuitem"><i class="bi bi-people"></i> <span>Manajemen User</span></a></li>
+                    @if($isAdmin)
+                        <li class="menu-title">Pengguna & Hak Akses</li>
+                        <li><a class="@if(request()->routeIs('admin.users.*')) active @endif" href="{{ route('admin.users.index') }}" role="menuitem"><i class="bi bi-people"></i> <span>Manajemen User</span></a></li>
+                        <li><a class="@if(request()->routeIs('admin.roles.*')) active @endif" href="{{ route('admin.roles.index') }}" role="menuitem"><i class="bi bi-person-check"></i> <span>Hak Akses (Role)</span></a></li>
+                        <li class="menu-title">Sistem</li>
+                        <li><a class="@if(request()->routeIs('admin.security.*')) active @endif" href="{{ route('admin.security.dashboard') }}" role="menuitem"><i class="bi bi-shield-lock"></i> <span>Keamanan</span></a></li>
+                        <li><a class="@if(request()->routeIs('admin.settings.*')) active @endif" href="{{ route('admin.settings.index') }}" role="menuitem"><i class="bi bi-gear"></i> <span>Pengaturan Umum</span></a></li>
+                        <li><a href="{{ url('/cp') }}" role="menuitem"><i class="bi bi-sliders"></i> <span>Panel Kontrol</span></a></li>
+                    @endif
                 </ul>
             </nav>
             <!-- Custom Collapse Button -->

@@ -357,6 +357,7 @@ class TicketController extends Controller
             'approved_at' => now(),
             'approval_notes' => $request->notes,
             'is_approved' => true,
+            'status' => 'approved',
         ]);
 
         return response()->json([
@@ -384,6 +385,7 @@ class TicketController extends Controller
             'approved_at' => now(),
             'approval_notes' => $request->notes,
             'is_approved' => false,
+            'status' => 'rejected',
         ]);
 
         return response()->json([

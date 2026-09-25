@@ -233,29 +233,30 @@ class OnlinePortalController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
-            return redirect()->route('login');
-        }
+        $stats = \App\Support\ServiceMetrics::tickets(userId: $user->id);
 
-        $tickets = Ticket::with(['service'])
+        $tickets = Ticket::with(['service:id,name,processing_time', 'output'])
             ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->latest()
+            ->limit(8)
+            ->get();
 
-        $ticketCounts = Ticket::where('user_id', $user->id)
-            ->select('status', DB::raw('count(*) as total'))
-            ->groupBy('status')
-            ->pluck('total', 'status');
+        // Finished services: download the digital product or collect it at the counter (Modul 9)
+        $results = Ticket::with(['service:id,name', 'output'])
+            ->where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->where(fn ($q) => $q->has('output')->orWhere('ready_for_pickup', true))
+            ->latest('actual_completion_date')
+            ->limit(5)
+            ->get();
 
-        $stats = [
-            'total' => $ticketCounts->sum(),
-            'pending' => $ticketCounts->get('submitted', 0),
-            'processing' => $ticketCounts->get('verified', 0),
-            'in_progress' => $ticketCounts->get('in_process', 0),
-            'completed' => $ticketCounts->get('completed', 0),
-        ];
+        // Completed services not yet rated (SKM/SPAK, Modul 11)
+        $unrated = Ticket::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->whereDoesntHave('surveyResponses')
+            ->count();
 
-        return view('onlineportal.dashboard', compact('user', 'tickets', 'stats'));
+        return view('onlineportal.dashboard', compact('user', 'stats', 'tickets', 'results', 'unrated'));
     }
 
     /**

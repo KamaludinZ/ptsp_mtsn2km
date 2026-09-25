@@ -1,182 +1,159 @@
 @extends('layouts.admin')
 
-@section('title', 'Detail Pengaduan: ' . $complaint->complaint_number)
+@section('title', $complaint->complaint_number)
+
+@php
+    use App\Models\Complaint;
+    $isWbs = $complaint->complaint_type === 'whistleblowing';
+    $indexRoute = $isWbs ? 'admin.whistleblowing.index' : 'admin.complaints.index';
+    $updateRoute = $isWbs ? route('admin.whistleblowing.update-status', $complaint) : route('admin.complaints.update', $complaint);
+    $evidence = json_decode($complaint->evidence_files ?? '[]', true) ?: [];
+@endphp
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0 font-size-18">Detail Pengaduan</h4>
-                
-                <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('admin.complaints.index') }}">Pengaduan</a></li>
-                        <li class="breadcrumb-item active">Detail</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
+<div class="container-fluid py-4">
+    <a href="{{ route($indexRoute) }}" class="small d-inline-block mb-3"><i class="fas fa-arrow-left me-1" aria-hidden="true"></i>Kembali ke daftar {{ $isWbs ? 'whistleblowing' : 'pengaduan' }}</a>
+
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+        <h1 class="h3 fw-bold mb-0">{{ $complaint->complaint_number }}</h1>
+        <span class="badge bg-secondary">{{ $complaint->typeLabel() }}</span>
+        <span class="badge bg-primary">{{ $complaint->statusLabel() }}</span>
+        @if ($isWbs)
+            <span class="badge bg-danger"><i class="fas fa-lock me-1" aria-hidden="true"></i>Rahasia</span>
+        @endif
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">Nomor Pengaduan: {{ $complaint->complaint_number }}</h4>
-                    <div>
-                        <a href="{{ route('admin.complaints.edit', $complaint) }}" class="btn btn-warning">
-                            <i class="fas fa-edit me-1"></i> Edit
-                        </a>
-                        <a href="{{ route('admin.complaints.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Kembali
-                        </a>
+    @if (session('success'))
+        <div class="alert alert-success" role="status">{{ session('success') }}</div>
+    @endif
+    @if ($errors->any())
+        <div class="alert alert-danger" role="alert">
+            <ul class="mb-0">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+        </div>
+    @endif
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h5 fw-bold">{{ $complaint->title }}</h2>
+                    <p class="text-muted small">Diterima {{ $complaint->created_at->translatedFormat('d F Y H:i') }}{{ $complaint->service ? ' · Layanan: ' . $complaint->service->name : '' }}</p>
+                    <p style="white-space: pre-line;">{{ $complaint->description }}</p>
+
+                    <dl class="row small mb-0">
+                        @if ($complaint->category)
+                            <dt class="col-sm-4">Kategori</dt><dd class="col-sm-8">{{ ucfirst(str_replace('_', ' ', $complaint->category)) }}</dd>
+                        @endif
+                        @if ($complaint->incident_date)
+                            <dt class="col-sm-4">Tanggal kejadian</dt><dd class="col-sm-8">{{ $complaint->incident_date->translatedFormat('d F Y') }}</dd>
+                        @endif
+                        @if ($complaint->incident_location)
+                            <dt class="col-sm-4">Lokasi</dt><dd class="col-sm-8">{{ $complaint->incident_location }}</dd>
+                        @endif
+                        @if ($complaint->involved_parties)
+                            <dt class="col-sm-4">Pihak terlibat</dt><dd class="col-sm-8">{{ $complaint->involved_parties }}</dd>
+                        @endif
+                        @if ($complaint->related_ticket_number)
+                            <dt class="col-sm-4">Nomor tiket terkait</dt><dd class="col-sm-8">{{ $complaint->related_ticket_number }}</dd>
+                        @endif
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h6 fw-bold">Pelapor</h2>
+                    @if ($complaint->anonymous)
+                        <p class="mb-0 text-muted">Pelapor memilih anonim. Identitas tidak disimpan.</p>
+                    @else
+                        <dl class="row small mb-0">
+                            <dt class="col-sm-4">Nama</dt><dd class="col-sm-8">{{ $complaint->reporter_name ?: $complaint->complainant_name ?: '–' }}</dd>
+                            <dt class="col-sm-4">Email</dt><dd class="col-sm-8">{{ $complaint->reporter_email ?: $complaint->complainant_email ?: '–' }}</dd>
+                            <dt class="col-sm-4">Telepon</dt><dd class="col-sm-8">{{ $complaint->reporter_phone ?: $complaint->complainant_contact ?: '–' }}</dd>
+                        </dl>
+                    @endif
+                </div>
+            </div>
+
+            @if ($evidence)
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h6 fw-bold">Bukti</h2>
+                        <ul class="list-unstyled mb-0">
+                            @foreach ($evidence as $index => $file)
+                                <li class="py-1">
+                                    <a href="{{ route('admin.complaints.evidence', [$complaint, $index]) }}" target="_blank" rel="noopener">
+                                        <i class="fas fa-paperclip me-1" aria-hidden="true"></i>{{ basename($file) }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
                     </div>
                 </div>
+            @endif
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Jenis</label>
-                                <p class="mb-0">
-                                    <span class="badge bg-{{ $complaint->type == 'pengaduan' ? 'danger' : 'success' }}">
-                                        {{ ucfirst($complaint->type) }}
-                                    </span>
-                                </p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Subjek</label>
-                                <p class="mb-0">{{ $complaint->subject }}</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Kategori</label>
-                                <p class="mb-0">{{ $complaint->category ? ucfirst($complaint->category) : 'Tidak Ada' }}</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Prioritas</label>
-                                <p class="mb-0">
-                                    <span class="priority-badge 
-                                        {{ $complaint->priority == 'low' ? 'low-priority' : '' }}
-                                        {{ $complaint->priority == 'normal' ? 'normal-priority' : '' }}
-                                        {{ $complaint->priority == 'high' ? 'high-priority' : '' }}
-                                        {{ $complaint->priority == 'urgent' ? 'urgent-priority' : '' }}
-                                    ">
-                                        {{ ucfirst($complaint->priority) }}
-                                    </span>
-                                </p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Status</label>
-                                <p class="mb-0">
-                                    <span class="status-badge 
-                                        {{ $complaint->status == 'pending' ? 'pending' : '' }}
-                                        {{ $complaint->status == 'in_review' ? 'in_review' : '' }}
-                                        {{ $complaint->status == 'resolved' ? 'resolved' : '' }}
-                                        {{ $complaint->status == 'closed' ? 'closed' : '' }}
-                                    ">
-                                        {{ ucfirst(str_replace('_', ' ', $complaint->status)) }}
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Nama Pelapor</label>
-                                <p class="mb-0">{{ $complaint->reporter_name ?: 'Tidak disebutkan' }}</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Email Pelapor</label>
-                                <p class="mb-0">{{ $complaint->reporter_email ?: 'Tidak disebutkan' }}</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Telepon Pelapor</label>
-                                <p class="mb-0">{{ $complaint->reporter_phone ?: 'Tidak disebutkan' }}</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Layanan</label>
-                                <p class="mb-0">{{ $complaint->service ? $complaint->service->name : 'Tidak Ada' }}</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Ditugaskan Ke</label>
-                                <p class="mb-0">{{ $complaint->assignedTo ? $complaint->assignedTo->name : 'Belum Ditugaskan' }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Deskripsi</label>
-                        <p class="mb-0">{{ $complaint->description }}</p>
-                    </div>
-                    
-                    @if($complaint->response)
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Respon</label>
-                        <p class="mb-0">{{ $complaint->response }}</p>
-                    </div>
+                    <h2 class="h5 fw-bold">Tindak lanjut</h2>
+                    @if ($complaint->resolved_at)
+                        <p class="small text-success">Diselesaikan {{ $complaint->resolved_at->translatedFormat('d M Y H:i') }}{{ $complaint->resolver ? ' oleh ' . $complaint->resolver->name : '' }}.</p>
                     @endif
-                    
-                    <div class="row">
-                        <div class="col-md-6">
+
+                    @can('update', $complaint)
+                        <form method="POST" action="{{ $updateRoute }}">
+                            @csrf
+                            @method('PUT')
+
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Dibuat Tanggal</label>
-                                <p class="mb-0">{{ $complaint->created_at->format('d M Y H:i') }}</p>
+                                <label for="status" class="form-label">Tahap</label>
+                                <select id="status" name="status" class="form-select" required>
+                                    @foreach (Complaint::STATUSES as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('status', $complaint->status) === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                        </div>
-                        <div class="col-md-6">
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-sm-6">
+                                    <label for="priority" class="form-label">Prioritas</label>
+                                    <select id="priority" name="priority" class="form-select" required>
+                                        @foreach (Complaint::PRIORITIES as $value => $label)
+                                            <option value="{{ $value }}" @selected(old('priority', $complaint->priority ?? 'normal') === $value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="assigned_to" class="form-label">Penanggung jawab</label>
+                                    <select id="assigned_to" name="assigned_to" class="form-select">
+                                        <option value="">Belum ada</option>
+                                        @foreach ($handlers as $handler)
+                                            <option value="{{ $handler->id }}" @selected((string) old('assigned_to', $complaint->assigned_to) === (string) $handler->id)>{{ $handler->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Diperbarui Tanggal</label>
-                                <p class="mb-0">{{ $complaint->updated_at->format('d M Y H:i') }}</p>
+                                <label for="response" class="form-label">Tanggapan untuk pelapor</label>
+                                <textarea id="response" name="response" rows="4" class="form-control" maxlength="5000" aria-describedby="response-help">{{ old('response', $complaint->response) }}</textarea>
+                                <div id="response-help" class="form-text">Tampil saat pelapor melacak laporannya. Wajib diisi sebelum laporan diselesaikan.</div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    @if($complaint->is_whistleblowing)
-                    <div class="alert alert-info">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Ini adalah pengaduan whistleblowing
-                    </div>
-                    @endif
+
+                            <div class="mb-3">
+                                <label for="resolution_notes" class="form-label">Catatan internal</label>
+                                <textarea id="resolution_notes" name="resolution_notes" rows="3" class="form-control" maxlength="5000">{{ old('resolution_notes', $complaint->resolution_notes) }}</textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">Simpan tindak lanjut</button>
+                        </form>
+                    @else
+                        <p class="text-muted mb-0">Anda hanya dapat melihat laporan ini.</p>
+                    @endcan
                 </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
-
-@push('styles')
-<style>
-    .priority-badge {
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-    
-    .low-priority { background-color: #dbeafe; color: #1e40af; }
-    .normal-priority { background-color: #d1fae5; color: #065f46; }
-    .high-priority { background-color: #fef3c7; color: #92400e; }
-    .urgent-priority { background-color: #fee2e2; color: #b91c1c; }
-    
-    .status-badge {
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
-    
-    .pending { background-color: #fef3c7; color: #92400e; }
-    .in_review { background-color: #dbeafe; color: #1e40af; }
-    .resolved { background-color: #d1fae5; color: #065f46; }
-    .closed { background-color: #e5e7eb; color: #374151; }
-</style>
-@endpush

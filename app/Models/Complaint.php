@@ -12,6 +12,38 @@ class Complaint extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /** Follow-up stages (Modul 10), in order. */
+    public const STATUSES = [
+        'submitted' => 'Diterima',
+        'in_review' => 'Ditelaah',
+        'in_progress' => 'Ditindaklanjuti',
+        'resolved' => 'Selesai',
+        'closed' => 'Ditutup',
+    ];
+
+    public const TYPES = [
+        'complaint' => 'Pengaduan',
+        'suggestion' => 'Saran',
+        'whistleblowing' => 'Whistleblowing',
+    ];
+
+    public const PRIORITIES = [
+        'low' => 'Rendah',
+        'normal' => 'Normal',
+        'high' => 'Tinggi',
+        'urgent' => 'Mendesak',
+    ];
+
+    public function statusLabel(): string
+    {
+        return self::STATUSES[$this->status] ?? ucfirst((string) $this->status);
+    }
+
+    public function typeLabel(): string
+    {
+        return self::TYPES[$this->complaint_type] ?? ucfirst((string) $this->complaint_type);
+    }
+
     protected $fillable = [
         'complaint_type',
         'title',

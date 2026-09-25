@@ -1,107 +1,142 @@
-@extends('backoffice.layout')
+@extends('layouts.app')
+
+@section('title', 'Dashboard Back Office')
+
+@php
+    $pct = fn ($value) => $value === null ? '–' : $value . '%';
+    $flow = ['submitted', 'verified', 'in_process', 'approved', 'completed'];
+@endphp
 
 @section('content')
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h1 class="text-2xl font-bold mb-6">Back Office Dashboard</h1>
-                    
-                    <!-- Stats Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow">
-                            <h2 class="text-lg font-semibold mb-2">Total Tickets</h2>
-                            <p class="text-3xl font-bold text-blue-600">{{ $stats['total_tickets'] }}</p>
-                        </div>
-                        
-                        <div class="bg-yellow-50 p-6 rounded-lg shadow">
-                            <h2 class="text-lg font-semibold mb-2">Pending</h2>
-                            <p class="text-3xl font-bold text-yellow-600">{{ $stats['pending_tickets'] }}</p>
-                        </div>
-                        
-                        <div class="bg-orange-50 p-6 rounded-lg shadow">
-                            <h2 class="text-lg font-semibold mb-2">In Progress</h2>
-                            <p class="text-3xl font-bold text-orange-600">{{ $stats['in_progress_tickets'] }}</p>
-                        </div>
-                        
-                        <div class="bg-green-50 p-6 rounded-lg shadow">
-                            <h2 class="text-lg font-semibold mb-2">Completed</h2>
-                            <p class="text-3xl font-bold text-green-600">{{ $stats['completed_tickets'] }}</p>
-                        </div>
-                    </div>
-                    
-                    <!-- My Tasks -->
-                    <div class="mb-8">
-                        <h2 class="text-xl font-semibold mb-4">My Tasks</h2>
-                        
-                        @if($tickets->isEmpty())
-                            <p class="text-gray-500">No tasks assigned to you at the moment.</p>
-                        @else
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket Number</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicant</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        @foreach($tickets as $ticket)
-                                            <tr>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm font-medium text-gray-900">{{ $ticket->ticket_number }}</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-500">{{ $ticket->user->name }}</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-500">{{ $ticket->service->name }}</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                        @if($ticket->status === 'completed') bg-green-100 text-green-800
-                                                        @elseif($ticket->status === 'in_process') bg-yellow-100 text-yellow-800
-                                                        @elseif($ticket->status === 'approved') bg-blue-100 text-blue-800
-                                                        @else bg-gray-100 text-gray-800
-                                                        @endif">
-                                                        {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
-                                                    </span>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ $ticket->created_at->format('d M Y') }}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <a href="{{ route('backoffice.tickets.detail', $ticket->ticket_number) }}" class="text-indigo-600 hover:text-indigo-900">Process</a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+<div class="container-fluid py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">Dashboard Back Office</h1>
+            <p class="text-muted mb-0">Antrian tugas terpadu permohonan online dan offline (Modul 7).</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('backoffice.tickets.queue') }}" class="btn btn-primary"><i class="fas fa-inbox me-2" aria-hidden="true"></i>Antrian tugas</a>
+            <a href="{{ route('backoffice.tickets.search') }}" class="btn btn-outline-primary"><i class="fas fa-magnifying-glass me-2" aria-hidden="true"></i>Cari tiket</a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+            <x-stat-card label="Tiket berjalan" :value="$stats['open']" icon="fa-inbox" hint="{{ $stats['unassigned'] }} belum ditugaskan" :href="route('backoffice.tickets.queue')" />
+        </div>
+        <div class="col-6 col-xl-3">
+            <x-stat-card label="Tugas saya" :value="$stats['mine']" icon="fa-list-check" tone="info" :href="route('backoffice.tickets.my')" />
+        </div>
+        <div class="col-6 col-xl-3">
+            <x-stat-card label="Lewat target waktu" :value="$stats['overdue']" icon="fa-hourglass-end" :tone="$stats['overdue'] ? 'danger' : 'success'" hint="Jangka waktu standar layanan" />
+        </div>
+        <div class="col-6 col-xl-3">
+            <x-stat-card label="Menunggu persetujuan" :value="$stats['awaiting_approval']" icon="fa-clipboard-check" tone="warning" hint="Keputusan pimpinan" />
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card dash-card h-100">
+                <div class="card-body">
+                    <h2 class="h6 fw-bold">Alur permohonan</h2>
+                    <p class="small text-muted">Diajukan → diverifikasi TU → diproses → disetujui pimpinan → selesai.</p>
+                    <div class="row row-cols-2 row-cols-md-5 g-2 text-center">
+                        @foreach ($flow as $status)
+                            <div class="col">
+                                <div class="border rounded py-2 h-100">
+                                    <div class="h4 fw-bold mb-0">{{ $stats['by_status'][$status] }}</div>
+                                    <x-ticket-status :status="$status" />
+                                </div>
                             </div>
-                        @endif
+                        @endforeach
                     </div>
-                    
-                    <!-- Quick Actions -->
-                    <div class="bg-white p-6 rounded-lg shadow border">
-                        <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <a href="{{ route('backoffice.tickets.all') }}" class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded">
-                                View All Tickets
-                            </a>
-                            <a href="#" class="block text-center bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded">
-                                Generate Report
-                            </a>
-                            <a href="#" class="block text-center bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded">
-                                Manage Workflows
-                            </a>
-                        </div>
-                    </div>
+                    <p class="small text-muted mt-3 mb-0">
+                        Ditolak: {{ $stats['by_status']['rejected'] }} · Dibatalkan: {{ $stats['by_status']['cancelled'] }} ·
+                        Online {{ $stats['online'] }} / Offline {{ $stats['offline'] }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card dash-card h-100">
+                <div class="card-body">
+                    <h2 class="h6 fw-bold">Ketepatan waktu</h2>
+                    <div class="display-6 fw-bold">{{ $pct($stats['on_time_rate']) }}</div>
+                    <p class="small text-muted">tiket selesai tepat waktu sesuai standar pelayanan.</p>
+                    <ul class="list-unstyled small mb-0">
+                        <li class="d-flex justify-content-between py-1 border-bottom"><span>Rata-rata penyelesaian</span><strong>{{ \App\Support\ServiceMetrics::days($stats['avg_days']) }}</strong></li>
+                        <li class="d-flex justify-content-between py-1 border-bottom"><span>Selesai bulan ini</span><strong>{{ $stats['completed_this_month'] }}</strong></li>
+                        <li class="d-flex justify-content-between py-1"><span>Siap diambil di loket</span><strong>{{ $stats['ready_for_pickup'] }}</strong></li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="row g-3">
+        <div class="col-xl-8">
+            <div class="card dash-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h2 class="h6 fw-bold mb-0">Prioritas antrian (target terdekat)</h2>
+                        <a href="{{ route('backoffice.tickets.queue') }}" class="small">Semua antrian</a>
+                    </div>
+                    @if ($queue->isEmpty())
+                        <p class="text-muted mb-0">Tidak ada tiket yang sedang berjalan.</p>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Tiket</th>
+                                        <th scope="col">Layanan</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Petugas</th>
+                                        <th scope="col">Target</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($queue as $ticket)
+                                        <tr>
+                                            <td>
+                                                <a href="{{ route('backoffice.tickets.detail', $ticket->ticket_number) }}" class="fw-semibold">{{ $ticket->ticket_number }}</a>
+                                                <div class="small text-muted">{{ $ticket->mode === 'offline' ? 'Offline' : 'Online' }} · {{ $ticket->user?->name }}</div>
+                                            </td>
+                                            <td class="small">{{ $ticket->service?->name }}</td>
+                                            <td><x-ticket-status :status="$ticket->status" /></td>
+                                            <td class="small">{{ $ticket->assignedTo?->name ?? '–' }}</td>
+                                            <td class="small text-nowrap"><x-sla-due :ticket="$ticket" /></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card dash-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h2 class="h6 fw-bold mb-0">Tugas saya</h2>
+                        <a href="{{ route('backoffice.tickets.my') }}" class="small">Lihat semua</a>
+                    </div>
+                    @forelse ($myTickets as $ticket)
+                        <div class="d-flex justify-content-between gap-2 py-2 border-bottom">
+                            <div class="min-w-0">
+                                <a href="{{ route('backoffice.tickets.detail', $ticket->ticket_number) }}" class="fw-semibold text-decoration-none">{{ $ticket->ticket_number }}</a>
+                                <div class="small text-muted text-truncate">{{ $ticket->service?->name }}</div>
+                            </div>
+                            <div class="small text-end text-nowrap"><x-sla-due :ticket="$ticket" /></div>
+                        </div>
+                    @empty
+                        <p class="text-muted mb-0">Belum ada tiket yang ditugaskan kepada Anda.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

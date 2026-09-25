@@ -37,6 +37,7 @@ class Ticket extends Model implements HasMedia
         'approved_by',
         'approved_at',
         'approval_notes',
+        'signature_type',
         'survey_sent',
         'survey_sent_at',
         'ready_for_pickup',
@@ -50,6 +51,14 @@ class Ticket extends Model implements HasMedia
         static::creating(function ($model) {
             if (empty($model->ticket_number)) {
                 $model->ticket_number = $model->generateTicketNumber();
+            }
+
+            // Target date from the service standard (Permen PANRB: jangka waktu penyelesaian)
+            if (empty($model->estimated_completion_date) && $model->service_id) {
+                $days = Service::find($model->service_id)?->slaWorkingDays();
+                if ($days) {
+                    $model->estimated_completion_date = now()->addWeekdays($days)->toDateString();
+                }
             }
         });
     }
@@ -105,6 +114,70 @@ class Ticket extends Model implements HasMedia
     public function logs()
     {
         return $this->hasMany(TicketLog::class);
+    }
+
+    /** Statuses in which a ticket is still being worked on. */
+    public const OPEN_STATUSES = ['submitted', 'verified', 'in_process', 'approved'];
+
+    public function scopeOpen($query)
+    {
+        return $query->whereIn('status', self::OPEN_STATUSES);
+    }
+
+    /** Open tickets past their service-standard target date. */
+    public function scopeOverdue($query)
+    {
+        return $query->open()
+            ->whereNotNull('estimated_completion_date')
+            ->whereDate('estimated_completion_date', '<', today());
+    }
+
+    /**
+     * Tickets waiting for a leader's decision (Modul 8): the back office has
+     * verified the documents, and no leader has decided yet.
+     */
+    public function scopeAwaitingApproval($query)
+    {
+        return $query->where('approval_required', true)
+            ->where(fn ($q) => $q->whereNull('approval_status')->orWhere('approval_status', 'pending'))
+            ->whereIn('status', ['verified', 'in_process']);
+    }
+
+    /** Tickets awaiting a decision that this user is allowed to make. */
+    public static function approvableBy(User $user): \Illuminate\Support\Collection
+    {
+        return static::with(['service', 'user:id,name,user_type'])
+            ->awaitingApproval()
+            ->orderBy('created_at')
+            ->get()
+            ->filter(fn (Ticket $ticket) => $user->can('approve', $ticket))
+            ->values();
+    }
+
+    /** Leadership approval (Modul 8) is still outstanding. */
+    public function needsApproval(): bool
+    {
+        return (bool) $this->approval_required && $this->approval_status !== 'approved';
+    }
+
+    /**
+     * Close the ticket as done (Modul 9). Walk-in tickets and physical
+     * products wait at the front desk until they are handed over.
+     */
+    public function markCompleted(): void
+    {
+        $this->update([
+            'status' => 'completed',
+            'actual_completion_date' => $this->actual_completion_date ?? now(),
+            'ready_for_pickup' => $this->mode === 'offline' || ! $this->service?->is_digital_product,
+        ]);
+    }
+
+    public function isOverdue(): bool
+    {
+        return in_array($this->status, self::OPEN_STATUSES, true)
+            && $this->estimated_completion_date
+            && $this->estimated_completion_date->lt(today());
     }
 
     // Relationship with ticket files

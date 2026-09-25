@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OnlinePortalController;
 use App\Http\Controllers\FrontDeskController;
+use App\Http\Controllers\LeadershipController;
 use App\Http\Controllers\BackOfficeController;
 use App\Http\Controllers\SupervisionController;
 use App\Http\Controllers\PublicController;
@@ -120,10 +121,12 @@ Route::middleware(['auth', 'check.email.verification'])->group(function () {
         Route::get('/service-application', [FrontDeskController::class, 'serviceApplication'])->name('service.application');
         Route::post('/service-application', [FrontDeskController::class, 'submitServiceApplication'])->name('service.submit');
         Route::get('/service/success/{ticketNumber}', [FrontDeskController::class, 'serviceSuccess'])->name('service.success');
+        Route::get('/visitor-book', [FrontDeskController::class, 'visitorBook'])->name('visitor-book');
         Route::get('/active-visitors', [FrontDeskController::class, 'activeVisitors'])->name('active-visitors');
         Route::post('/visitors/{visitor}/checkout', [FrontDeskController::class, 'checkoutVisitor'])->name('visitors.checkout');
         Route::get('/visitors/{visitor}/print', [FrontDeskController::class, 'printVisitorPass'])->name('visitors.print');
         Route::get('/search-visitors', [FrontDeskController::class, 'searchVisitors'])->name('search-visitors');
+        Route::post('/tickets/{ticket}/hand-over', [FrontDeskController::class, 'handOver'])->name('tickets.hand-over');
     });
 });
 
@@ -154,6 +157,29 @@ Route::middleware(['auth', 'check.email.verification', 'permission:supervision.a
     Route::get('/management', [SupervisionController::class, 'surveyManagement'])->name('management');
     Route::get('/surveys/{surveyId}/results', [SupervisionController::class, 'surveyResults'])->name('survey.results');
     Route::get('/performance', [SupervisionController::class, 'performance'])->name('performance');
+});
+
+// Complaint follow-up (Modul 10) and survey reports: admin, supervisor and
+// school leaders. {complaint} is numeric so /complaints/create still reaches
+// the admin-only route below.
+Route::middleware(['auth', 'role:admin|supervisor|kepala_sekolah|kepala_tu'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('complaints', AdminComplaintController::class)->only(['index', 'show', 'edit', 'update'])->where(['complaint' => '[0-9]+']);
+    Route::get('/complaints/{complaint}/evidence/{index}', [AdminComplaintController::class, 'downloadEvidence'])->name('complaints.evidence');
+    Route::get('/whistleblowing', [AdminComplaintController::class, 'whistleblowingIndex'])->name('whistleblowing.index');
+    Route::get('/whistleblowing/{complaint}', [AdminComplaintController::class, 'whistleblowingShow'])->name('whistleblowing.show');
+    Route::put('/whistleblowing/{complaint}/status', [AdminComplaintController::class, 'updateWhistleblowingStatus'])->name('whistleblowing.update-status');
+
+    Route::get('/skm-report', [AdminSurveyController::class, 'skmReport'])->name('skm.report');
+    Route::get('/spak-report', [AdminSurveyController::class, 'spakReport'])->name('spak.report');
+    Route::get('/performance-report', [AdminSurveyController::class, 'performanceReport'])->name('performance.report');
+});
+
+// Leadership area (Kepala Sekolah, Kepala TU): executive dashboard (Modul 13)
+// and service approvals (Modul 8)
+Route::middleware(['auth', 'check.email.verification', 'role:admin|kepala_sekolah|kepala_tu'])->prefix('pimpinan')->name('leadership.')->group(function () {
+    Route::get('/', [LeadershipController::class, 'dashboard'])->name('dashboard');
+    Route::get('/persetujuan', [LeadershipController::class, 'approvals'])->name('approvals');
+    Route::post('/persetujuan/{ticket}', [LeadershipController::class, 'decide'])->name('approvals.decide');
 });
 
 // Ticket documents: private files served only to the applicant and staff
@@ -214,20 +240,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('visitors', AdminVisitorController::class);
     Route::post('/visitors/{visitor}/checkout', [AdminVisitorController::class, 'checkOut'])->name('visitors.checkout');
 
-    // Complaint Management
-    Route::resource('complaints', AdminComplaintController::class);
-
-    // Whistleblowing Management (specific for admin)
-    Route::get('/whistleblowing', [AdminComplaintController::class, 'whistleblowingIndex'])->name('whistleblowing.index');
-    Route::get('/whistleblowing/{complaint}', [AdminComplaintController::class, 'whistleblowingShow'])->name('whistleblowing.show');
-    Route::put('/whistleblowing/{complaint}/status', [AdminComplaintController::class, 'updateWhistleblowingStatus'])->name('whistleblowing.update-status');
-    Route::get('/complaints/{complaint}/evidence/{index}', [AdminComplaintController::class, 'downloadEvidence'])->name('complaints.evidence');
+    // Complaint Management (create/delete: admin only; follow-up routes below)
+    Route::resource('complaints', AdminComplaintController::class)->only(['create', 'store', 'destroy']);
 
     // Survey Management
     Route::get('/survey-management', [AdminSurveyController::class, 'management'])->name('survey.management');
-    Route::get('/skm-report', [AdminSurveyController::class, 'skmReport'])->name('skm.report');
-    Route::get('/spak-report', [AdminSurveyController::class, 'spakReport'])->name('spak.report');
-    Route::get('/performance-report', [AdminSurveyController::class, 'performanceReport'])->name('performance.report');
     Route::get('/survey/archive/{id}', [AdminSurveyController::class, 'getArchiveDetail'])->name('survey.archive.detail');
 
     // Survey API Endpoints

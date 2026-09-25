@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Complaint;
 use App\Models\User;
+use App\Support\RoleAccess;
 use Illuminate\Auth\Access\Response;
 
 class ComplaintPolicy
@@ -13,8 +14,8 @@ class ComplaintPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Admin dapat melihat semua komplain
-        return $user->hasRole('admin');
+        // Petugas penanganan pengaduan (Modul 10)
+        return $user->hasAnyRole(RoleAccess::COMPLAINT_HANDLERS);
     }
 
     /**
@@ -22,8 +23,7 @@ class ComplaintPolicy
      */
     public function view(User $user, Complaint $complaint): bool
     {
-        // Admin dapat melihat semua komplain
-        if ($user->hasRole('admin')) {
+        if ($user->hasAnyRole(RoleAccess::COMPLAINT_HANDLERS)) {
             return true;
         }
         
@@ -45,8 +45,7 @@ class ComplaintPolicy
      */
     public function update(User $user, Complaint $complaint): bool
     {
-        // Admin dapat mengupdate semua komplain
-        if ($user->hasRole('admin')) {
+        if ($user->hasAnyRole(RoleAccess::COMPLAINT_HANDLERS)) {
             return true;
         }
         
