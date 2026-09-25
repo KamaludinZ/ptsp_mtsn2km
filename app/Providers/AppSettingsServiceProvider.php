@@ -47,6 +47,7 @@ class AppSettingsServiceProvider extends ServiceProvider
 
             // Set default values if not exists
             $this->setDefaults();
+            $this->syncAppName();
         } catch (\Exception $e) {
             // If database is not ready, set defaults
             $this->setDefaults();
@@ -65,6 +66,15 @@ class AppSettingsServiceProvider extends ServiceProvider
             'array', 'json' => json_decode($value, true) ?? $value,
             default => $value,
         };
+    }
+
+    /**
+     * Browser titles, mails and Filament all read config('app.name'); keep it
+     * equal to the brand name administrators manage in Settings.
+     */
+    private function syncAppName(): void
+    {
+        config(['app.name' => app_brand_name()]);
     }
 
     /**

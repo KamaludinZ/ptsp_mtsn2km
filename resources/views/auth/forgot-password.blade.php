@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Lupa Password - ' . config('app.name'))
+@section('title', 'Lupa Password - ' . app_brand_name())
 
 @push('styles')
 <style>

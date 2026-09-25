@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Daftar Akun - ' . config('app.name'))
+@section('title', 'Daftar Akun - ' . app_brand_name())
 
 @push('styles')
 <style>

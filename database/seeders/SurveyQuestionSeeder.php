@@ -16,6 +16,7 @@ class SurveyQuestionSeeder extends Seeder
         $identityQuestions = [
             [
                 'survey_type' => 'identity',
+                'is_required' => true,
                 'question' => 'Pilih Jenis Pelayanan',
                 'options' => [
                     'Mutasi Siswa Masuk',
@@ -41,6 +42,7 @@ class SurveyQuestionSeeder extends Seeder
             ],
             [
                 'survey_type' => 'identity',
+                'is_required' => true,
                 'question' => 'Nama Lengkap',
                 'options' => null,
                 'field_type' => 'text',
@@ -48,6 +50,7 @@ class SurveyQuestionSeeder extends Seeder
             ],
             [
                 'survey_type' => 'identity',
+                'is_required' => true,
                 'question' => 'Usia',
                 'options' => [
                     'Dibawah 20 Tahun',
@@ -61,6 +64,7 @@ class SurveyQuestionSeeder extends Seeder
             ],
             [
                 'survey_type' => 'identity',
+                'is_required' => true,
                 'question' => 'Jenis Kelamin',
                 'options' => ['Laki-laki', 'Perempuan'],
                 'field_type' => 'radio',
@@ -68,6 +72,7 @@ class SurveyQuestionSeeder extends Seeder
             ],
             [
                 'survey_type' => 'identity',
+                'is_required' => true,
                 'question' => 'Pendidikan',
                 'options' => ['SD', 'SMP', 'SMA', 'D3', 'D4/S1', 'S2', 'S3'],
                 'field_type' => 'select',
@@ -75,6 +80,7 @@ class SurveyQuestionSeeder extends Seeder
             ],
             [
                 'survey_type' => 'identity',
+                'is_required' => true,
                 'question' => 'Pekerjaan',
                 'options' => [
                     'PNS/TNI/POLRI',
@@ -89,6 +95,7 @@ class SurveyQuestionSeeder extends Seeder
             ],
             [
                 'survey_type' => 'identity',
+                'is_required' => true,
                 'question' => 'No. Telepon',
                 'options' => null,
                 'field_type' => 'tel',
@@ -96,6 +103,7 @@ class SurveyQuestionSeeder extends Seeder
             ],
             [
                 'survey_type' => 'identity',
+                'is_required' => false,
                 'question' => 'Kode Tiket Layanan',
                 'options' => null,
                 'field_type' => 'text',
@@ -103,6 +111,7 @@ class SurveyQuestionSeeder extends Seeder
             ],
             [
                 'survey_type' => 'identity',
+                'is_required' => true,
                 'question' => 'Email Aktif',
                 'options' => null,
                 'field_type' => 'email',

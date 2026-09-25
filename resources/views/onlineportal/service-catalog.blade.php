@@ -58,6 +58,28 @@
         color: white;
     }
 
+    /* Card layout: cards keep their own height when a sibling opens its details */
+    #gridView .service-card-modern .card-title { min-height: 2.6em; }
+    #gridView .service-card-modern .card-body > p.text-muted {
+        min-height: 0 !important;
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    /* Buttons */
+    .service-card-modern .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.5rem; padding: 0 1rem; border-radius: 10px; font-size: .875rem; font-weight: 600; line-height: 1.2; white-space: normal; text-align: center; }
+    .service-card-modern .btn i { margin: 0 !important; }
+    .service-card-modern .btn.w-100 { display: flex; }
+    .service-card-modern .btn-sm { min-height: 2.25rem; font-size: .8125rem; }
+    .service-card-modern .btn-primary { background: #166534; border-color: #166534; color: #fff; }
+    .service-card-modern .btn-primary:hover { background: #14532d; border-color: #14532d; color: #fff; }
+    .service-card-modern .btn-outline-primary { background: transparent; border: 1px solid #166534; color: #14532d; }
+    .service-card-modern .btn-outline-primary:hover { background: #ecfdf3; color: #14532d; border-color: #14532d; }
+    .service-card-modern .accordion-button { min-height: 2.75rem; border-radius: 10px !important; font-size: .9rem; gap: .25rem; }
+    .service-card-modern .accordion-button:focus-visible, .service-card-modern .btn:focus-visible { outline: 2px solid #ea580c; outline-offset: 2px; box-shadow: none; }
+    [data-theme="dark"] .service-card-modern .btn-primary { background: #22c55e; border-color: #22c55e; color: #052e16; }
+    [data-theme="dark"] .service-card-modern .btn-outline-primary { border-color: #4ade80; color: #bbf7d0 !important; }
+    [data-theme="dark"] .service-card-modern .btn-outline-primary:hover { background: rgba(34,197,94,.14) !important; }
+
     /* Accordion Styles */
     .accordion-button:not(.collapsed) {
         background-color: rgba(20, 83, 45, 0.05);
@@ -377,55 +399,39 @@
 </div>
 
     <!-- Filter Section -->
-    <div class="filter-card p-4 mb-5" data-aos="fade-up" data-aos-delay="200">
-        <div class="row g-3">
-            <div class="col-md-5">
-                <label class="form-label fw-semibold">
-                    <i class="fas fa-search me-2" style="color: var(--bs-primary);"></i>
-                    Cari Layanan
-                </label>
-                <input type="text"
-                       id="searchInput"
-                       class="form-control form-control-lg"
-                       placeholder="Ketik nama layanan..."
-                       onkeyup="filterServices()">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">
-                    <i class="fas fa-filter me-2" style="color: var(--bs-secondary);"></i>
-                    Kategori
-                </label>
-                <select id="categoryFilter"
-                        class="form-select form-select-lg"
-                        onchange="filterServices()">
-                    <option value="">Semua Kategori</option>
-                    @foreach($categories as $category)
-                        <option value="{{ $category->name }}">{{ $category->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">
-                    <i class="fas fa-eye me-2" style="color: #10b981;"></i>
-                    Tampilan
-                </label>
-                <div class="btn-group w-100" role="group">
-                    <button class="btn btn-lg btn-outline-primary active" id="gridBtn" onclick="setView('grid')">
-                        <i class="fas fa-th"></i>
-                    </button>
-                    <button class="btn btn-lg btn-outline-primary" id="listBtn" onclick="setView('list')">
-                        <i class="fas fa-list"></i>
-                    </button>
+    <div class="ann-filter" data-aos="fade-up" data-aos-delay="200">
+        <div class="ann-filter__form ann-filter__form--svc" role="search" aria-label="Filter layanan">
+            <div class="ann-filter__field ann-filter__field--search">
+                <label for="searchInput">Cari layanan</label>
+                <div class="ann-filter__control">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input type="search" id="searchInput" placeholder="Ketik nama layanan..." autocomplete="off" oninput="filterServices()">
                 </div>
             </div>
+            <div class="ann-filter__field">
+                <label for="categoryFilter">Kategori</label>
+                <div class="ann-filter__control">
+                    <select id="categoryFilter" onchange="filterServices()">
+                        <option value="">Semua kategori</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->name }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="ann-filter__field">
+                <label id="viewLabel">Tampilan</label>
+                <div class="ann-seg" role="group" aria-labelledby="viewLabel">
+                    <button type="button" class="active" id="gridBtn" onclick="setView('grid')" aria-pressed="true"><i class="fas fa-table-cells-large" aria-hidden="true"></i>Grid</button>
+                    <button type="button" id="listBtn" onclick="setView('list')" aria-pressed="false"><i class="fas fa-list" aria-hidden="true"></i>Daftar</button>
+                </div>
+            </div>
+            <div class="ann-filter__actions">
+                <button type="button" class="ann-btn ann-btn--ghost" onclick="resetFilter()"><i class="fas fa-rotate-left" aria-hidden="true"></i>Reset</button>
+            </div>
         </div>
-        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-            <small class="text-muted">
-                Menampilkan <strong id="serviceCount">{{ $services->count() }}</strong> dari {{ $services->count() }} layanan
-            </small>
-            <button class="btn btn-sm btn-outline-secondary" onclick="resetFilter()">
-                <i class="fas fa-redo me-1"></i> Reset
-            </button>
+        <div class="ann-filter__meta">
+            <span>Menampilkan <strong id="serviceCount">{{ $services->count() }}</strong> dari {{ $services->count() }} layanan</span>
         </div>
         @guest
             <p class="small text-muted mt-3 mb-0">
@@ -438,14 +444,14 @@
     </div>
 
     <!-- Grid View -->
-    <div class="row g-4" id="gridView">
+    <div class="row g-4 align-items-start" id="gridView">
         @foreach($services as $service)
         <div class="col-md-6 col-lg-4 service-item"
              data-name="{{ strtolower($service->name) }}"
              data-category="{{ $service->categories->first()->name ?? '' }}"
              data-aos="fade-up"
              data-aos-delay="{{ $loop->index * 50 }}">
-            <div class="card shadow-sm service-card-modern h-100">
+            <div class="card shadow-sm service-card-modern w-100">
                 <!-- Card Header with Gradient -->
                 <div class="card-header border-0 p-4" style="background: var(--gradient-primary);">
                     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -795,11 +801,15 @@ function setView(view) {
         list.classList.add('d-none');
         gridBtn.classList.add('active');
         listBtn.classList.remove('active');
+        gridBtn.setAttribute('aria-pressed', 'true');
+        listBtn.setAttribute('aria-pressed', 'false');
     } else {
         grid.classList.add('d-none');
         list.classList.remove('d-none');
         gridBtn.classList.remove('active');
         listBtn.classList.add('active');
+        gridBtn.setAttribute('aria-pressed', 'false');
+        listBtn.setAttribute('aria-pressed', 'true');
     }
 }
 

@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Login - ' . config('app.name'))
+@section('title', 'Login - ' . app_brand_name())
 
 @push('styles')
 <style>

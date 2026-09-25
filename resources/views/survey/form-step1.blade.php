@@ -57,139 +57,75 @@
                     <form action="{{ route('survey.step1.store') }}" method="POST" id="step1Form">
                         @csrf
 
+                        <p class="small text-muted mb-4"><span class="text-danger fw-bold">*</span> wajib diisi</p>
+
                         @foreach ($identityQuestions as $question)
+                            @php
+                                $field = 'answers.' . $question->id;
+                                $name = 'answers[' . $question->id . ']';
+                                $id = 'q' . $question->id;
+                                $options = $question->field_type === 'select' && stripos($question->question, 'jenis pelayanan') !== false && empty($question->options)
+                                    ? \App\Models\Service::orderBy('name')->pluck('name')->all()
+                                    : (array) $question->options;
+                                $isTicket = stripos($question->question, 'tiket') !== false;
+                                $inputType = match (true) {
+                                    $question->field_type === 'email' => 'email',
+                                    $question->field_type === 'tel' => 'tel',
+                                    $question->field_type === 'number' => 'number',
+                                    default => 'text',
+                                };
+                                $required = (bool) $question->is_required;
+                            @endphp
                             <div class="mb-4">
-                                <label class="form-label fw-semibold">
+                                <label class="form-label fw-semibold" @if($question->field_type !== 'radio') for="{{ $id }}" @endif>
                                     {{ $question->question }}
-                                    @if ($question->is_required)
-                                        <span class="text-danger">*</span>
+                                    @if ($required)
+                                        <span class="text-danger" title="Wajib diisi" aria-hidden="true">*</span>
+                                        <span class="visually-hidden">(wajib diisi)</span>
+                                    @else
+                                        <span class="text-muted fw-normal small">(opsional)</span>
                                     @endif
                                 </label>
 
-                                @if ($question->field_type === 'text')
-                                    @if ($question->question === 'Nama Lengkap')
-                                        <input type="text"
-                                               class="form-control @error('answers.' . $question->id) is-invalid @enderror"
-                                               name="answers[{{ $question->id }}]"
-                                               value="{{ old('answers.' . $question->id) }}"
-                                               {{ $question->is_required ? 'required' : '' }}>
-                                    @elseif (stripos($question->question, 'alamat') !== false)
-                                        <!-- Skip address field as per requirement -->
-                                        @continue
-                                    @else
-                                        <input type="text"
-                                               class="form-control @error('answers.' . $question->id) is-invalid @enderror"
-                                               name="answers[{{ $question->id }}]"
-                                               value="{{ old('answers.' . $question->id) }}"
-                                               {{ $question->is_required ? 'required' : '' }}>
-                                    @endif
-
-                                @elseif ($question->field_type === 'select' || $question->question === 'Pilih Jenis Pelayanan')
-                                    @if ($question->question === 'Pilih Jenis Pelayanan')
-                                        <select class="form-select @error('answers.' . $question->id) is-invalid @enderror"
-                                                name="answers[{{ $question->id }}]"
-                                                {{ $question->is_required ? 'required' : '' }}>
-                                            <option value="">-- Pilih Jenis Pelayanan --</option>
-                                            @php
-                                                $services = \App\Models\Service::all();
-                                            @endphp
-                                            @foreach ($services as $service)
-                                                <option value="{{ $service->name }}"
-                                                        {{ old('answers.' . $question->id) == $service->name ? 'selected' : '' }}>
-                                                    {{ $service->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    @elseif (stripos($question->question, 'usia') !== false || stripos($question->question, 'Umur') !== false)
-                                        <select class="form-select @error('answers.' . $question->id) is-invalid @enderror"
-                                                name="answers[{{ $question->id }}]"
-                                                {{ $question->is_required ? 'required' : '' }}>
-                                            <option value="">-- Pilih Usia --</option>
-                                            <option value="Dibawah 20 Tahun" {{ old('answers.' . $question->id) == 'Dibawah 20 Tahun' ? 'selected' : '' }}>Dibawah 20 Tahun</option>
-                                            <option value="21 s.d 30 Tahun" {{ old('answers.' . $question->id) == '21 s.d 30 Tahun' ? 'selected' : '' }}>21 s.d 30 Tahun</option>
-                                            <option value="31 s.d 40 Tahun" {{ old('answers.' . $question->id) == '31 s.d 40 Tahun' ? 'selected' : '' }}>31 s.d 40 Tahun</option>
-                                            <option value="41 s.d 50 Tahun" {{ old('answers.' . $question->id) == '41 s.d 50 Tahun' ? 'selected' : '' }}>41 s.d 50 Tahun</option>
-                                            <option value="Diatas 50 Tahun" {{ old('answers.' . $question->id) == 'Diatas 50 Tahun' ? 'selected' : '' }}>Diatas 50 Tahun</option>
-                                        </select>
-                                    @elseif (stripos($question->question, 'pekerjaan') !== false)
-                                        <select class="form-select @error('answers.' . $question->id) is-invalid @enderror"
-                                                name="answers[{{ $question->id }}]"
-                                                {{ $question->is_required ? 'required' : '' }}>
-                                            <option value="">-- Pilih Pekerjaan --</option>
-                                            <option value="PNS/TNI/POLRI" {{ old('answers.' . $question->id) == 'PNS/TNI/POLRI' ? 'selected' : '' }}>PNS/TNI/POLRI</option>
-                                            <option value="Pegawai Swasta" {{ old('answers.' . $question->id) == 'Pegawai Swasta' ? 'selected' : '' }}>Pegawai Swasta</option>
-                                            <option value="Wiraswasta" {{ old('answers.' . $question->id) == 'Wiraswasta' ? 'selected' : '' }}>Wiraswasta</option>
-                                            <option value="Petani/Pekebun" {{ old('answers.' . $question->id) == 'Petani/Pekebun' ? 'selected' : '' }}>Petani/Pekebun</option>
-                                            <option value="Pelajar/Mahasiswa" {{ old('answers.' . $question->id) == 'Pelajar/Mahasiswa' ? 'selected' : '' }}>Pelajar/Mahasiswa</option>
-                                            <option value="Lainnya" {{ old('answers.' . $question->id) == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
-                                        </select>
-                                    @elseif (stripos($question->question, 'pendidikan') !== false)
-                                        <select class="form-select @error('answers.' . $question->id) is-invalid @enderror"
-                                                name="answers[{{ $question->id }}]"
-                                                {{ $question->is_required ? 'required' : '' }}>
-                                            <option value="">-- Pilih Pendidikan --</option>
-                                            <option value="SD" {{ old('answers.' . $question->id) == 'SD' ? 'selected' : '' }}>SD</option>
-                                            <option value="SMP" {{ old('answers.' . $question->id) == 'SMP' ? 'selected' : '' }}>SMP</option>
-                                            <option value="SMA" {{ old('answers.' . $question->id) == 'SMA' ? 'selected' : '' }}>SMA</option>
-                                            <option value="D3" {{ old('answers.' . $question->id) == 'D3' ? 'selected' : '' }}>D3</option>
-                                            <option value="D4/S1" {{ old('answers.' . $question->id) == 'D4/S1' ? 'selected' : '' }}>D4/S1</option>
-                                            <option value="S2" {{ old('answers.' . $question->id) == 'S2' ? 'selected' : '' }}>S2</option>
-                                            <option value="S3" {{ old('answers.' . $question->id) == 'S3' ? 'selected' : '' }}>S3</option>
-                                        </select>
-                                    @else
-                                        <select class="form-select @error('answers.' . $question->id) is-invalid @enderror"
-                                                name="answers[{{ $question->id }}]"
-                                                {{ $question->is_required ? 'required' : '' }}>
-                                            <option value="">-- Pilih {{ $question->question }} --</option>
-                                            @foreach ($question->options as $option)
-                                                <option value="{{ $option }}"
-                                                        {{ old('answers.' . $question->id) == $option ? 'selected' : '' }}>
-                                                    {{ $option }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    @endif
-
+                                @if ($question->field_type === 'select')
+                                    <select id="{{ $id }}" name="{{ $name }}" class="form-select @error($field) is-invalid @enderror" @required($required)>
+                                        <option value="">-- {{ \Illuminate\Support\Str::startsWith($question->question, 'Pilih') ? $question->question : 'Pilih ' . $question->question }} --</option>
+                                        @foreach ($options as $option)
+                                            <option value="{{ $option }}" @selected(old($field) === $option)>{{ $option }}</option>
+                                        @endforeach
+                                    </select>
                                 @elseif ($question->field_type === 'radio')
-                                    @foreach ($question->options as $option)
-                                        <div class="form-check">
-                                            <input class="form-check-input @error('answers.' . $question->id) is-invalid @enderror"
-                                                   type="radio"
-                                                   name="answers[{{ $question->id }}]"
-                                                   id="q{{ $question->id }}_{{ $loop->index }}"
-                                                   value="{{ $option }}"
-                                                   {{ old('answers.' . $question->id) == $option ? 'checked' : '' }}
-                                                   {{ $question->is_required ? 'required' : '' }}>
-                                            <label class="form-check-label" for="q{{ $question->id }}_{{ $loop->index }}">
-                                                {{ $option }}
-                                            </label>
-                                        </div>
-                                    @endforeach
-
-                                @elseif ($question->field_type === 'number')
-                                    <input type="number"
-                                           class="form-control @error('answers.' . $question->id) is-invalid @enderror"
-                                           name="answers[{{ $question->id }}]"
-                                           value="{{ old('answers.' . $question->id) }}"
-                                           {{ $question->is_required ? 'required' : '' }}>
-                                @elseif ($question->field_type === 'ticket_number')
+                                    <div class="row g-2" role="radiogroup" aria-label="{{ $question->question }}">
+                                        @foreach ($options as $option)
+                                            <div class="col-sm-6">
+                                                <div class="form-check-card">
+                                                    <input class="form-check-input visually-hidden @error($field) is-invalid @enderror" type="radio"
+                                                           name="{{ $name }}" id="{{ $id }}_{{ $loop->index }}" value="{{ $option }}"
+                                                           @checked(old($field) === $option) @required($required)>
+                                                    <label class="form-check-label w-100 p-2 px-3 border rounded" for="{{ $id }}_{{ $loop->index }}">{{ $option }}</label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @elseif ($isTicket)
                                     <div class="input-group">
-                                        <input type="text"
-                                               class="form-control @error('answers.' . $question->id) is-invalid @enderror"
-                                               name="answers[{{ $question->id }}]"
-                                               placeholder="Masukkan nomor tiket layanan, contoh: LAYANAN-N-2025-001"
-                                               value="{{ old('answers.' . $question->id) }}">
-                                        <button class="btn btn-outline-secondary" type="button" id="checkTicketBtn">
-                                            <i class="fas fa-search"></i> Cek
+                                        <input type="text" id="{{ $id }}" name="{{ $name }}" value="{{ old($field) }}"
+                                               class="form-control @error($field) is-invalid @enderror"
+                                               placeholder="Contoh: LAYANAN-N-2025-001" autocomplete="off" @required($required)>
+                                        <button class="btn btn-outline-secondary" type="button" id="checkTicketBtn" data-input="{{ $id }}">
+                                            <i class="fas fa-search me-1" aria-hidden="true"></i>Cek
                                         </button>
                                     </div>
-                                    <div id="ticketInfo" class="mt-2"></div>
-                                    @error('answers.' . $question->id)
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
+                                    <div id="ticketInfo" class="mt-2" aria-live="polite"></div>
+                                @else
+                                    <input type="{{ $inputType }}" id="{{ $id }}" name="{{ $name }}" value="{{ old($field) }}"
+                                           class="form-control @error($field) is-invalid @enderror"
+                                           @if($question->field_type === 'tel') inputmode="tel" pattern="[0-9+\-\s()]{8,20}" placeholder="08xxxxxxxxxx" @endif
+                                           @if($question->field_type === 'email') placeholder="nama@contoh.com" @endif
+                                           @required($required)>
                                 @endif
 
-                                @error('answers.' . $question->id)
+                                @error($field)
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -246,6 +182,10 @@
         border-color: #3b82f6;
         box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
     }
+    .form-check-card .form-check-label { cursor: pointer; background: #fff; transition: all .15s ease; }
+    .form-check-card .form-check-label:hover { border-color: #166534 !important; background: #f0fdf4; }
+    .form-check-card .form-check-input:focus-visible + .form-check-label { outline: 3px solid #ea580c; outline-offset: 2px; }
+    .form-check-card .form-check-input:checked + .form-check-label { background: #dcfce7; border-color: #166534 !important; font-weight: 600; color: #14532d; }
     .btn {
         padding: 0.75rem 1.5rem;
         border-radius: 8px;
@@ -256,66 +196,26 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const checkTicketBtn = document.getElementById('checkTicketBtn');
-    if (checkTicketBtn) {
-        checkTicketBtn.addEventListener('click', function() {
-            const ticketInput = document.querySelector('input[name*="[answers]"]');
-            const ticketNumber = ticketInput ? ticketInput.value.trim() : '';
-            const ticketInfoDiv = document.getElementById('ticketInfo');
-            
-            if (ticketNumber) {
-                // Make AJAX request to check ticket
-                fetch('/api/check-ticket/' + ticketNumber)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.exists) {
-                            if (data.has_survey_completed) {
-                                ticketInfoDiv.innerHTML = `
-                                    <div class="alert alert-warning">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>
-                                        Tiket ini telah menyelesaikan survei.
-                                    </div>
-                                `;
-                                // Disable the form submission
-                                document.getElementById('step1Form').querySelector('button[type="submit"]').disabled = true;
-                            } else {
-                                ticketInfoDiv.innerHTML = `
-                                    <div class="alert alert-success">
-                                        <i class="fas fa-check-circle me-2"></i>
-                                        Tiket ditemukan: ${data.ticket.service.name} oleh ${data.ticket.user.name}
-                                        <br>
-                                        Status: ${data.ticket.status}
-                                    </div>
-                                `;
-                                // Re-enable form submission if it was disabled
-                                document.getElementById('step1Form').querySelector('button[type="submit"]').disabled = false;
-                            }
-                        } else {
-                            ticketInfoDiv.innerHTML = `
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    Tiket tidak ditemukan
-                                </div>
-                            `;
-                            // Disable the form submission
-                            document.getElementById('step1Form').querySelector('button[type="submit"]').disabled = true;
-                        }
-                    })
-                    .catch(error => {
-                        ticketInfoDiv.innerHTML = `
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                Error saat memeriksa tiket
-                            </div>
-                        `;
-                    });
-            }
-        });
+document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('checkTicketBtn');
+    if (!btn) return;
+    var info = document.getElementById('ticketInfo');
+    function show(type, icon, text) {
+        info.innerHTML = '<div class="alert alert-' + type + ' py-2 mb-0"><i class="fas ' + icon + ' me-2"></i></div>';
+        info.firstChild.appendChild(document.createTextNode(text));
     }
-    
-    // Enable form submission by default
-    document.getElementById('step1Form').querySelector('button[type="submit"]').disabled = false;
+    btn.addEventListener('click', function () {
+        var value = document.getElementById(btn.dataset.input).value.trim();
+        if (!value) { show('warning', 'fa-exclamation-triangle', 'Isi kode tiket terlebih dahulu'); return; }
+        fetch('/api/check-ticket/' + encodeURIComponent(value), { headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.exists) return show('warning', 'fa-exclamation-triangle', 'Tiket tidak ditemukan');
+                if (data.has_survey_completed) return show('warning', 'fa-exclamation-triangle', 'Tiket ini sudah menyelesaikan survei');
+                show('success', 'fa-check-circle', 'Tiket ditemukan');
+            })
+            .catch(function () { show('danger', 'fa-exclamation-triangle', 'Gagal memeriksa tiket'); });
+    });
 });
 </script>
 @endpush

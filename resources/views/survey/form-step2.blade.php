@@ -65,6 +65,7 @@
 
                     <form action="{{ route('survey.step2.store') }}" method="POST" id="step2Form">
                         @csrf
+                        <p class="small text-muted mb-3"><span class="text-danger fw-bold">*</span> wajib diisi</p>
 
                         @include('survey.partials.rating-questions', ['questions' => $skmQuestions, 'accent' => 'success'])
 

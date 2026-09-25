@@ -19,6 +19,7 @@ class SurveyController extends Controller
     {
         // Get identity questions
         $identityQuestions = SurveyQuestion::where('type', 'identity')
+            ->active()
             ->orderBy('order')
             ->get();
 
@@ -30,18 +31,42 @@ class SurveyController extends Controller
      */
     public function storeStep1(Request $request)
     {
-        // Validate identity data
-        $validated = $request->validate([
-            'answers' => 'required|array',
-            'answers.*' => 'required',
-        ], [
+        $questions = SurveyQuestion::where('type', 'identity')->active()->get();
+
+        $rules = ['answers' => 'required|array'];
+        $attributes = [];
+        foreach ($questions as $question) {
+            $key = 'answers.' . $question->id;
+            $rule = [$question->is_required ? 'required' : 'nullable', 'string', 'max:255'];
+
+            if (in_array($question->field_type, ['select', 'radio'], true) && $question->options) {
+                $rule[] = \Illuminate\Validation\Rule::in((array) $question->options);
+            } elseif ($question->field_type === 'email') {
+                $rule[] = 'email:rfc';
+            } elseif ($question->field_type === 'tel') {
+                $rule[] = 'regex:/^[0-9+\-\s()]{8,20}$/';
+            } elseif (stripos($question->question, 'tiket') !== false) {
+                $rule[] = 'exists:tickets,ticket_number';
+            }
+
+            $rules[$key] = $rule;
+            $attributes[$key] = $question->question;
+        }
+
+        $validated = $request->validate($rules, [
             'answers.required' => 'Semua pertanyaan identitas wajib diisi',
-            'answers.*.required' => 'Pertanyaan ini wajib diisi',
-        ]);
+            'required' => ':attribute wajib diisi',
+            'in' => 'Pilihan :attribute tidak valid',
+            'email' => ':attribute harus berupa alamat email yang valid',
+            'regex' => ':attribute tidak valid (gunakan angka, 8-20 karakter)',
+            'exists' => ':attribute tidak ditemukan',
+        ], $attributes);
 
         // Keep only answers to known identity questions
-        $identityIds = SurveyQuestion::where('type', 'identity')->pluck('id')->flip()->all();
-        Session::put('survey_step1', array_intersect_key($validated['answers'], $identityIds));
+        Session::put('survey_step1', array_filter(
+            array_intersect_key($validated['answers'], $questions->keyBy('id')->all()),
+            fn ($v) => $v !== null && $v !== ''
+        ));
 
         return redirect()->route('survey.step2');
     }

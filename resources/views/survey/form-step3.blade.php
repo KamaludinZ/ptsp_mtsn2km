@@ -65,6 +65,7 @@
 
                     <form action="{{ route('survey.step3.store') }}" method="POST" id="step3Form">
                         @csrf
+                        <p class="small text-muted mb-3"><span class="text-danger fw-bold">*</span> wajib diisi</p>
 
                         @include('survey.partials.rating-questions', ['questions' => $spakQuestions, 'accent' => 'warning'])
 

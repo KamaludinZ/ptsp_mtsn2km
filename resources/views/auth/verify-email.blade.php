@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Verifikasi Email - ' . config('app.name'))
+@section('title', 'Verifikasi Email - ' . app_brand_name())
 
 @push('styles')
 <style>
