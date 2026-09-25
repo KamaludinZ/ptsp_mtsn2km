@@ -44,4 +44,13 @@ class PublicChromeTest extends TestCase
         $this->withHeaders(['User-Agent' => 'Googlebot/2.1'])->get('/')->assertOk();
         $this->assertSame(0, DB::table('site_visits')->count());
     }
+
+    public function test_footer_markup_is_balanced(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+        $footer = substr($html, strpos($html, '<footer'), strpos($html, '</footer>') - strpos($html, '<footer'));
+
+        $this->assertSame(substr_count($footer, '<div'), substr_count($footer, '</div>'));
+        $this->assertSame(4, preg_match_all('#<div class="col-span-1 md:col-span-2 lg:col-span-1">|<nav class="bg-transparent">#', $footer));
+    }
 }

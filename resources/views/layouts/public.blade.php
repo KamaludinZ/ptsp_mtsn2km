@@ -342,7 +342,6 @@
                         @endif
                         <strong class="site-footer-brand-name whitespace-nowrap">{{ app_brand_name() }}</strong>
                     </div>
-                    </div>
                     <p class="text-sm opacity-80">
                         Sistem pelayanan terpadu sesuai Permen PANRB 15/2014 untuk kemudahan akses layanan.
                     </p>
