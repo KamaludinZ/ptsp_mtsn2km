@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('services', function (Blueprint $table) {
-            $table->boolean('is_digital_product')->default(false)->after('mode');
+            $table->boolean('is_digital_product')->default(false);
         });
     }
 

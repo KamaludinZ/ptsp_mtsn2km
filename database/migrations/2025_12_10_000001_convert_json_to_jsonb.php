@@ -12,9 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         // Only run on PostgreSQL
-        if (DB::getDriverName() !== 'pgsql') {
-            return;
-        }
 
         $conversions = [
             ['table' => 'activity_log', 'column' => 'properties'],
@@ -74,9 +71,6 @@ return new class extends Migration
     public function down(): void
     {
         // Only run on PostgreSQL
-        if (DB::getDriverName() !== 'pgsql') {
-            return;
-        }
 
         $conversions = [
             ['table' => 'activity_log', 'column' => 'properties'],

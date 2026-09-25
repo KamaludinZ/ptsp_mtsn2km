@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Faq;
+use App\Models\Service;
+use App\Models\SurveyAnswer;
+use App\Models\SurveyResponse;
+use App\Models\Ticket;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Visitor;
 use Illuminate\Http\Request; // Don't forget to import Request
 use Carbon\Carbon;
@@ -15,7 +20,39 @@ class PublicController extends Controller
      */
     public function home()
     {
-        return view('welcome');
+        return view('welcome', ['stats' => $this->publicStats()]);
+    }
+
+    /**
+     * Real service figures for the homepage (Permen PANRB 15/2014 asks for
+     * transparent performance data). Null means "no data yet".
+     */
+    private function publicStats(): array
+    {
+        return Cache::remember('public-home-stats', now()->addMinutes(10), function () {
+            // IKM = average unsur score (1-4) x 25, per Permenpan RB 14/2017
+            $skmAverage = SurveyAnswer::whereNotNull('rating_value')
+                ->whereHas('question', fn ($q) => $q->where('type', 'skm'))
+                ->avg('rating_value');
+
+            $completed = Ticket::where('status', 'completed')->whereNotNull('actual_completion_date');
+            $averageDays = (clone $completed)
+                ->selectRaw('AVG(actual_completion_date - created_at::date) AS days')
+                ->value('days');
+
+            $totalTickets = Ticket::count();
+            $closedTickets = Ticket::whereIn('status', ['completed', 'rejected'])->count();
+
+            return [
+                'ikm' => $skmAverage ? round($skmAverage * 25, 1) : null,
+                'average_days' => $averageDays !== null ? max(1, (int) ceil($averageDays)) : null,
+                'services' => Service::where('is_active', true)->count(),
+                'tickets' => $totalTickets,
+                'completed_percent' => $totalTickets ? (int) round(Ticket::where('status', 'completed')->count() / $totalTickets * 100) : null,
+                'closed' => $closedTickets,
+                'respondents' => SurveyResponse::count(),
+            ];
+        });
     }
 
     /**
@@ -28,7 +65,11 @@ class PublicController extends Controller
             ->orderBy('check_in_time', 'desc')
             ->paginate(20);
 
-        return view('public.visitor-book', compact('visitors', 'date'));
+        // Counts for the whole day, not just the current page
+        $activeCount = Visitor::whereDate('check_in_time', $date)->whereNull('check_out_time')->count();
+        $finishedCount = Visitor::whereDate('check_in_time', $date)->whereNotNull('check_out_time')->count();
+
+        return view('public.visitor-book', compact('visitors', 'date', 'activeCount', 'finishedCount'));
     }
 
     /**
@@ -61,18 +102,18 @@ class PublicController extends Controller
             'institution_category' => 'nullable|string|max:255',
             'purpose' => 'required|string|max:500',
             'notes' => 'nullable|string|max:1000',
-            'obscure_name' => 'boolean',
+            'obscure_name' => 'nullable',
         ]);
 
         Visitor::create([
             'name' => $validated['name'],
             'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
-            'institution' => $validated['institution'],
+            'institution' => $validated['institution'] ?? null,
             'institution_category' => $validated['institution_category'] ?? null,
             'purpose' => $validated['purpose'],
-            'notes' => $validated['notes'],
-            'is_obscured' => $request->has('obscure_name'),
+            'notes' => $validated['notes'] ?? null,
+            'is_obscured' => $request->boolean('obscure_name'),
             'check_in_time' => Carbon::now(),
             'status' => 'active',
         ]);
@@ -94,18 +135,18 @@ class PublicController extends Controller
             'applicant_type' => 'nullable|string|max:255',
             'target_service' => 'required|string|max:500',
             'notes' => 'nullable|string|max:1000',
-            'obscure_name' => 'boolean',
+            'obscure_name' => 'nullable',
         ]);
 
         Visitor::create([
             'name' => $validated['name'],
             'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
-            'institution' => $validated['institution'],
+            'institution' => $validated['institution'] ?? null,
             'institution_category' => $validated['institution_category'] ?? null,
             'purpose' => 'Pemohon Layanan: ' . $validated['target_service'], // Combine purpose
-            'notes' => $validated['notes'],
-            'is_obscured' => $request->has('obscure_name'),
+            'notes' => $validated['notes'] ?? null,
+            'is_obscured' => $request->boolean('obscure_name'),
             'check_in_time' => Carbon::now(),
             'status' => 'active',
         ]);

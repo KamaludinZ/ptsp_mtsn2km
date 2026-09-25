@@ -34,7 +34,7 @@
                                     <label class="form-label">File Saat Ini</label>
                                     <br>
                                     @if($output->file_path)
-                                        <a href="{{ Storage::url($output->file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        <a href="{{ route('documents.ticket-output', $output) }}" target="_blank" class="btn btn-outline-primary btn-sm">
                                             <i class="fas fa-file-download me-1"></i>Unduh File
                                         </a>
                                     @else

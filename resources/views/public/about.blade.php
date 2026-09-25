@@ -309,7 +309,7 @@
                     </h2>
                     <div id="collapse{{ $faq->id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ $faq->id }}" data-bs-parent="#faqAccordion">
                         <div class="accordion-body">
-                            {!! $faq->answer !!}
+                            {!! $faq->safeAnswer() !!}
                         </div>
                     </div>
                 </div>

@@ -25,13 +25,9 @@ class OnlinePortalController extends Controller
         // Get categories
         $categories = ServiceCategory::orderBy('name')->get();
 
-        // Get services based on user type with SQLite compatibility
-        // Using LIKE for JSON search in SQLite
+        // Get services allowed for this user type (user_types_allowed is a jsonb array)
         $services = Service::where('is_active', true)
-            ->where(function($query) use ($userType) {
-                $query->where('user_types_allowed', 'LIKE', '%'.$userType.'%')
-                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
-            })
+            ->availableFor($userType)
             ->with(['categories'])
             ->orderBy('name')
             ->get();
@@ -48,24 +44,11 @@ class OnlinePortalController extends Controller
         $userType = $user ? $user->user_type : 'umum';
 
         $service = Service::where('slug', $slug)
-            ->with(['category', 'requirements', 'components', 'workflow'])
-            ->where(function($query) use ($userType) {
-                $query->where('user_types_allowed', 'LIKE', '%'.$userType.'%')
-                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
-            })
+            ->with(['categories', 'components'])
+            ->availableFor($userType)
             ->firstOrFail();
 
-        // Get related services
-        $relatedServices = Service::where('category_id', $service->category_id)
-            ->where('id', '!=', $service->id)
-            ->where(function($query) use ($userType) {
-                $query->where('user_types_allowed', 'LIKE', '%'.$userType.'%')
-                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
-            })
-            ->limit(4)
-            ->get();
-
-        return view('onlineportal.service-detail', compact('service', 'relatedServices', 'user'));
+        return view('onlineportal.service-detail', compact('service', 'user'));
     }
 
     /**
@@ -82,10 +65,7 @@ class OnlinePortalController extends Controller
 
         $service = Service::where('slug', $slug)
             ->with(['requirements', 'components'])
-            ->where(function($query) use ($user) {
-                $query->where('user_types_allowed', 'LIKE', '%'.$user->user_type.'%')
-                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
-            })
+            ->availableFor($user->user_type)
             ->firstOrFail();
 
         return view('onlineportal.application-form', compact('service', 'user'));
@@ -104,10 +84,7 @@ class OnlinePortalController extends Controller
         }
 
         $service = Service::where('slug', $slug)
-            ->where(function($query) use ($user) {
-                $query->where('user_types_allowed', 'LIKE', '%'.$user->user_type.'%')
-                      ->orWhere('user_types_allowed', 'LIKE', '%umum%');
-            })
+            ->availableFor($user->user_type)
             ->firstOrFail();
 
         $validated = $request->validate([
@@ -134,14 +111,14 @@ class OnlinePortalController extends Controller
         // Upload files if any
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $path = $file->store('ticket-files', 'public');
+                $path = \App\Support\TicketDocuments::store($file, 'ticket-files');
 
                 TicketFile::create([
                     'ticket_id' => $ticket->id,
                     'file_name' => $file->getClientOriginalName(),
                     'file_path' => $path,
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
+                    'file_type' => $file->getMimeType(),
+                    'uploaded_by' => $user->id,
                 ]);
             }
         }
@@ -221,14 +198,32 @@ class OnlinePortalController extends Controller
             return response()->json(['message' => 'Nomor tiket tidak ditemukan'], 404);
         }
 
-        // Prepare response data
-        $responseData = $ticket->toArray();
-        
-        // Add additional computed fields
-        $responseData['has_output_file'] = $ticket->output && $ticket->output->file_path ? true : false;
-        
-        // Make sure we return the proper structure for the frontend
-        return response()->json($responseData);
+        // Anyone with the ticket number may track it, so only return progress
+        // information — never the applicant's personal data.
+        return response()->json([
+            'ticket_number' => $ticket->ticket_number,
+            'status' => $ticket->status,
+            'submitted_at' => optional($ticket->created_at)->toIso8601String(),
+            'description' => $ticket->notes,
+            'service' => $ticket->service ? [
+                'name' => $ticket->service->name,
+                'mode' => $ticket->mode,
+                'processing_time' => $ticket->service->processing_time,
+            ] : null,
+            'has_output_file' => (bool) optional($ticket->output)->file_path,
+            'logs' => $ticket->logs->sortBy('created_at')->values()->map(fn ($log) => [
+                'action' => $log->action,
+                'notes' => $log->notes,
+                'created_at' => optional($log->created_at)->toIso8601String(),
+            ]),
+            'workflow_steps' => $ticket->workflowSteps->map(fn ($step) => [
+                'name' => optional($step->workflowStep)->name,
+                'pivot' => [
+                    'completed_at' => optional($step->completed_at)->toIso8601String(),
+                    'notes' => $step->notes,
+                ],
+            ]),
+        ]);
     }
 
     /**
@@ -238,29 +233,30 @@ class OnlinePortalController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
-            return redirect()->route('login');
-        }
+        $stats = \App\Support\ServiceMetrics::tickets(userId: $user->id);
 
-        $tickets = Ticket::with(['service'])
+        $tickets = Ticket::with(['service:id,name,processing_time', 'output'])
             ->where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->latest()
+            ->limit(8)
+            ->get();
 
-        $ticketCounts = Ticket::where('user_id', $user->id)
-            ->select('status', DB::raw('count(*) as total'))
-            ->groupBy('status')
-            ->pluck('total', 'status');
+        // Finished services: download the digital product or collect it at the counter (Modul 9)
+        $results = Ticket::with(['service:id,name', 'output'])
+            ->where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->where(fn ($q) => $q->has('output')->orWhere('ready_for_pickup', true))
+            ->latest('actual_completion_date')
+            ->limit(5)
+            ->get();
 
-        $stats = [
-            'total' => $ticketCounts->sum(),
-            'pending' => $ticketCounts->get('submitted', 0),
-            'processing' => $ticketCounts->get('verified', 0),
-            'in_progress' => $ticketCounts->get('in_process', 0),
-            'completed' => $ticketCounts->get('completed', 0),
-        ];
+        // Completed services not yet rated (SKM/SPAK, Modul 11)
+        $unrated = Ticket::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->whereDoesntHave('surveyResponses')
+            ->count();
 
-        return view('onlineportal.dashboard', compact('user', 'tickets', 'stats'));
+        return view('onlineportal.dashboard', compact('user', 'stats', 'tickets', 'results', 'unrated'));
     }
 
     /**
@@ -324,17 +320,10 @@ class OnlinePortalController extends Controller
             ->where('status', 'completed')
             ->firstOrFail();
 
-        if (!$ticket->output || !$ticket->output->file_path) {
-            abort(404, 'File tidak ditemukan');
-        }
-
-        $filePath = storage_path('app/public/' . $ticket->output->file_path);
-
-        if (!file_exists($filePath)) {
-            abort(404, 'File tidak ditemukan');
-        }
-
-        return response()->download($filePath, $ticket->output->file_name);
+        return \App\Support\TicketDocuments::download(
+            optional($ticket->output)->file_path,
+            optional($ticket->output)->file_name
+        );
     }
 
     /**

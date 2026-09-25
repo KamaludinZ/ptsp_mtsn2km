@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -97,12 +98,15 @@ class UserSeeder extends Seeder
         }
 
 
+        // Area permissions belong to roles (see App\Support\RoleAccess)
+        \App\Support\RoleAccess::sync();
+
         // Create Admin Users
         $adminUsers = [
             [
                 'name' => 'Admin PTSP',
                 'email' => 'ptsp@mtsn2malang.sch.id',
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make($this->adminPassword()),
                 'user_type' => 'pegawai',
                 'registration_code' => 'ADM001',
             ],
@@ -118,11 +122,17 @@ class UserSeeder extends Seeder
             $user->assignRole($role);
             $user->givePermissionTo([
                 'dashboard.view',
-                'supervision.access',
                 'supervision.complaints.view',
                 'supervision.performance.view',
                 'onlineportal.access',
             ]);
+        }
+
+        // In production only roles, permissions and the admin account are
+        // seeded; staff accounts are created from the admin panel, and the
+        // demo accounts below use publicly known passwords.
+        if (app()->isProduction()) {
+            return;
         }
 
         // Create Leadership
@@ -156,12 +166,21 @@ class UserSeeder extends Seeder
             $user->assignRole($role);
             $user->givePermissionTo([
                 'dashboard.view',
-                'frontdesk.access',
-                'backoffice.access',
-                'supervision.access',
                 'onlineportal.access',
             ]);
         }
+
+        // Create Supervisor (Pengawas internal, Modul 10-11)
+        $supervisor = User::create([
+            'name' => 'Pengawas Internal',
+            'email' => 'pengawas@mtsn2malang.sch.id',
+            'password' => Hash::make('pengawas123'),
+            'user_type' => 'pegawai',
+            'registration_code' => 'PGW001',
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $supervisor->assignRole('supervisor');
 
         // Create Front Desk Staff
         $frontDeskUsers = [
@@ -191,7 +210,6 @@ class UserSeeder extends Seeder
             $user->assignRole($role);
             $user->givePermissionTo([
                 'dashboard.view',
-                'frontdesk.access',
                 'frontdesk.triage',
                 'frontdesk.visitor.manage',
                 'frontdesk.service.create',
@@ -234,7 +252,6 @@ class UserSeeder extends Seeder
             $user->assignRole($role);
             $user->givePermissionTo([
                 'dashboard.view',
-                'backoffice.access',
                 'backoffice.tickets.view',
                 'backoffice.tickets.assign',
                 'backoffice.tickets.process',
@@ -412,5 +429,25 @@ class UserSeeder extends Seeder
                 'onlineportal.tickets.track',
             ]);
         }
+    }
+
+    /**
+     * Admin password: ADMIN_PASSWORD from the environment, a random one in
+     * production (printed once), or the known demo password locally.
+     */
+    private function adminPassword(): string
+    {
+        if ($password = env('ADMIN_PASSWORD')) {
+            return $password;
+        }
+
+        if (!app()->isProduction()) {
+            return 'admin123';
+        }
+
+        $password = Str::password(20);
+        $this->command?->warn("Password admin (ptsp@mtsn2malang.sch.id): {$password}  -- simpan dan segera ganti.");
+
+        return $password;
     }
 }

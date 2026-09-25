@@ -266,25 +266,13 @@
                 <div class="col-md-6 mb-3 mb-md-0">
                     <p class="text-muted mb-1" style="font-size: 0.875rem; color: var(--bs-secondary-text);">Jenis Pengaduan</p>
                     <p class="h5 mb-0" style="color: var(--bs-text);">
-                        {{ ucfirst(str_replace('_', ' ', $complaint->complaint_type)) }}
+                        {{ $complaint->typeLabel() }}
                     </p>
                 </div>
                 <div class="col-md-6 mb-3 mb-md-0">
                     <p class="text-muted mb-1" style="font-size: 0.875rem; color: var(--bs-secondary-text);">Status</p>
-                    <span class="status-badge 
-                        @if($complaint->status === 'pending') status-pending
-                        @elseif($complaint->status === 'processing') status-processing
-                        @elseif($complaint->status === 'completed') status-completed
-                        @else status-pending @endif">
-                        @if($complaint->status === 'pending')
-                            <i class="fas fa-clock me-1"></i>Menunggu
-                        @elseif($complaint->status === 'processing')
-                            <i class="fas fa-cog me-1"></i>Diproses
-                        @elseif($complaint->status === 'completed')
-                            <i class="fas fa-check-circle me-1"></i>Selesai
-                        @else
-                            <i class="fas fa-question me-1"></i>{{ ucfirst($complaint->status) }}
-                        @endif
+                    <span class="status-badge {{ in_array($complaint->status, ['resolved', 'closed']) ? 'status-completed' : ($complaint->status === 'submitted' ? 'status-pending' : 'status-processing') }}">
+                        <i class="fas {{ in_array($complaint->status, ['resolved', 'closed']) ? 'fa-check-circle' : ($complaint->status === 'submitted' ? 'fa-clock' : 'fa-cog') }} me-1" aria-hidden="true"></i>{{ $complaint->statusLabel() }}
                     </span>
                 </div>
                 <div class="col-md-6">
@@ -298,61 +286,44 @@
         <div class="detail-card mb-4">
             <h3 class="h5 fw-bold mb-3" style="color: var(--bs-text);">Detail Pengaduan</h3>
             <div class="mb-3">
-                <p class="fw-bold mb-2" style="color: var(--bs-text);">{{ $complaint->subject }}</p>
+                <p class="fw-bold mb-2" style="color: var(--bs-text);">{{ $complaint->title }}</p>
                 <p class="mb-0" style="color: var(--bs-secondary-text);">{{ $complaint->description }}</p>
             </div>
         </div>
         
-        <!-- Status Timeline -->
-        @if($complaint->status !== 'pending')
+        <!-- Response from the school -->
+        @if($complaint->response)
         <div class="detail-card mb-4">
-            <h3 class="h5 fw-bold mb-3" style="color: var(--bs-text);">Timeline Proses</h3>
-            <div class="space-y-3">
-                <div class="timeline-step">
-                    <div class="timeline-icon bg-success" style="background-color: rgba(16, 185, 129, 0.1) !important; color: #10b981;">
-                        <i class="fas fa-check text-xs"></i>
-                    </div>
-                    <div class="timeline-content">
-                        <div class="fw-semibold" style="color: var(--bs-text);">Pengaduan Diterima</div>
-                        <div class="text-muted" style="font-size: 0.875rem; color: var(--bs-secondary-text);">{{ $complaint->created_at->format('d M Y H:i') }}</div>
-                    </div>
-                </div>
-                
-                @if($complaint->status === 'processing' || $complaint->status === 'completed')
-                <div class="timeline-step">
-                    <div class="timeline-icon bg-primary" style="background-color: rgba(59, 130, 246, 0.1) !important; color: #3b82f6;">
-                        <i class="fas fa-cog text-xs"></i>
-                    </div>
-                    <div class="timeline-content">
-                        <div class="fw-semibold" style="color: var(--bs-text);">Sedang Diproses</div>
-                        <div class="text-muted" style="font-size: 0.875rem; color: var(--bs-secondary-text);">
-                            @if($complaint->updated_at)
-                                {{ $complaint->updated_at->format('d M Y H:i') }}
-                            @else
-                                -
-                            @endif
-                        </div>
-                    </div>
-                </div>
-                @endif
-                
-                @if($complaint->status === 'completed')
-                <div class="timeline-step">
-                    <div class="timeline-icon bg-success" style="background-color: rgba(16, 185, 129, 0.1) !important; color: #10b981;">
-                        <i class="fas fa-check-circle text-xs"></i>
-                    </div>
-                    <div class="timeline-content">
-                        <div class="fw-semibold" style="color: var(--bs-text);">Selesai</div>
-                        <div class="text-muted" style="font-size: 0.875rem; color: var(--bs-secondary-text);">
-                            {{ $complaint->updated_at->format('d M Y H:i') }}
-                        </div>
-                    </div>
-                </div>
-                @endif
-            </div>
+            <h3 class="h5 fw-bold mb-3" style="color: var(--bs-text);">Tanggapan Madrasah</h3>
+            <p class="mb-0" style="white-space: pre-line; color: var(--bs-text);">{{ $complaint->response }}</p>
         </div>
         @endif
-        
+
+        <!-- Status Timeline -->
+        @php $reached = array_search($complaint->status, array_keys(\App\Models\Complaint::STATUSES), true); @endphp
+        <div class="detail-card mb-4">
+            <h3 class="h5 fw-bold mb-3" style="color: var(--bs-text);">Tahapan Tindak Lanjut</h3>
+            <ol class="list-unstyled mb-0">
+                @foreach (\App\Models\Complaint::STATUSES as $status => $label)
+                    @continue($status === 'closed' && $complaint->status !== 'closed')
+                    @php $done = $loop->index <= $reached; @endphp
+                    <li class="timeline-step">
+                        <div class="timeline-icon" style="background-color: {{ $done ? 'rgba(16, 185, 129, 0.1)' : 'rgba(148, 163, 184, 0.15)' }}; color: {{ $done ? '#10b981' : '#94a3b8' }};">
+                            <i class="fas {{ $done ? 'fa-check' : 'fa-circle' }} text-xs" aria-hidden="true"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="fw-semibold" style="color: var(--bs-text);">{{ $label }}<span class="visually-hidden">{{ $done ? ' (sudah)' : ' (belum)' }}</span></div>
+                            @if ($status === 'submitted')
+                                <div class="text-muted" style="font-size: 0.875rem;">{{ $complaint->created_at->format('d M Y H:i') }}</div>
+                            @elseif ($status === 'resolved' && $complaint->resolved_at)
+                                <div class="text-muted" style="font-size: 0.875rem;">{{ $complaint->resolved_at->format('d M Y H:i') }}</div>
+                            @endif
+                        </div>
+                    </li>
+                @endforeach
+            </ol>
+        </div>
+
         <!-- Action Buttons -->
         <div class="pt-4 mt-4 border-top">
             <div class="d-flex flex-column flex-md-row justify-content-between gap-3">

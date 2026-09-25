@@ -506,10 +506,8 @@ class SecurityController extends Controller
     {
         $issues = [];
 
-        if (config('database.default') === 'mysql') {
-            if (config('database.connections.mysql.username') === 'root') {
-                $issues[] = 'Using root user for database connection (security risk)';
-            }
+        if (config('database.connections.pgsql.username') === 'postgres') {
+            $issues[] = 'Using the postgres superuser for database connection (security risk)';
         }
 
         return [

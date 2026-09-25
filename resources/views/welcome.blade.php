@@ -210,221 +210,62 @@
                     </p>
                 </div>
 
-                <!-- Stats Grid -->
+                @php
+                    $fmt = fn ($value, $suffix = '') => $value === null ? '–' : number_format($value, is_float($value) ? 1 : 0, ',', '.') . $suffix;
+                    $ikmLabel = match (true) {
+                        $stats['ikm'] === null => 'Belum ada data survei',
+                        $stats['ikm'] >= 88.31 => 'Mutu A (Sangat Baik)',
+                        $stats['ikm'] >= 76.61 => 'Mutu B (Baik)',
+                        $stats['ikm'] >= 65 => 'Mutu C (Kurang Baik)',
+                        default => 'Mutu D (Tidak Baik)',
+                    };
+                    $cards = [
+                        ['icon' => 'fa-smile-beam', 'bg' => 'var(--gradient-primary)', 'value' => $fmt($stats['ikm']), 'label' => 'Indeks Kepuasan (IKM)', 'note' => $ikmLabel, 'bar' => $stats['ikm']],
+                        ['icon' => 'fa-clock', 'bg' => 'var(--gradient-secondary)', 'value' => $stats['average_days'] === null ? '–' : $stats['average_days'] . ' Hari', 'label' => 'Rata-rata Penyelesaian', 'note' => $stats['average_days'] === null ? 'Belum ada tiket selesai' : 'Dari tiket yang telah selesai', 'bar' => null],
+                        ['icon' => 'fa-tasks', 'bg' => 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 'value' => $fmt($stats['services']), 'label' => 'Jenis Layanan Aktif', 'note' => 'Sesuai standar pelayanan', 'bar' => null],
+                        ['icon' => 'fa-globe', 'bg' => 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', 'value' => '24/7', 'label' => 'Akses Online', 'note' => 'Ajukan & lacak kapan saja', 'bar' => null],
+                    ];
+                @endphp
+
+                <!-- Stats Grid (live data, cached 10 minutes) -->
                 <div class="row g-4">
-                    <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
-                        <article class="stat-card" tabindex="0" role="article" aria-label="Tingkat kepuasan pelanggan 98%">
-                            <div class="feature-icon mb-3 mx-auto" style="background: var(--gradient-primary);">
-                                <i class="fas fa-smile-beam text-white"></i>
-                            </div>
-                            <div class="stat-number">98%</div>
-                            <h3 class="stat-label">Tingkat Kepuasan</h3>
-                            <p class="text-muted small mb-3">
-                                <i class="fas fa-chart-line me-2"></i>Berdasarkan SKM 2025
-                            </p>
-                            <div class="stat-progress">
-                                <div class="stat-progress-bar" style="width: 98%;"></div>
-                            </div>
-                        </article>
-                    </div>
-
-                    <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
-                        <article class="stat-card" tabindex="0" role="article" aria-label="Rata-rata waktu penyelesaian 2 hari">
-                            <div class="feature-icon mb-3 mx-auto" style="background: var(--gradient-secondary);">
-                                <i class="fas fa-clock text-white"></i>
-                            </div>
-                            <div class="stat-number">2 Hari</div>
-                            <h3 class="stat-label">Rata-rata Waktu</h3>
-                            <p class="text-muted small mb-3">
-                                <i class="fas fa-hourglass-half me-2"></i>Penyelesaian Layanan
-                            </p>
-                            <div class="stat-progress">
-                                <div class="stat-progress-bar" style="width: 85%;"></div>
-                            </div>
-                        </article>
-                    </div>
-
-                    <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
-                        <article class="stat-card" tabindex="0" role="article" aria-label="15+ jenis layanan tersedia">
-                            <div class="feature-icon mb-3 mx-auto" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                                <i class="fas fa-tasks text-white"></i>
-                            </div>
-                            <div class="stat-number">15+</div>
-                            <h3 class="stat-label">Jenis Layanan</h3>
-                            <p class="text-muted small mb-3">
-                                <i class="fas fa-clipboard-check me-2"></i>Sesuai Standar
-                            </p>
-                            <div class="stat-progress">
-                                <div class="stat-progress-bar" style="width: 100%;"></div>
-                            </div>
-                        </article>
-                    </div>
-
-                    <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
-                        <article class="stat-card" tabindex="0" role="article" aria-label="Akses online 24/7">
-                            <div class="feature-icon mb-3 mx-auto" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
-                                <i class="fas fa-globe text-white"></i>
-                            </div>
-                            <div class="stat-number">24/7</div>
-                            <h3 class="stat-label">Akses Online</h3>
-                            <p class="text-muted small mb-3">
-                                <i class="fas fa-wifi me-2"></i>Kapan Saja, Dimana Saja
-                            </p>
-                            <div class="stat-progress">
-                                <div class="stat-progress-bar" style="width: 100%;"></div>
-                            </div>
-                        </article>
-                    </div>
+                    @foreach ($cards as $card)
+                        <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 100 }}">
+                            <article class="stat-card h-100">
+                                <div class="feature-icon mb-3 mx-auto" style="background: {{ $card['bg'] }};" aria-hidden="true">
+                                    <i class="fas {{ $card['icon'] }} text-white"></i>
+                                </div>
+                                <div class="stat-number">{{ $card['value'] }}</div>
+                                <h3 class="stat-label">{{ $card['label'] }}</h3>
+                                <p class="text-muted small mb-0">{{ $card['note'] }}</p>
+                                @if ($card['bar'] !== null)
+                                    <div class="stat-progress mt-3" role="progressbar" aria-label="{{ $card['label'] }}"
+                                         aria-valuenow="{{ $card['bar'] }}" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="stat-progress-bar" style="width: {{ min(100, $card['bar']) }}%;"></div>
+                                    </div>
+                                @endif
+                            </article>
+                        </div>
+                    @endforeach
                 </div>
 
                 <!-- Additional Stats Bar -->
-                <div class="mt-5 p-4 rounded-3 border-2 border-dashed" style="border-color: var(--bs-primary); background-color: var(--bs-white);" data-aos="fade-up" data-aos-delay="500">
-                    <div class="row text-center">
-                        <div class="col-6 col-md-3">
-                            <div class="display-6 fw-bold" style="color: var(--bs-primary);">5000+</div>
-                            <div class="text-muted small">Layanan Diproses</div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="display-6 fw-bold" style="color: var(--bs-secondary);">100%</div>
-                            <div class="text-muted small">Digitalisasi</div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="display-6 fw-bold" style="color: #10b981;">4.8/5</div>
-                            <div class="text-muted small">Rating Layanan</div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="display-6 fw-bold" style="color: #3b82f6;">99.9%</div>
-                            <div class="text-muted small">Uptime</div>
-                        </div>
+                <div class="mt-5 p-4 rounded-3 row text-center mx-0 mb-0" style="border: 2px dashed var(--bs-primary); background-color: var(--bs-white);" data-aos="fade-up">
+                    <div class="col-6 col-md-3 mb-3 mb-md-0">
+                        <div class="display-6 fw-bold mb-0" style="color: var(--bs-primary);">{{ $fmt($stats['tickets']) }}</div>
+                        <div class="text-muted small fw-normal">Permohonan Masuk</div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Services Section -->
-        <section id="layanan" aria-labelledby="services-heading">
-            <div class="container">
-                <div class="text-center mb-5" data-aos="fade-up">
-                    <div class="d-inline-flex align-items-center px-4 py-2 rounded-pill mb-3"
-                         style="background-color: rgba(20, 83, 45, 0.1);">
-                        <i class="fas fa-th-large me-2" style="color: var(--bs-primary);"></i>
-                        <span class="fw-bold text-uppercase" style="color: var(--bs-primary);">Layanan Kami</span>
+                    <div class="col-6 col-md-3 mb-3 mb-md-0">
+                        <div class="display-6 fw-bold mb-0" style="color: var(--bs-secondary);">{{ $fmt($stats['completed_percent'], '%') }}</div>
+                        <div class="text-muted small fw-normal">Permohonan Selesai</div>
                     </div>
-                    <h2 id="services-heading" class="display-4 fw-bold mb-3">
-                        Jenis <span style="color: var(--bs-primary);">Pelayanan</span> Tersedia
-                    </h2>
-                    <p class="lead text-muted">
-                        Melayani berbagai kebutuhan sivitas akademika dan masyarakat
-                    </p>
-                </div>
-
-                <div class="row g-4">
-                    <!-- Layanan Akademik -->
-                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-                        <article class="service-card">
-                            <div class="service-header service-header-primary">
-                                <div class="service-icon">
-                                    <i class="fas fa-user-graduate text-white"></i>
-                                </div>
-                                <h3 class="service-title">Layanan Akademik</h3>
-                                <p class="service-subtitle">Untuk Siswa & Alumni</p>
-                            </div>
-                            <div class="service-body">
-                                <ul class="service-list">
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Surat Keterangan Siswa Aktif</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Legalisir Ijazah & Transkrip</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Surat Rekomendasi</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Surat Keterangan Berkelakuan Baik</span>
-                                    </li>
-                                </ul>
-                                <a href="{{ route('onlineportal.service.catalog') }}" class="btn btn-primary w-100">
-                                    <i class="fas fa-arrow-right me-2"></i>Lihat Detail
-                                </a>
-                            </div>
-                        </article>
+                    <div class="col-6 col-md-3">
+                        <div class="display-6 fw-bold mb-0" style="color: #047857;">{{ $fmt($stats['respondents']) }}</div>
+                        <div class="text-muted small fw-normal">Responden Survei</div>
                     </div>
-
-                    <!-- Layanan Wali Murid -->
-                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
-                        <article class="service-card">
-                            <div class="service-header service-header-secondary">
-                                <div class="service-icon">
-                                    <i class="fas fa-users text-white"></i>
-                                </div>
-                                <h3 class="service-title">Layanan Wali Murid</h3>
-                                <p class="service-subtitle">Untuk Orang Tua</p>
-                            </div>
-                            <div class="service-body">
-                                <ul class="service-list">
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Informasi Akademik Anak</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Izin Tidak Masuk Sekolah</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Surat Panggilan Orang Tua</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Konsultasi BK</span>
-                                    </li>
-                                </ul>
-                                <a href="{{ route('onlineportal.service.catalog') }}" class="btn btn-primary w-100">
-                                    <i class="fas fa-arrow-right me-2"></i>Lihat Detail
-                                </a>
-                            </div>
-                        </article>
-                    </div>
-
-                    <!-- Layanan Instansi -->
-                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
-                        <article class="service-card">
-                            <div class="service-header service-header-emerald">
-                                <div class="service-icon">
-                                    <i class="fas fa-briefcase text-white"></i>
-                                </div>
-                                <h3 class="service-title">Layanan Instansi</h3>
-                                <p class="service-subtitle">Untuk Mitra Kerja</p>
-                            </div>
-                            <div class="service-body">
-                                <ul class="service-list">
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Surat Permohonan Kerjasama</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Izin Kegiatan & Penelitian</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Permohonan Data Statistik</span>
-                                    </li>
-                                    <li>
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Surat Rekomendasi Instansi</span>
-                                    </li>
-                                </ul>
-                                <a href="{{ route('onlineportal.service.catalog') }}" class="btn btn-primary w-100">
-                                    <i class="fas fa-arrow-right me-2"></i>Lihat Detail
-                                </a>
-                            </div>
-                        </article>
+                    <div class="col-6 col-md-3">
+                        <div class="display-6 fw-bold mb-0" style="color: #1d4ed8;">{{ $fmt($stats['closed']) }}</div>
+                        <div class="text-muted small fw-normal">Permohonan Ditutup</div>
                     </div>
                 </div>
             </div>
@@ -576,142 +417,83 @@
                     </p>
                 </div>
 
-                <div class="row g-5">
-                    <div class="col-lg-6" data-aos="fade-right">
-                        <h3 class="h2 fw-bold mb-4 text-primary">Pelayanan Online</h3>
-                        <p class="mb-4">
-                            Dapatkan layanan kapan saja dan di mana saja melalui portal online kami.
-                        </p>
-                        <div class="steps-container">
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">1</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Daftar Akun / Login</h5>
-                                    <p class="mb-0 text-muted">Daftarkan akun Anda atau login jika sudah memiliki akun untuk mengakses layanan online.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">2</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Pilih Layanan</h5>
-                                    <p class="mb-0 text-muted">Kunjungi halaman "Lihat Semua Layanan" dan pilih jenis layanan yang Anda butuhkan.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">3</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Isi Formulir Permohonan</h5>
-                                    <p class="mb-0 text-muted">Lengkapi formulir permohonan dengan data yang benar, wajib menyertakan email dan nomor WhatsApp aktif, serta unggah dokumen persyaratan yang diperlukan.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">4</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Dapatkan Nomor Tiket</h5>
-                                    <p class="mb-0 text-muted">Setelah permohonan diajukan, Anda akan menerima nomor tiket melalui email/WhatsApp untuk melacak status layanan Anda.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">5</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Lacak Status</h5>
-                                    <p class="mb-0 text-muted">Gunakan fitur "Lacak Status Tiket" untuk memantau perkembangan permohonan Anda secara real-time.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">6</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Ambil Hasil Layanan</h5>
-                                    <p class="mb-0 text-muted">Jika layanan sudah selesai, Anda akan diberitahu melalui email/WhatsApp untuk mengambil hasilnya secara online atau di loket PTSP.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-primary">
-                                    <span class="step-number">7</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Isi Survei Penilaian Layanan</h5>
-                                    <p class="mb-0 text-muted">Berikan penilaian Anda terhadap layanan yang telah diterima untuk membantu kami meningkatkan kualitas.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                @php
+                    // Alur sesuai docs/rancangan_app.md: portal (Modul 3-6) dan loket (Modul 1-2),
+                    // lalu diproses TU (Modul 7), disetujui pimpinan (Modul 8), hasil (Modul 9), survei (Modul 11).
+                    $guides = [
+                        'online' => [
+                            'tone' => 'primary',
+                            'icon' => 'fa-laptop',
+                            'title' => 'Pelayanan Online',
+                            'intro' => 'Ajukan layanan kapan saja dan dari mana saja melalui portal.',
+                            'steps' => [
+                                ['fa-user-plus', 'Daftar akun atau masuk', 'Buat akun dengan email dan nomor WhatsApp aktif. Siswa, guru, dan pegawai memakai kode registrasi dari madrasah.', route('register'), 'Daftar akun'],
+                                ['fa-list-check', 'Pilih layanan', 'Buka katalog, lalu baca persyaratan, biaya, dan jangka waktu penyelesaian setiap layanan.', route('onlineportal.service.catalog'), 'Lihat katalog'],
+                                ['fa-file-arrow-up', 'Isi formulir & unggah berkas', 'Lengkapi formulir permohonan dan unggah dokumen persyaratan (PDF atau foto).', null, null],
+                                ['fa-ticket', 'Terima nomor tiket', 'Nomor tiket dan perkiraan tanggal selesai tampil di layar serta di dashboard Anda.', null, null],
+                                ['fa-magnifying-glass', 'Pantau status', 'Permohonan diverifikasi petugas TU dan disetujui pimpinan. Pantau tahapannya dari dashboard atau fitur Lacak Tiket.', route('onlineportal.track.ticket.form'), 'Lacak tiket'],
+                                ['fa-file-circle-check', 'Terima hasil layanan', 'Dokumen digital dapat diunduh dari dashboard. Dokumen fisik diambil di loket PTSP.', null, null],
+                                ['fa-star', 'Isi survei kepuasan', 'Beri penilaian SKM & SPAK agar pelayanan terus membaik.', route('survey.form'), 'Isi survei'],
+                            ],
+                        ],
+                        'offline' => [
+                            'tone' => 'secondary',
+                            'icon' => 'fa-building',
+                            'title' => 'Pelayanan Offline',
+                            'intro' => 'Datang langsung ke loket PTSP untuk dibantu petugas secara tatap muka.',
+                            'steps' => [
+                                ['fa-door-open', 'Datang ke loket PTSP', 'Kunjungi loket PTSP MTsN 2 Kota Malang pada jam layanan.', null, null],
+                                ['fa-clipboard-question', 'Sampaikan keperluan', 'Petugas menanyakan keperluan Anda. Tamu dicatat di buku tamu, sedangkan pemohon diarahkan ke pendaftaran layanan.', null, null],
+                                ['fa-folder-open', 'Serahkan data & berkas', 'Petugas mengisi permohonan atas nama Anda dan memindai dokumen persyaratan. Siapkan nomor WhatsApp atau email aktif.', null, null],
+                                ['fa-receipt', 'Terima tanda terima', 'Anda menerima nomor tiket beserta perkiraan tanggal selesai.', null, null],
+                                ['fa-magnifying-glass', 'Pantau status', 'Gunakan nomor tiket untuk melacak proses tanpa perlu datang kembali.', route('onlineportal.track.ticket.form'), 'Lacak tiket'],
+                                ['fa-box-open', 'Ambil hasil di loket', 'Setelah selesai, hasil layanan diserahkan kepada Anda di loket PTSP.', null, null],
+                                ['fa-star', 'Isi survei kepuasan', 'Beri penilaian SKM & SPAK agar pelayanan terus membaik.', route('survey.form'), 'Isi survei'],
+                            ],
+                        ],
+                    ];
+                @endphp
 
-                    <div class="col-lg-6" data-aos="fade-left">
-                        <h3 class="h2 fw-bold mb-4 text-secondary">Pelayanan Offline</h3>
-                        <p class="mb-4">
-                            Kunjungi loket PTSP kami untuk pelayanan tatap muka yang ramah dan efisien. Anda juga dapat mendaftar akun terlebih dahulu untuk kemudahan administrasi.
-                        </p>
-                        <div class="steps-container">
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">1</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Datang ke Loket PTSP</h5>
-                                    <p class="mb-0 text-muted">Kunjungi loket Pelayanan Terpadu Satu Pintu MTsN 2 Kota Malang pada jam operasional.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">2</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Ambil Nomor Antrean</h5>
-                                    <p class="mb-0 text-muted">Ambil nomor antrean dan tunggu panggilan dari petugas layanan.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">3</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Sampaikan Kebutuhan & Data Diri</h5>
-                                    <p class="mb-0 text-muted">Sampaikan jenis layanan yang Anda butuhkan kepada petugas, serahkan dokumen persyaratan, serta berikan email dan nomor WhatsApp aktif Anda.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">4</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Proses Layanan & Nomor Tiket</h5>
-                                    <p class="mb-0 text-muted">Petugas akan memproses permohonan Anda. Anda akan menerima nomor tiket melalui email/WhatsApp dan diberitahu estimasi waktu penyelesaian.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">5</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Ambil Hasil Layanan</h5>
-                                    <p class="mb-0 text-muted">Setelah layanan selesai, Anda akan diberitahu melalui email/WhatsApp untuk mengambil hasilnya di loket PTSP.</p>
-                                </div>
-                            </div>
-                            <div class="step-item">
-                                <div class="step-icon text-secondary">
-                                    <span class="step-number">6</span>
-                                </div>
-                                <div class="step-content">
-                                    <h5 class="fw-bold mb-1">Isi Survei Penilaian Layanan</h5>
-                                    <p class="mb-0 text-muted">Berikan penilaian Anda terhadap layanan yang telah diterima untuk membantu kami meningkatkan kualitas.</p>
-                                </div>
-                            </div>
+                <div class="row g-4 align-items-stretch">
+                    @foreach ($guides as $key => $guide)
+                        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                            <article class="guide-card guide-{{ $guide['tone'] }} h-100" aria-labelledby="guide-{{ $key }}">
+                                <header class="guide-header">
+                                    <span class="guide-header-icon" aria-hidden="true"><i class="fas {{ $guide['icon'] }}"></i></span>
+                                    <div>
+                                        <h3 id="guide-{{ $key }}" class="guide-title">{{ $guide['title'] }}</h3>
+                                        <p class="guide-intro">{{ $guide['intro'] }}</p>
+                                    </div>
+                                    <span class="guide-count">{{ count($guide['steps']) }} langkah</span>
+                                </header>
+
+                                <ol class="guide-steps">
+                                    @foreach ($guide['steps'] as [$icon, $title, $text, $url, $label])
+                                        <li class="guide-step">
+                                            <span class="guide-step-number" aria-hidden="true">{{ $loop->iteration }}</span>
+                                            <div class="guide-step-body">
+                                                <h4 class="guide-step-title">
+                                                    <span class="visually-hidden">Langkah {{ $loop->iteration }}: </span>{{ $title }}
+                                                    <i class="fas {{ $icon }} guide-step-icon" aria-hidden="true"></i>
+                                                </h4>
+                                                <p class="guide-step-text">{{ $text }}</p>
+                                                @if ($url)
+                                                    <a href="{{ $url }}" class="guide-step-link">{{ $label }} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                                                @endif
+                                            </div>
+                                        </li>
+                                    @endforeach
+                                </ol>
+                            </article>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
+
+                <p class="text-center text-muted mt-4 mb-0" data-aos="fade-up">
+                    <i class="fas fa-circle-info me-1" aria-hidden="true"></i>
+                    Setiap permohonan diverifikasi petugas TU dan disetujui pimpinan sesuai standar pelayanan.
+                    Ada kendala? <a href="{{ route('supervision.complaint.submit') }}">Sampaikan pengaduan atau saran</a>.
+                </p>
             </div>
         </section>
 
@@ -819,7 +601,7 @@
                     </div>
 
                     <div class="col-md-4" data-aos="fade-up" data-aos-delay="600">
-                        <a href="{{ route('supervision.skm.survey') }}" class="text-decoration-none">
+                        <a href="{{ route('survey.form') }}" class="text-decoration-none">
                             <div class="feature-card h-100">
                                 <div class="feature-icon mx-auto" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
                                     <i class="fas fa-poll text-white"></i>

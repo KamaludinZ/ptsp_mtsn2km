@@ -15,7 +15,7 @@
                         <li><a href="{{ route('onlineportal.service.catalog') }}" class="text-gray-900 font-semibold"><i class="fas fa-concierge-bell mr-2"></i>Layanan</a></li>
                         <li><a href="{{ route('public.about') }}" class="text-gray-900 font-semibold"><i class="fas fa-info-circle mr-2"></i>Tentang</a></li>
                         <li><a href="{{ route('public.visitor.book') }}" class="text-gray-900 font-semibold"><i class="fas fa-book mr-2"></i>Buku Tamu</a></li>
-                        <li><a href="{{ route('supervision.skm.survey') }}" class="text-gray-900 font-semibold"><i class="fas fa-poll mr-2"></i>Survei</a></li>
+                        <li><a href="{{ route('survey.form') }}" class="text-gray-900 font-semibold"><i class="fas fa-poll mr-2"></i>Survei</a></li>
                         <li><a href="{{ route('supervision.complaints.dashboard') }}" class="text-gray-900 font-semibold"><i class="fas fa-comments mr-2"></i>Pengaduan</a></li>
                         <li><a href="{{ route('onlineportal.track.ticket.form') }}" class="text-gray-900 font-semibold"><i class="fas fa-search mr-2"></i>Lacak Tiket</a></li>
                         <li><a href="{{ route('pengumuman.index') }}" class="text-gray-900 font-semibold"><i class="fas fa-bullhorn mr-2"></i>Pengumuman</a></li>
@@ -39,7 +39,7 @@
                 <a href="{{ route('onlineportal.service.catalog') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Layanan</a>
                 <a href="{{ route('public.about') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Tentang</a>
                 <a href="{{ route('public.visitor.book') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Buku Tamu</a>
-                <a href="{{ route('supervision.skm.survey') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Survei</a>
+                <a href="{{ route('survey.form') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Survei</a>
                 <a href="{{ route('supervision.complaints.dashboard') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Pengaduan</a>
                 <a href="{{ route('onlineportal.track.ticket.form') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Lacak Tiket</a>
                 <a href="{{ route('pengumuman.index') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Pengumuman</a>

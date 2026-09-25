@@ -111,6 +111,17 @@
         background-color: var(--bs-primary-dark);
     }
 
+    .tracking-button:focus-visible {
+        outline: 3px solid #1d4ed8;
+        outline-offset: -3px;
+    }
+
+    @media (max-width: 575.98px) {
+        .tracking-input-group { flex-direction: column; }
+        .tracking-input { width: 100%; font-size: 1rem; }
+        .tracking-button { padding: 0.875rem 1rem; }
+    }
+
     .tracking-card {
         background-color: var(--bs-bg);
         border-radius: 1rem;
@@ -252,7 +263,9 @@
                                    class="tracking-input" 
                                    id="ticket_number" 
                                    name="ticket_number" 
-                                   placeholder="Contoh: PTSP-202510-00123" 
+                                   placeholder="Contoh: PTSP-202510-0001"
+                                   autocomplete="off"
+                                   inputmode="text" 
                                    required>
                             <button type="submit" class="tracking-button">
                                 <i class="fas fa-search me-2"></i>Lacak
@@ -435,18 +448,24 @@
                     
                     // Update status badge
                     const statusBadge = document.getElementById('statusBadge');
-                    statusBadge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                    const statusLabels = {
+                        submitted: 'Diajukan', verified: 'Diverifikasi', in_process: 'Sedang Diproses',
+                        approved: 'Disetujui', rejected: 'Ditolak', completed: 'Selesai', cancelled: 'Dibatalkan',
+                    };
+                    statusBadge.textContent = statusLabels[data.status] || data.status;
                     statusBadge.className = 'status-badge';
                     
                     // Add status class based on status value
                     if (data.status === 'completed') {
                         statusBadge.classList.add('status-completed');
-                    } else if (data.status === 'processing') {
+                    } else if (['verified', 'in_process', 'approved'].includes(data.status)) {
                         statusBadge.classList.add('status-processing');
                     } else {
                         statusBadge.classList.add('status-pending');
                     }
                     
+                    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+
                     // Populate process table
                     processTableBody.innerHTML = '';
                     
@@ -469,10 +488,10 @@
                             const statusClass = step.pivot?.completed_at ? 'status-completed' : 'status-processing';
                             
                             row.innerHTML = `
-                                <td>${step.name || step.title || 'Langkah Tidak Dikenal'}</td>
+                                <td>${escapeHtml(step.name || 'Langkah Tidak Dikenal')}</td>
                                 <td><span class="status-badge ${statusClass}">${status}</span></td>
                                 <td>${completedAt}</td>
-                                <td>${step.pivot?.notes || 'Tidak ada catatan'}</td>
+                                <td>${escapeHtml(step.pivot?.notes || 'Tidak ada catatan')}</td>
                             `;
                             processTableBody.appendChild(row);
                         });
@@ -486,10 +505,10 @@
                                 const logDate = log.created_at ? new Date(log.created_at).toLocaleDateString('id-ID') : '-';
                                 
                                 row.innerHTML = `
-                                    <td>${log.action || 'Aktivitas'}</td>
+                                    <td>${escapeHtml(log.action || 'Aktivitas')}</td>
                                     <td><span class="status-badge status-completed">Terupdate</span></td>
                                     <td>${logDate}</td>
-                                    <td>${log.description || log.notes || 'Tidak ada catatan'}</td>
+                                    <td>${escapeHtml(log.notes || 'Tidak ada catatan')}</td>
                                 `;
                                 processTableBody.appendChild(row);
                             }
@@ -504,7 +523,7 @@
                         if (data.service?.mode === 'online' && data.has_output_file) {
                             downloadButton.style.display = 'inline-block';
                             collectButton.style.display = 'none';
-                            downloadButton.href = `{{ url('/tickets') }}/${data.ticket_number}/download`;
+                            downloadButton.href = `{{ url('/portal/tickets') }}/${encodeURIComponent(data.ticket_number)}/download`;
                         } else {
                             downloadButton.style.display = 'none';
                             collectButton.style.display = 'inline-block';

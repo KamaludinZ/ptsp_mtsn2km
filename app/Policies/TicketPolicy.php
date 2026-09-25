@@ -21,7 +21,11 @@ class TicketPolicy
      */
     public function view(User $user, Ticket $ticket): bool
     {
-        return false;
+        // The applicant, and staff who handle tickets.
+        return $user->id === $ticket->user_id
+            || $user->hasAnyRole(User::STAFF_ROLES)
+            || $user->can('backoffice.access')
+            || $user->can('frontdesk.access');
     }
 
     /**
@@ -54,7 +58,11 @@ class TicketPolicy
     public function approve(User $user, Ticket $ticket): bool
     {
         $service = $ticket->service;
-        
+
+        if (! $service) {
+            return false;
+        }
+
         $canApprove = false;
         
         // Check if user has required role
@@ -69,14 +77,14 @@ class TicketPolicy
         
         // Check if user is specifically allowed
         if (!$canApprove && $service->approval_users) {
-            if (in_array($user->id, $service->approval_users)) {
+            if (in_array((string) $user->id, array_map('strval', (array) $service->approval_users), true)) {
                 $canApprove = true;
             }
         }
         
-        // If no specific settings, allow any admin/supervisor
+        // No approvers configured: school leaders approve (Modul 8)
         if (!$canApprove && !$service->approval_roles && !$service->approval_users) {
-            $canApprove = $user->hasRole(['admin', 'supervisor']);
+            $canApprove = $user->hasAnyRole(\App\Support\RoleAccess::LEADERSHIP);
         }
         
         return $canApprove;

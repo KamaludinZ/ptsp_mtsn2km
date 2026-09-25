@@ -137,21 +137,31 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         return $this->hasRole('kepala_tu');
     }
 
+    /** Leadership roles (monitoring and approvals). */
+    public const LEADERSHIP_ROLES = ['kepala_sekolah', 'kepala_tu', 'supervisor'];
+
+    /** Every internal staff role; everyone else is an applicant (pemohon). */
+    public const STAFF_ROLES = ['admin', 'front_desk', 'back_office', 'kepala_sekolah', 'kepala_tu', 'supervisor'];
+
     /**
-     * Check if user is petugas
+     * Check if user is a service officer (front desk or back office)
      */
-    public function isPetugas()
+    public function isPetugas(): bool
     {
-        return $this->hasRole(['petugas_tu', 'petugas_loket']);
+        return $this->hasAnyRole(['front_desk', 'back_office']);
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->hasAnyRole(self::STAFF_ROLES);
     }
 
     /**
-     * Determine if user can access Filament panel
+     * Determine if user can access the Filament control panel (/cp)
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        // Allow access for users with admin or petugas roles
-        return $this->hasRole(['admin', 'kepala_sekolah', 'kepala_tu', 'petugas_tu', 'petugas_loket']);
+        return $this->hasAnyRole(['admin', 'kepala_sekolah', 'kepala_tu', 'back_office', 'front_desk']);
     }
 
     /**

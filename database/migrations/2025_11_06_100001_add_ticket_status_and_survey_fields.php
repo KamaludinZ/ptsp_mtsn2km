@@ -14,19 +14,19 @@ return new class extends Migration
         Schema::table('tickets', function (Blueprint $table) {
             // Only add columns if they don't exist to prevent errors during migration
             if (!Schema::hasColumn('tickets', 'approval_status')) {
-                $table->enum('approval_status', ['pending', 'approved', 'rejected'])->default('pending')->after('status');
+                $table->enum('approval_status', ['pending', 'approved', 'rejected'])->default('pending');
             }
             if (!Schema::hasColumn('tickets', 'survey_sent')) {
-                $table->boolean('survey_sent')->default(false)->after('approval_notes');
+                $table->boolean('survey_sent')->default(false);
             }
             if (!Schema::hasColumn('tickets', 'survey_sent_at')) {
-                $table->timestamp('survey_sent_at')->nullable()->after('survey_sent');
+                $table->timestamp('survey_sent_at')->nullable();
             }
             if (!Schema::hasColumn('tickets', 'ready_for_pickup')) {
-                $table->boolean('ready_for_pickup')->default(false)->after('survey_sent_at')->comment('Document ready for pickup at PTSP');
+                $table->boolean('ready_for_pickup')->default(false)->comment('Document ready for pickup at PTSP');
             }
             if (!Schema::hasColumn('tickets', 'pickup_notified_at')) {
-                $table->timestamp('pickup_notified_at')->nullable()->after('ready_for_pickup');
+                $table->timestamp('pickup_notified_at')->nullable();
             }
         });
     }

@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('services', function (Blueprint $table) {
-            $table->text('requirements')->nullable()->after('mode'); // 1. Persyaratan
-            $table->text('mechanism')->nullable()->after('requirements'); // 2. Sistem, Mekanisme dan Prosedur
-            $table->string('processing_time')->nullable()->after('mechanism'); // 3. Waktu Penyelesaian
-            $table->decimal('fee', 10, 2)->nullable()->after('processing_time'); // 4. Biaya / Tarif
-            $table->text('product')->nullable()->after('fee'); // 5. Produk Pelayanan
-            $table->text('complaint_handling')->nullable()->after('product'); // 6. Pengaduan Pelayanan
+            $table->text('requirements')->nullable(); // 1. Persyaratan
+            $table->text('mechanism')->nullable(); // 2. Sistem, Mekanisme dan Prosedur
+            $table->string('processing_time')->nullable(); // 3. Waktu Penyelesaian
+            $table->decimal('fee', 10, 2)->nullable(); // 4. Biaya / Tarif
+            $table->text('product')->nullable(); // 5. Produk Pelayanan
+            $table->text('complaint_handling')->nullable(); // 6. Pengaduan Pelayanan
         });
     }
 

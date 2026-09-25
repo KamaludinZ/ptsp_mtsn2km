@@ -17,12 +17,14 @@
     @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
         @vite([
             'resources/css/bootstrap-custom.css',
+            'resources/css/fontawesome.css',
             'resources/js/bootstrap-bundle.js',
             'resources/css/app.css',
             'resources/js/app.js'
         ])
     @else
         {!! App\Helpers\AssetHelper::css('resources/css/bootstrap-custom.css') !!}
+        {!! App\Helpers\AssetHelper::css('resources/css/fontawesome.css') !!}
         {!! App\Helpers\AssetHelper::js('resources/js/bootstrap-bundle.js', false) !!}
         {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
         {!! App\Helpers\AssetHelper::js('resources/js/app.js', false) !!}

@@ -11,211 +11,32 @@ use App\Models\Complaint;
 use App\Models\Survey;
 use App\Models\SurveyResponse;
 use Carbon\Carbon;
+use App\Support\ServiceMetrics;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index()
+    /**
+     * Admin dashboard (Modul 12): system inventory plus the same service
+     * performance overview the leadership sees (ServiceMetrics).
+     */
+    public function index(Request $request)
     {
-        // System Overview Widgets
-        $totalUsers = User::count();
-        $totalServices = Service::count();
-        $totalTickets = Ticket::count();
-        $visitorsThisMonth = Visitor::where('created_at', '>=', Carbon::now()->startOfMonth())->count();
+        $overview = ServiceMetrics::overview(ServiceMetrics::period($request->query('periode')));
 
-        // Ticket Status Details - OPTIMIZED
-        $ticketCounts = Ticket::select('status', DB::raw('count(*) as total'))
-            ->groupBy('status')
-            ->pluck('total', 'status');
+        $system = [
+            'users' => User::count(),
+            'staff' => User::role(User::STAFF_ROLES)->count(),
+            'services' => Service::where('is_active', true)->count(),
+            'services_total' => Service::count(),
+            'survey_active' => Survey::where('is_active', true)->count(),
+        ];
 
-        $ticketsIncoming = $ticketCounts->get('pending', 0);
-        $ticketsProcessing = $ticketCounts->get('processing', 0);
-        $ticketsPendingApproval = $ticketCounts->get('pending_approval', 0);
-        $ticketsCompleted = $ticketCounts->get('completed', 0);
-        $ticketsRejected = $ticketCounts->get('rejected', 0);
-        $ticketsToday = Ticket::whereDate('created_at', Carbon::today())->count();
+        $recentTickets = Ticket::with(['user:id,name', 'service:id,name'])->latest()->limit(6)->get();
+        $recentComplaints = Complaint::latest()->limit(6)->get(['id', 'complaint_number', 'complaint_type', 'title', 'status', 'created_at']);
 
-        // Complaint and Whistleblowing Status Details - OPTIMIZED
-        $complaintCounts = Complaint::select('complaint_type', 'status', DB::raw('count(*) as total'))
-            ->groupBy('complaint_type', 'status')
-            ->get();
-
-        $complaintsUnprocessed = $complaintCounts->where('complaint_type', 'pengaduan')->where('status', 'pending')->first()->total ?? 0;
-        $complaintsProcessing = $complaintCounts->where('complaint_type', 'pengaduan')->where('status', 'in_review')->first()->total ?? 0;
-        $complaintsCompleted = $complaintCounts->where('complaint_type', 'pengaduan')->where('status', 'resolved')->first()->total ?? 0;
-
-        $whistleblowingUnprocessed = $complaintCounts->where('complaint_type', 'whistleblowing')->where('status', 'pending')->first()->total ?? 0;
-        $whistleblowingProcessing = $complaintCounts->where('complaint_type', 'whistleblowing')->where('status', 'in_review')->first()->total ?? 0;
-        $whistleblowingCompleted = $complaintCounts->where('complaint_type', 'whistleblowing')->where('status', 'resolved')->first()->total ?? 0;
-
-        $complaintsToday = Complaint::whereDate('created_at', Carbon::today())->where('complaint_type', 'pengaduan')->count();
-        $whistleblowingToday = Complaint::whereDate('created_at', Carbon::today())->where('complaint_type', 'whistleblowing')->count();
-
-        // Survey Response Details
-        $surveyResponsesToday = SurveyResponse::whereDate('created_at', Carbon::today())->count();
-        $surveyResponsesThisMonth = SurveyResponse::where('created_at', '>=', Carbon::now()->startOfMonth())->count();
-        $surveyResponsesThisQuarter = SurveyResponse::where('created_at', '>=', Carbon::now()->startOfQuarter())->count();
-
-        // Survey Average Score (assuming rating 1-5)
-        try {
-            $surveyScoreThisMonth = DB::table('survey_responses')
-                ->join('survey_answers', 'survey_responses.id', '=', 'survey_answers.survey_response_id')
-                ->where('survey_responses.created_at', '>=', Carbon::now()->startOfMonth())
-                ->whereNotNull('survey_answers.rating_value')
-                ->avg('survey_answers.rating_value') ?? 0;
-
-            $surveyScoreThisQuarter = DB::table('survey_responses')
-                ->join('survey_answers', 'survey_responses.id', '=', 'survey_answers.survey_response_id')
-                ->where('survey_responses.created_at', '>=', Carbon::now()->startOfQuarter())
-                ->whereNotNull('survey_answers.rating_value')
-                ->avg('survey_answers.rating_value') ?? 0;
-
-            $surveyScoreThisYear = DB::table('survey_responses')
-                ->join('survey_answers', 'survey_responses.id', '=', 'survey_answers.survey_response_id')
-                ->where('survey_responses.created_at', '>=', Carbon::now()->startOfYear())
-                ->whereNotNull('survey_answers.rating_value')
-                ->avg('survey_answers.rating_value') ?? 0;
-        } catch (\Exception $e) {
-            $surveyScoreThisMonth = 0;
-            $surveyScoreThisQuarter = 0;
-            $surveyScoreThisYear = 0;
-        }
-
-        // Visitor Details
-        $visitorsToday = Visitor::whereDate('created_at', Carbon::today())->count();
-        $visitorsActive = Visitor::whereNull('check_out_time')->count();
-        $visitorsThisMonth = Visitor::where('created_at', '>=', Carbon::now()->startOfMonth())->count();
-
-        // Recent Activities
-        $recentLogins = User::latest('updated_at')->take(5)->get();
-        $recentTickets = Ticket::latest()->with('user', 'service')->take(5)->get();
-        $recentVisitors = Visitor::latest()->take(5)->get();
-        $recentComplaints = Complaint::with('user')->latest()->take(5)->get();
-        $recentSurveyRespondents = SurveyResponse::latest()->with('user')->take(5)->get();
-
-        // Chart Data: Service Performance (Last 30 days)
-        $servicePerformanceData = Ticket::select(
-            DB::raw('DATE(created_at) as date'),
-            DB::raw('count(*) as count')
-        )
-        ->where('created_at', '>=', Carbon::now()->subDays(30))
-        ->groupBy('date')
-        ->orderBy('date', 'asc')
-        ->get();
-
-        $chartLabels = $servicePerformanceData->pluck('date');
-        $ticketData = $servicePerformanceData->pluck('count');
-
-        // Chart Data: Complaint Follow-up Performance
-        $complaintsForPerformance = Complaint::select('created_at', 'resolved_at')
-            ->whereNotNull('resolved_at')
-            ->where('created_at', '>=', Carbon::now()->subDays(30))
-            ->get();
-
-        // Group complaints by date and calculate average resolution time per date
-        $complaintPerformanceData = [];
-        $groupedComplaints = $complaintsForPerformance->groupBy(function ($complaint) {
-            return $complaint->created_at->format('Y-m-d');
-        });
-
-        foreach ($groupedComplaints as $date => $complaints) {
-            $totalHours = 0;
-            foreach ($complaints as $complaint) {
-                $totalHours += $complaint->created_at->diffInHours($complaint->resolved_at);
-            }
-            $avgHours = count($complaints) > 0 ? $totalHours / count($complaints) : 0;
-
-            $complaintPerformanceData[] = [
-                'date' => $date,
-                'avg_resolution_time' => $avgHours
-            ];
-        }
-
-        $complaintChartLabels = collect($complaintPerformanceData)->pluck('date');
-        $complaintResolutionData = collect($complaintPerformanceData)->pluck('avg_resolution_time');
-
-        try {
-            // Chart Data: Survey Results - OPTIMIZED
-            $latestSurvey = Survey::where('type', 'skm')->latest()->first();
-            $surveyQuestions = [];
-            $surveyAverages = [];
-            if ($latestSurvey) {
-                $questionAverages = DB::table('survey_questions')
-                    ->join('survey_answers', 'survey_questions.id', '=', 'survey_answers.survey_question_id')
-                    ->where('survey_questions.survey_id', $latestSurvey->id)
-                    ->where('survey_questions.question_type', 'rating')
-                    ->select('survey_questions.question_text', DB::raw('AVG(survey_answers.rating_value) as average_rating'))
-                    ->groupBy('survey_questions.id', 'survey_questions.question_text')
-                    ->orderBy('survey_questions.id')
-                    ->get();
-
-                $surveyQuestions = $questionAverages->pluck('question_text')->toArray();
-                $surveyAverages = $questionAverages->pluck('average_rating')->toArray();
-            }
-        } catch (\Exception $e) {
-            $surveyQuestions = [];
-            $surveyAverages = [];
-        }
-
-        // Security Information
-        $appVersion = config('app.version', '1.0.0');
-        $firewallStatus = 'Aktif'; // Placeholder
-        $blockedIps = 0; // Placeholder
-        $maintenanceMode = app()->isDownForMaintenance() ? 'Aktif' : 'Tidak Aktif';
-
-        return view('admin.dashboard.index', compact(
-            'totalUsers',
-            'totalServices',
-            'totalTickets',
-            'visitorsThisMonth',
-            // Ticket Status
-            'ticketsIncoming',
-            'ticketsProcessing',
-            'ticketsPendingApproval',
-            'ticketsCompleted',
-            'ticketsRejected',
-            'ticketsToday',
-            // Complaint Status
-            'complaintsToday',
-            'complaintsUnprocessed',
-            'complaintsProcessing',
-            'complaintsCompleted',
-            // Whistleblowing Status
-            'whistleblowingToday',
-            'whistleblowingUnprocessed',
-            'whistleblowingProcessing',
-            'whistleblowingCompleted',
-            // Survey Status
-            'surveyResponsesToday',
-            'surveyResponsesThisMonth',
-            'surveyResponsesThisQuarter',
-            'surveyScoreThisMonth',
-            'surveyScoreThisQuarter',
-            'surveyScoreThisYear',
-            // Visitor Status
-            'visitorsToday',
-            'visitorsActive',
-            'visitorsThisMonth',
-            // Recent Activities
-            'recentLogins',
-            'recentTickets',
-            'recentVisitors',
-            'recentComplaints',
-            'recentSurveyRespondents',
-            // Charts
-            'chartLabels',
-            'ticketData',
-            'complaintChartLabels',
-            'complaintResolutionData',
-            'surveyQuestions',
-            'surveyAverages',
-            // System Info
-            'appVersion',
-            'firewallStatus',
-            'blockedIps',
-            'maintenanceMode'
-        ));
+        return view('admin.dashboard.index', $overview + compact('system', 'recentTickets', 'recentComplaints'));
     }
 
     /**
@@ -238,7 +59,7 @@ class DashboardController extends Controller
                     $labels[] = Carbon::now()->subDays($i)->format('d M');
 
                     $ticketsIncoming[] = Ticket::whereDate('created_at', $date)
-                        ->where('status', 'pending')
+                        ->where('status', 'submitted')
                         ->count();
 
                     $ticketsProcessing[] = Ticket::whereDate('created_at', $date)
@@ -259,7 +80,7 @@ class DashboardController extends Controller
                     $labels[] = 'W' . $startOfWeek->weekOfYear . ' ' . $startOfWeek->format('Y');
 
                     $ticketsIncoming[] = Ticket::whereBetween('created_at', [$startOfWeek, $endOfWeek])
-                        ->where('status', 'pending')
+                        ->where('status', 'submitted')
                         ->count();
 
                     $ticketsProcessing[] = Ticket::whereBetween('created_at', [$startOfWeek, $endOfWeek])
@@ -280,7 +101,7 @@ class DashboardController extends Controller
 
                     $ticketsIncoming[] = Ticket::whereYear('created_at', $month->year)
                         ->whereMonth('created_at', $month->month)
-                        ->where('status', 'pending')
+                        ->where('status', 'submitted')
                         ->count();
 
                     $ticketsProcessing[] = Ticket::whereYear('created_at', $month->year)
@@ -302,7 +123,7 @@ class DashboardController extends Controller
                     $labels[] = $year;
 
                     $ticketsIncoming[] = Ticket::whereYear('created_at', $year)
-                        ->where('status', 'pending')
+                        ->where('status', 'submitted')
                         ->count();
 
                     $ticketsProcessing[] = Ticket::whereYear('created_at', $year)
@@ -346,18 +167,18 @@ class DashboardController extends Controller
                     $labels[] = Carbon::now()->subDays($i)->format('d M');
 
                     $complaintsIncoming[] = Complaint::whereDate('created_at', $date)
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'pending')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->where('status', 'submitted')
                         ->count();
 
                     $complaintsProcessing[] = Complaint::whereDate('created_at', $date)
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'in_review')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->whereIn('status', ['in_review', 'in_progress'])
                         ->count();
 
                     $complaintsCompleted[] = Complaint::whereDate('created_at', $date)
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'resolved')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->whereIn('status', ['resolved', 'closed'])
                         ->count();
                 }
                 break;
@@ -370,18 +191,18 @@ class DashboardController extends Controller
                     $labels[] = 'W' . $startOfWeek->weekOfYear . ' ' . $startOfWeek->format('Y');
 
                     $complaintsIncoming[] = Complaint::whereBetween('created_at', [$startOfWeek, $endOfWeek])
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'pending')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->where('status', 'submitted')
                         ->count();
 
                     $complaintsProcessing[] = Complaint::whereBetween('created_at', [$startOfWeek, $endOfWeek])
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'in_review')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->whereIn('status', ['in_review', 'in_progress'])
                         ->count();
 
                     $complaintsCompleted[] = Complaint::whereBetween('created_at', [$startOfWeek, $endOfWeek])
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'resolved')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->whereIn('status', ['resolved', 'closed'])
                         ->count();
                 }
                 break;
@@ -394,20 +215,20 @@ class DashboardController extends Controller
 
                     $complaintsIncoming[] = Complaint::whereYear('created_at', $month->year)
                         ->whereMonth('created_at', $month->month)
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'pending')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->where('status', 'submitted')
                         ->count();
 
                     $complaintsProcessing[] = Complaint::whereYear('created_at', $month->year)
                         ->whereMonth('created_at', $month->month)
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'in_review')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->whereIn('status', ['in_review', 'in_progress'])
                         ->count();
 
                     $complaintsCompleted[] = Complaint::whereYear('created_at', $month->year)
                         ->whereMonth('created_at', $month->month)
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'resolved')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->whereIn('status', ['resolved', 'closed'])
                         ->count();
                 }
                 break;
@@ -419,18 +240,18 @@ class DashboardController extends Controller
                     $labels[] = $year;
 
                     $complaintsIncoming[] = Complaint::whereYear('created_at', $year)
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'pending')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->where('status', 'submitted')
                         ->count();
 
                     $complaintsProcessing[] = Complaint::whereYear('created_at', $year)
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'in_review')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->whereIn('status', ['in_review', 'in_progress'])
                         ->count();
 
                     $complaintsCompleted[] = Complaint::whereYear('created_at', $year)
-                        ->where('complaint_type', 'pengaduan')
-                        ->where('status', 'resolved')
+                        ->whereIn('complaint_type', ['complaint', 'suggestion'])
+                        ->whereIn('status', ['resolved', 'closed'])
                         ->count();
                 }
                 break;
@@ -467,17 +288,17 @@ class DashboardController extends Controller
 
                     $whistleblowingIncoming[] = Complaint::whereDate('created_at', $date)
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'pending')
+                        ->where('status', 'submitted')
                         ->count();
 
                     $whistleblowingProcessing[] = Complaint::whereDate('created_at', $date)
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'in_review')
+                        ->whereIn('status', ['in_review', 'in_progress'])
                         ->count();
 
                     $whistleblowingCompleted[] = Complaint::whereDate('created_at', $date)
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'resolved')
+                        ->whereIn('status', ['resolved', 'closed'])
                         ->count();
                 }
                 break;
@@ -491,17 +312,17 @@ class DashboardController extends Controller
 
                     $whistleblowingIncoming[] = Complaint::whereBetween('created_at', [$startOfWeek, $endOfWeek])
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'pending')
+                        ->where('status', 'submitted')
                         ->count();
 
                     $whistleblowingProcessing[] = Complaint::whereBetween('created_at', [$startOfWeek, $endOfWeek])
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'in_review')
+                        ->whereIn('status', ['in_review', 'in_progress'])
                         ->count();
 
                     $whistleblowingCompleted[] = Complaint::whereBetween('created_at', [$startOfWeek, $endOfWeek])
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'resolved')
+                        ->whereIn('status', ['resolved', 'closed'])
                         ->count();
                 }
                 break;
@@ -515,19 +336,19 @@ class DashboardController extends Controller
                     $whistleblowingIncoming[] = Complaint::whereYear('created_at', $month->year)
                         ->whereMonth('created_at', $month->month)
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'pending')
+                        ->where('status', 'submitted')
                         ->count();
 
                     $whistleblowingProcessing[] = Complaint::whereYear('created_at', $month->year)
                         ->whereMonth('created_at', $month->month)
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'in_review')
+                        ->whereIn('status', ['in_review', 'in_progress'])
                         ->count();
 
                     $whistleblowingCompleted[] = Complaint::whereYear('created_at', $month->year)
                         ->whereMonth('created_at', $month->month)
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'resolved')
+                        ->whereIn('status', ['resolved', 'closed'])
                         ->count();
                 }
                 break;
@@ -540,17 +361,17 @@ class DashboardController extends Controller
 
                     $whistleblowingIncoming[] = Complaint::whereYear('created_at', $year)
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'pending')
+                        ->where('status', 'submitted')
                         ->count();
 
                     $whistleblowingProcessing[] = Complaint::whereYear('created_at', $year)
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'in_review')
+                        ->whereIn('status', ['in_review', 'in_progress'])
                         ->count();
 
                     $whistleblowingCompleted[] = Complaint::whereYear('created_at', $year)
                         ->where('complaint_type', 'whistleblowing')
-                        ->where('status', 'resolved')
+                        ->whereIn('status', ['resolved', 'closed'])
                         ->count();
                 }
                 break;

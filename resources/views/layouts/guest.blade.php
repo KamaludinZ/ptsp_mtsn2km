@@ -9,9 +9,10 @@
 
         {{-- Vite Assets: Tailwind CSS and Font Awesome (Local - No CDN) --}}
         @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
-            @vite(['resources/css/app.css', 'resources/js/app.js'])
+            @vite(['resources/css/app.css', 'resources/css/fontawesome.css', 'resources/js/app.js'])
         @else
             {!! App\Helpers\AssetHelper::css('resources/css/app.css') !!}
+            {!! App\Helpers\AssetHelper::css('resources/css/fontawesome.css') !!}
             {!! App\Helpers\AssetHelper::js('resources/js/app.js', false) !!}
         @endif
     </head>

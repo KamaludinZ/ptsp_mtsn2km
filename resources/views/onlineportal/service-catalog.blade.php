@@ -427,6 +427,14 @@
                 <i class="fas fa-redo me-1"></i> Reset
             </button>
         </div>
+        @guest
+            <p class="small text-muted mt-3 mb-0">
+                <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
+                Anda melihat layanan untuk masyarakat umum. Siswa, guru, pegawai, wali murid, alumni, dan instansi
+                dapat <a href="{{ route('login') }}">masuk</a> atau <a href="{{ route('register') }}">mendaftar</a>
+                untuk melihat layanan khusus sesuai peran.
+            </p>
+        @endguest
     </div>
 
     <!-- Grid View -->
@@ -458,7 +466,7 @@
                             </span>
                         @endif
                     </div>
-                    <h5 class="card-title text-white mb-2 fw-bold">{{ $service->name }}</h5>
+                    <h5 class="card-title mb-2 fw-bold"><a href="{{ route('onlineportal.service.detail', $service->slug) }}" class="text-white stretched-link-title">{{ $service->name }}</a></h5>
                     @if($service->categories->first())
                         <small class="text-white-50">
                             <i class="fas fa-tag me-1"></i> {{ $service->categories->first()->name }}
@@ -503,6 +511,7 @@
                             </h2>
                             <div id="collapse{{ $service->id }}" class="accordion-collapse collapse" data-bs-parent="#accordion{{ $service->id }}">
                                 <div class="accordion-body">
+                                    <a href="{{ route('onlineportal.service.detail', $service->slug) }}" class="d-inline-block mb-3 fw-semibold">Lihat 14 komponen standar pelayanan <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i></a>
                                     <!-- Persyaratan -->
                                     <div class="mb-4">
                                         <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
@@ -618,7 +627,7 @@
                             </div>
                             <div class="flex-grow-1">
                                 <div class="d-flex align-items-center mb-2">
-                                    <h5 class="fw-bold mb-0 me-3">{{ $service->name }}</h5>
+                                    <h5 class="fw-bold mb-0 me-3"><a href="{{ route('onlineportal.service.detail', $service->slug) }}" class="text-reset">{{ $service->name }}</a></h5>
                                     @if($service->mode === 'online')
                                         <span class="badge badge-mode badge-online">Online</span>
                                     @elseif($service->mode === 'offline')

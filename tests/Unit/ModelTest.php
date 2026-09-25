@@ -2,7 +2,8 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 use App\Models\User;
 use App\Models\Service;
 use App\Models\Ticket;
@@ -11,6 +12,8 @@ use App\Models\Survey;
 
 class ModelTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_user_model_creation(): void
     {
         $user = User::factory()->make();
@@ -91,5 +94,29 @@ class ModelTest extends TestCase
         $this->assertEquals('complaint', Complaint::TYPE_COMPLAINT);
         $this->assertEquals('suggestion', Complaint::TYPE_SUGGESTION);
         $this->assertEquals('whistleblowing', Complaint::TYPE_WHISTLEBLOWING);
+    }
+
+    public function test_visitor_public_name_and_phone_are_masked(): void
+    {
+        $visitor = new \App\Models\Visitor(['name' => 'Budi Santoso', 'phone' => '0812-3456-7890']);
+
+        $this->assertSame('Budi Santoso', $visitor->publicName());
+
+        $visitor->is_obscured = true;
+        $this->assertSame('B**i S*****o', $visitor->publicName());
+        $this->assertSame('*********890', $visitor->maskedPhone());
+    }
+
+    public function test_faq_answer_is_sanitized_for_public_display(): void
+    {
+        $faq = new \App\Models\Faq();
+        $faq->answer = '<p onclick="x()">Buka <strong>07.00</strong></p><script>alert(1)</script><a href="javascript:alert(1)">klik</a>';
+
+        $html = $faq->safeAnswer();
+
+        $this->assertStringContainsString('<strong>07.00</strong>', $html);
+        $this->assertStringNotContainsString('<script', $html);
+        $this->assertStringNotContainsString('onclick', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
     }
 }

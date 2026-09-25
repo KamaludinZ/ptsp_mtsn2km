@@ -35,18 +35,22 @@ class RecentActivitiesWidget extends Widget
                     'recentWhistleblowing' => Whistleblowing::latest()
                         ->limit(5)
                         ->get(),
+                    // Latest respondent per user (DISTINCT ON + ORDER BY created_at
+                    // is invalid on PostgreSQL, so de-duplicate in PHP)
                     'recentSurveyCompletions' => SurveyResponse::with('user')
-                        ->select('user_id', 'created_at')
-                        ->distinct('user_id')
+                        ->whereNotNull('user_id')
                         ->latest()
-                        ->limit(5)
-                        ->get(),
+                        ->limit(25)
+                        ->get()
+                        ->unique('user_id')
+                        ->take(5)
+                        ->values(),
                     'recentVerifiedRegistrations' => User::where('email_verified_at', '!=', null)
                         ->latest('email_verified_at')
                         ->limit(5)
                         ->get()
                 ];
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 report($e);
                 return [
                     'recentTickets' => collect(),

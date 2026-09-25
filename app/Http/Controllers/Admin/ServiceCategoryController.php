@@ -13,7 +13,7 @@ class ServiceCategoryController extends Controller
         $query = ServiceCategory::query();
         
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'ilike', '%' . $request->search . '%');
         }
         
         $categories = $query->with('parent')->orderBy('order')->latest()->paginate(15);

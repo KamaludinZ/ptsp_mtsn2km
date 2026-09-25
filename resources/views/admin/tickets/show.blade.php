@@ -184,7 +184,7 @@
                                             <td>{{ $file->uploader->name ?? 'N/A' }}</td>
                                             <td>{{ $file->created_at->format('d M Y H:i') }}</td>
                                             <td>
-                                                <a href="{{ Storage::url($file->file_path) }}" 
+                                                <a href="{{ route('documents.ticket-file', $file) }}" 
                                                    target="_blank" 
                                                    class="btn btn-outline-primary btn-sm">
                                                     <i class="fas fa-download me-1"></i>Lihat
@@ -271,7 +271,7 @@
                                             <td>{{ $output->delivery_date ? $output->delivery_date->format('d M Y') : '-' }}</td>
                                             <td>
                                                 @if($output->file_path)
-                                                <a href="{{ Storage::url($output->file_path) }}" 
+                                                <a href="{{ route('documents.ticket-output', $output) }}" 
                                                    target="_blank" 
                                                    class="btn btn-outline-success btn-sm me-1">
                                                     <i class="fas fa-download me-1"></i>Lihat

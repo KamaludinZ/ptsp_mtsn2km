@@ -16,7 +16,10 @@ class ServiceSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::transaction(function () {
+        // Services are owned by the first admin account (IDs differ per database)
+        $adminId = \App\Models\User::role('admin')->orderBy('id')->value('id');
+
+        DB::transaction(function () use ($adminId) {
             // Create service categories
             $categories = [
                 [
@@ -58,9 +61,9 @@ class ServiceSeeder extends Seeder
                     'fee' => 0,
                     'product' => 'Surat Keterangan Siswa Aktif yang telah ditandatangani secara digital',
                     'complaint_handling' => 'Layanan pengaduan via email: mtsnmalang2adm@gmail.com atau nomor WA: 0851 8337 5008',
-                    'user_types_allowed' => json_encode(['siswa', 'alumni']),
+                    'user_types_allowed' => ['siswa', 'alumni'],
                     'is_active' => true,
-                    'created_by' => 1, // Admin user ID
+                    'created_by' => $adminId,
                 ],
                 [
                     'name' => 'Legalisir Ijazah dan Transkrip Nilai',
@@ -73,9 +76,9 @@ class ServiceSeeder extends Seeder
                     'fee' => 10000,
                     'product' => 'Ijazah dan transkrip nilai yang telah dilegalisir dengan tanda tangan dan cap basah',
                     'complaint_handling' => 'Layanan pengaduan via email: mtsnmalang2adm@gmail.com atau nomor WA: 0851 8337 5008',
-                    'user_types_allowed' => json_encode(['siswa', 'alumni', 'umum']),
+                    'user_types_allowed' => ['siswa', 'alumni', 'umum'],
                     'is_active' => true,
-                    'created_by' => 1,
+                    'created_by' => $adminId,
                 ],
                 [
                     'name' => 'Surat Rekomendasi Beasiswa',
@@ -88,9 +91,9 @@ class ServiceSeeder extends Seeder
                     'fee' => 0,
                     'product' => 'Surat rekomendasi beasiswa yang telah ditandatangani dan distempel',
                     'complaint_handling' => 'Layanan pengaduan via email: mtsnmalang2adm@gmail.com atau nomor WA: 0851 8337 5008',
-                    'user_types_allowed' => json_encode(['siswa', 'alumni']),
+                    'user_types_allowed' => ['siswa', 'alumni'],
                     'is_active' => true,
-                    'created_by' => 1,
+                    'created_by' => $adminId,
                 ],
                 [
                     'name' => 'Surat Keterangan Berkelakuan Baik',
@@ -103,9 +106,9 @@ class ServiceSeeder extends Seeder
                     'fee' => 0,
                     'product' => 'Surat keterangan berkelakuan baik yang telah ditandatangani dan distempel',
                     'complaint_handling' => 'Layanan pengaduan via email: mtsnmalang2adm@gmail.com atau nomor WA: 0851 8337 5008',
-                    'user_types_allowed' => json_encode(['siswa', 'alumni']),
+                    'user_types_allowed' => ['siswa', 'alumni'],
                     'is_active' => true,
-                    'created_by' => 1,
+                    'created_by' => $adminId,
                 ],
                 [
                     'name' => 'Informasi Akademik Anak',
@@ -118,9 +121,9 @@ class ServiceSeeder extends Seeder
                     'fee' => 0,
                     'product' => 'Laporan perkembangan akademik siswa yang terkini',
                     'complaint_handling' => 'Layanan pengaduan via email: mtsnmalang2adm@gmail.com atau nomor WA: 0851 8337 5008',
-                    'user_types_allowed' => json_encode(['walimurid']),
+                    'user_types_allowed' => ['walimurid'],
                     'is_active' => true,
-                    'created_by' => 1,
+                    'created_by' => $adminId,
                 ],
                 [
                     'name' => 'Izin Tidak Masuk Sekolah',
@@ -133,9 +136,9 @@ class ServiceSeeder extends Seeder
                     'fee' => 0,
                     'product' => 'Surat izin tidak masuk sekolah yang telah disetujui',
                     'complaint_handling' => 'Layanan pengaduan via email: mtsnmalang2adm@gmail.com atau nomor WA: 0851 8337 5008',
-                    'user_types_allowed' => json_encode(['walimurid']),
+                    'user_types_allowed' => ['walimurid'],
                     'is_active' => true,
-                    'created_by' => 1,
+                    'created_by' => $adminId,
                 ],
                 [
                     'name' => 'Konsultasi Bimbingan Konseling',
@@ -148,9 +151,9 @@ class ServiceSeeder extends Seeder
                     'fee' => 0,
                     'product' => 'Hasil konseling dan rekomendasi penanganan permasalahan',
                     'complaint_handling' => 'Layanan pengaduan via email: mtsnmalang2adm@gmail.com atau nomor WA: 0851 8337 5008',
-                    'user_types_allowed' => json_encode(['walimurid']),
+                    'user_types_allowed' => ['walimurid'],
                     'is_active' => true,
-                    'created_by' => 1,
+                    'created_by' => $adminId,
                 ],
                 [
                     'name' => 'Surat Permohonan Kerjasama',
@@ -163,9 +166,9 @@ class ServiceSeeder extends Seeder
                     'fee' => 0,
                     'product' => 'Surat balasan permohonan kerjasama atau MOU yang telah ditandatangani',
                     'complaint_handling' => 'Layanan pengaduan via email: mtsnmalang2adm@gmail.com atau nomor WA: 0851 8337 5008',
-                    'user_types_allowed' => json_encode(['instansi']),
+                    'user_types_allowed' => ['instansi'],
                     'is_active' => true,
-                    'created_by' => 1,
+                    'created_by' => $adminId,
                 ],
                 [
                     'name' => 'Izin Kegiatan atau Penelitian',
@@ -178,9 +181,9 @@ class ServiceSeeder extends Seeder
                     'fee' => 0,
                     'product' => 'Surat izin kegiatan/penelitian yang telah ditandatangani dan distempel',
                     'complaint_handling' => 'Layanan pengaduan via email: mtsnmalang2adm@gmail.com atau nomor WA: 0851 8337 5008',
-                    'user_types_allowed' => json_encode(['instansi']),
+                    'user_types_allowed' => ['instansi'],
                     'is_active' => true,
-                    'created_by' => 1,
+                    'created_by' => $adminId,
                 ],
                 [
                     'name' => 'Permohonan Data Statistik',
@@ -193,9 +196,9 @@ class ServiceSeeder extends Seeder
                     'fee' => 0,
                     'product' => 'Data statistik sekolah dalam format digital/tercetak sesuai permintaan',
                     'complaint_handling' => 'Layanan pengaduan via email: mtsnmalang2adm@gmail.com atau nomor WA: 0851 8337 5008',
-                    'user_types_allowed' => json_encode(['instansi']),
+                    'user_types_allowed' => ['instansi'],
                     'is_active' => true,
-                    'created_by' => 1,
+                    'created_by' => $adminId,
                 ],
             ];
 

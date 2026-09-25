@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>@hasSection('title')@yield('title') - @endif{{ config('app.name', 'PTSP MTsN 2 Kota Malang') }}</title>
 
         {{-- Vite Assets: Tailwind CSS and Font Awesome (Local - No CDN) --}}
         @if(config('app.env') === 'local' && config('assets.mode', 'vite') === 'vite' && App\Helpers\AssetHelper::isViteRunning())
@@ -22,6 +22,8 @@
             {!! App\Helpers\AssetHelper::js('resources/js/app.js', false) !!}
             {!! App\Helpers\AssetHelper::js('resources/js/accessibility.js', false) !!}
         @endif
+        @include('partials.dashboard-styles')
+        @stack('styles')
     </head>
     <body class="tw-font-sans tw-antialiased">
     <!-- Page Loading Overlay -->
@@ -264,7 +266,7 @@
                     <footer class="footer" role="contentinfo">
                         <div class="container-fluid px-4">
                             <div class="text-center py-3 text-muted">
-                                &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. All rights reserved.
+                                &copy; {{ date('Y') }} PTSP MTsN 2 Kota Malang. Hak cipta dilindungi.
                             </div>
                         </div>
                     </footer>
@@ -370,5 +372,6 @@
         @endauth
         
 
+        @stack('scripts')
     </body>
 </html>

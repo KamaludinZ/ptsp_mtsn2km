@@ -7,6 +7,7 @@ use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\TicketFile;
 use App\Models\User;
+use App\Support\ServiceMetrics;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -21,33 +22,43 @@ class FrontDeskController extends Controller
     }
 
     /**
-     * Front desk dashboard
+     * Front desk dashboard: today's guests, walk-in registrations and the
+     * finished products waiting to be collected at the counter.
      */
     public function dashboard()
     {
         $today = Carbon::today();
+        $offline = fn () => Ticket::where('mode', 'offline');
 
-        $stats = [
-            'visitors_today' => Visitor::whereDate('created_at', $today)->count(),
-            'active_visitors' => Visitor::whereDate('created_at', $today)
-                ->whereNull('check_out_time')->count(),
-            'tickets_today' => Ticket::whereDate('created_at', $today)->count(),
-            'pending_tickets' => Ticket::where('status', 'submitted')->count(),
+        $stats = ServiceMetrics::visitors() + [
+            'offline_today' => $offline()->whereDate('created_at', $today)->count(),
+            'awaiting_verification' => $offline()->where('status', 'submitted')->count(),
+            'in_progress' => $offline()->whereIn('status', ['verified', 'in_process', 'approved'])->count(),
+            'ready_for_pickup' => $offline()->where('status', 'completed')->where('ready_for_pickup', true)->count(),
+            'overdue' => $offline()->overdue()->count(),
         ];
 
-        $recentVisitors = Visitor::with('staff')
-            ->whereDate('created_at', $today)
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
+        $recentVisitors = Visitor::whereDate('check_in_time', $today)
+            ->orderByDesc('check_in_time')
+            ->limit(8)
             ->get();
 
-        $recentTickets = Ticket::with(['user', 'service'])
+        $recentTickets = Ticket::with(['user:id,name', 'service:id,name'])
+            ->where('mode', 'offline')
             ->whereDate('created_at', $today)
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->latest()
+            ->limit(8)
             ->get();
 
-        return view('frontdesk.dashboard', compact('stats', 'recentVisitors', 'recentTickets'));
+        $pickupTickets = Ticket::with(['user:id,name,whatsapp_number', 'service:id,name'])
+            ->where('mode', 'offline')
+            ->where('status', 'completed')
+            ->where('ready_for_pickup', true)
+            ->orderByDesc('actual_completion_date')
+            ->limit(8)
+            ->get();
+
+        return view('frontdesk.dashboard', compact('stats', 'recentVisitors', 'recentTickets', 'pickupTickets'));
     }
 
     /**
@@ -123,8 +134,9 @@ class FrontDeskController extends Controller
         $user = Auth::user();
         $userType = 'umum'; // Walk-in treated as general public
 
-        $services = Service::whereJsonContains('user_types_allowed', $userType)
-            ->with(['category', 'requirements'])
+        $services = Service::where('is_active', true)
+            ->availableFor($userType)
+            ->with(['categories', 'requirements'])
             ->orderBy('name')
             ->get();
 
@@ -171,14 +183,14 @@ class FrontDeskController extends Controller
         // Upload files
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $path = $file->store('ticket-files', 'public');
+                $path = \App\Support\TicketDocuments::store($file, 'ticket-files');
 
                 TicketFile::create([
                     'ticket_id' => $ticket->id,
                     'file_name' => $file->getClientOriginalName(),
                     'file_path' => $path,
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
+                    'file_type' => $file->getMimeType(),
+                    'uploaded_by' => Auth::id(),
                 ]);
             }
         }
@@ -204,12 +216,12 @@ class FrontDeskController extends Controller
      */
     public function visitorBook()
     {
-        $date = request('date', Carbon::today()->toDateString());
+        $date = request()->date('date')?->toDateString() ?? Carbon::today()->toDateString();
 
-        $visitors = Visitor::with('staff')
-            ->whereDate('created_at', $date)
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        $visitors = Visitor::whereDate('check_in_time', $date)
+            ->orderByDesc('check_in_time')
+            ->paginate(20)
+            ->withQueryString();
 
         return view('frontdesk.visitor-book', compact('visitors', 'date'));
     }
@@ -231,6 +243,27 @@ class FrontDeskController extends Controller
     }
 
     /**
+     * Hand a finished product over to the applicant at the counter (Modul 9).
+     */
+    public function handOver(Ticket $ticket)
+    {
+        if ($ticket->status !== 'completed' || ! $ticket->ready_for_pickup) {
+            return back()->with('error', 'Tiket ini tidak sedang menunggu diambil.');
+        }
+
+        $ticket->update(['ready_for_pickup' => false]);
+
+        \App\Models\TicketLog::create([
+            'ticket_id' => $ticket->id,
+            'action' => 'picked_up',
+            'notes' => 'Produk layanan diserahkan kepada pemohon di loket.',
+            'performed_by' => Auth::id(),
+        ]);
+
+        return back()->with('success', "Produk layanan tiket {$ticket->ticket_number} sudah diserahkan.");
+    }
+
+    /**
      * Print visitor pass
      */
     public function printVisitorPass(Visitor $visitor)
@@ -243,14 +276,11 @@ class FrontDeskController extends Controller
      */
     public function activeVisitors()
     {
-        $activeVisitors = Visitor::with('staff')
-            ->whereNull('check_out_time')
-            ->orderBy('created_at', 'desc')
+        $visitors = Visitor::whereNull('check_out_time')
+            ->orderByDesc('check_in_time')
             ->get();
 
-        $visitors = $activeVisitors;
-
-        return view('frontdesk.active-visitors', compact('activeVisitors', 'visitors'));
+        return view('frontdesk.active-visitors', compact('visitors'));
     }
 
     /**
@@ -262,10 +292,10 @@ class FrontDeskController extends Controller
 
         $visitors = Visitor::with('staff')
             ->where(function($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('institution', 'like', "%{$search}%");
+                $query->where('name', 'ilike', "%{$search}%")
+                    ->orWhere('email', 'ilike', "%{$search}%")
+                    ->orWhere('phone', 'ilike', "%{$search}%")
+                    ->orWhere('institution', 'ilike', "%{$search}%");
             })
             ->orderBy('created_at', 'desc')
             ->limit(20)

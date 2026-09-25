@@ -21,9 +21,10 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->post('/login', [
+        $response = $this->withSession(['captcha_value' => 'ABCDE'])->post('/login', [
             'email' => $user->email,
             'password' => 'password',
+            'captcha' => 'ABCDE',
         ]);
 
         $this->assertAuthenticated();

@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('survey_responses', function (Blueprint $table) {
             if (!Schema::hasColumn('survey_responses', 'ticket_code')) {
-                $table->string('ticket_code')->nullable()->after('user_id');
+                $table->string('ticket_code')->nullable();
             }
             if (!Schema::hasColumn('survey_responses', 'respondent_email')) {
-                $table->string('respondent_email')->nullable()->after('ticket_code');
+                $table->string('respondent_email')->nullable();
             }
 
             // Drop respondent_address if it exists

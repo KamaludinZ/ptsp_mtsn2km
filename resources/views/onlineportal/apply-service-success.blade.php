@@ -10,32 +10,40 @@
                         <span class="block sm:inline">Your service application has been submitted.</span>
                     </div>
                     
-                    <h1 class="text-2xl font-bold mb-6">Application Confirmation</h1>
+                    <h1 class="text-2xl font-bold mb-6">Permohonan Berhasil Diajukan</h1>
                     
                     <div class="border border-gray-200 rounded-lg p-6 mb-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <p class="font-semibold">Ticket Number:</p>
+                                <p class="font-semibold">Nomor Tiket:</p>
                                 <p class="text-xl font-bold text-blue-600">{{ $ticket->ticket_number }}</p>
                             </div>
                             <div>
-                                <p class="font-semibold">Service:</p>
+                                <p class="font-semibold">Layanan:</p>
                                 <p>{{ $ticket->service->name }}</p>
                             </div>
                             <div>
-                                <p class="font-semibold">Channel:</p>
-                                <p>{{ ucfirst($ticket->channel) }}</p>
+                                <p class="font-semibold">Kanal:</p>
+                                <p>{{ $ticket->mode === 'offline' ? 'Offline (Loket)' : 'Online' }}</p>
                             </div>
                             <div>
-                                <p class="font-semibold">Submission Date:</p>
+                                <p class="font-semibold">Tanggal Pengajuan:</p>
                                 <p>{{ $ticket->created_at->format('d M Y H:i') }}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Perkiraan Selesai:</p>
+                                <p>{{ $ticket->estimated_completion_date?->translatedFormat('d F Y') ?? 'Sesuai jadwal layanan' }}
+                                    @if ($ticket->service?->processing_time)
+                                        <span class="text-sm text-gray-500">({{ $ticket->service->processing_time }})</span>
+                                    @endif
+                                </p>
                             </div>
                         </div>
                     </div>
                     
                     <div class="mb-6">
-                        <p class="mb-4">Please keep your ticket number for tracking purposes.</p>
-                        <p>You can track the status of your application using the <a href="{{ route('onlineportal.track.ticket.form') }}" class="text-blue-600 hover:underline">Ticket Tracking</a> feature.</p>
+                        <p class="mb-4">Simpan nomor tiket ini untuk melacak permohonan Anda.</p>
+                        <p>Pantau status permohonan melalui fitur <a href="{{ route('onlineportal.track.ticket.form') }}" class="text-blue-600 hover:underline">Lacak Tiket</a>.</p>
                     </div>
                     
                     <div class="flex flex-col sm:flex-row justify-between gap-4">

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('visitors', function (Blueprint $table) {
-            $table->boolean('is_obscured')->default(false)->after('purpose');
+            $table->boolean('is_obscured')->default(false);
         });
     }
 

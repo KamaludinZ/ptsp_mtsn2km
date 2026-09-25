@@ -30,7 +30,7 @@ class StatsOverviewWidget extends BaseWidget
         $visitorsToday = Visitor::whereDate('created_at', Carbon::today())->count();
         $visitorsYesterday = Visitor::whereDate('created_at', Carbon::yesterday())->count();
 
-        $pendingComplaints = Complaint::where('status', 'pending')->count();
+        $pendingComplaints = Complaint::where('status', 'submitted')->count();
 
         // Prepare chart data (simple last 7 days)
         $ticketsLast7Days = Ticket::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
@@ -63,7 +63,7 @@ class StatsOverviewWidget extends BaseWidget
                 ->chart($chartData['tickets'])
                 ->color($ticketsToday >= $ticketsYesterday ? 'success' : 'danger'),
 
-            Stat::make('Tiket Pending', $ticketCountsByStatus->get('pending', 0))
+            Stat::make('Tiket Pending', $ticketCountsByStatus->get('submitted', 0))
                 ->description('Menunggu diproses')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),

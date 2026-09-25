@@ -48,6 +48,8 @@ class SecurityHeaders
                 "connect-src 'self' {$viteUrl} ws:" . str_replace(['http:', 'https:'], '', $viteUrl) . "; " .
                 "worker-src 'self' blob:; " .
                 "child-src 'self' blob:; " .
+                // Google Maps embed on the contact page
+                "frame-src 'self' https://www.google.com; " .
                 "object-src 'none'; " .
                 "base-uri 'self'; " .
                 "form-action 'self';"
@@ -63,6 +65,8 @@ class SecurityHeaders
                 "connect-src 'self'; " .
                 "worker-src 'self' blob:; " .
                 "child-src 'self' blob:; " .
+                // Google Maps embed on the contact page
+                "frame-src 'self' https://www.google.com; " .
                 "object-src 'none'; " .
                 "base-uri 'self'; " .
                 "form-action 'self';"

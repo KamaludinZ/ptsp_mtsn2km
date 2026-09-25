@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,7 +23,7 @@ class ServiceFactory extends Factory
             'description' => fake()->paragraph(),
             'user_types_allowed' => ['guru', 'pegawai', 'siswa', 'walimurid', 'alumni', 'instansi', 'umum'],
             'is_active' => true,
-            'created_by' => 1, // Assuming user ID 1 exists
+            'created_by' => User::factory(),
         ];
     }
 }

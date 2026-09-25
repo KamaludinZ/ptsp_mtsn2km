@@ -12,12 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         // Enable extensions that might be needed for production
-        // Only run on PostgreSQL connections
-        if (DB::getDriverName() === 'pgsql') {
-            DB::statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
-            DB::statement('CREATE EXTENSION IF NOT EXISTS "pg_trgm"'); // For text similarity queries
-            DB::statement('CREATE EXTENSION IF NOT EXISTS "btree_gin"'); // For indexing JSON fields
-        }
+        DB::statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
+        DB::statement('CREATE EXTENSION IF NOT EXISTS "pg_trgm"'); // For text similarity queries
+        DB::statement('CREATE EXTENSION IF NOT EXISTS "btree_gin"'); // For indexing JSON fields
 
         // Update sequences for existing tables to ensure proper PostgreSQL sequences
         $this->updatePostgreSqlSequences();
@@ -31,13 +28,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Only run on PostgreSQL connections
-        if (DB::getDriverName() === 'pgsql') {
-            // Disable extensions (be careful - this will remove functionality)
-            DB::statement('DROP EXTENSION IF EXISTS "uuid-ossp" CASCADE');
-            DB::statement('DROP EXTENSION IF EXISTS "pg_trgm" CASCADE');
-            DB::statement('DROP EXTENSION IF EXISTS "btree_gin" CASCADE');
-        }
+        // Disable extensions (be careful - this will remove functionality)
+        DB::statement('DROP EXTENSION IF EXISTS "uuid-ossp" CASCADE');
+        DB::statement('DROP EXTENSION IF EXISTS "pg_trgm" CASCADE');
+        DB::statement('DROP EXTENSION IF EXISTS "btree_gin" CASCADE');
     }
 
     /**
@@ -60,9 +54,7 @@ return new class extends Migration
         foreach ($tables as $table) {
             if (Schema::hasTable($table) && Schema::hasColumn($table, 'id')) {
                 // Update sequence to current max ID value - only on PostgreSQL
-                if (DB::getDriverName() === 'pgsql') {
-                    DB::statement("SELECT setval(pg_get_serial_sequence('{$table}', 'id'), coalesce(max(id)::bigint, 0) + 1, false) FROM {$table};");
-                }
+                DB::statement("SELECT setval(pg_get_serial_sequence('{$table}', 'id'), coalesce(max(id)::bigint, 0) + 1, false) FROM {$table};");
             }
         }
     }
@@ -73,9 +65,6 @@ return new class extends Migration
     private function optimizeTableIndexes(): void
     {
         // Add GIN indexes for JSON columns to improve query performance - only on PostgreSQL
-        if (DB::getDriverName() !== 'pgsql') {
-            return; // Skip if not PostgreSQL
-        }
 
         $jsonColumns = [
             ['table' => 'services', 'column' => 'user_types_allowed'],
