@@ -50,7 +50,7 @@
            target="_blank"
            rel="noopener noreferrer"
            class="floating-btn whatsapp-btn">
-            <i class="fab fa-whatsapp"></i>
+            <i class="fa-brands fa-whatsapp"></i>
         </a>
     </div>
 
@@ -191,10 +191,10 @@
                         Sistem pelayanan terpadu sesuai Permen PANRB 15/2014 untuk kemudahan akses layanan.
                     </p>
                     <div class="flex gap-4 mt-4">
-                        <a href="#" class="text-2xl text-white" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-2xl text-white" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-2xl text-white" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-2xl text-white" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="text-2xl text-white" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
                     </div>
                 </div>
 

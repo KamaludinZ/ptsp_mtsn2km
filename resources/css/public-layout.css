@@ -168,7 +168,7 @@ html {
     --fab-size: 56px;
     --fab-edge: 24px;
     --fab-gap: 12px;
-    --fab-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    --fab-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
 }
 
 .floating-action-buttons-left {
@@ -189,7 +189,7 @@ html {
 }
 
 @media (max-width: 575.98px) {
-    :root { --fab-size: 52px; --fab-edge: 16px; --fab-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+    :root { --fab-size: 52px; --fab-edge: 16px; --fab-bottom: calc(52px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* WhatsApp dropdown container styling */
@@ -1170,4 +1170,4 @@ footer a:hover:not(.hover\:text-orange-500) {
 .site-footer-stats dd { margin: 0; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
 
 /* Keep the last footer line clear of the floating buttons */
-body > footer[role="contentinfo"] { padding-bottom: 2.5rem; }
+body > footer[role="contentinfo"] { padding-bottom: 6rem; }
