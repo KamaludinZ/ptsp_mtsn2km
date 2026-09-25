@@ -43,7 +43,8 @@ class DashboardNavigationTest extends TestCase
 
         $page = $this->actingAs($user)->get($home)->assertOk();
 
-        preg_match_all('/href="([^"#]+)"/', $page->getContent(), $matches);
+        // Navigation links only (<a href>), not stylesheets or other assets.
+        preg_match_all('/<a\b[^>]*\bhref="([^"#]+)"/i', $page->getContent(), $matches);
 
         $links = collect($matches[1])
             ->map(fn ($url) => html_entity_decode($url))
