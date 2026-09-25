@@ -31,7 +31,7 @@ class RolesAndNavigationTest extends TestCase
     public function test_dashboard_redirects_by_canonical_role(): void
     {
         $expected = [
-            'admin' => '/admin',
+            'admin' => '/cp',
             'kepala_sekolah' => '/pimpinan',
             'kepala_tu' => '/pimpinan',
             'back_office' => '/backoffice/dashboard',

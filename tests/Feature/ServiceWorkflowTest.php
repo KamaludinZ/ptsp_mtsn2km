@@ -176,8 +176,7 @@ class ServiceWorkflowTest extends TestCase
             ->assertOk()->assertSee('Kinerja per layanan')->assertSee('IKM');
         $this->actingAs($this->staff('supervisor'))->get('/supervision/performance')
             ->assertOk()->assertSee('Kinerja per layanan');
-        $this->actingAs($this->staff('admin'))->get('/admin')
-            ->assertOk()->assertSee('Data sistem')->assertSee('Kinerja Layanan');
+        $this->actingAs($this->staff('admin'))->get('/admin')->assertRedirect('/cp');
 
         $applicant = User::factory()->create(['user_type' => 'umum']);
         Ticket::factory()->create(['user_id' => $applicant->id, 'status' => 'completed']);

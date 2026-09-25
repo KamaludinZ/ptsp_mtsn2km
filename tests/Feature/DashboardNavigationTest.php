@@ -19,7 +19,7 @@ class DashboardNavigationTest extends TestCase
     public static function accounts(): array
     {
         return [
-            'admin' => ['ptsp@mtsn2malang.sch.id', '/admin'],
+            'admin' => ['ptsp@mtsn2malang.sch.id', '/cp'],
             'kepala_sekolah' => ['kepsek@mtsn2malang.sch.id', '/pimpinan'],
             'kepala_tu' => ['katu@mtsn2malang.sch.id', '/pimpinan'],
             'back_office' => ['staff1@mtsn2malang.sch.id', '/backoffice/dashboard'],

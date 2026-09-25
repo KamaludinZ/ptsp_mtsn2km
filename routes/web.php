@@ -12,7 +12,6 @@ use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\ComplaintController as AdminComplaintController;
@@ -206,12 +205,9 @@ Route::middleware(['auth', 'check.email.verification'])->group(function () {
 
 // Admin Dashboard Routes (consolidated from suadmin)
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard'); // Main admin dashboard route
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard.alt'); // Keep for compatibility
-    Route::get('/api/service-performance-data', [AdminDashboardController::class, 'getServicePerformanceData'])->name('api.service-performance-data');
-    Route::get('/api/complaint-performance-data', [AdminDashboardController::class, 'getComplaintPerformanceData'])->name('api.complaint-performance-data');
-    Route::get('/api/whistleblowing-performance-data', [AdminDashboardController::class, 'getWhistleblowingPerformanceData'])->name('api.whistleblowing-performance-data');
-    Route::get('/api/survey-analytics-data', [AdminDashboardController::class, 'getSurveyAnalyticsData'])->name('api.survey-analytics-data');
+    // The former admin dashboard now lives in the Filament panel (/cp)
+    Route::redirect('/', '/cp')->name('dashboard');
+    Route::redirect('/dashboard', '/cp')->name('dashboard.alt');
 
     // Master Data Routes
     Route::resource('services', AdminServiceController::class);

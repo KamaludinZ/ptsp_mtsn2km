@@ -8,7 +8,8 @@ if (!function_exists('get_dashboard_route_for_user')) {
     function get_dashboard_route_for_user(\App\Models\User $user): string
     {
         return match (true) {
-            $user->hasRole('admin') => '/admin',
+            // Administrators work in the Filament control panel
+            $user->hasRole('admin') => '/cp',
             $user->hasAnyRole(['kepala_sekolah', 'kepala_tu']) => '/pimpinan',
             $user->hasRole('back_office') => '/backoffice/dashboard',
             $user->hasRole('front_desk') => '/frontdesk/dashboard',
