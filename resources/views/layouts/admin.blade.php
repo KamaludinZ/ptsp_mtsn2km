@@ -314,12 +314,12 @@
                     @if($isAdmin)
                         <li class="menu-title">Master Data</li>
                         <li><a class="@if(request()->routeIs('admin.services.*')) active @endif" href="{{ route('admin.services.index') }}" role="menuitem"><i class="bi bi-cone-striped"></i> <span>Layanan</span></a></li>
-                        <li><a class="@if(request()->routeIs('admin.service-categories.*')) active @endif" href="{{ route('admin.service-categories.index') }}" role="menuitem"><i class="bi bi-tags"></i> <span>Kategori Layanan</span></a></li>
-                        <li><a class="@if(request()->routeIs('admin.pengumuman.*')) active @endif" href="{{ route('admin.pengumuman.index') }}" role="menuitem"><i class="bi bi-megaphone"></i> <span>Pengumuman</span></a></li>
+                        <li><a class="@if(request()->routeIs('filament.admin.resources.service-categories.*')) active @endif" href="{{ route('filament.admin.resources.service-categories.index') }}" role="menuitem"><i class="bi bi-tags"></i> <span>Kategori Layanan</span></a></li>
+                        <li><a class="@if(request()->routeIs('filament.admin.resources.pengumumen.*')) active @endif" href="{{ route('filament.admin.resources.pengumumen.index') }}" role="menuitem"><i class="bi bi-megaphone"></i> <span>Pengumuman</span></a></li>
                         <li class="menu-title">Manajemen Tiket</li>
                         <li><a class="@if(request()->routeIs('admin.tickets.*')) active @endif" href="{{ route('admin.tickets.index') }}" role="menuitem"><i class="bi bi-ticket-detailed"></i> <span>Tiket Layanan</span></a></li>
                         <li class="menu-title">Pengunjung</li>
-                        <li><a class="@if(request()->routeIs('admin.visitors.*')) active @endif" href="{{ route('admin.visitors.index') }}" role="menuitem"><i class="bi bi-person-walking"></i> <span>Buku Tamu</span></a></li>
+                        <li><a class="@if(request()->routeIs('filament.admin.resources.visitors.*')) active @endif" href="{{ route('filament.admin.resources.visitors.index') }}" role="menuitem"><i class="bi bi-person-walking"></i> <span>Buku Tamu</span></a></li>
                     @endif
                     <li class="menu-title">Pengaduan</li>
                     <li><a class="@if(request()->routeIs('admin.complaints.*')) active @endif" href="{{ route('admin.complaints.index') }}" role="menuitem"><i class="bi bi-chat-left-text"></i> <span>Pengaduan Masyarakat</span></a></li>
@@ -333,11 +333,11 @@
                     <li><a class="@if(request()->routeIs('admin.performance.*')) active @endif" href="{{ route('admin.performance.report') }}" role="menuitem"><i class="bi bi-bar-chart-line"></i> <span>Laporan Kinerja</span></a></li>
                     @if($isAdmin)
                         <li class="menu-title">Pengguna & Hak Akses</li>
-                        <li><a class="@if(request()->routeIs('admin.users.*')) active @endif" href="{{ route('admin.users.index') }}" role="menuitem"><i class="bi bi-people"></i> <span>Manajemen User</span></a></li>
-                        <li><a class="@if(request()->routeIs('admin.roles.*')) active @endif" href="{{ route('admin.roles.index') }}" role="menuitem"><i class="bi bi-person-check"></i> <span>Hak Akses (Role)</span></a></li>
+                        <li><a class="@if(request()->routeIs('filament.admin.resources.users.*')) active @endif" href="{{ route('filament.admin.resources.users.index') }}" role="menuitem"><i class="bi bi-people"></i> <span>Manajemen User</span></a></li>
+                        <li><a class="@if(request()->routeIs('filament.admin.resources.roles.*')) active @endif" href="{{ route('filament.admin.resources.roles.index') }}" role="menuitem"><i class="bi bi-person-check"></i> <span>Hak Akses (Role)</span></a></li>
                         <li class="menu-title">Sistem</li>
                         <li><a class="@if(request()->routeIs('admin.security.*')) active @endif" href="{{ route('admin.security.dashboard') }}" role="menuitem"><i class="bi bi-shield-lock"></i> <span>Keamanan</span></a></li>
-                        <li><a class="@if(request()->routeIs('admin.settings.*')) active @endif" href="{{ route('admin.settings.index') }}" role="menuitem"><i class="bi bi-gear"></i> <span>Pengaturan Umum</span></a></li>
+                        <li><a class="@if(request()->routeIs('filament.admin.resources.app-settings.*')) active @endif" href="{{ route('filament.admin.resources.app-settings.index') }}" role="menuitem"><i class="bi bi-gear"></i> <span>Pengaturan Umum</span></a></li>
                         <li><a href="{{ url('/cp') }}" role="menuitem"><i class="bi bi-sliders"></i> <span>Panel Kontrol</span></a></li>
                     @endif
                 </ul>

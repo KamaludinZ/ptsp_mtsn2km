@@ -34,20 +34,34 @@ class AppSettingResource extends Resource
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('name')
-                            ->label('Nama')
-                            ->required()
+                        Forms\Components\TextInput::make('display_name')
+                            ->label('Nama Tampilan')
                             ->maxLength(255),
+                        Forms\Components\Select::make('category')
+                            ->label('Kategori')
+                            ->options([
+                                'general' => 'Umum',
+                                'branding' => 'Identitas & Logo',
+                                'contact' => 'Kontak',
+                                'social' => 'Media Sosial',
+                                'operating_hours' => 'Jam Operasional',
+                                'related_links' => 'Tautan Terkait',
+                                'theme' => 'Tema',
+                            ])
+                            ->default('general')
+                            ->required(),
                         Forms\Components\Select::make('type')
                             ->label('Tipe')
                             ->options([
                                 'text' => 'Teks',
                                 'textarea' => 'Kotak Teks',
-                                'number' => 'Angka',
-                                'boolean' => 'Boolean',
+                                'email' => 'Email',
+                                'url' => 'URL',
+                                'boolean' => 'Ya/Tidak',
                                 'select' => 'Pilihan',
-                                'file' => 'File',
+                                'image' => 'Gambar',
                             ])
+                            ->default('text')
                             ->required()
                             ->live(),
                     ])
@@ -57,8 +71,12 @@ class AppSettingResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('value')
                             ->label('Nilai')
-                            ->required()
-                            ->visible(fn ($get) => !in_array($get('type'), ['boolean']))
+                            ->visible(fn ($get) => ! in_array($get('type'), ['boolean', 'textarea', 'image']))
+                            ->maxLength(5000)
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('value')
+                            ->label('Nilai')
+                            ->visible(fn ($get) => $get('type') === 'textarea')
                             ->maxLength(5000)
                             ->columnSpanFull(),
                         Forms\Components\Toggle::make('value')
@@ -66,32 +84,18 @@ class AppSettingResource extends Resource
                             ->visible(fn ($get) => $get('type') === 'boolean')
                             ->columnSpanFull(),
                         Forms\Components\FileUpload::make('value')
-                            ->label('File')
+                            ->label('Gambar')
+                            ->image()
                             ->directory('app-settings')
-                            ->preserveFilenames()
-                            ->maxSize(10240) // 10MB
-                            ->acceptedFileTypes(['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
-                            ->visible(fn ($get) => $get('type') === 'file'),
-                    ])
-                    ->columns(1),
-
-                Forms\Components\Section::make('Deskripsi')
-                    ->schema([
-                        Forms\Components\Textarea::make('description')
-                            ->label('Deskripsi')
-                            ->maxLength(500)
+                            ->maxSize(4096)
+                            ->visible(fn ($get) => $get('type') === 'image')
                             ->columnSpanFull(),
-                    ])
-                    ->columns(1),
+                    ]),
 
-                Forms\Components\Section::make('Metadata')
-                    ->schema([
-                        Forms\Components\Toggle::make('is_public')
-                            ->label('Dapat Dilihat Publik'),
-                        Forms\Components\Toggle::make('is_required')
-                            ->label('Wajib'),
-                    ])
-                    ->columns(2),
+                Forms\Components\Textarea::make('description')
+                    ->label('Deskripsi')
+                    ->maxLength(500)
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -103,7 +107,7 @@ class AppSettingResource extends Resource
                     ->label('Kunci')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('display_name')
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
@@ -114,12 +118,6 @@ class AppSettingResource extends Resource
                 Tables\Columns\TextColumn::make('value')
                     ->label('Nilai')
                     ->limit(50),
-                Tables\Columns\IconColumn::make('is_public')
-                    ->label('Publik')
-                    ->boolean(),
-                Tables\Columns\IconColumn::make('is_required')
-                    ->label('Wajib')
-                    ->boolean(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Diubah')
                     ->dateTime('d/m/Y H:i')
@@ -131,17 +129,12 @@ class AppSettingResource extends Resource
                     ->options([
                         'text' => 'Teks',
                         'textarea' => 'Kotak Teks',
-                        'number' => 'Angka',
-                        'boolean' => 'Boolean',
+                        'email' => 'Email',
+                        'url' => 'URL',
+                        'boolean' => 'Ya/Tidak',
                         'select' => 'Pilihan',
-                        'file' => 'File',
+                        'image' => 'Gambar',
                     ]),
-                Tables\Filters\Filter::make('is_public')
-                    ->label('Publik')
-                    ->query(fn (Builder $query): Builder => $query->where('is_public', true)),
-                Tables\Filters\Filter::make('is_required')
-                    ->label('Wajib')
-                    ->query(fn (Builder $query): Builder => $query->where('is_required', true)),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -152,7 +145,7 @@ class AppSettingResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('name', 'asc');
+            ->defaultSort('key', 'asc');
     }
 
     public static function getRelations(): array

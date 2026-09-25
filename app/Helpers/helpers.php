@@ -18,3 +18,14 @@ if (!function_exists('get_dashboard_route_for_user')) {
         };
     }
 }
+
+if (!function_exists('app_brand_name')) {
+    /**
+     * Application name shown in headers, footers and titles. Editable by
+     * admins through the "app_name" setting (Panel Kontrol > Pengaturan).
+     */
+    function app_brand_name(): string
+    {
+        return trim((string) config('app.app_name')) ?: 'PTSP MTsN 2 KOTA MALANG';
+    }
+}

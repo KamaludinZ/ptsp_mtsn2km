@@ -179,16 +179,13 @@
                 <div class="col-span-1 md:col-span-2 lg:col-span-1">
                     <div class="flex items-center gap-3 mb-4">
                         @if(config('app.logo'))
-                            <img src="{{ asset(config('app.logo')) }}" alt="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} Logo"
+                            <img src="{{ asset(config('app.logo')) }}" alt="{{ app_brand_name() }} Logo"
                                  class="h-12 w-12 object-contain rounded-lg bg-white p-1">
                         @else
-                            <img src="{{ asset('images/kemenag-logo.png') }}" alt="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} Logo"
+                            <img src="{{ asset('images/kemenag-logo.png') }}" alt="{{ app_brand_name() }} Logo"
                                  class="h-12 w-12 object-contain rounded-lg bg-white p-1">
                         @endif
-                        <div>
-                            <h3 class="font-bold text-white text-base">{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</h3>
-                            <p class="text-sm opacity-80">Pelayanan Terpadu Satu Pintu</p>
-                        </div>
+                        <strong class="font-bold text-white text-base whitespace-nowrap">{{ app_brand_name() }}</strong>
                     </div>
                     <p class="text-sm opacity-80">
                         Sistem pelayanan terpadu sesuai Permen PANRB 15/2014 untuk kemudahan akses layanan.
@@ -252,7 +249,7 @@
                     <p class="text-sm opacity-80">
                         <i class="fas fa-code-branch mr-2"></i>
                         <span class="mr-3">v1.0.0</span>
-                        &copy; {{ date('Y') }} {{ config('app.name_full', 'PTSP MTsN 2 Kota Malang') }}. Hak Cipta Dilindungi.
+                        &copy; {{ date('Y') }} {{ app_brand_name() }}. Hak Cipta Dilindungi.
                     </p>
                     <p class="text-sm opacity-80">
                         <i class="fas fa-code mr-1"></i> Dikembangkan dengan <i class="fas fa-heart text-red-500 mx-1"></i> oleh Tim PUSKOM

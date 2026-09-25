@@ -174,7 +174,7 @@
                     <span>Kelola Tiket</span>
                 </a>
 
-                <a href="{{ route('admin.users.index') }}" class="sidebar-link {{ $link('admin.users.*') }}">
+                <a href="{{ route('filament.admin.resources.users.index') }}" class="sidebar-link {{ '' }}">
                     <i class="fas fa-users-cog me-3" aria-hidden="true"></i>
                     <span>Pengguna</span>
                 </a>
@@ -184,7 +184,7 @@
                     <span>Kelola Survei</span>
                 </a>
 
-                <a href="{{ route('admin.pengumuman.index') }}" class="sidebar-link {{ $link('admin.pengumuman.*') }}">
+                <a href="{{ route('filament.admin.resources.pengumumen.index') }}" class="sidebar-link {{ '' }}">
                     <i class="fas fa-bullhorn me-3" aria-hidden="true"></i>
                     <span>Kelola Pengumuman</span>
                 </a>

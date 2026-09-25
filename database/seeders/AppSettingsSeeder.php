@@ -32,7 +32,7 @@ class AppSettingsSeeder extends Seeder
             ],
             [
                 'key' => 'app_name',
-                'value' => 'PTSP MTsN 2 Kota Malang',
+                'value' => 'PTSP MTsN 2 KOTA MALANG',
                 'type' => 'text',
                 'category' => 'branding',
                 'display_name' => 'Nama Aplikasi',

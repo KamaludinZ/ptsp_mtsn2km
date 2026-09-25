@@ -24,6 +24,22 @@ class AppSetting extends Model
         'validation_rules' => 'array',
     ];
 
+    public const ALL_CACHE_KEY = 'app_settings_all';
+
+    protected static function booted(): void
+    {
+        // Admin edits (Filament or code) must show up on the next request,
+        // so every write drops the cached copies of that setting.
+        $flush = function (AppSetting $setting): void {
+            Cache::forget(self::ALL_CACHE_KEY);
+            Cache::forget("app_setting_{$setting->key}");
+            Cache::forget("app_settings_category_{$setting->category}");
+        };
+
+        static::saved($flush);
+        static::deleted($flush);
+    }
+
     /**
      * Get setting value by key with caching
      */

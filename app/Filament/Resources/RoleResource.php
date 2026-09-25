@@ -42,15 +42,6 @@ class RoleResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Deskripsi')
-                    ->schema([
-                        Forms\Components\Textarea::make('description')
-                            ->label('Deskripsi')
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(1),
-
                 Forms\Components\Section::make('Izin')
                     ->schema([
                         Forms\Components\CheckboxList::make('permissions')

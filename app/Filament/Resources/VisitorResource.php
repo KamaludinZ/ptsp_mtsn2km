@@ -41,17 +41,11 @@ class VisitorResource extends Resource
                             ->label('Telepon')
                             ->tel()
                             ->maxLength(20),
-                        Forms\Components\Select::make('type')
-                            ->label('Tipe Pengunjung')
-                            ->options([
-                                'internal' => 'Internal (Guru/Pegawai)',
-                                'external' => 'Eksternal',
-                                'applicant' => 'Pemohon Layanan',
-                                'official' => 'Pejabat/Instansi',
-                            ])
-                            ->required(),
-                        Forms\Components\TextInput::make('organization')
+                        Forms\Components\TextInput::make('institution')
                             ->label('Instansi/Organisasi')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('institution_category')
+                            ->label('Kategori Instansi')
                             ->maxLength(255),
                     ])
                     ->columns(2),
@@ -62,45 +56,29 @@ class VisitorResource extends Resource
                             ->label('Tujuan Kunjungan')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\Textarea::make('note')
-                            ->label('Catatan Tambahan')
-                            ->maxLength(500)
-                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('person_to_meet')
+                            ->label('Bertemu Dengan')
+                            ->maxLength(255),
                         Forms\Components\DateTimePicker::make('check_in_time')
                             ->label('Waktu Check-in')
                             ->default(now())
                             ->required(),
                         Forms\Components\DateTimePicker::make('check_out_time')
                             ->label('Waktu Check-out'),
-                        Forms\Components\Toggle::make('is_checked_out')
-                            ->label('Sudah Check-out')
-                            ->default(false),
-                    ])
-                    ->columns(2),
-
-                Forms\Components\Section::make('Keperluan')
-                    ->schema([
-                        Forms\Components\TextInput::make('service_needed')
-                            ->label('Layanan yang Dibutuhkan')
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('with_person')
-                            ->label('Bertemu Dengan')
-                            ->maxLength(255),
-                    ])
-                    ->columns(2),
-
-                Forms\Components\Section::make('Status')
-                    ->schema([
                         Forms\Components\Select::make('status')
                             ->label('Status')
                             ->options([
-                                'active' => 'Aktif',
-                                'completed' => 'Selesai',
-                                'cancelled' => 'Dibatalkan',
+                                'active' => 'Sedang berkunjung',
+                                'checked_out' => 'Sudah check-out',
                             ])
                             ->default('active')
                             ->required(),
-                    ]),
+                        Forms\Components\Textarea::make('notes')
+                            ->label('Catatan')
+                            ->maxLength(500)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -112,33 +90,19 @@ class VisitorResource extends Resource
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Tipe')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'internal' => 'info',
-                        'external' => 'warning',
-                        'applicant' => 'success',
-                        'official' => 'primary',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'internal' => 'Internal',
-                        'external' => 'Eksternal',
-                        'applicant' => 'Pemohon',
-                        'official' => 'Pejabat',
-                        default => ucfirst($state),
-                    }),
+                Tables\Columns\TextColumn::make('institution')
+                    ->label('Instansi')
+                    ->searchable()
+                    ->limit(50),
                 Tables\Columns\TextColumn::make('purpose')
                     ->label('Tujuan')
                     ->searchable()
                     ->limit(50)
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('organization')
-                    ->label('Instansi')
+                Tables\Columns\TextColumn::make('person_to_meet')
+                    ->label('Bertemu')
                     ->searchable()
-                    ->limit(50)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('check_in_time')
                     ->label('Check-in')
                     ->dateTime('d/m/Y H:i')
@@ -148,43 +112,19 @@ class VisitorResource extends Resource
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('is_checked_out')
-                    ->label('Check-out')
-                    ->boolean(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'active' => 'warning',
-                        'completed' => 'success',
-                        'cancelled' => 'danger',
-                        default => 'gray',
-                    }),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->color(fn (string $state): string => $state === 'active' ? 'warning' : 'success')
+                    ->formatStateUsing(fn (string $state): string => $state === 'active' ? 'Berkunjung' : 'Selesai'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
-                    ->label('Tipe Pengunjung')
-                    ->options([
-                        'internal' => 'Internal',
-                        'external' => 'Eksternal',
-                        'applicant' => 'Pemohon',
-                        'official' => 'Pejabat',
-                    ]),
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status')
                     ->options([
-                        'active' => 'Aktif',
-                        'completed' => 'Selesai',
-                        'cancelled' => 'Dibatalkan',
+                        'active' => 'Sedang berkunjung',
+                        'checked_out' => 'Sudah check-out',
                     ]),
-                Tables\Filters\Filter::make('is_checked_out')
-                    ->label('Sudah Check-out')
-                    ->query(fn (Builder $query): Builder => $query->where('is_checked_out', true)),
                 Tables\Filters\Filter::make('check_in_time')
                     ->form([Forms\Components\DatePicker::make('check_in_time')->label('Tanggal Check-in')])
                     ->query(fn (Builder $query, array $data): Builder => $query->when(

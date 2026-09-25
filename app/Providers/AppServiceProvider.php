@@ -2,13 +2,13 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
-use App\Helpers\AssetHelper;
 use Illuminate\Support\Facades\View;
 use App\Models\AppSetting;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,19 +29,14 @@ class AppServiceProvider extends ServiceProvider
             app()->setLocale(session('locale'));
         }
 
-        // Register custom Blade directive for intelligent asset loading
-        Blade::directive('asset', function ($expression) {
-            return "<?php echo App\Helpers\AssetHelper::asset({$expression}); ?>";
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
-        // Register custom Blade directive for CSS assets
-        Blade::directive('css', function ($expression) {
-            return "<?php echo App\Helpers\AssetHelper::css({$expression}); ?>";
-        });
-
-        // Register custom Blade directive for JS assets
-        Blade::directive('js', function ($expression) {
-            return "<?php echo App\Helpers\AssetHelper::js({$expression}); ?>";
+        // Public forms (complaints, whistleblowing, survey, visitor book,
+        // contact, registration): stop spam and automated submissions.
+        RateLimiter::for('public-forms', function (Request $request) {
+            return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
         });
 
         // Force HTTPS in production only

@@ -73,66 +73,6 @@ class PengumumanController extends Controller
     }
 
     /**
-     * Display a listing of all announcements for admin.
-     */
-    public function adminIndex()
-    {
-        $this->authorizeAdmin();
-        
-        $pengumumen = Pengumuman::orderBy('publish_date', 'desc')->paginate(10);
-        
-        return view('pengumuman.admin.index', compact('pengumumen'));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $this->authorizeAdmin();
-        
-        return view('pengumuman.admin.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $this->authorizeAdmin();
-        
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required',
-            'category' => 'nullable|string|max:100',
-            'publish_date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:publish_date',
-            'is_active' => 'boolean',
-            'author' => 'nullable|string|max:255',
-            'attachment' => 'nullable|file|mimes:pdf,doc,docx|max:10240', // max 10MB
-            'url' => 'nullable|url',
-        ]);
-
-        $user = Auth::user();
-        $pengumuman = new Pengumuman();
-        $pengumuman->fill($request->all());
-        
-        // Handle file upload
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('pengumuman_attachments', $filename, 'public');
-            $pengumuman->attachment = $path;
-        }
-        
-        $pengumuman->user_id = $user->id;
-        $pengumuman->author = $pengumuman->author ?? $user->name;
-        $pengumuman->save();
-
-        return redirect()->route('pengumuman.index')->with('success', 'Pengumuman berhasil ditambahkan.');
-    }
-
-    /**
      * Display the specified resource for admin.
      */
     public function show(Pengumuman $pengumuman)
@@ -168,69 +108,6 @@ class PengumumanController extends Controller
         }
 
         return view('pengumuman.show', compact('pengumuman'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Pengumuman $pengumuman)
-    {
-        $this->authorizeAdmin();
-        
-        return view('pengumuman.admin.edit', compact('pengumuman'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Pengumuman $pengumuman)
-    {
-        $this->authorizeAdmin();
-        
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required',
-            'category' => 'nullable|string|max:100',
-            'publish_date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:publish_date',
-            'is_active' => 'boolean',
-            'author' => 'nullable|string|max:255',
-            'attachment' => 'nullable|file|mimes:pdf,doc,docx|max:10240', // max 10MB
-            'url' => 'nullable|url',
-        ]);
-
-        $oldAttachment = $pengumuman->attachment;
-        
-        $pengumuman->fill($request->all());
-        
-        // Handle file upload
-        if ($request->hasFile('attachment')) {
-            // Delete old file if exists
-            if ($oldAttachment && file_exists(storage_path('app/public/' . $oldAttachment))) {
-                unlink(storage_path('app/public/' . $oldAttachment));
-            }
-            
-            $file = $request->file('attachment');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('pengumuman_attachments', $filename, 'public');
-            $pengumuman->attachment = $path;
-        }
-        
-        $pengumuman->save();
-
-        return redirect()->route('pengumuman.index')->with('success', 'Pengumuman berhasil diperbarui.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Pengumuman $pengumuman)
-    {
-        $this->authorizeAdmin();
-        
-        $pengumuman->delete();
-
-        return redirect()->route('pengumuman.index')->with('success', 'Pengumuman berhasil dihapus.');
     }
 
     /**

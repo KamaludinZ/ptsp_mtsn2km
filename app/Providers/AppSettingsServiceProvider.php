@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\AppSetting;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 
 class AppSettingsServiceProvider extends ServiceProvider
@@ -30,7 +31,10 @@ class AppSettingsServiceProvider extends ServiceProvider
     private function loadAppSettings(): void
     {
         try {
-            $settings = AppSetting::all();
+            $settings = Cache::rememberForever(
+                AppSetting::ALL_CACHE_KEY,
+                fn () => AppSetting::all(['key', 'value', 'type'])
+            );
 
             foreach ($settings as $setting) {
                 // Cast value based on type
@@ -69,6 +73,7 @@ class AppSettingsServiceProvider extends ServiceProvider
     private function setDefaults(): void
     {
         $defaults = [
+            'app_name' => 'PTSP MTsN 2 KOTA MALANG',
             'name_full' => 'PTSP MTsN 2 KOTA MALANG',
             'description' => 'Pelayanan Terpadu Satu Pintu MTsN 2 Kota Malang - Layanan cepat, transparan, dan akuntabel sesuai Permen PANRB 15/2014',
             'logo' => null,

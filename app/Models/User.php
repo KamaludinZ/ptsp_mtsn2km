@@ -157,11 +157,13 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     }
 
     /**
-     * Determine if user can access the Filament control panel (/cp)
+     * Determine if user can access the Filament control panel (/cp).
+     * The panel manages users, roles and settings, so it is admin-only;
+     * other staff roles work in their own role dashboards.
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasAnyRole(['admin', 'kepala_sekolah', 'kepala_tu', 'back_office', 'front_desk']);
+        return $this->hasRole('admin');
     }
 
     /**

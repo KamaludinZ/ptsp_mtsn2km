@@ -1,189 +1,140 @@
-<nav class="bg-base-100 shadow-sm sticky top-0 z-50" role="navigation" aria-label="Navigasi utama">
-    <div class="max-w-full mx-auto px-8">
-        <div class="flex items-center justify-between h-16">
-            <!-- Left Section: Burger Menu + Logo & App Name -->
-            <div class="flex items-center gap-4">
-                <!-- Burger Menu (Mobile/Tablet) -->
-                <div class="dropdown lg:hidden">
-                    <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
-                        </svg>
-                    </div>
-                    <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-100 mt-3 w-52 p-2 shadow">
-                        <li><a href="{{ route('home') }}" class="text-gray-900 font-semibold"><i class="fas fa-home mr-2"></i>Beranda</a></li>
-                        <li><a href="{{ route('onlineportal.service.catalog') }}" class="text-gray-900 font-semibold"><i class="fas fa-concierge-bell mr-2"></i>Layanan</a></li>
-                        <li><a href="{{ route('public.about') }}" class="text-gray-900 font-semibold"><i class="fas fa-info-circle mr-2"></i>Tentang</a></li>
-                        <li><a href="{{ route('public.visitor.book') }}" class="text-gray-900 font-semibold"><i class="fas fa-book mr-2"></i>Buku Tamu</a></li>
-                        <li><a href="{{ route('survey.form') }}" class="text-gray-900 font-semibold"><i class="fas fa-poll mr-2"></i>Survei</a></li>
-                        <li><a href="{{ route('supervision.complaints.dashboard') }}" class="text-gray-900 font-semibold"><i class="fas fa-comments mr-2"></i>Pengaduan</a></li>
-                        <li><a href="{{ route('onlineportal.track.ticket.form') }}" class="text-gray-900 font-semibold"><i class="fas fa-search mr-2"></i>Lacak Tiket</a></li>
-                        <li><a href="{{ route('pengumuman.index') }}" class="text-gray-900 font-semibold"><i class="fas fa-bullhorn mr-2"></i>Pengumuman</a></li>
-                    </ul>
-                </div>
+@php
+    $navItems = [
+        ['label' => 'Beranda', 'icon' => 'fa-house', 'href' => route('home'), 'active' => request()->routeIs('home')],
+        ['label' => 'Layanan', 'icon' => 'fa-concierge-bell', 'href' => route('onlineportal.service.catalog'), 'active' => request()->routeIs('onlineportal.service.*')],
+        ['label' => 'Tentang', 'icon' => 'fa-circle-info', 'href' => route('public.about'), 'active' => request()->routeIs('public.about')],
+        ['label' => 'Buku Tamu', 'icon' => 'fa-book-open', 'href' => route('public.visitor.book'), 'active' => request()->routeIs('public.visitor.*')],
+        ['label' => 'Survei', 'icon' => 'fa-square-poll-vertical', 'href' => route('survey.form'), 'active' => request()->routeIs('survey.*', 'supervision.skm.*')],
+        ['label' => 'Pengaduan', 'icon' => 'fa-comments', 'href' => route('supervision.complaints.dashboard'), 'active' => request()->routeIs('supervision.complaint*', 'supervision.whistleblowing.*')],
+        ['label' => 'Lacak Tiket', 'icon' => 'fa-magnifying-glass', 'href' => route('onlineportal.track.ticket.form'), 'active' => request()->routeIs('onlineportal.track.*')],
+        ['label' => 'Pengumuman', 'icon' => 'fa-bullhorn', 'href' => route('pengumuman.index'), 'active' => request()->routeIs('pengumuman.*')],
+    ];
+    $brandName = app_brand_name();
+    $logo = config('app.logo') ? asset(config('app.logo')) : asset('images/kemenag-logo.png');
+@endphp
 
-                <!-- Logo & App Name -->
-                <a href="{{ route('home') }}" class="flex items-center gap-2 no-underline">
-                    @if(config('app.logo'))
-                        <img src="{{ asset(config('app.logo')) }}" alt="Logo" class="h-8 w-8 object-contain" />
-                    @else
-                        <img src="{{ asset('images/kemenag-logo.png') }}" alt="Logo" class="h-8 w-8 object-contain" />
-                    @endif
-                    <span class="hidden sm:inline font-bold text-lg text-gray-900">{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</span>
+<header class="site-header" role="banner">
+    <div class="site-header__inner">
+        <!-- Menu toggle (below xl) -->
+        <button type="button" class="site-icon-btn site-menu-toggle" data-panel-toggle="site-mobile-menu"
+                aria-expanded="false" aria-controls="site-mobile-menu" aria-label="Buka menu navigasi">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
+
+        <a href="{{ route('home') }}" class="site-brand" title="{{ $brandName }}">
+            <img src="{{ $logo }}" alt="" width="36" height="36">
+            <span>{{ $brandName }}</span>
+        </a>
+
+        <nav class="site-nav" aria-label="Navigasi utama">
+            @foreach($navItems as $item)
+                <a href="{{ $item['href'] }}" @if($item['active']) aria-current="page" @endif>{{ $item['label'] }}</a>
+            @endforeach
+        </nav>
+
+        <div class="site-actions">
+            <button type="button" class="site-icon-btn" id="site-theme-toggle" aria-label="Ganti tema terang/gelap">
+                <i class="fas fa-moon theme-icon-light" aria-hidden="true"></i>
+                <i class="fas fa-sun theme-icon-dark" aria-hidden="true"></i>
+            </button>
+
+            @auth
+                @php
+                    $authUser = Auth::user();
+                    $dashboardLink = get_dashboard_route_for_user($authUser);
+                @endphp
+                <div class="site-user">
+                    <button type="button" class="site-user-btn" data-panel-toggle="site-user-menu"
+                            aria-expanded="false" aria-controls="site-user-menu" aria-label="Menu akun {{ $authUser->name }}">
+                        <span class="site-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($authUser->name, 0, 1)) }}</span>
+                        <span class="site-user-name">{{ \Illuminate\Support\Str::limit($authUser->name, 18) }}</span>
+                        <i class="fas fa-chevron-down site-chevron" aria-hidden="true"></i>
+                    </button>
+                    <div class="site-panel site-user-panel" id="site-user-menu" hidden>
+                        <p class="site-panel-title">{{ $authUser->name }}</p>
+                        <a href="{{ $dashboardLink }}"><i class="fas fa-gauge-high" aria-hidden="true"></i>Dashboard</a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="site-panel-danger"><i class="fas fa-right-from-bracket" aria-hidden="true"></i>Keluar</button>
+                        </form>
+                    </div>
+                </div>
+            @else
+                <a href="{{ route('login') }}" class="site-btn site-btn-solid">
+                    <i class="fas fa-right-to-bracket" aria-hidden="true"></i><span>Masuk</span>
                 </a>
-            </div>
-
-            <!-- Center Section: Menu Horizontal (Desktop) -->
-            <div class="hidden lg:flex items-center gap-1">
-                <a href="{{ route('home') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Beranda</a>
-                <a href="{{ route('onlineportal.service.catalog') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Layanan</a>
-                <a href="{{ route('public.about') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Tentang</a>
-                <a href="{{ route('public.visitor.book') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Buku Tamu</a>
-                <a href="{{ route('survey.form') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Survei</a>
-                <a href="{{ route('supervision.complaints.dashboard') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Pengaduan</a>
-                <a href="{{ route('onlineportal.track.ticket.form') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Lacak Tiket</a>
-                <a href="{{ route('pengumuman.index') }}" class="px-3 py-2 rounded-md text-gray-900 font-semibold no-underline hover:text-green-600 hover:bg-green-50 transition">Pengumuman</a>
-            </div>
-
-            <!-- Right Section: Action Buttons -->
-            <div class="flex items-center gap-2">
-                <!-- Language Dropdown -->
-                <div class="dropdown dropdown-end">
-                    <div tabindex="0" role="button" class="btn btn-circle btn-sm border-2 border-gray-300 bg-white hover:border-gray-900 hover:bg-gray-50 transition" aria-label="Pilih bahasa">
-                        <i class="fas fa-globe text-gray-900"></i>
-                    </div>
-                    <ul tabindex="0" class="dropdown-content menu menu-sm p-2 shadow bg-base-100 rounded-box w-52 mt-4 z-100">
-                        <li><a onclick="changeLanguage('id')"><span>🇮🇩</span>Indonesia</a></li>
-                        <li><a onclick="changeLanguage('en')"><span>🇬🇧</span>English</a></li>
-                        <li><a onclick="changeLanguage('ar')"><span>🇸🇦</span>العربية</a></li>
-                    </ul>
-                </div>
-
-                <!-- Theme Toggle -->
-                <label class="swap swap-rotate btn btn-circle btn-sm border-2 border-gray-300 bg-white hover:border-gray-900 hover:bg-gray-50 relative inline-flex transition cursor-pointer" aria-label="Toggle tema">
-                    <input type="checkbox" id="theme-toggle" class="absolute opacity-0" />
-                    <svg class="swap-off fill-current w-4 h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>
-                    <svg class="swap-on fill-current w-4 h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg>
-                </label>
-
-                <!-- User Menu / Login -->
-                @auth
-                    @php
-                        $user = Auth::user();
-                        $dashboardLink = get_dashboard_route_for_user($user);
-                    @endphp
-                    <div class="dropdown dropdown-end">
-                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm">
-                            <div class="w-8 h-8 rounded-full bg-transparent text-gray-900 flex items-center justify-center">
-                                <i class="fas fa-user text-xs"></i>
-                            </div>
-                        </div>
-                        <ul tabindex="0" class="dropdown-content menu menu-sm p-2 shadow bg-base-100 rounded-box w-52 mt-4 z-100">
-                            <li class="menu-title"><span>{{ $user->name }}</span></li>
-                            <li><a href="{{ $dashboardLink }}"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}" id="header-logout-form">
-                                    @csrf
-                                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('header-logout-form').submit();" class="text-error">
-                                        <i class="fas fa-sign-out-alt"></i>Keluar
-                                    </a>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                @else
-                    <a href="{{ route('login') }}" class="btn btn-sm bg-gray-900 text-white border-2 border-gray-900 hover:bg-gray-700 hover:border-gray-700 transition">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>Masuk</span>
-                    </a>
-                    <a href="{{ route('register') }}" class="btn btn-outline btn-sm border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition">
-                        <i class="fas fa-user-plus"></i>
-                        <span>Daftar</span>
-                    </a>
-                @endauth
-            </div>
+                <a href="{{ route('register') }}" class="site-btn site-btn-outline site-btn-register">
+                    <i class="fas fa-user-plus" aria-hidden="true"></i><span>Daftar</span>
+                </a>
+            @endauth
         </div>
     </div>
-</nav>
+
+    <!-- Mobile / tablet menu -->
+    <div class="site-panel site-mobile-panel" id="site-mobile-menu" hidden>
+        <nav aria-label="Navigasi seluler">
+            @foreach($navItems as $item)
+                <a href="{{ $item['href'] }}" @if($item['active']) aria-current="page" @endif>
+                    <i class="fas {{ $item['icon'] }}" aria-hidden="true"></i>{{ $item['label'] }}
+                </a>
+            @endforeach
+        </nav>
+        @guest
+            <div class="site-mobile-cta">
+                <a href="{{ route('login') }}" class="site-btn site-btn-solid"><i class="fas fa-right-to-bracket" aria-hidden="true"></i>Masuk</a>
+                <a href="{{ route('register') }}" class="site-btn site-btn-outline"><i class="fas fa-user-plus" aria-hidden="true"></i>Daftar</a>
+            </div>
+        @endguest
+    </div>
+</header>
 
 <script>
-// Initialize theme
-document.addEventListener('DOMContentLoaded', function() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-        themeToggle.checked = savedTheme === 'dark';
+(function () {
+    var root = document.documentElement;
 
-        // Add event listener to toggle
-        themeToggle.addEventListener('change', function() {
-            const newTheme = this.checked ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
+    // Theme: one owner for the header toggle (shares the "theme" key with app.js)
+    function applyTheme(theme) {
+        root.setAttribute('data-theme', theme);
+        root.classList.toggle('dark', theme === 'dark');
+    }
+    try {
+        var saved = localStorage.getItem('theme');
+        if (saved === 'dark' || saved === 'light') applyTheme(saved);
+    } catch (e) {}
+
+    var toggle = document.getElementById('site-theme-toggle');
+    if (toggle) {
+        toggle.addEventListener('click', function () {
+            var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+            try { localStorage.setItem('theme', next); } catch (e) {}
         });
     }
-});
 
-function changeLanguage(lang) {
-    localStorage.setItem('language', lang);
-    updateLanguage(lang);
-}
-
-function updateLanguage(lang) {
-    // Update all elements with data-lang-key
-    const elements = document.querySelectorAll('[data-lang-key]');
-    elements.forEach(element => {
-        const key = element.getAttribute('data-lang-key');
-        if (translations[lang] && translations[lang][key]) {
-            element.textContent = translations[lang][key];
-        }
+    // Disclosure panels (mobile menu, account menu)
+    var toggles = document.querySelectorAll('[data-panel-toggle]');
+    function setOpen(btn, open) {
+        var panel = document.getElementById(btn.getAttribute('data-panel-toggle'));
+        if (!panel) return;
+        panel.hidden = !open;
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    function closeAll(except) {
+        toggles.forEach(function (btn) { if (btn !== except) setOpen(btn, false); });
+    }
+    toggles.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = btn.getAttribute('aria-expanded') !== 'true';
+            closeAll(btn);
+            setOpen(btn, open);
+        });
     });
-}
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.site-panel')) closeAll(null);
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAll(null);
+    });
+})();
 </script>
-
-<style>
-/* Specific fixes for header button alignment to counteract page-specific CSS overrides */
-nav .btn-circle {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    line-height: 1 !important;
-}
-
-nav .btn-circle i,
-nav .btn-circle svg {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: auto !important;
-}
-
-/* Ensure proper border alignment */
-nav .btn.btn-circle {
-    border: 2px solid !important;
-    box-sizing: border-box !important;
-}
-
-/* Fix for theme toggle alignment */
-.swap-rotate {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-/* Avatar button specific styles */
-nav .dropdown .btn.btn-circle {
-    background: transparent !important;
-}
-
-nav .dropdown .btn.btn-circle div.w-8.h-8.rounded-full {
-    background: transparent !important;
-    color: #111827 !important;
-}
-
-/* Dark mode avatar button styles */
-[data-theme="dark"] nav .dropdown .btn.btn-circle div.w-8.h-8.rounded-full {
-    color: white !important;
-}
-</style>

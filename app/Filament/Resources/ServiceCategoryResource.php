@@ -33,13 +33,11 @@ class ServiceCategoryResource extends Resource
                             ->label('Nama Kategori')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('slug')
-                            ->label('Slug')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(255)
-                            ->dehydrated(false)
-                            ->disabled(),
+                        Forms\Components\Select::make('parent_id')
+                            ->label('Kategori Induk')
+                            ->relationship('parent', 'name')
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('order')
                             ->label('Urutan')
                             ->numeric()

@@ -14,15 +14,10 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
-use App\Http\Controllers\Admin\ServiceCategoryController as AdminServiceCategoryController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
-use App\Http\Controllers\Admin\VisitorController as AdminVisitorController;
 use App\Http\Controllers\Admin\ComplaintController as AdminComplaintController;
 use App\Http\Controllers\Admin\SurveyController as AdminSurveyController;
 use App\Http\Controllers\Admin\SecurityController as AdminSecurityController;
-use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
-use App\Http\Controllers\Admin\RoleController as AdminRoleController;
-use App\Http\Controllers\Admin\UserManagementController as AdminUserManagementController;
 
 // Online Portal Routes
 Route::get('/services', [OnlinePortalController::class, 'serviceCatalog'])->name('onlineportal.service.catalog');
@@ -220,7 +215,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Master Data Routes
     Route::resource('services', AdminServiceController::class);
-    Route::resource('service-categories', AdminServiceCategoryController::class);
 
     // Ticket Management
     Route::resource('tickets', AdminTicketController::class);
@@ -235,10 +229,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/tickets/{ticket}/reject', [AdminTicketController::class, 'rejectTicket'])->name('tickets.reject');
     Route::post('/tickets/{ticket}/upload-result', [AdminTicketController::class, 'uploadResult'])->name('tickets.upload-result');
     Route::post('/tickets/{ticket}/mark-ready-pickup', [AdminTicketController::class, 'markReadyForPickup'])->name('tickets.mark-ready-pickup');
-
-    // Visitor Management
-    Route::resource('visitors', AdminVisitorController::class);
-    Route::post('/visitors/{visitor}/checkout', [AdminVisitorController::class, 'checkOut'])->name('visitors.checkout');
 
     // Complaint Management (create/delete: admin only; follow-up routes below)
     Route::resource('complaints', AdminComplaintController::class)->only(['create', 'store', 'destroy']);
@@ -288,34 +278,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::post('/cache/clear', [AdminSecurityController::class, 'clearCache'])->name('cache.clear');
         Route::get('/api/maintenance-status', [AdminSecurityController::class, 'getMaintenanceStatus']);
     });
-
-    // Announcement Management Routes
-    Route::get('/pengumuman', [PengumumanController::class, 'adminIndex'])->name('pengumuman.index');
-    Route::get('/pengumuman/create', [PengumumanController::class, 'create'])->name('pengumuman.create');
-    Route::post('/pengumuman', [PengumumanController::class, 'store'])->name('pengumuman.store');
-    Route::get('/pengumuman/{pengumuman}/edit', [PengumumanController::class, 'edit'])->name('pengumuman.edit');
-    Route::put('/pengumuman/{pengumuman}', [PengumumanController::class, 'update'])->name('pengumuman.update');
-    Route::delete('/pengumuman/{pengumuman}', [PengumumanController::class, 'destroy'])->name('pengumuman.destroy');
-
-    // Settings
-    Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
-    Route::post('/settings/reset', [AdminSettingsController::class, 'reset'])->name('settings.reset');
-
-    // Role Management
-    Route::resource('roles', AdminRoleController::class);
-    Route::post('/roles/{role}/clone', [AdminRoleController::class, 'clone'])->name('roles.clone');
-    Route::post('/roles/{role}/assign-permissions', [AdminRoleController::class, 'assignPermissions'])->name('roles.assign-permissions');
-    Route::get('/roles/{role}/permissions', [AdminRoleController::class, 'getPermissions'])->name('roles.permissions');
-
-    // User Management
-    // /users/export must be registered before the resource route below,
-    // otherwise GET /users/{user} greedily matches "export" as the id.
-    Route::get('/users/export', [AdminUserManagementController::class, 'export'])->name('users.export');
-    Route::resource('users', AdminUserManagementController::class);
-    Route::post('/users/{user}/toggle-status', [AdminUserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
-    Route::post('/users/{user}/reset-password', [AdminUserManagementController::class, 'resetPassword'])->name('users.reset-password');
-    Route::post('/users/bulk-action', [AdminUserManagementController::class, 'bulkAction'])->name('users.bulk-action');
 });
 
 

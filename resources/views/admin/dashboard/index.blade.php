@@ -15,7 +15,7 @@
     <h2 class="dash-section-title">Data sistem</h2>
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-3">
-            <x-stat-card label="Pengguna" :value="number_format($system['users'])" icon="fa-users" hint="{{ $system['staff'] }} staf" :href="route('admin.users.index')" />
+            <x-stat-card label="Pengguna" :value="number_format($system['users'])" icon="fa-users" hint="{{ $system['staff'] }} staf" :href="route('filament.admin.resources.users.index')" />
         </div>
         <div class="col-6 col-xl-3">
             <x-stat-card label="Layanan aktif" :value="$system['services']" icon="fa-concierge-bell" tone="info" hint="dari {{ $system['services_total'] }} layanan" :href="route('admin.services.index')" />

@@ -1139,3 +1139,14 @@
     background-color: #172554; /* darker blue */
     color: #bfdbfe;
 }
+
+/* Bootstrap (loaded on the same page for legacy admin views) underlines every
+   link; the daisyUI-based shell (sidebar, navbar, breadcrumbs, dropdowns)
+   expects plain links. Scope the reset to the shell only. */
+.menu a,
+.navbar a,
+.breadcrumbs a,
+.dropdown-content a,
+aside a {
+    text-decoration: none;
+}

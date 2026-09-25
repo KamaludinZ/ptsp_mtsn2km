@@ -19,56 +19,9 @@
     top: 6px;
 }
 
-/* Floating Action Buttons - Left Side */
-.floating-action-buttons-left {
-    position: fixed;
-    left: 20px;
-    bottom: 20px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-
-/* Floating button sizing is defined in public-layout.css to avoid conflicts 
-.floating-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    font-size: 20px;
-    color: white;
-    border: none;
-    z-index: 1000;
-}
-*/
-
-.floating-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-.back-to-top-btn {
-    background: var(--bs-primary);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.back-to-top-btn.visible {
-    opacity: 1;
-    visibility: visible;
-}
-
 .accessibility-btn {
-    width: 50px;
-    height: 50px;
+    width: var(--fab-size, 56px);
+    height: var(--fab-size, 56px);
     background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
     color: white;
     border: 3px solid rgba(255, 255, 255, 0.3);

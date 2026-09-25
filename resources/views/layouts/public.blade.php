@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @php
-        $appName = \App\Models\AppSetting::where('key', 'app_name')->value('value') ?? config('app.name', 'PTSP MTsN 2 Kota Malang');
+        $appName = app_brand_name();
         $appFavicon = \App\Models\AppSetting::where('key', 'app_favicon')->value('value') ?? 'favicon.ico';
     @endphp
 
@@ -40,7 +40,7 @@
             </div>
 
             <!-- Loading Text -->
-            <div class="loading-text">PTSP MTsN 2 Kota Malang</div>
+            <div class="loading-text">{{ app_brand_name() }}</div>
             <div class="loading-subtext">Memuat Halaman...</div>
 
             <!-- Loading Dots -->
@@ -164,7 +164,8 @@
         <!-- Back to Top Button -->
         <button onclick="scrollToTop()"
                 id="back-to-top-btn"
-                class="floating-btn back-to-top-btn">
+                class="floating-btn back-to-top-btn"
+                aria-label="Kembali ke atas">
             <i class="fas fa-arrow-up"></i>
         </button>
 
@@ -333,16 +334,14 @@
                 <div class="col-span-1 md:col-span-2 lg:col-span-1">
                     <div class="flex items-center gap-3 mb-4">
                         @if(config('app.logo'))
-                            <img src="{{ asset(config('app.logo')) }}" alt="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} Logo"
+                            <img src="{{ asset(config('app.logo')) }}" alt="{{ app_brand_name() }} Logo"
                                  class="h-12 w-12 object-contain rounded-lg bg-white p-1">
                         @else
-                            <img src="{{ asset('images/kemenag-logo.png') }}" alt="{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }} Logo"
+                            <img src="{{ asset('images/kemenag-logo.png') }}" alt="{{ app_brand_name() }} Logo"
                                  class="h-12 w-12 object-contain rounded-lg bg-white p-1">
                         @endif
-                        <div>
-                            <h3 class="font-bold text-white text-base">{{ config('app.name_full', 'PTSP MTsN 2 KOTA MALANG') }}</h3>
-                            <p class="text-sm opacity-80">Pelayanan Terpadu Satu Pintu</p>
-                        </div>
+                        <strong class="site-footer-brand-name whitespace-nowrap">{{ app_brand_name() }}</strong>
+                    </div>
                     </div>
                     <p class="text-sm opacity-80">
                         Sistem pelayanan terpadu sesuai Permen PANRB 15/2014 untuk kemudahan akses layanan.
@@ -357,10 +356,10 @@
 
                 <nav class="bg-transparent">
                     <h6 class="font-bold uppercase mb-4 text-white">Kontak Kami</h6> 
-                    <div class="flex items-start gap-2 text-sm mb-2 text-white"><i class="fas fa-map-marker-alt mt-1 text-orange-500"></i><span>Jl. Raya Cemorokandang 77 Kota Malang, Jawa Timur</span></div>
-                    <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-phone text-orange-500"></i><span>(0341) 711500</span></div>
-                    <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-envelope text-orange-500"></i><span>mtsnmalang2adm@gmail.com</span></div>
-                    <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-globe text-orange-500"></i><span>www.mtsn2kotamalang.sch.id</span></div>
+                    <div class="flex items-start gap-2 text-sm mb-2 text-white"><i class="fas fa-map-marker-alt mt-1 text-orange-500"></i><span>{{ $contactAddress }}</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-phone text-orange-500"></i><span>{{ $contactPhone }}</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-envelope text-orange-500"></i><span>{{ $contactEmail }}</span></div>
+                    <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-globe text-orange-500"></i><span>{{ $contactWebsite }}</span></div>
                     <div class="flex items-center gap-2 text-sm mb-2 text-white"><i class="fas fa-comment text-orange-500"></i><span>0851 8336 7500 (PTSP)</span></div>
                     <div class="flex items-center gap-2 text-sm text-white"><i class="fas fa-comment text-orange-500"></i><span>0851 8337 5008 (Pengaduan)</span></div>
                 </nav>
@@ -401,12 +400,21 @@
                     <a href="https://sippn.menpan.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm text-white no-underline"><i class="fas fa-external-link-alt text-orange-500"></i><span>SIPPN Menpan</span></a>
                 </nav>
             </div>
-            <div class="mt-10 pt-10 border-t border-gray-700 dark:border-gray-600">
+            @php $siteVisitors = \App\Support\SiteStats::visitors(); @endphp
+            <div class="site-footer-stats" aria-label="Statistik pengunjung situs">
+                <span class="site-footer-stats__title"><i class="fas fa-chart-line" aria-hidden="true"></i>Statistik Pengunjung</span>
+                <dl>
+                    <div><dt>Hari ini</dt><dd>{{ number_format($siteVisitors['today'], 0, ',', '.') }}</dd></div>
+                    <div><dt>Bulan ini</dt><dd>{{ number_format($siteVisitors['month'], 0, ',', '.') }}</dd></div>
+                    <div><dt>Total</dt><dd>{{ number_format($siteVisitors['total'], 0, ',', '.') }}</dd></div>
+                </dl>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-700 dark:border-gray-600">
                 <div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
                     <p class="text-sm opacity-80">
                         <i class="fas fa-code-branch mr-2"></i>
                         <span class="mr-3">v1.0.0</span>
-                        &copy; {{ date('Y') }} {{ config('app.name_full', 'PTSP MTsN 2 Kota Malang') }}. Hak Cipta Dilindungi.
+                        &copy; {{ date('Y') }} {{ app_brand_name() }}. Hak Cipta Dilindungi.
                     </p>
                     <p class="text-sm opacity-80">
                         <i class="fas fa-code mr-1"></i> Dikembangkan dengan <i class="fas fa-heart text-red-500 mx-1"></i> oleh Tim PUSKOM
@@ -519,14 +527,8 @@
         // Show/hide back to top button
         window.addEventListener('scroll', function() {
             const backToTopBtn = document.getElementById('back-to-top-btn');
-            if (window.pageYOffset > 300) {
-                backToTopBtn.style.opacity = '1';
-                backToTopBtn.style.visibility = 'visible';
-            } else {
-                backToTopBtn.style.opacity = '0';
-                backToTopBtn.style.visibility = 'hidden';
-            }
-        });
+            if (backToTopBtn) backToTopBtn.classList.toggle('visible', window.pageYOffset > 300);
+        }, { passive: true });
 
         // Font Size Functions
         function setFontSize(size) {
@@ -652,29 +654,6 @@
                 document.body.classList.add('keyboard-navigation');
                 document.getElementById('keyboardControl').classList.add('active');
             }
-        }
-
-        // Language Toggle
-        function changeLanguage(lang) {
-            console.log('Language changed to:', lang);
-            // Make an AJAX request to change the language
-            fetch(`/set-locale/${lang}`, {
-                method: 'GET',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Reload the page to apply the new language
-                    window.location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error changing language:', error);
-            });
         }
 
     </script>
