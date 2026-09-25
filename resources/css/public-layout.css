@@ -1170,4 +1170,22 @@ footer a:hover:not(.hover\:text-orange-500) {
 .site-footer-stats dd { margin: 0; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
 
 /* Keep the last footer line clear of the floating buttons */
-body > footer[role="contentinfo"] { padding-bottom: 6rem; }
+body > footer[role="contentinfo"] { padding-bottom: 4.5rem; }
+
+.site-footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem 1rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #374151;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: #9ca3af;
+    text-align: center;
+}
+
+.site-footer-stats { margin-top: 1.5rem; padding-top: 1rem; }
+.site-footer-stats + .site-footer-bottom { border-top: 0; margin-top: 0.5rem; padding-top: 0; }

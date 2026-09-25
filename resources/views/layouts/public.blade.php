@@ -408,17 +408,10 @@
                     <div><dt>Total</dt><dd>{{ number_format($siteVisitors['total'], 0, ',', '.') }}</dd></div>
                 </dl>
             </div>
-            <div class="mt-6 pt-6 border-t border-gray-700 dark:border-gray-600">
-                <div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4">
-                    <p class="text-sm opacity-80">
-                        <i class="fas fa-code-branch mr-2"></i>
-                        <span class="mr-3">v1.0.0</span>
-                        &copy; {{ date('Y') }} {{ app_brand_name() }}. Hak Cipta Dilindungi.
-                    </p>
-                    <p class="text-sm opacity-80">
-                        <i class="fas fa-code mr-1"></i> Dikembangkan dengan <i class="fas fa-heart text-red-500 mx-1"></i> oleh Tim PUSKOM
-                    </p>
-                </div>
+            <div class="site-footer-bottom">
+                <span><i class="fas fa-code-branch" aria-hidden="true"></i> v1.0.0</span>
+                <span>&copy; {{ date('Y') }} {{ app_brand_name() }}. Hak Cipta Dilindungi.</span>
+                <span>Dikembangkan dengan <i class="fas fa-heart text-red-500" aria-hidden="true"></i> oleh Tim PUSKOM</span>
             </div>
         </div>
     </footer>
