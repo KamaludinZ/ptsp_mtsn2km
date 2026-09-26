@@ -1,0 +1,84 @@
+# Coolify deployment (Build Pack: Docker Compose). Also works with plain
+# `docker compose up -d --build` when the variables below are exported.
+# Full guide: docs/DEPLOY_COOLIFY.md
+#
+# Coolify fills SERVICE_USER_POSTGRES / SERVICE_PASSWORD_POSTGRES itself and
+# routes the domain to port 8080 via SERVICE_FQDN_APP_8080. Variables written
+# as ${NAME} (no default) must be filled in Coolify's Environment Variables.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - SERVICE_FQDN_APP_8080
+      - APP_NAME=${APP_NAME:-PTSP MTsN 2 Kota Malang}
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_KEY=${APP_KEY}
+      - APP_URL=${APP_URL}
+      - APP_TIMEZONE=${APP_TIMEZONE:-Asia/Jakarta}
+      - LOG_CHANNEL=stderr
+      - LOG_LEVEL=${LOG_LEVEL:-warning}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=${POSTGRES_DB:-ptsp}
+      - DB_USERNAME=${SERVICE_USER_POSTGRES}
+      - DB_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - CACHE_DRIVER=database
+      - SESSION_DRIVER=database
+      - SESSION_LIFETIME=${SESSION_LIFETIME:-120}
+      - SESSION_ENCRYPT=true
+      - SESSION_SECURE_COOKIE=true
+      - QUEUE_CONNECTION=sync
+      - FILESYSTEM_DISK=local
+      - TRUSTED_PROXIES=*
+      - AUTO_MIGRATE=${AUTO_MIGRATE:-true}
+      - SEED_ON_FIRST_DEPLOY=${SEED_ON_FIRST_DEPLOY:-true}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - MAIL_MAILER=${MAIL_MAILER:-log}
+      - MAIL_HOST=${MAIL_HOST:-}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-noreply@mtsn2malang.sch.id}
+      - MAIL_FROM_NAME=${APP_NAME:-PTSP MTsN 2 Kota Malang}
+      - WHATSAPP_API_URL=${WHATSAPP_API_URL:-}
+      - WHATSAPP_API_TOKEN=${WHATSAPP_API_TOKEN:-}
+      - WHATSAPP_SENDER_ID=${WHATSAPP_SENDER_ID:-}
+    volumes:
+      # Uploaded documents, service outputs, logs (must survive redeploys)
+      - ptsp-storage:/var/www/html/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${SERVICE_USER_POSTGRES}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - POSTGRES_DB=${POSTGRES_DB:-ptsp}
+      - TZ=Asia/Jakarta
+    volumes:
+      - ptsp-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  ptsp-storage:
+  ptsp-postgres:

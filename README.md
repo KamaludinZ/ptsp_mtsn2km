@@ -69,9 +69,11 @@ CI (GitHub Actions) menjalankan tes yang sama dengan PostgreSQL 16 dan `composer
 
 ## Deploy
 
-Lihat [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Ringkasnya: siapkan `.env` dari
-`.env.production.example`, lalu jalankan `scripts/build-production.sh`
-(atau `.bat`).
+- **Docker / Coolify (disarankan):** lihat [docs/DEPLOY_COOLIFY.md](docs/DEPLOY_COOLIFY.md).
+  `docker-compose.yml` menjalankan aplikasi dan PostgreSQL 16. Migrasi, data awal, dan
+  cache berjalan otomatis setiap deploy.
+- **Server biasa / cPanel:** lihat [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Siapkan `.env` dari
+  `.env.production.example`, lalu jalankan `scripts/build-production.sh` (atau `.bat`).
 
 ## Kontak
 

@@ -12,6 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Behind a reverse proxy (Coolify/Traefik, Docker) trust its
+        // X-Forwarded-* headers so HTTPS URLs, secure cookies and client IPs
+        // are right. Comma-separated list, or "*" when the app is reachable
+        // only through the proxy (set in the Docker image).
+        if ($proxies = env('TRUSTED_PROXIES')) {
+            $middleware->trustProxies(at: $proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
+
         // Global middleware
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         $middleware->append(\App\Http\Middleware\CheckBlockedIP::class);

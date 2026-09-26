@@ -1,5 +1,8 @@
 # Panduan Deploy (PostgreSQL)
 
+> Deploy dengan Docker di Coolify? Lihat [DEPLOY_COOLIFY.md](DEPLOY_COOLIFY.md). Panduan ini untuk
+> server biasa (VPS atau cPanel) tanpa Docker.
+
 ## 1. Server
 
 - PHP 8.2+ dengan ekstensi `pdo_pgsql`, `mbstring`, `intl`, `gd`, `zip`, `fileinfo`
