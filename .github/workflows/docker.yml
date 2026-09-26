@@ -1,0 +1,81 @@
+name: Docker image
+
+# Builds the production image and boots it with PostgreSQL through
+# docker-compose.yml (the same file Coolify uses), then checks that the app
+# migrates, seeds, and serves its pages.
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  docker-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SERVICE_USER_POSTGRES: ptsp
+      SERVICE_PASSWORD_POSTGRES: ci-secret-password
+      APP_URL: http://localhost:8080
+      ADMIN_PASSWORD: ci-admin-password
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate APP_KEY
+        run: echo "APP_KEY=base64:$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+
+      - name: Build image
+        run: docker compose build app
+
+      - name: Start app and database
+        run: |
+          # Publish the app port for this test only (Coolify uses its proxy)
+          cat > docker-compose.ci.yml <<'YAML'
+          services:
+            app:
+              ports: ["8080:8080"]
+          YAML
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
+
+      - name: Wait until healthy
+        run: |
+          for i in $(seq 1 60); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q app)")
+            echo "app: $status"
+            [ "$status" = "healthy" ] && exit 0
+            sleep 5
+          done
+          docker compose logs app
+          exit 1
+
+      - name: Smoke test pages
+        run: |
+          fail=0
+          for path in /up / /login /register /services /survey /tracking /pengumuman /complaints/submit /cp/login; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8080$path")
+            echo "$code $path"
+            [ "$code" = "200" ] || fail=1
+          done
+          # Compiled assets are referenced and served
+          asset=$(curl -s http://localhost:8080/ | grep -o '/build/assets/[^"]*\.css' | head -1)
+          echo "asset: $asset"
+          [ -n "$asset" ] && [ "$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8080$asset")" = "200" ] || fail=1
+          exit $fail
+
+      - name: Check first-deploy seed and idempotent restart
+        run: |
+          docker compose exec -T postgres psql -U ptsp -d ptsp -tAc "select count(*) from users" | grep -qx 1
+          docker compose exec -T postgres psql -U ptsp -d ptsp -tAc "select count(*) from roles" | grep -vqx 0
+          docker compose restart app
+          sleep 20
+          for i in $(seq 1 30); do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/up)" = "200" ] && break
+            sleep 3
+          done
+          curl -fsS http://localhost:8080/up > /dev/null
+          # Restart must not seed a second time
+          docker compose exec -T postgres psql -U ptsp -d ptsp -tAc "select count(*) from users" | grep -qx 1
+
+      - name: Container logs
+        if: always()
+        run: docker compose logs --no-color --tail=200 app
