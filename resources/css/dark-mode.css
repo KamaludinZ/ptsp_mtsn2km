@@ -199,12 +199,13 @@
     background-color: var(--bs-secondary) !important;
 }
 
-/* Link fixes */
-[data-theme="dark"] a {
+/* Link fixes (public pages colour their own links; this blanket rule would
+   repaint buttons and cards there) */
+[data-theme="dark"]:not(.public-site) a {
     color: #86efac !important;
 }
 
-[data-theme="dark"] a:hover {
+[data-theme="dark"]:not(.public-site) a:hover {
     color: #bbf7d0 !important;
 }
 
@@ -404,11 +405,11 @@
     color: var(--bs-dark-text-secondary) !important;
 }
 
-/* Icon fixes */
-[data-theme="dark"] .fas,
-[data-theme="dark"] .fab,
-[data-theme="dark"] .far,
-[data-theme="dark"] .fal {
+/* Icon fixes (public pages let icons inherit their text colour instead) */
+[data-theme="dark"]:not(.public-site) .fas,
+[data-theme="dark"]:not(.public-site) .fab,
+[data-theme="dark"]:not(.public-site) .far,
+[data-theme="dark"]:not(.public-site) .fal {
     color: var(--bs-dark-text-primary) !important;
 }
 
@@ -648,12 +649,13 @@
 }
 
 /* Header and Footer adaptive */
-[data-theme="dark"] header {
+/* .site-header themes itself through the --hdr-* variables */
+[data-theme="dark"] header:not(.site-header) {
     background-color: var(--bg-dark-2) !important;
     color: var(--text-on-dark-2) !important;
 }
 
-[data-theme="dark"] header * {
+[data-theme="dark"] header:not(.site-header) * {
     color: var(--text-on-dark-2) !important;
 }
 
@@ -703,9 +705,9 @@
     color: var(--bs-dark-text-primary) !important;
 }
 
-[data-theme="dark"] p,
-[data-theme="dark"] span,
-[data-theme="dark"] div {
+[data-theme="dark"]:not(.public-site) p,
+[data-theme="dark"]:not(.public-site) span,
+[data-theme="dark"]:not(.public-site) div {
     color: var(--bs-dark-text-secondary) !important;
 }
 

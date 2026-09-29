@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-      data-theme="{{ \App\Models\AppSetting::where('key', 'theme_public')->value('value') ?? 'light' }}">
+@php $publicTheme = \App\Models\AppSetting::where('key', 'theme_public')->value('value') ?? 'light'; @endphp
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="public-site"
+      data-theme="{{ $publicTheme }}" data-bs-theme="{{ $publicTheme === 'dark' ? 'dark' : 'light' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5.0">
@@ -68,7 +69,7 @@
     @endphp
 
     <!-- Contact Header -->
-    <div class="bg-gray-800 text-gray-200 dark:text-gray-300 py-2 text-xs" role="banner" aria-label="Informasi Kontak">
+    <div class="site-topbar bg-gray-800 text-gray-200 dark:text-gray-300 py-2 text-xs" role="banner" aria-label="Informasi Kontak">
         <div style="max-width: 1280px; margin: 0 auto; padding: 0 1rem;">
             <!-- Desktop View - Centered -->
             <div class="hidden md:flex items-center justify-center gap-4 flex-wrap">
@@ -323,12 +324,12 @@
     @include('layouts.navigation')
 
     <!-- Main Content -->
-    <main id="main-content" role="main">
+    <main id="main-content" class="public-main" role="main">
         @yield('content')
     </main>
 
     <!-- Footer -->
-    <footer role="contentinfo" class="bg-gray-800 text-gray-200 dark:text-gray-300 py-10 px-4">
+    <footer role="contentinfo" class="site-footer bg-gray-800 text-gray-200 dark:text-gray-300 py-10 px-4">
         <div class="max-w-screen-xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 bg-transparent">
                 <div class="col-span-1 md:col-span-2 lg:col-span-1">

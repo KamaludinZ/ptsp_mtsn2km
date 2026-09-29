@@ -49,8 +49,8 @@
     /* Stats Cards */
     .stat-card-visitor {
         background: white;
-        border-radius: 20px;
-        padding: 2rem 1.5rem;
+        border-radius: 14px;
+        padding: 1.25rem 1rem;
         text-align: center;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         transition: all 0.3s ease;
@@ -61,36 +61,36 @@
     }
 
     .stat-card-visitor:hover {
-        transform: translateY(-8px) !important;
+        transform: translateY(-4px) !important;
         box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
         border-color: rgba(21, 128, 61, 0.2);
     }
 
     .stat-card-visitor .stat-icon {
-        width: 70px;
-        height: 70px;
-        margin: 0 auto 1.25rem;
-        border-radius: 16px;
+        width: 48px;
+        height: 48px;
+        margin: 0 auto .75rem;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.75rem;
+        font-size: 1.25rem;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .stat-card-visitor .stat-value {
-        font-size: 3rem;
-        font-weight: 900;
+        font-size: 2rem;
+        font-weight: 800;
         background: linear-gradient(135deg, #15803d 0%, #166534 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
         line-height: 1.2;
     }
 
     .stat-card-visitor .stat-label {
-        font-size: 1rem;
+        font-size: .8125rem;
         color: #6b7280;
         font-weight: 600;
         text-transform: uppercase;
@@ -100,14 +100,15 @@
     /* Tabs */
     .nav-tabs-visitor {
         border: none;
-        gap: 1rem;
+        gap: .5rem;
         margin-bottom: -1px;
     }
 
     .nav-tabs-visitor .nav-link {
         border: 2px solid transparent;
-        border-radius: 12px 12px 0 0;
-        padding: 1rem 2rem;
+        border-radius: 10px 10px 0 0;
+        padding: .7rem 1.25rem;
+        font-size: .9375rem;
         font-weight: 600;
         color: var(--bs-gray-600);
         background: var(--bs-gray-100);
@@ -241,7 +242,9 @@
     }
 
     [data-theme="dark"] .stat-card-visitor .stat-value {
-        color: white !important;
+        background: none;
+        color: #86efac !important;
+        -webkit-text-fill-color: currentColor;
     }
 
     [data-theme="dark"] .stat-card-visitor .stat-label {

@@ -256,5 +256,12 @@
         background-color: #f0fdf4 !important;
         color: #166534;
     }
+
+    /* The checkmark animation masks parts of the circle with patches in the page colour */
+    [data-theme="dark"] .success-checkmark .check-icon::before,
+    [data-theme="dark"] .success-checkmark .check-icon::after,
+    [data-theme="dark"] .success-checkmark .check-icon .icon-fix {
+        background: #111827;
+    }
 </style>
 @endpush

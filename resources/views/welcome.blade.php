@@ -13,7 +13,7 @@
 
 @section('content')
     <!-- Main Content -->
-    <main id="main-content" role="main">
+    <div class="home-page">
         <!-- Hero Section -->
         <section id="hero-section" aria-labelledby="hero-heading">
             <!-- Animated Background Elements -->
@@ -58,35 +58,8 @@
                         Lacak Status Tiket
                     </a>
                 </div>
-
-                <div class="hero-info">
-                    <div class="info-item">
-                        <div style="font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 700; margin-bottom: 8px; color: white;">
-                            <i class="fas fa-clock"></i> 08:00
-                        </div>
-                        <div style="font-size: 0.9rem; opacity: 0.9;">Waktu Buka</div>
-                    </div>
-                    <div class="info-item">
-                        <div style="font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 700; margin-bottom: 8px; color: white;">
-                            <i class="fas fa-clock"></i> 15:00
-                        </div>
-                        <div style="font-size: 0.9rem; opacity: 0.9;">Waktu Tutup</div>
-                    </div>
-                    <div class="info-item">
-                        <div style="font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 700; margin-bottom: 8px; color: white;">
-                            <i class="fas fa-calendar-week"></i> Senin-Jumat
-                        </div>
-                        <div style="font-size: 0.9rem; opacity: 0.9;">Hari Operasional</div>
-                    </div>
-                </div>
             </div>
 
-            <!-- Scroll Indicator -->
-            <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 2; animation: bounce 2s infinite;">
-                <div style="width: 30px; height: 50px; border: 2px solid rgba(255,255,255,0.5); border-radius: 15px; position: relative;">
-                    <div style="width: 4px; height: 10px; background: white; border-radius: 2px; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); animation: scroll 2s infinite;"></div>
-                </div>
-            </div>
         </section>
 
         <!-- About Section -->
@@ -197,7 +170,7 @@
         <section style="background-color: var(--bs-gray-50);" aria-labelledby="stats-heading">
             <div class="container">
                 <div class="text-center mb-5" data-aos="fade-up">
-                    <div class="d-inline-flex align-items-center px-4 py-2 rounded-pill mb-3"
+                    <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill mb-3 section-eyebrow"
                          style="background-color: rgba(20, 83, 45, 0.1);">
                         <i class="fas fa-chart-line me-2" style="color: var(--bs-primary);"></i>
                         <span class="fw-bold text-uppercase" style="color: var(--bs-primary);">Statistik Kinerja</span>
@@ -250,21 +223,21 @@
                 </div>
 
                 <!-- Additional Stats Bar -->
-                <div class="mt-5 p-4 rounded-3 row text-center mx-0 mb-0" style="border: 2px dashed var(--bs-primary); background-color: var(--bs-white);" data-aos="fade-up">
+                <div class="stats-strip mt-5 p-4 rounded-3 row text-center mx-0 mb-0" data-aos="fade-up">
                     <div class="col-6 col-md-3 mb-3 mb-md-0">
-                        <div class="display-6 fw-bold mb-0" style="color: var(--bs-primary);">{{ $fmt($stats['tickets']) }}</div>
+                        <div class="display-6 fw-bold mb-0 stats-strip__value stats-strip__value--green">{{ $fmt($stats['tickets']) }}</div>
                         <div class="text-muted small fw-normal">Permohonan Masuk</div>
                     </div>
                     <div class="col-6 col-md-3 mb-3 mb-md-0">
-                        <div class="display-6 fw-bold mb-0" style="color: var(--bs-secondary);">{{ $fmt($stats['completed_percent'], '%') }}</div>
+                        <div class="display-6 fw-bold mb-0 stats-strip__value stats-strip__value--orange">{{ $fmt($stats['completed_percent'], '%') }}</div>
                         <div class="text-muted small fw-normal">Permohonan Selesai</div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="display-6 fw-bold mb-0" style="color: #047857;">{{ $fmt($stats['respondents']) }}</div>
+                        <div class="display-6 fw-bold mb-0 stats-strip__value stats-strip__value--emerald">{{ $fmt($stats['respondents']) }}</div>
                         <div class="text-muted small fw-normal">Responden Survei</div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="display-6 fw-bold mb-0" style="color: #1d4ed8;">{{ $fmt($stats['closed']) }}</div>
+                        <div class="display-6 fw-bold mb-0 stats-strip__value stats-strip__value--blue">{{ $fmt($stats['closed']) }}</div>
                         <div class="text-muted small fw-normal">Permohonan Ditutup</div>
                     </div>
                 </div>
@@ -275,7 +248,7 @@
         <section id="layanan" aria-labelledby="services-heading">
             <div class="container">
                 <div class="text-center mb-5" data-aos="fade-up">
-                    <div class="d-inline-flex align-items-center px-4 py-2 rounded-pill mb-3"
+                    <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill mb-3 section-eyebrow"
                          style="background-color: rgba(20, 83, 45, 0.1);">
                         <i class="fas fa-th-large me-2" style="color: var(--bs-primary);"></i>
                         <span class="fw-bold text-uppercase" style="color: var(--bs-primary);">Layanan Kami</span>
@@ -404,7 +377,7 @@
         <section id="cara-menggunakan" aria-labelledby="how-to-use-heading" style="background-color: var(--bs-gray-50);">
             <div class="container">
                 <div class="text-center mb-5" data-aos="fade-up">
-                    <div class="d-inline-flex align-items-center px-4 py-2 rounded-pill mb-3"
+                    <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill mb-3 section-eyebrow"
                          style="background-color: rgba(234, 88, 12, 0.1);">
                         <i class="fas fa-question-circle me-2" style="color: var(--bs-secondary);"></i>
                         <span class="fw-bold text-uppercase" style="color: var(--bs-secondary);">Panduan Penggunaan</span>
@@ -620,7 +593,7 @@
                 </div>
             </div>
         </section>
-    </main>
+    </div>
 @endsection
 
 @push('scripts')

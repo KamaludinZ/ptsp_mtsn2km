@@ -40,7 +40,7 @@
 @endphp
 
 @section('content')
-<main id="main-content" class="py-5" style="background-color: var(--bs-gray-50);">
+<div class="py-5" style="background-color: var(--bs-gray-50);">
     <div class="container">
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb mb-0">
@@ -147,5 +147,5 @@
             </a>
         </div>
     </div>
-</main>
+</div>
 @endsection

@@ -136,7 +136,7 @@
     <section style="background-color: var(--bs-gray-50);" aria-labelledby="stats-heading">
         <div class="container">
             <div class="text-center mb-5" data-aos="fade-up">
-                <div class="d-inline-flex align-items-center px-4 py-2 rounded-pill mb-3"
+                <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill mb-3 section-eyebrow"
                      style="background-color: rgba(20, 83, 45, 0.1);">
                     <i class="fas fa-chart-line me-2" style="color: var(--bs-primary);"></i>
                     <span class="fw-bold text-uppercase" style="color: var(--bs-primary);">Statistik Kinerja</span>
@@ -217,22 +217,22 @@
             </div>
 
             <!-- Additional Stats Bar -->
-            <div class="mt-5 p-4 rounded-3 border-2 border-dashed" style="border-color: var(--bs-primary); background-color: var(--bs-white);" data-aos="fade-up" data-aos-delay="500">
+            <div class="stats-strip mt-5 p-4 rounded-3" data-aos="fade-up" data-aos-delay="500">
                 <div class="row text-center">
                     <div class="col-6 col-md-3">
-                        <div class="display-6 fw-bold" style="color: var(--bs-primary);">5000+</div>
+                        <div class="display-6 fw-boldNone stats-strip__value stats-strip__value--green">5000+</div>
                         <div class="text-muted small">Layanan Diproses</div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="display-6 fw-bold" style="color: var(--bs-secondary);">100%</div>
+                        <div class="display-6 fw-boldNone stats-strip__value stats-strip__value--orange">100%</div>
                         <div class="text-muted small">Digitalisasi</div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="display-6 fw-bold" style="color: #10b981;">4.8/5</div>
+                        <div class="display-6 fw-boldNone stats-strip__value stats-strip__value--emerald">4.8/5</div>
                         <div class="text-muted small">Rating Layanan</div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="display-6 fw-bold" style="color: #3b82f6;">99.9%</div>
+                        <div class="display-6 fw-boldNone stats-strip__value stats-strip__value--blue">99.9%</div>
                         <div class="text-muted small">Uptime</div>
                     </div>
                 </div>

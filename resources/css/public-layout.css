@@ -50,8 +50,7 @@ body {
     color: var(--bs-text);
 }
 
-/* Dark mode navbar - sama dengan footer */
-[data-theme="dark"] nav,
+/* Legacy navbar markup (the current header is .site-header) */
 [data-theme="dark"] .navbar,
 [data-theme="dark"] nav.bg-base-100 {
     background: #111827 !important;
@@ -1241,3 +1240,141 @@ body > footer[role="contentinfo"] { padding-bottom: 1.25rem; }
 .ann-filter__meta { display: flex; justify-content: space-between; align-items: center; gap: .75rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; font-size: .8125rem; color: #6b7280; }
 [data-theme="dark"] .ann-filter__meta { border-color: #374151; color: #9ca3af; }
 @media (min-width: 1024px) { .ann-filter__form--svc { grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, .9fr) auto; } }
+
+/* ==========================================================================
+   Public content scale
+   Bootstrap's defaults (display-4 = 56px, h2 = 32px, .lead = 20px, *-lg
+   controls) read oversized at 100% zoom. This file loads after Bootstrap, so
+   rules scoped with :where(.public-main) win over Bootstrap's defaults while
+   keeping low specificity: any page rule that names its own class still wins.
+   ========================================================================== */
+:where(.public-main) h1, :where(.public-main) .h1 { font-size: clamp(1.625rem, 1.3rem + 1vw, 2.125rem); }
+:where(.public-main) h2, :where(.public-main) .h2 { font-size: clamp(1.375rem, 1.2rem + .5vw, 1.625rem); }
+:where(.public-main) h3, :where(.public-main) .h3 { font-size: clamp(1.1875rem, 1.1rem + .3vw, 1.375rem); }
+:where(.public-main) h4, :where(.public-main) .h4 { font-size: 1.125rem; }
+:where(.public-main) h5, :where(.public-main) .h5 { font-size: 1.0625rem; }
+:where(.public-main) h6, :where(.public-main) .h6 { font-size: .9375rem; }
+
+:where(.public-main) .display-4 { font-size: clamp(1.75rem, 1.35rem + 1.1vw, 2.25rem); line-height: 1.2; letter-spacing: -.01em; }
+:where(.public-main) .display-5 { font-size: clamp(1.625rem, 1.3rem + .9vw, 2rem); line-height: 1.2; }
+:where(.public-main) .display-6 { font-size: clamp(1.5rem, 1.3rem + .5vw, 1.75rem); line-height: 1.2; }
+:where(.public-main) .lead { font-size: 1.0625rem; }
+
+/* Bootstrap's fs-* utilities are !important, so the override has to be too */
+:where(.public-main) .fs-1 { font-size: clamp(1.75rem, 1.5rem + .6vw, 2rem) !important; }
+:where(.public-main) .fs-2 { font-size: clamp(1.5rem, 1.3rem + .5vw, 1.625rem) !important; }
+:where(.public-main) .fs-3 { font-size: 1.375rem !important; }
+:where(.public-main) .fs-4 { font-size: 1.1875rem !important; }
+
+/* Headings that carry a Tailwind size class keep that size (Bootstrap's h1-h6
+   rules are unlayered, so they would otherwise beat Tailwind's utilities) */
+:where(.public-main) :is(h1, h2, h3, h4, h5, h6).text-sm { font-size: var(--text-sm); }
+:where(.public-main) :is(h1, h2, h3, h4, h5, h6).text-base { font-size: var(--text-base); }
+:where(.public-main) :is(h1, h2, h3, h4, h5, h6).text-lg { font-size: var(--text-lg); }
+:where(.public-main) :is(h1, h2, h3, h4, h5, h6).text-xl { font-size: var(--text-xl); }
+:where(.public-main) :is(h1, h2, h3, h4, h5, h6).text-2xl { font-size: var(--text-2xl); }
+:where(.public-main) :is(h1, h2, h3, h4, h5, h6).text-3xl { font-size: var(--text-3xl); }
+:where(.public-main) :is(h1, h2, h3, h4, h5, h6).text-4xl { font-size: clamp(1.75rem, 1.35rem + 1.1vw, var(--text-4xl)); }
+:where(.public-main) :is(h1, h2, h3, h4, h5, h6).font-medium { font-weight: 500; }
+:where(.public-main) :is(h1, h2, h3, h4, h5, h6).font-semibold { font-weight: 600; }
+:where(.public-main) :is(h1, h2, h3, h4, h5, h6).font-bold { font-weight: 700; }
+
+/* Card titles are headings semantically but should read at card scale */
+:where(.public-main) :is(h2, h3, h4).card-title { font-size: 1.125rem; }
+
+/* Large controls: keep the comfortable hit area, drop the 20px text */
+:where(.public-main) .btn-lg { padding: .625rem 1.25rem; font-size: 1rem; border-radius: .5rem; }
+:where(.public-main) .form-control-lg,
+:where(.public-main) .form-select-lg,
+:where(.public-main) .input-group-lg > .form-control,
+:where(.public-main) .input-group-lg > .form-select,
+:where(.public-main) .input-group-lg > .input-group-text,
+:where(.public-main) .input-group-lg > .btn { min-height: calc(1.5em + 1.25rem + 2px); padding-top: .625rem; padding-bottom: .625rem; font-size: 1rem; border-radius: .5rem; }
+
+/* Small pill label above section titles ("LAYANAN KAMI", "PENGUMUMAN", ...) */
+:where(.public-main) .section-eyebrow { font-size: .75rem; letter-spacing: .04em; line-height: 1.6; }
+
+/* Form labels read as labels, not headings */
+:where(.public-main) .form-label { font-size: .9375rem; margin-bottom: .375rem; }
+
+/* Bootstrap's .btn-primary is hard-wired to its default blue; match the brand green */
+:where(.public-main) .btn-primary {
+    --bs-btn-bg: #166534; --bs-btn-border-color: #166534;
+    --bs-btn-hover-bg: #14532d; --bs-btn-hover-border-color: #14532d;
+    --bs-btn-active-bg: #052e16; --bs-btn-active-border-color: #052e16;
+    --bs-btn-disabled-bg: #166534; --bs-btn-disabled-border-color: #166534;
+    --bs-btn-focus-shadow-rgb: 22, 101, 52;
+}
+:where(.public-main) .btn-outline-primary {
+    --bs-btn-color: #166534; --bs-btn-border-color: #166534;
+    --bs-btn-hover-bg: #166534; --bs-btn-hover-border-color: #166534;
+    --bs-btn-active-bg: #14532d; --bs-btn-active-border-color: #14532d;
+    --bs-btn-focus-shadow-rgb: 22, 101, 52;
+}
+
+/* Dashed "extra stats" strip on the home and about pages */
+.stats-strip { border: 2px dashed #14532d; background-color: #ffffff; }
+.stats-strip__value--green { color: #14532d; }
+.stats-strip__value--orange { color: #ea580c; }
+.stats-strip__value--emerald { color: #047857; }
+.stats-strip__value--blue { color: #1d4ed8; }
+[data-theme="dark"] .stats-strip { border-color: #4ade80; background-color: #111827; }
+[data-theme="dark"] .stats-strip .stats-strip__value--green { color: #86efac !important; }
+[data-theme="dark"] .stats-strip .stats-strip__value--orange { color: #fdba74 !important; }
+[data-theme="dark"] .stats-strip .stats-strip__value--emerald { color: #6ee7b7 !important; }
+[data-theme="dark"] .stats-strip .stats-strip__value--blue { color: #93c5fd !important; }
+
+/* Dark mode: the contact bar, header and footer share one surface so the page
+   chrome reads as a single frame around the content */
+[data-theme="dark"].public-site {
+    --chrome-bg: #030712;
+    --chrome-border: #1f2937;
+    --hdr-bg: var(--chrome-bg);
+    --hdr-border: var(--chrome-border);
+}
+[data-theme="dark"].public-site .site-topbar,
+[data-theme="dark"].public-site .site-header,
+[data-theme="dark"].public-site .site-footer { background-color: var(--chrome-bg) !important; }
+[data-theme="dark"].public-site .site-topbar { border-bottom: 1px solid var(--chrome-border); }
+[data-theme="dark"].public-site .site-footer { border-top: 1px solid var(--chrome-border); }
+[data-theme="dark"].public-site .site-header nav,
+[data-theme="dark"].public-site .site-footer nav { background: transparent !important; }
+[data-theme="dark"].public-site .site-footer i.text-orange-500 { color: #fb923c !important; }
+[data-theme="dark"].public-site .site-footer .site-footer-stats,
+[data-theme="dark"].public-site .site-footer .site-footer-bottom { border-color: var(--chrome-border); }
+
+/* Service card headers keep their coloured gradient in dark mode, so their text stays white */
+[data-theme="dark"] .service-card .service-header * { color: #ffffff !important; }
+
+/* daisyUI's badge-primary is purple; public pages use the brand green */
+:where(.public-main) .badge-primary { background-color: #166534; border-color: #166534; color: #ffffff; }
+
+/* Dark mode: the brand green (#14532d) is too dark to read on the dark page,
+   so text and outlines that use it switch to a light green */
+[data-theme="dark"].public-site .public-main .text-primary,
+[data-theme="dark"].public-site .public-main [style*="color: var(--bs-primary)"] { color: #86efac !important; }
+[data-theme="dark"].public-site .public-main .btn-primary { color: #ffffff !important; }
+[data-theme="dark"].public-site .public-main .btn-outline-primary {
+    --bs-btn-color: #86efac; --bs-btn-border-color: #4ade80;
+    --bs-btn-hover-color: #ffffff; --bs-btn-hover-bg: #166534; --bs-btn-hover-border-color: #166534;
+    --bs-btn-active-color: #ffffff; --bs-btn-active-bg: #14532d; --bs-btn-active-border-color: #14532d;
+}
+
+/* Dark mode: light surfaces hard-coded in page markup */
+[data-theme="dark"].public-site .public-main .bg-white,
+[data-theme="dark"].public-site .public-main .bg-light { background-color: #1f2937 !important; }
+[data-theme="dark"].public-site .public-main :is(.bg-white, .bg-light).text-dark { color: #f3f4f6 !important; }
+[data-theme="dark"].public-site .public-main [style*="background-color: var(--bs-gray-50)"],
+[data-theme="dark"].public-site .public-main [style*="background-color: var(--bs-gray-100)"] { background-color: #111827 !important; }
+
+/* Dark mode: primary buttons need a lighter green to stand out from the page */
+[data-theme="dark"].public-site .public-main .btn-primary { background-color: #15803d !important; border-color: #15803d !important; }
+[data-theme="dark"].public-site .public-main .btn-primary:hover,
+[data-theme="dark"].public-site .public-main .btn-primary:focus-visible { background-color: #16a34a !important; border-color: #16a34a !important; }
+
+/* Dark mode: survey pages (question cards and radio "tiles") */
+[data-theme="dark"].public-site .question-card { background: #1f2937; border-color: #374151 !important; }
+[data-theme="dark"].public-site .form-check-card label { background: #111827; border-color: #374151 !important; color: #e5e7eb; }
+[data-theme="dark"].public-site .form-check-card label:hover { background: #1f2937; border-color: #4ade80 !important; }
+[data-theme="dark"].public-site .form-check-card .form-check-input:checked + label { background: rgba(34, 197, 94, 0.16) !important; border-color: #4ade80 !important; color: #ffffff; }
+[data-theme="dark"].public-site .bg-light-success { background-color: rgba(34, 197, 94, 0.12) !important; color: #86efac; }

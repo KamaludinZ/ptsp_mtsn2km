@@ -65,7 +65,6 @@ body {
 /* Hero Section */
 #hero-section {
     background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -74,7 +73,7 @@ body {
     text-align: center;
     position: relative;
     z-index: 1;
-    padding-top: 80px;
+    padding: clamp(2.5rem, 2rem + 2vw, 3.5rem) 0 clamp(2.5rem, 2rem + 2vw, 3.5rem);
 }
 
 .hero-content {
@@ -85,9 +84,9 @@ body {
 }
 
 .hero-title {
-    font-size: clamp(1.5rem, 4vw, 3.5rem);
+    font-size: clamp(1.625rem, 1.1rem + 2.2vw, 2.75rem);
     font-weight: 800;
-    margin-bottom: 24px;
+    margin-bottom: .75rem;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     line-height: 1.2;
     white-space: normal;
@@ -101,17 +100,18 @@ body {
 }
 
 .hero-subtitle {
-    font-size: clamp(1.25rem, 3vw, 2rem);
-    font-weight: 300;
-    margin-bottom: 32px;
+    font-size: clamp(1.125rem, 1rem + .6vw, 1.375rem);
+    font-weight: 400;
+    margin-bottom: .5rem;
     opacity: 0;
     animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
     line-height: 1.3;
 }
 
 .hero-description {
-    font-size: clamp(1rem, 2vw, 1.25rem);
-    margin-bottom: 48px;
+    font-size: 1rem;
+    margin-bottom: 1.75rem;
+    opacity: .9;
     opacity: 0;
     max-width: 600px;
     margin-left: auto;
@@ -121,16 +121,17 @@ body {
 }
 
 .hero-datetime {
-    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-size: .9375rem;
     font-weight: 500;
-    margin-bottom: 32px;
+    margin-bottom: 1.5rem;
     opacity: 0;
     animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: .75rem;
     justify-content: center;
     flex-wrap: wrap;
+    font-variant-numeric: tabular-nums;
 }
 
 .hero-datetime .time,
@@ -139,7 +140,7 @@ body {
     align-items: center;
     gap: 8px;
     background: rgba(255,255,255,0.15);
-    padding: 12px 24px;
+    padding: .4rem 1rem;
     border-radius: 50px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.2);
@@ -148,23 +149,22 @@ body {
 .hero-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: .75rem;
     justify-content: center;
-    margin-bottom: 48px;
     opacity: 0;
     animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1) 0.8s forwards;
 }
 
 .hero-btn-primary, .hero-btn-secondary {
-    padding: 16px 32px;
+    padding: .7rem 1.5rem;
     border-radius: 50px;
     text-decoration: none;
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: .9375rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: .5rem;
     transform: translateY(0);
 }
 
@@ -182,25 +182,14 @@ body {
 }
 
 .hero-btn-primary:hover, .hero-btn-secondary:hover {
-    transform: translateY(-4px) scale(1.05);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
-.hero-info {
-    display: flex;
-    justify-content: center;
-    gap: 48px;
-    margin-top: 15px;
-    opacity: 0;
-    animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1) 1s forwards;
-    flex-wrap: wrap;
-}
 
-.info-item {
-    text-align: center;
-    transform: translateY(0);
-    transition: transform 0.3s ease;
-}
+
+
+
 
 /* Animations */
 @keyframes fadeInUp {
@@ -288,7 +277,7 @@ body {
 
 /* Sections */
 section {
-    padding: 4rem 0;
+    padding: clamp(2.5rem, 2rem + 2vw, 3.5rem) 0;
 }
 
 .feature-card, .service-card, .stat-card {
@@ -313,28 +302,28 @@ section {
 }
 
 .feature-card {
-    padding: 2rem;
+    padding: 1.5rem;
     text-align: center;
 }
 
 .feature-icon {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     background: var(--gradient-primary);
-    border-radius: 16px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
     color: var(--bs-white);
 }
 
 .feature-title {
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     font-weight: 700;
     color: var(--bs-gray-900);
-    margin-bottom: 1rem;
+    margin-bottom: .5rem;
 }
 
 [data-theme="dark"] .feature-title {
@@ -343,7 +332,8 @@ section {
 
 .feature-description {
     color: var(--bs-gray-600);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: .9375rem;
     line-height: 1.6;
 }
 
@@ -356,7 +346,7 @@ section {
 }
 
 .service-header {
-    padding: 2rem 1.5rem;
+    padding: 1.5rem 1.25rem;
     text-align: center;
     color: white;
     position: relative;
@@ -375,19 +365,19 @@ section {
 }
 
 .service-icon {
-    width: 64px;
-    height: 64px;
+    width: 52px;
+    height: 52px;
     background: rgba(255,255,255,0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1rem;
-    font-size: 1.5rem;
+    margin: 0 auto .75rem;
+    font-size: 1.25rem;
 }
 
 .service-title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
 }
@@ -398,7 +388,7 @@ section {
 }
 
 .service-body {
-    padding: 1.5rem;
+    padding: 1.25rem;
 }
 
 .service-list {
@@ -408,10 +398,11 @@ section {
 }
 
 .service-list li {
-    padding: 0.75rem 0;
+    padding: 0.6rem 0;
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    font-size: .9375rem;
     border-bottom: 1px solid var(--bs-gray-200);
 }
 
@@ -429,7 +420,7 @@ section {
 }
 
 .stat-card {
-    padding: 2rem 1.5rem;
+    padding: 1.5rem 1.25rem;
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -437,8 +428,8 @@ section {
 }
 
 .stat-number {
-    font-size: 3rem;
-    font-weight: 900;
+    font-size: clamp(1.75rem, 1.4rem + 1vw, 2.25rem);
+    font-weight: 800;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -448,7 +439,7 @@ section {
 }
 
 .stat-label {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--bs-gray-800);
     margin-bottom: 0.75rem;
@@ -546,12 +537,7 @@ footer .text-sm:hover {
         flex-direction: column;
         align-items: center;
     }
-    
-    .hero-info {
-        flex-direction: column;
-        gap: 24px;
-    }
-    
+
     .navbar-nav {
         text-align: center;
     }
@@ -857,7 +843,7 @@ footer .text-sm:hover {
     border: 1px solid rgba(15, 23, 42, 0.08);
     border-top: 4px solid var(--guide-color);
     border-radius: 1rem;
-    padding: 1.75rem;
+    padding: 1.5rem;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
 
@@ -894,7 +880,7 @@ footer .text-sm:hover {
 }
 
 .guide-title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--guide-color);
     margin: 0 0 0.25rem;
@@ -974,7 +960,7 @@ footer .text-sm:hover {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 700;
     margin: 0 0 0.25rem;
     color: var(--bs-text, #1f2937);
@@ -988,6 +974,7 @@ footer .text-sm:hover {
 
 .guide-step-text {
     margin: 0;
+    font-size: .9375rem;
     color: var(--bs-secondary-text, #6b7280);
     line-height: 1.6;
 }

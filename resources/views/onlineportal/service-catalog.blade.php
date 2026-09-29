@@ -338,7 +338,7 @@
 <div class="container py-5">
     <!-- Page Header -->
     <div class="text-center mb-5" data-aos="fade-up">
-        <div class="d-inline-flex align-items-center px-4 py-2 rounded-pill mb-3"
+        <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill mb-3 section-eyebrow"
              style="background-color: rgba(20, 83, 45, 0.1);">
             <i class="fas fa-folder-open me-2" style="color: var(--bs-primary);"></i>
             <span class="fw-bold text-uppercase" style="color: var(--bs-primary);">Layanan Publik</span>

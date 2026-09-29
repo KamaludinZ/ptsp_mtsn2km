@@ -96,6 +96,8 @@
     function applyTheme(theme) {
         root.setAttribute('data-theme', theme);
         root.classList.toggle('dark', theme === 'dark');
+        // Public pages also switch Bootstrap's own colour mode (cards, forms, tables)
+        if (root.classList.contains('public-site')) root.setAttribute('data-bs-theme', theme);
     }
     try {
         var saved = localStorage.getItem('theme');
