@@ -29,14 +29,15 @@ class AuthenticationTest extends TestCase
 
         $this->assertAuthenticated();
         // A plain applicant lands on the applicant portal
-        $response->assertRedirect('/portal/dashboard');
+        $response->assertRedirect('/portal');
     }
 
     public function test_login_redirects_each_role_to_its_own_dashboard(): void
     {
         \App\Support\RoleAccess::sync();
 
-        foreach (['admin' => '/cp', 'kepala_sekolah' => '/pimpinan', 'back_office' => '/backoffice/dashboard', 'front_desk' => '/frontdesk/dashboard'] as $role => $url) {
+        // Every staff role works in the control panel, which shows each its own dashboard
+        foreach (['admin' => '/cp', 'kepala_sekolah' => '/cp', 'back_office' => '/cp', 'front_desk' => '/cp', 'supervisor' => '/cp'] as $role => $url) {
             $user = User::factory()->create();
             $user->assignRole($role);
 
@@ -50,17 +51,19 @@ class AuthenticationTest extends TestCase
         }
     }
 
-    public function test_admin_panel_sidebar_lists_workspace_menus(): void
+    public function test_admin_panel_sidebar_lists_every_workspace(): void
     {
         \App\Support\RoleAccess::sync();
         $admin = User::factory()->create();
         $admin->assignRole('admin');
 
         $this->actingAs($admin)->get('/cp')->assertOk()
-            ->assertSee('Dashboard Loket')
-            ->assertSee('Antrian Tugas')
+            ->assertSee('Registrasi Layanan')
+            ->assertSee('Buku Tamu')
+            ->assertSee('Tiket Layanan')
             ->assertSee('Persetujuan')
-            ->assertSee('Tindak Lanjut Pengaduan')
+            ->assertSee('Pengaduan &amp; WBS', false)
+            ->assertSee('Laporan SKM &amp; SPAK', false)
             ->assertSee('Keamanan Sistem');
     }
 

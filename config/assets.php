@@ -47,20 +47,16 @@ return [
             'resources/css/visitor-book.css' => env('VISITOR_BOOK_CSS_FILE', 'build/assets/visitor-book-C5s1ZgdJ.css'),
             'resources/css/about.css' => env('ABOUT_CSS_FILE', 'build/assets/about-BDmO3v7u.css'),
             'resources/css/contact.css' => env('CONTACT_CSS_FILE', 'build/assets/contact-tn0RQdqM.css'),
-            'resources/css/admin.css' => env('ADMIN_CSS_FILE', 'build/assets/admin-DpSNkUE3.css'),
             'resources/css/loading.css' => env('LOADING_CSS_FILE', 'build/assets/loading-COPmygKa.css'),
             'resources/css/loading-screen.css' => env('LOADING_SCREEN_CSS_FILE', 'build/assets/loading-screen-BZ8i9FOJ.css'),
             'resources/css/public-layout.css' => env('PUBLIC_LAYOUT_CSS_FILE', 'build/assets/public-layout-Dfc2PAdV.css'),
-            'resources/css/filament/admin/theme.css' => env('FILAMENT_THEME_CSS_FILE', 'build/assets/theme-CcY-tmRO.css'),
         ],
         'js' => [
             'resources/js/app.js' => env('APP_JS_FILE', 'js/app-compiled.js'), // Use compiled version instead of Vite-built
             'resources/js/bootstrap-bundle.js' => env('BOOTSTRAP_JS_FILE', 'js/bootstrap-bundle-compiled.js'), // Use compiled version
-            'resources/js/chart-bundle.js' => env('CHART_JS_FILE', 'js/chart-bundle-compiled.js'), // Use compiled version
             'resources/js/accessibility.js' => env('ACCESSIBILITY_JS_FILE', 'js/accessibility-compiled.js'), // Use compiled version
             'resources/js/vendor.js' => env('VENDOR_JS_FILE', 'js/vendor-compiled.js'), // Use compiled version
             'resources/js/bootstrap.js' => env('BOOTSTRAP_JS_FILE', 'js/bootstrap-bundle-compiled.js'), // Use compiled version instead of build
-            'resources/js/charts.js' => env('CHARTS_JS_FILE', 'js/chart-bundle-compiled.js'), // Use compiled version instead of build
         ]
     ],
 

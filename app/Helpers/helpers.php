@@ -2,21 +2,13 @@
 
 if (!function_exists('get_dashboard_route_for_user')) {
     /**
-     * Dashboard URL for a user based on their role (single source of truth,
-     * also used by DashboardController after login).
+     * Landing page after sign-in (single source of truth, also used by
+     * DashboardController): staff work in the control panel, applicants
+     * (guru, pegawai, siswa, wali murid, alumni, instansi, umum) in the portal.
      */
     function get_dashboard_route_for_user(\App\Models\User $user): string
     {
-        return match (true) {
-            // Administrators work in the Filament control panel
-            $user->hasRole('admin') => '/cp',
-            $user->hasAnyRole(['kepala_sekolah', 'kepala_tu']) => '/pimpinan',
-            $user->hasRole('back_office') => '/backoffice/dashboard',
-            $user->hasRole('front_desk') => '/frontdesk/dashboard',
-            $user->hasRole('supervisor') => '/supervision/management',
-            // Applicants: guru, pegawai, siswa, wali murid, alumni, instansi, umum
-            default => '/portal/dashboard',
-        };
+        return $user->isStaff() ? '/cp' : '/portal';
     }
 }
 

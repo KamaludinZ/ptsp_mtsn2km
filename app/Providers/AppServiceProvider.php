@@ -17,7 +17,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \Filament\Http\Responses\Auth\Contracts\LogoutResponse::class,
+            \App\Http\Responses\LogoutResponse::class,
+        );
     }
 
     /**
@@ -25,6 +28,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(Request $request): void
     {
+        // Both panels: Filament remembers the sidebar as open, which on a phone
+        // covers the page on the first visit. Start phones with it closed.
+        \Filament\Support\Facades\FilamentView::registerRenderHook(
+            \Filament\View\PanelsRenderHook::SCRIPTS_AFTER,
+            fn (): string => '<script>document.addEventListener("alpine:initialized",()=>{if(window.innerWidth<1024){window.Alpine.store("sidebar")?.close()}})</script>',
+        );
+
         if (session()->has('locale')) {
             app()->setLocale(session('locale'));
         }

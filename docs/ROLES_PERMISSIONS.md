@@ -9,19 +9,25 @@ Nama peran di bawah ini adalah satu-satunya yang dicek oleh aplikasi. Nama lama 
 
 Didefinisikan di `App\Models\User::STAFF_ROLES`.
 
-| Peran | Untuk | Halaman utama | Panel `/cp` |
-| --- | --- | --- | --- |
-| `admin` | Administrator sistem: master layanan, pengguna, peran, pengaturan, keamanan | `/admin` | Ya |
-| `kepala_sekolah` | Dashboard eksekutif (Modul 13), persetujuan layanan (Modul 8), laporan SKM/SPAK | `/pimpinan` | Ya |
-| `kepala_tu` | Dashboard eksekutif, persetujuan, kontrol pelayanan loket & back office | `/pimpinan` | Ya |
-| `back_office` | Petugas TU: verifikasi, disposisi, status tiket, unggah hasil layanan | `/backoffice/dashboard` | Ya |
-| `front_desk` | Petugas loket: triage, buku tamu, registrasi layanan offline | `/frontdesk/dashboard` | Ya |
-| `supervisor` | Pengawasan: manajemen survei, kinerja, pengaduan | `/supervision/management` | Tidak |
+Semua peran staf bekerja di panel Filament **`/cp`**. Dashboard `/cp` menampilkan ringkasan
+milik peran masing-masing, dan menu samping hanya berisi halaman yang boleh dibuka peran itu.
+
+| Peran | Untuk | Menu di `/cp` |
+| --- | --- | --- |
+| `admin` | Administrator sistem | Semua menu, termasuk master data, pengguna, survei, keamanan |
+| `kepala_sekolah` | Dashboard pimpinan (Modul 13), persetujuan (Modul 8), laporan | Persetujuan, Kinerja Pelayanan, Tiket Layanan, Pengaduan & WBS, Laporan SKM & SPAK |
+| `kepala_tu` | Seperti kepala sekolah, ditambah kontrol loket & back office | Menu pimpinan + Registrasi Layanan, Buku Tamu |
+| `back_office` | Petugas TU: verifikasi, disposisi, status tiket, unggah hasil | Tiket Layanan, Kinerja Pelayanan |
+| `front_desk` | Petugas loket: buku tamu, registrasi layanan offline, serah produk | Registrasi Layanan, Buku Tamu, Tiket Layanan |
+| `supervisor` | Pengawasan: kinerja, pengaduan, laporan survei | Kinerja Pelayanan, Tiket Layanan, Pengaduan & WBS, Laporan SKM & SPAK |
+
+Pemohon memakai panel terpisah **`/portal`**: beranda, Permohonan Saya (detail, unduh hasil,
+tanda terima), Ajukan Layanan (`/portal/ajukan?layanan=<slug>`, dibuka dari katalog), dan profil.
 
 `App\Models\User::LEADERSHIP_ROLES` = `kepala_sekolah`, `kepala_tu`, `supervisor`.
 
 Pengalihan setelah login ada di satu tempat, yaitu `get_dashboard_route_for_user()`
-(`app/Helpers/helpers.php`), yang juga dipakai oleh `DashboardController`.
+(`app/Helpers/helpers.php`): staf ke `/cp`, pemohon ke `/portal`.
 
 ## Peran pemohon
 
@@ -37,36 +43,44 @@ Permission area dimiliki **peran**, bukan pengguna. Pemetaannya ada di satu temp
 `App\Support\RoleAccess::ROLE_PERMISSIONS`, dan diterapkan oleh seeder serta migration
 `2026_09_25_100000_grant_area_permissions_to_roles`.
 
-| Permission | Melindungi | Peran |
+| Permission | Membuka | Peran |
 | --- | --- | --- |
-| `frontdesk.access` | `/frontdesk/*` (loket, buku tamu, registrasi offline, serah produk) | admin, kepala_tu, front_desk |
-| `backoffice.access` | `/backoffice/*` (antrian tugas, proses tiket, unggah hasil) | admin, kepala_sekolah, kepala_tu, back_office |
-| `supervision.access` | `/supervision/*` (dashboard pengawasan, kinerja pelayanan) | admin, kepala_sekolah, kepala_tu, supervisor |
+| `frontdesk.access` | Registrasi Layanan, Buku Tamu (daftar tamu, check-out, cetak kartu), serah produk | admin, kepala_tu, front_desk |
+| `backoffice.access` | Aksi proses tiket (tugaskan, status, catatan, berkas, hasil, workflow), Kinerja Pelayanan | admin, kepala_sekolah, kepala_tu, back_office |
+| `supervision.access` | Kinerja Pelayanan | admin, kepala_sekolah, kepala_tu, supervisor |
 
-Area lain:
+Hak lain:
 
-| Area | Peran |
+| Halaman | Peran |
 | --- | --- |
-| `/pimpinan` (dashboard eksekutif) dan `/pimpinan/persetujuan` | admin, kepala_sekolah, kepala_tu |
-| Tindak lanjut pengaduan & whistleblowing, laporan SKM/SPAK/kinerja (`/admin/complaints`, `/admin/whistleblowing`, `/admin/*-report`) | admin, supervisor, kepala_sekolah, kepala_tu |
-| Sisa `/admin/*` (master data, pengguna, keamanan, pengaturan) | admin |
+| Persetujuan (`/cp/pimpinan/persetujuan`) | admin, kepala_sekolah, kepala_tu (`RoleAccess::LEADERSHIP`) |
+| Pengaduan & WBS, Laporan SKM & SPAK | admin, supervisor, kepala_sekolah, kepala_tu (`RoleAccess::COMPLAINT_HANDLERS`) |
+| Tiket Layanan (daftar & detail) | semua staf (`TicketPolicy::viewAny`) |
+| Master data, pengguna, peran, survei, pengaturan, Keamanan Sistem | admin (`App\Filament\Concerns\AdminOnly`) |
 
-Panel Filament `/cp` diatur oleh `User::canAccessPanel()`. Menu samping hanya menampilkan
-menu yang boleh dibuka peran tersebut; `tests/Feature/DashboardNavigationTest` memastikan
-setiap tautan di dashboard setiap peran bisa dibuka.
+Akses panel diatur oleh `User::canAccessPanel()`: staf aktif ke `/cp`, pemohon aktif ke
+`/portal`; akun nonaktif ditolak. Login untuk kedua panel lewat `/login` situs (dengan kode
+verifikasi). Tes: `FilamentPanelsTest` (halaman per peran), `RolesAndNavigationTest` (menu per
+peran) dan `DashboardNavigationTest` (setiap tautan dashboard setiap akun seed bisa dibuka).
+
+Alamat lama (`/pimpinan`, `/frontdesk/dashboard`, `/backoffice/dashboard`,
+`/supervision/management`, `/portal/dashboard`, `/admin`) dialihkan ke panel baru.
 
 ## Alur tiket & persetujuan
 
 1. Pemohon mengajukan online, atau petugas loket mendaftarkannya offline. Target selesai
    (`estimated_completion_date`) dihitung dari jangka waktu standar layanan (hari kerja).
 2. Petugas TU memverifikasi (`verified`) lalu memproses (`in_process`).
-3. Pimpinan memutuskan di `/pimpinan/persetujuan`: **setujui**, dengan memilih tanda tangan TTE
+3. Pimpinan memutuskan di menu **Persetujuan** (`/cp/pimpinan/persetujuan`) atau di halaman tiket: **setujui**, dengan memilih tanda tangan TTE
    atau TTD, atau **tolak** dengan alasan. Yang boleh memutuskan adalah peran di
    `services.approval_roles` atau pengguna di `approval_users`. Bila keduanya kosong, yang
    memutuskan adalah kepala_sekolah, kepala_tu, atau admin.
 4. Setelah disetujui, petugas TU mengunggah hasil atau menandai tiket selesai. Tiket yang
    belum disetujui tidak bisa diselesaikan. Tiket offline dan produk fisik masuk daftar
    **siap diambil** di dashboard loket sampai diserahkan.
+
+Semua aturan di atas ada di `App\Services\TicketService` (loket: `FrontDeskService`,
+pengaduan: `ComplaintService`), dipakai oleh halaman Filament dan diuji di `ServiceWorkflowTest`.
 
 ## Tiket & dokumen
 

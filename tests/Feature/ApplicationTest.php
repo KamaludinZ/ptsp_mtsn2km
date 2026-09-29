@@ -96,17 +96,39 @@ class ApplicationTest extends TestCase
         $user = User::factory()->create(['user_type' => 'umum']);
         $service = Service::factory()->create(['user_types_allowed' => ['umum']]);
 
-        $this->actingAs($user)->get("/services/{$service->slug}/apply")->assertOk();
+        // The catalogue's "apply" link leads to the applicant portal
+        $this->actingAs($user)->get("/services/{$service->slug}/apply")
+            ->assertRedirect('/portal/ajukan?layanan=' . $service->slug);
+        $this->actingAs($user)->get('/portal/ajukan?layanan=' . $service->slug)->assertOk()->assertSee($service->name);
 
-        $response = $this->actingAs($user)->post("/services/{$service->slug}/apply", [
-            'description' => 'Mohon legalisir ijazah sebanyak 3 lembar.',
-        ]);
+        \Filament\Facades\Filament::setCurrentPanel(\Filament\Facades\Filament::getPanel('portal'));
+        \Livewire\Livewire::withQueryParams(['layanan' => $service->slug])
+            ->test(\App\Filament\Portal\Pages\ApplyService::class)
+            ->fillForm(['description' => 'Mohon legalisir ijazah sebanyak 3 lembar.', 'priority' => 'normal'])
+            ->call('submit')
+            ->assertHasNoFormErrors();
 
         $ticket = Ticket::where('user_id', $user->id)->where('service_id', $service->id)->first();
 
         $this->assertNotNull($ticket);
         $this->assertSame('online', $ticket->mode);
-        $response->assertRedirect(route('onlineportal.application.success', $ticket->ticket_number));
+        $this->assertSame('submitted', $ticket->status);
+        $this->assertMatchesRegularExpression('/^PTSP-\d{6}-\d{4}$/', $ticket->ticket_number);
+        $this->assertDatabaseHas('ticket_logs', ['ticket_id' => $ticket->id, 'action' => 'created']);
+    }
+
+    public function test_services_not_open_to_the_applicant_cannot_be_requested(): void
+    {
+        $user = User::factory()->create(['user_type' => 'umum']);
+        $studentOnly = Service::factory()->create(['user_types_allowed' => ['siswa']]);
+
+        \Filament\Facades\Filament::setCurrentPanel(\Filament\Facades\Filament::getPanel('portal'));
+        $this->actingAs($user);
+        \Livewire\Livewire::withQueryParams(['layanan' => $studentOnly->slug])
+            ->test(\App\Filament\Portal\Pages\ApplyService::class)
+            ->assertRedirect(route('onlineportal.service.catalog'));
+
+        $this->assertDatabaseCount('tickets', 0);
     }
 
     public function test_public_can_submit_complaint_and_track_it(): void
@@ -211,28 +233,32 @@ class ApplicationTest extends TestCase
     {
         $service = Service::factory()->create(['user_types_allowed' => ['umum']]);
 
-        $response = $this->actingAs($this->staff('front_desk', 'frontdesk.access'))->post('/frontdesk/service-application', [
-            'service_id' => $service->id,
-            'applicant_name' => 'Pak Ahmad',
-            'applicant_phone' => '081234567890',
-            'applicant_type' => 'umum',
-            'description' => 'Legalisir ijazah walk-in.',
-        ]);
+        $this->actingAs($this->staff('front_desk', 'frontdesk.access'));
+        \Livewire\Livewire::test(\App\Filament\Pages\FrontDesk\RegisterService::class)
+            ->fillForm([
+                'service_id' => $service->id,
+                'applicant_name' => 'Pak Ahmad',
+                'applicant_phone' => '081234567890',
+                'applicant_type' => 'umum',
+                'description' => 'Legalisir ijazah walk-in.',
+                'priority' => 'normal',
+            ])
+            ->call('submit')
+            ->assertHasNoFormErrors()
+            ->assertRedirect();
 
-        $response->assertRedirect();
         $this->assertDatabaseHas('tickets', ['service_id' => $service->id, 'mode' => 'offline']);
+        $this->assertDatabaseHas('users', ['name' => 'Pak Ahmad', 'whatsapp_number' => '081234567890', 'email' => '081234567890@walkin.local']);
     }
 
     public function test_back_office_user_can_process_ticket(): void
     {
         $ticket = Ticket::factory()->create(['status' => 'submitted']);
 
-        $this->actingAs($this->staff('back_office', 'backoffice.access'))
-            ->from('/backoffice/dashboard')
-            ->post("/backoffice/tickets/{$ticket->id}/status", [
-                'status' => 'in_process',
-                'notes' => 'Berkas lengkap, diproses.',
-            ])->assertRedirect('/backoffice/dashboard');
+        $this->actingAs($this->staff('back_office', 'backoffice.access'));
+        \Livewire\Livewire::test(\App\Filament\Resources\TicketResource\Pages\ViewTicket::class, ['record' => $ticket->id])
+            ->callAction('changeStatus', ['status' => 'in_process', 'notes' => 'Berkas lengkap, diproses.'])
+            ->assertHasNoActionErrors();
 
         $this->assertSame('in_process', $ticket->fresh()->status);
     }
@@ -243,13 +269,12 @@ class ApplicationTest extends TestCase
         $applicant->assignRole('umum');
         $ticket = Ticket::factory()->create(['status' => 'submitted']);
 
-        $this->actingAs($applicant)->get('/backoffice/dashboard')->assertForbidden();
-        $this->actingAs($applicant)->get('/frontdesk/dashboard')->assertForbidden();
-        $this->actingAs($applicant)->get('/supervision/management')->assertForbidden();
-        $this->actingAs($applicant)->get('/supervision/performance')->assertForbidden();
-        $this->actingAs($applicant)
-            ->post("/backoffice/tickets/{$ticket->id}/status", ['status' => 'completed', 'notes' => 'x'])
-            ->assertForbidden();
+        foreach (['/cp', '/cp/tiket', "/cp/tiket/{$ticket->id}", '/cp/kinerja', '/cp/pengaduan', '/cp/visitors'] as $uri) {
+            $this->actingAs($applicant)->get($uri)->assertForbidden();
+        }
+
+        // Nor someone else's ticket in the portal
+        $this->actingAs($applicant)->get("/portal/permohonan/{$ticket->id}")->assertNotFound();
 
         $this->assertSame('submitted', $ticket->fresh()->status);
     }

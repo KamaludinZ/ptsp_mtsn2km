@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ServiceCategoryResource extends Resource
 {
+    use \App\Filament\Concerns\AdminOnly;
+
     protected static ?string $model = ServiceCategory::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-folder';

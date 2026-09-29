@@ -1,53 +1,48 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\OnlinePortalController;
-use App\Http\Controllers\FrontDeskController;
-use App\Http\Controllers\LeadershipController;
-use App\Http\Controllers\BackOfficeController;
-use App\Http\Controllers\SupervisionController;
-use App\Http\Controllers\PublicController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SurveyController;
-use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
-use App\Http\Controllers\Admin\TicketController as AdminTicketController;
-use App\Http\Controllers\Admin\ComplaintController as AdminComplaintController;
-use App\Http\Controllers\Admin\SurveyController as AdminSurveyController;
-use App\Http\Controllers\Admin\SecurityController as AdminSecurityController;
+use App\Http\Controllers\OnlinePortalController;
+use App\Http\Controllers\PengumumanController;
+use App\Http\Controllers\PublicController;
+use App\Http\Controllers\SupervisionController;
+use App\Http\Controllers\SurveyController;
+use Illuminate\Support\Facades\Route;
 
-// Online Portal Routes
+/*
+| Public site. Staff work in the control panel (/cp) and applicants in the
+| portal (/portal); both are Filament panels (App\Providers\Filament).
+*/
+
+Route::get('/', [PublicController::class, 'home'])->name('home');
+Route::get('/about', [PublicController::class, 'about'])->name('public.about');
+Route::get('/contact', [PublicController::class, 'contact'])->name('public.contact');
+Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:public-forms')->name('public.contact.store');
+Route::get('/pengumuman', [PengumumanController::class, 'index'])->name('pengumuman.index');
+Route::get('/pengumuman/{pengumuman}', [PengumumanController::class, 'show'])->name('pengumuman.show');
+Route::get('/visitor-book', [PublicController::class, 'visitorBook'])->name('public.visitor.book');
+Route::post('/visitor-book/submit-visitor', [PublicController::class, 'submitVisitor'])->middleware('throttle:public-forms')->name('public.visitor.submit');
+Route::post('/visitor-book/submit-applicant', [PublicController::class, 'submitApplicant'])->middleware('throttle:public-forms')->name('public.applicant.submit');
+
+// Service catalogue and ticket tracking. Applying happens in the portal.
 Route::get('/services', [OnlinePortalController::class, 'serviceCatalog'])->name('onlineportal.service.catalog');
 Route::get('/services/{slug}', [OnlinePortalController::class, 'serviceDetail'])->name('onlineportal.service.detail');
-Route::get('/services/{slug}/apply', [OnlinePortalController::class, 'applicationForm'])->name('onlineportal.service.apply');
-Route::post('/services/{slug}/apply', [OnlinePortalController::class, 'submitApplication'])->middleware('throttle:public-forms')->name('onlineportal.service.submit');
-Route::get('/application/success/{ticketNumber}', [OnlinePortalController::class, 'applicationSuccess'])->name('onlineportal.application.success');
+Route::get('/services/{slug}/apply', fn (string $slug) => redirect('/portal/ajukan?layanan=' . urlencode($slug)))->name('onlineportal.service.apply');
 Route::get('/tracking', [OnlinePortalController::class, 'trackTicketForm'])->name('onlineportal.track.ticket.form');
 Route::post('/tracking', [OnlinePortalController::class, 'trackTicket'])->middleware('throttle:30,1')->name('onlineportal.track.ticket.result');
 
-// Online Portal Authenticated Routes (Requires Email Verification for pemohon role only)
-Route::middleware(['auth', 'check.email.verification'])->prefix('portal')->name('onlineportal.')->group(function () {
-    Route::get('/dashboard', [OnlinePortalController::class, 'dashboard'])->name('dashboard');
-    Route::get('/my-tickets', [OnlinePortalController::class, 'myTickets'])->name('my-tickets');
-    Route::get('/tickets/{ticketNumber}', [OnlinePortalController::class, 'ticketDetail'])->name('ticket.detail');
-    Route::get('/tickets/{ticketNumber}/download', [OnlinePortalController::class, 'downloadOutput'])->name('ticket.download');
-});
-
-// Supervision Routes
+// Complaints (Dumas) and whistleblowing from the public
 Route::get('/complaints', [SupervisionController::class, 'complaints'])->name('supervision.complaints.dashboard');
 Route::get('/complaints/submit', [SupervisionController::class, 'submitComplaintForm'])->name('supervision.complaint.submit');
 Route::post('/complaints/submit', [SupervisionController::class, 'submitComplaint'])->middleware('throttle:public-forms')->name('supervision.complaint.submit.store');
 Route::get('/complaints/success/{complaintNumber}', [SupervisionController::class, 'complaintSuccess'])->name('supervision.complaint.success');
 Route::get('/complaints/track', [SupervisionController::class, 'showTrackForm'])->name('supervision.complaint.track.form');
 Route::post('/complaints/track', [SupervisionController::class, 'trackComplaint'])->middleware('throttle:30,1')->name('supervision.complaint.track');
-
 Route::get('/whistleblowing', [SupervisionController::class, 'whistleblowingForm'])->name('supervision.whistleblowing.form');
 Route::post('/whistleblowing', [SupervisionController::class, 'submitWhistleblowing'])->middleware('throttle:public-forms')->name('supervision.whistleblowing.submit');
 Route::get('/whistleblowing/success/{complaintNumber}', [SupervisionController::class, 'whistleblowingSuccess'])->name('supervision.whistleblowing.success');
 
-// New Survey System Routes (Multi-step: Identity, SKM, SPAK)
+// Satisfaction survey (SKM/SPAK)
 Route::prefix('survey')->name('survey.')->group(function () {
     Route::get('/', [SurveyController::class, 'showForm'])->name('form');
     Route::post('/step1', [SurveyController::class, 'storeStep1'])->middleware('throttle:public-forms')->name('step1.store');
@@ -58,8 +53,8 @@ Route::prefix('survey')->name('survey.')->group(function () {
     Route::get('/success', [SurveyController::class, 'success'])->name('success');
     Route::get('/results', [SurveyController::class, 'results'])->name('results');
 });
+Route::redirect('/skm-survey', '/survey')->name('supervision.skm.survey');
 
-// API for ticket checking in survey
 Route::get('/api/check-ticket/{ticketNumber}', function($ticketNumber) {
     $ticket = \App\Models\Ticket::with(['user', 'service'])->where('ticket_number', $ticketNumber)->first();
     
@@ -92,103 +87,6 @@ Route::get('/api/check-ticket/{ticketNumber}', function($ticketNumber) {
     ]);
 })->middleware('throttle:30,1')->name('api.check.ticket');
 
-// Old survey URL: redirects to the 3-step survey
-Route::get('/skm-survey', [SupervisionController::class, 'skmSurveyForm'])->name('supervision.skm.survey');
-
-// Public Routes
-Route::get('/', [PublicController::class, 'home'])->name('home');
-Route::get('/pengumuman', [PengumumanController::class, 'index'])->name('pengumuman.index');
-Route::get('/pengumuman/{pengumuman}', [PengumumanController::class, 'show'])->name('pengumuman.show');
-Route::get('/visitor-book', [PublicController::class, 'visitorBook'])->name('public.visitor.book');
-Route::post('/visitor-book/submit-visitor', [PublicController::class, 'submitVisitor'])->middleware('throttle:public-forms')->name('public.visitor.submit');
-Route::post('/visitor-book/submit-applicant', [PublicController::class, 'submitApplicant'])->middleware('throttle:public-forms')->name('public.applicant.submit');
-Route::get('/about', [PublicController::class, 'about'])->name('public.about');
-Route::get('/contact', [PublicController::class, 'contact'])->name('public.contact');
-Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:public-forms')->name('public.contact.store');
-
-// Front Desk Authenticated Routes (Requires Email Verification for pemohon role only)
-Route::middleware(['auth', 'check.email.verification'])->group(function () {
-    Route::prefix('frontdesk')->name('frontdesk.')->group(function () {
-        Route::get('/dashboard', [FrontDeskController::class, 'dashboard'])->name('dashboard');
-        Route::get('/triage', [FrontDeskController::class, 'triage'])->name('triage');
-        Route::post('/triage', [FrontDeskController::class, 'processTriage'])->name('triage.process');
-        Route::get('/service-application', [FrontDeskController::class, 'serviceApplication'])->name('service.application');
-        Route::post('/service-application', [FrontDeskController::class, 'submitServiceApplication'])->name('service.submit');
-        Route::get('/service/success/{ticketNumber}', [FrontDeskController::class, 'serviceSuccess'])->name('service.success');
-        Route::get('/visitor-book', [FrontDeskController::class, 'visitorBook'])->name('visitor-book');
-        Route::get('/active-visitors', [FrontDeskController::class, 'activeVisitors'])->name('active-visitors');
-        Route::post('/visitors/{visitor}/checkout', [FrontDeskController::class, 'checkoutVisitor'])->name('visitors.checkout');
-        Route::get('/visitors/{visitor}/print', [FrontDeskController::class, 'printVisitorPass'])->name('visitors.print');
-        Route::get('/search-visitors', [FrontDeskController::class, 'searchVisitors'])->name('search-visitors');
-        Route::post('/tickets/{ticket}/hand-over', [FrontDeskController::class, 'handOver'])->name('tickets.hand-over');
-    });
-});
-
-// Back Office Routes (Requires Email Verification for pemohon role only)
-Route::middleware(['auth', 'check.email.verification'])->prefix('backoffice')->name('backoffice.')->group(function () {
-    Route::get('/dashboard', [BackOfficeController::class, 'dashboard'])->name('dashboard');
-    Route::get('/tickets/queue', [BackOfficeController::class, 'ticketsQueue'])->name('tickets.queue');
-    Route::get('/tickets/my', [BackOfficeController::class, 'myTickets'])->name('tickets.my');
-    Route::get('/tickets/all', [BackOfficeController::class, 'allTickets'])->name('tickets.all');
-    Route::get('/tickets/{ticketNumber}', [BackOfficeController::class, 'ticketDetail'])->name('tickets.detail');
-    Route::get('/search', [BackOfficeController::class, 'searchTickets'])->name('tickets.search');
-    Route::get('/reports', [BackOfficeController::class, 'reports'])->name('reports');
-
-    // Ticket actions
-    Route::post('/tickets/{ticket}/assign', [BackOfficeController::class, 'assignTicket'])->name('tickets.assign');
-    Route::post('/tickets/{ticket}/status', [BackOfficeController::class, 'updateStatus'])->name('tickets.update-status');
-    Route::post('/tickets/{ticket}/note', [BackOfficeController::class, 'addNote'])->name('tickets.add-note');
-    Route::post('/tickets/{ticket}/upload', [BackOfficeController::class, 'uploadFile'])->name('tickets.upload-file');
-    Route::post('/tickets/{ticket}/upload-output', [BackOfficeController::class, 'uploadOutput'])->name('tickets.upload-output');
-    Route::post('/tickets/{ticket}/complete-step', [BackOfficeController::class, 'completeWorkflowStep'])->name('tickets.complete-step');
-    Route::get('/tickets/{ticket}/download-file/{file}', [BackOfficeController::class, 'downloadFile'])->name('tickets.download-file');
-    Route::get('/tickets/{ticket}/download-output', [BackOfficeController::class, 'downloadOutput'])->name('tickets.download-output');
-});
-
-// Supervision Management Routes (staff only; the public complaint/survey
-// routes above share SupervisionController, so the permission is enforced here)
-Route::middleware(['auth', 'check.email.verification', 'permission:supervision.access'])->prefix('supervision')->name('supervision.')->group(function () {
-    Route::get('/management', [SupervisionController::class, 'surveyManagement'])->name('management');
-    Route::get('/surveys/{surveyId}/results', [SupervisionController::class, 'surveyResults'])->name('survey.results');
-    Route::get('/performance', [SupervisionController::class, 'performance'])->name('performance');
-});
-
-// Complaint follow-up (Modul 10) and survey reports: admin, supervisor and
-// school leaders. {complaint} is numeric so /complaints/create still reaches
-// the admin-only route below.
-Route::middleware(['auth', 'role:admin|supervisor|kepala_sekolah|kepala_tu'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('complaints', AdminComplaintController::class)->only(['index', 'show', 'edit', 'update'])->where(['complaint' => '[0-9]+']);
-    Route::get('/complaints/{complaint}/evidence/{index}', [AdminComplaintController::class, 'downloadEvidence'])->name('complaints.evidence');
-    Route::get('/whistleblowing', [AdminComplaintController::class, 'whistleblowingIndex'])->name('whistleblowing.index');
-    Route::get('/whistleblowing/{complaint}', [AdminComplaintController::class, 'whistleblowingShow'])->name('whistleblowing.show');
-    Route::put('/whistleblowing/{complaint}/status', [AdminComplaintController::class, 'updateWhistleblowingStatus'])->name('whistleblowing.update-status');
-
-    Route::get('/skm-report', [AdminSurveyController::class, 'skmReport'])->name('skm.report');
-    Route::get('/spak-report', [AdminSurveyController::class, 'spakReport'])->name('spak.report');
-    Route::get('/performance-report', [AdminSurveyController::class, 'performanceReport'])->name('performance.report');
-});
-
-// Leadership area (Kepala Sekolah, Kepala TU): executive dashboard (Modul 13)
-// and service approvals (Modul 8)
-Route::middleware(['auth', 'check.email.verification', 'role:admin|kepala_sekolah|kepala_tu'])->prefix('pimpinan')->name('leadership.')->group(function () {
-    Route::get('/', [LeadershipController::class, 'dashboard'])->name('dashboard');
-    Route::get('/persetujuan', [LeadershipController::class, 'approvals'])->name('approvals');
-    Route::post('/persetujuan/{ticket}', [LeadershipController::class, 'decide'])->name('approvals.decide');
-});
-
-// Ticket documents: private files served only to the applicant and staff
-Route::middleware('auth')->prefix('documents')->name('documents.')->group(function () {
-    Route::get('/ticket-files/{file}', [\App\Http\Controllers\TicketDocumentController::class, 'file'])->name('ticket-file');
-    Route::get('/ticket-outputs/{output}', [\App\Http\Controllers\TicketDocumentController::class, 'output'])->name('ticket-output');
-});
-
-// Profile Routes (Requires Email Verification for pemohon role only)
-Route::middleware(['auth', 'check.email.verification'])->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
 Route::get('/set-locale/{locale}', function ($locale) {
     $supportedLocales = config('app.supported_locales', ['en', 'id']);
     if (in_array($locale, $supportedLocales)) {
@@ -198,86 +96,45 @@ Route::get('/set-locale/{locale}', function ($locale) {
     return redirect()->back()->withInput();
 })->name('set-locale');
 
-// Dashboard Route (Requires Email Verification for pemohon role only)
+// Signed-in users: /dashboard sends each account to its own panel
 Route::middleware(['auth', 'check.email.verification'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', fn () => redirect(auth()->user()->isStaff() ? '/cp/profile' : '/portal/profile'))->name('profile.edit');
 });
 
-// Admin Dashboard Routes (consolidated from suadmin)
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    // The former admin dashboard now lives in the Filament panel (/cp)
-    Route::redirect('/', '/cp')->name('dashboard');
-    Route::redirect('/dashboard', '/cp')->name('dashboard.alt');
+// Printable guest pass for the counter (opened from the Buku Tamu page in /cp)
+Route::middleware('auth')->get('/buku-tamu/{visitor}/cetak', fn (\App\Models\Visitor $visitor) => view('print.visitor-pass', compact('visitor')))
+    ->can('view', 'visitor')
+    ->name('visitors.print');
 
-    // Master Data Routes
-    Route::resource('services', AdminServiceController::class);
+// Printable receipt of a service request, for the applicant and staff
+Route::middleware('auth')->get('/tiket/{ticket}/tanda-terima', fn (\App\Models\Ticket $ticket) => view('print.ticket-receipt', ['ticket' => $ticket->load(['user', 'service'])]))
+    ->can('view', 'ticket')
+    ->name('tickets.receipt');
 
-    // Ticket Management
-    Route::resource('tickets', AdminTicketController::class);
-    Route::post('/tickets/{ticket}/upload-requirement', [AdminTicketController::class, 'uploadRequirement'])->name('tickets.upload.requirement');
-    Route::post('/tickets/{ticket}/upload-output', [AdminTicketController::class, 'uploadOutput'])->name('tickets.upload.output');
-    Route::get('/tickets/{ticket}/outputs/{output}/edit', [AdminTicketController::class, 'editOutput'])->name('tickets.output.edit');
-    Route::put('/tickets/{ticket}/outputs/{output}', [AdminTicketController::class, 'updateOutput'])->name('tickets.output.update');
-    Route::post('/tickets/{ticket}/send-ticket-info', [AdminTicketController::class, 'sendTicketInfo'])->name('tickets.send-ticket-info');
-    Route::post('/tickets/{ticket}/send-survey-info', [AdminTicketController::class, 'sendSurveyInfo'])->name('tickets.send-survey-info');
-    Route::post('/tickets/{ticket}/send-survey', [AdminTicketController::class, 'sendSurvey'])->name('tickets.send-survey');
-    Route::post('/tickets/{ticket}/approve', [AdminTicketController::class, 'approveTicket'])->name('tickets.approve');
-    Route::post('/tickets/{ticket}/reject', [AdminTicketController::class, 'rejectTicket'])->name('tickets.reject');
-    Route::post('/tickets/{ticket}/upload-result', [AdminTicketController::class, 'uploadResult'])->name('tickets.upload-result');
-    Route::post('/tickets/{ticket}/mark-ready-pickup', [AdminTicketController::class, 'markReadyForPickup'])->name('tickets.mark-ready-pickup');
+// Evidence attached to complaint/whistleblowing reports: private files for complaint handlers
+Route::middleware('auth')->get('/pengaduan/{complaint}/bukti/{index}', function (\App\Models\Complaint $complaint, int $index) {
+    $path = \App\Services\ComplaintService::evidence($complaint)[$index] ?? abort(404);
 
-    // Complaint Management (create/delete: admin only; follow-up routes below)
-    Route::resource('complaints', AdminComplaintController::class)->only(['create', 'store', 'destroy']);
+    return \Illuminate\Support\Facades\Storage::disk('local')->response($path);
+})->can('view', 'complaint')->whereNumber('index')->name('complaints.evidence');
 
-    // Survey Management
-    Route::get('/survey-management', [AdminSurveyController::class, 'management'])->name('survey.management');
-    Route::get('/survey/archive/{id}', [AdminSurveyController::class, 'getArchiveDetail'])->name('survey.archive.detail');
-
-    // Survey API Endpoints
-    Route::prefix('survey/api')->name('survey.api.')->group(function () {
-        // Question Management
-        Route::get('/identity-questions', [AdminSurveyController::class, 'getIdentityQuestions'])->name('identity-questions');
-        Route::get('/skm-questions', [AdminSurveyController::class, 'getSkmQuestions'])->name('skm-questions');
-        Route::get('/spak-questions', [AdminSurveyController::class, 'getSpakQuestions'])->name('spak-questions');
-        Route::get('/questions/{id}', [AdminSurveyController::class, 'getQuestion'])->name('questions.show');
-        Route::post('/questions', [AdminSurveyController::class, 'createQuestion'])->name('questions.create');
-        Route::put('/questions/{id}', [AdminSurveyController::class, 'updateQuestion'])->name('questions.update');
-        Route::delete('/questions/{id}', [AdminSurveyController::class, 'deleteQuestion'])->name('questions.delete');
-
-        // Edition Management
-        Route::get('/editions', [AdminSurveyController::class, 'getEditions'])->name('editions');
-        Route::post('/editions', [AdminSurveyController::class, 'createEdition'])->name('editions.create');
-        Route::put('/editions/{id}', [AdminSurveyController::class, 'updateEdition'])->name('editions.update');
-        Route::delete('/editions/{id}', [AdminSurveyController::class, 'deleteEdition'])->name('editions.delete');
-
-        // Unsur Management
-        Route::get('/unsurs', [AdminSurveyController::class, 'getUnsurs'])->name('unsurs');
-        Route::post('/unsurs', [AdminSurveyController::class, 'createUnsur'])->name('unsurs.create');
-        Route::put('/unsurs/{id}', [AdminSurveyController::class, 'updateUnsur'])->name('unsurs.update');
-        Route::delete('/unsurs/{id}', [AdminSurveyController::class, 'deleteUnsur'])->name('unsurs.delete');
-    });
-
-    // Security Routes
-    Route::prefix('security')->name('security.')->group(function () {
-        Route::get('/dashboard', [AdminSecurityController::class, 'dashboard'])->name('dashboard');
-        Route::post('/scan/run', [AdminSecurityController::class, 'runSecurityScan'])->name('scan.run');
-        Route::get('/scan/results', [AdminSecurityController::class, 'getScanResults'])->name('scan-results');
-        Route::get('/logs', [AdminSecurityController::class, 'logs'])->name('logs');
-        Route::get('/blocked-ips', [AdminSecurityController::class, 'blockedIPs'])->name('blocked-ips');
-        Route::post('/blocked-ips/block', [AdminSecurityController::class, 'blockIP'])->name('blocked-ips.block');
-        Route::post('/blocked-ips/unblock', [AdminSecurityController::class, 'unblockIP'])->name('blocked-ips.unblock');
-        Route::get('/rate-limiting', [AdminSecurityController::class, 'rateLimitConfig'])->name('rate-limiting');
-        Route::post('/rate-limiting/update', [AdminSecurityController::class, 'updateRateLimitConfig'])->name('rate-limiting.update');
-        Route::get('/maintenance', [AdminSecurityController::class, 'maintenanceMode'])->name('maintenance');
-        Route::post('/maintenance/enable', [AdminSecurityController::class, 'enableMaintenanceMode'])->name('maintenance.enable');
-        Route::post('/maintenance/disable', [AdminSecurityController::class, 'disableMaintenanceMode'])->name('maintenance.disable');
-        Route::post('/cache/clear', [AdminSecurityController::class, 'clearCache'])->name('cache.clear');
-        Route::get('/api/maintenance-status', [AdminSecurityController::class, 'getMaintenanceStatus']);
-    });
+// Ticket documents: private files served only to the applicant and staff
+Route::middleware('auth')->prefix('documents')->name('documents.')->group(function () {
+    Route::get('/ticket-files/{file}', [\App\Http\Controllers\TicketDocumentController::class, 'file'])->name('ticket-file');
+    Route::get('/ticket-outputs/{output}', [\App\Http\Controllers\TicketDocumentController::class, 'output'])->name('ticket-output');
 });
 
+// Addresses of the former role dashboards, kept for bookmarks and e-mails
+Route::redirect('/admin', '/cp')->name('admin.dashboard');
+Route::redirect('/admin/dashboard', '/cp');
+Route::redirect('/pimpinan', '/cp');
+Route::redirect('/pimpinan/persetujuan', '/cp/pimpinan/persetujuan');
+Route::redirect('/frontdesk/dashboard', '/cp');
+Route::redirect('/backoffice/dashboard', '/cp');
+Route::redirect('/supervision/management', '/cp');
+Route::redirect('/portal/dashboard', '/portal');
+Route::redirect('/portal/my-tickets', '/portal/permohonan');
+Route::get('/application/success/{ticketNumber}', fn () => redirect('/portal/permohonan'))->name('onlineportal.application.success');
 
-
-
-// Authentication Routes (these will be handled by Laravel Breeze)
 require __DIR__.'/auth.php';

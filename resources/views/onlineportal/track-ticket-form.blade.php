@@ -523,7 +523,7 @@
                         if (data.service?.mode === 'online' && data.has_output_file) {
                             downloadButton.style.display = 'inline-block';
                             collectButton.style.display = 'none';
-                            downloadButton.href = `{{ url('/portal/tickets') }}/${encodeURIComponent(data.ticket_number)}/download`;
+                            downloadButton.href = '{{ url('/portal/permohonan') }}'; // sign in as the applicant to download
                         } else {
                             downloadButton.style.display = 'none';
                             collectButton.style.display = 'inline-block';

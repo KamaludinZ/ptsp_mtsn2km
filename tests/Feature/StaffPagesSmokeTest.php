@@ -14,7 +14,7 @@ use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
- * Opens every parameterless GET page of the staff areas as each staff role
+ * Opens every parameterless GET page of both panels as each staff role
  * and fails on any server error (500). Catches missing views, routes,
  * columns and PostgreSQL-invalid queries on pages without dedicated tests.
  */
@@ -43,12 +43,13 @@ class StaffPagesSmokeTest extends TestCase
             ->filter(fn ($route) => in_array('GET', $route->methods(), true))
             ->map(fn ($route) => $route->uri())
             ->filter(fn ($uri) => ! str_contains($uri, '{')
-                && Str::startsWith($uri, ['admin', 'backoffice', 'frontdesk', 'supervision', 'pimpinan', 'portal', 'profile'])
+                && Str::startsWith($uri, ['cp', 'portal', 'dashboard', 'profile'])
                 && ! Str::contains($uri, ['export', 'download', 'logout']))
             ->merge([
-                'backoffice/tickets/' . $tickets->first()->ticket_number,
-                'admin/complaints/' . $complaints->first()->id,
-                'admin/whistleblowing/' . $whistleblowing->id,
+                'cp/tiket/' . $tickets->first()->id,
+                'cp/pengaduan/' . $complaints->first()->id,
+                'cp/pengaduan/' . $whistleblowing->id,
+                'tiket/' . $tickets->first()->id . '/tanda-terima',
             ])
             ->unique()
             ->values();
@@ -58,13 +59,31 @@ class StaffPagesSmokeTest extends TestCase
         $failures = [];
         foreach ($users as $role => $user) {
             foreach ($uris as $uri) {
-                $status = $this->actingAs($user)->get('/' . $uri)->getStatusCode();
+                $this->restoreRedirector();
+                $response = $this->actingAs($user)->get('/' . $uri);
+                $status = $response->getStatusCode();
                 if ($status >= 500) {
-                    $failures[] = "{$role} GET /{$uri} -> {$status}";
+                    $failures[] = "{$role} GET /{$uri} -> {$status} " . substr((string) $response->exception?->getMessage(), 0, 160);
                 }
             }
         }
 
         $this->assertSame([], $failures);
+    }
+
+    /**
+     * Every request in this test shares one application instance. A Livewire
+     * page aborted with 403 mid-lifecycle leaves Livewire's redirector bound
+     * as 'redirect', which a real (fresh) request never sees.
+     */
+    private function restoreRedirector(): void
+    {
+        $this->app->singleton('redirect', function ($app) {
+            $redirector = new \Illuminate\Routing\Redirector($app['url']);
+            $redirector->setSession($app['session.store']);
+
+            return $redirector;
+        });
+        $this->app->forgetInstance('redirect');
     }
 }

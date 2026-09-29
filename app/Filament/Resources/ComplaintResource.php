@@ -4,292 +4,193 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ComplaintResource\Pages;
 use App\Models\Complaint;
-use Filament\Forms;
-use Filament\Forms\Form;
+use App\Models\Service;
+use App\Services\ComplaintService;
+use Filament\Infolists\Components\Grid;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 
+/**
+ * Complaints, suggestions and whistleblowing reports from the public site,
+ * followed up by the complaint handlers (Modul 10). Access is decided by
+ * ComplaintPolicy.
+ */
 class ComplaintResource extends Resource
 {
     protected static ?string $model = Complaint::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-exclamation-triangle';
+    protected static ?string $slug = 'pengaduan';
 
-    protected static ?string $navigationLabel = 'Pengaduan';
+    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static ?string $navigationGroup = 'Manajemen Pengaduan';
+    protected static ?string $navigationGroup = 'Pengawasan';
 
-    protected static ?string $pluralModelLabel = 'Pengaduan';
+    protected static ?string $navigationLabel = 'Pengaduan & WBS';
 
-    public static function form(Form $form): Form
+    protected static ?string $modelLabel = 'laporan';
+
+    protected static ?string $pluralModelLabel = 'Pengaduan & Whistleblowing';
+
+    protected static ?string $recordTitleAttribute = 'complaint_number';
+
+    protected static ?int $navigationSort = 1;
+
+    public static function canCreate(): bool
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Informasi Pengaduan')
-                    ->schema([
-                        Forms\Components\TextInput::make('complaint_number')
-                            ->label('Nomor Pengaduan')
-                            ->required()
-                            ->unique(ignoreRecord: true),
-                        Forms\Components\Select::make('type')
-                            ->label('Jenis')
-                            ->options([
-                                'complaint' => 'Pengaduan',
-                                'whistleblowing' => 'Whistleblowing',
-                            ])
-                            ->required(),
-                        Forms\Components\Select::make('category')
-                            ->label('Kategori')
-                            ->options([
-                                'layanan' => 'Layanan',
-                                'pegawai' => 'Pegawai',
-                                'fasilitas' => 'Fasilitas',
-                                'prosedur' => 'Prosedur',
-                                'lainnya' => 'Lainnya',
-                            ])
-                            ->required(),
-                        Forms\Components\Select::make('priority')
-                            ->label('Prioritas')
-                            ->options([
-                                'low' => 'Rendah',
-                                'normal' => 'Normal',
-                                'high' => 'Tinggi',
-                                'urgent' => 'Darurat',
-                            ])
-                            ->default('normal')
-                            ->required(),
-                        Forms\Components\Select::make('status')
-                            ->label('Status')
-                            ->options([
-                                'pending' => 'Menunggu',
-                                'investigating' => 'Sedang Ditindaklanjuti',
-                                'resolved' => 'Selesai',
-                                'rejected' => 'Ditolak',
-                            ])
-                            ->default('pending')
-                            ->required(),
-                    ])
-                    ->columns(2),
+        // Reports come in through the public complaint and whistleblowing forms.
+        return false;
+    }
 
-                Forms\Components\Section::make('Detail Pengaduan')
-                    ->schema([
-                        Forms\Components\TextInput::make('subject')
-                            ->label('Subjek')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\Textarea::make('description')
-                            ->label('Deskripsi')
-                            ->required()
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make('complaint_source')
-                            ->label('Sumber Pengaduan')
-                            ->maxLength(255),
-                    ])
-                    ->columns(2),
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Complaint::where('status', 'submitted')->count();
 
-                Forms\Components\Section::make('Informasi Pemohon')
-                    ->schema([
-                        Forms\Components\TextInput::make('applicant_name')
-                            ->label('Nama Pelapor')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('applicant_email')
-                            ->label('Email Pelapor')
-                            ->email()
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('applicant_phone')
-                            ->label('Telepon Pelapor')
-                            ->tel()
-                            ->maxLength(20),
-                        Forms\Components\TextInput::make('applicant_address')
-                            ->label('Alamat Pelapor')
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
+        return $count ? (string) $count : null;
+    }
 
-                Forms\Components\Section::make('Penanganan Pengaduan')
-                    ->schema([
-                        Forms\Components\Select::make('assigned_to')
-                            ->label('Ditugaskan Ke')
-                            ->relationship('assignedTo', 'name')
-                            ->searchable()
-                            ->preload(),
-                        Forms\Components\Textarea::make('resolution_notes')
-                            ->label('Catatan Penyelesaian')
-                            ->columnSpanFull(),
-                        Forms\Components\DatePicker::make('resolved_at')
-                            ->label('Tanggal Selesai'),
-                        Forms\Components\Select::make('resolution_status')
-                            ->label('Status Penyelesaian')
-                            ->options([
-                                'open' => 'Terbuka',
-                                'in_progress' => 'Sedang Ditindaklanjuti',
-                                'closed' => 'Ditutup',
-                            ]),
-                    ])
-                    ->columns(2),
-            ]);
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Laporan baru yang belum ditelaah';
+    }
+
+    public static function statusColor(?string $status): string
+    {
+        return match ($status) {
+            'submitted' => 'warning',
+            'in_review', 'in_progress' => 'info',
+            'resolved', 'closed' => 'success',
+            default => 'gray',
+        };
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('complaint_number')
-                    ->label('Nomor')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Jenis')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'complaint' => 'warning',
+                Tables\Columns\TextColumn::make('complaint_number')->label('No. Laporan')->searchable()->sortable()->weight('semibold')->copyable(),
+                Tables\Columns\TextColumn::make('complaint_type')->label('Jenis')->badge()
+                    ->formatStateUsing(fn (?string $state) => Complaint::TYPES[$state] ?? $state)
+                    ->color(fn (?string $state) => match ($state) {
                         'whistleblowing' => 'danger',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'complaint' => 'Pengaduan',
-                        'whistleblowing' => 'Whistleblowing',
-                        default => ucfirst($state),
+                        'suggestion' => 'info',
+                        default => 'warning',
                     }),
-                Tables\Columns\TextColumn::make('category')
-                    ->label('Kategori')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'layanan' => 'info',
-                        'pegawai' => 'warning',
-                        'fasilitas' => 'success',
-                        'prosedur' => 'primary',
-                        'lainnya' => 'gray',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'layanan' => 'Layanan',
-                        'pegawai' => 'Pegawai',
-                        'fasilitas' => 'Fasilitas',
-                        'prosedur' => 'Prosedur',
-                        'lainnya' => 'Lainnya',
-                        default => ucfirst($state),
-                    }),
-                Tables\Columns\TextColumn::make('subject')
-                    ->label('Subjek')
-                    ->searchable()
-                    ->limit(50),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'investigating' => 'info',
-                        'resolved' => 'success',
-                        'rejected' => 'danger',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'pending' => 'Menunggu',
-                        'investigating' => 'Sedang Ditindaklanjuti',
-                        'resolved' => 'Selesai',
-                        'rejected' => 'Ditolak',
-                        default => ucfirst($state),
-                    }),
-                Tables\Columns\TextColumn::make('priority')
-                    ->label('Prioritas')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'low' => 'info',
-                        'normal' => 'gray',
-                        'high' => 'warning',
+                Tables\Columns\TextColumn::make('title')->label('Judul')->searchable()->wrap()->limit(60),
+                Tables\Columns\TextColumn::make('reporter_name')->label('Pelapor')->searchable()
+                    ->formatStateUsing(fn (?string $state, Complaint $record) => $record->complaint_type === 'whistleblowing' && $record->anonymous ? 'Anonim' : $state)
+                    ->placeholder('–')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('status')->label('Status')->badge()
+                    ->formatStateUsing(fn (?string $state) => Complaint::STATUSES[$state] ?? $state)
+                    ->color(fn (?string $state) => static::statusColor($state)),
+                Tables\Columns\TextColumn::make('priority')->label('Prioritas')->badge()
+                    ->formatStateUsing(fn (?string $state) => Complaint::PRIORITIES[$state] ?? $state)
+                    ->color(fn (?string $state) => match ($state) {
                         'urgent' => 'danger',
+                        'high' => 'warning',
+                        default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'low' => 'Rendah',
-                        'normal' => 'Normal',
-                        'high' => 'Tinggi',
-                        'urgent' => 'Darurat',
-                        default => ucfirst($state),
-                    }),
-                Tables\Columns\TextColumn::make('applicant_name')
-                    ->label('Pelapor')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Diubah')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('assignee.name')->label('Penangan')->placeholder('–')->toggleable(),
+                Tables\Columns\TextColumn::make('created_at')->label('Masuk')->dateTime('d M Y H:i')->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
-                    ->label('Jenis')
-                    ->options([
-                        'complaint' => 'Pengaduan',
-                        'whistleblowing' => 'Whistleblowing',
-                    ]),
-                Tables\Filters\SelectFilter::make('category')
-                    ->label('Kategori')
-                    ->options([
-                        'layanan' => 'Layanan',
-                        'pegawai' => 'Pegawai',
-                        'fasilitas' => 'Fasilitas',
-                        'prosedur' => 'Prosedur',
-                        'lainnya' => 'Lainnya',
-                    ]),
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
-                    ->options([
-                        'pending' => 'Menunggu',
-                        'investigating' => 'Sedang Ditindaklanjuti',
-                        'resolved' => 'Selesai',
-                        'rejected' => 'Ditolak',
-                    ]),
-                Tables\Filters\SelectFilter::make('priority')
-                    ->label('Prioritas')
-                    ->options([
-                        'low' => 'Rendah',
-                        'normal' => 'Normal',
-                        'high' => 'Tinggi',
-                        'urgent' => 'Darurat',
-                    ]),
-                Tables\Filters\Filter::make('created_at')
-                    ->form([Forms\Components\DatePicker::make('created_at')->label('Tanggal Dibuat')])
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        $data['created_at'],
-                        fn (Builder $query, $date): Builder => $query->whereDate('created_at', $date)
-                    )),
+                Tables\Filters\SelectFilter::make('status')->label('Status')->options(Complaint::STATUSES),
+                Tables\Filters\SelectFilter::make('priority')->label('Prioritas')->options(Complaint::PRIORITIES),
+                Tables\Filters\SelectFilter::make('service_id')->label('Layanan terkait')
+                    ->options(fn () => Service::orderBy('name')->pluck('name', 'id'))->searchable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()->label('Buka'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->emptyStateHeading('Tidak ada laporan')
+            ->emptyStateIcon('heroicon-o-chat-bubble-left-right');
     }
 
-    public static function getRelations(): array
+    public static function infolist(Infolist $infolist): Infolist
     {
-        return [
-            //
-        ];
+        return $infolist->schema([
+            Section::make('Laporan')
+                ->icon('heroicon-o-document-text')
+                ->columns(['default' => 1, 'sm' => 2, 'lg' => 4])
+                ->schema([
+                    TextEntry::make('complaint_type')->label('Jenis')->badge()
+                        ->formatStateUsing(fn (?string $state) => Complaint::TYPES[$state] ?? $state)
+                        ->color(fn (?string $state) => match ($state) {
+                            'whistleblowing' => 'danger',
+                            'suggestion' => 'info',
+                            default => 'warning',
+                        }),
+                    TextEntry::make('status')->label('Status')->badge()
+                        ->formatStateUsing(fn (?string $state) => Complaint::STATUSES[$state] ?? $state)
+                        ->color(fn (?string $state) => static::statusColor($state)),
+                    TextEntry::make('priority')->label('Prioritas')->formatStateUsing(fn (?string $state) => Complaint::PRIORITIES[$state] ?? $state),
+                    TextEntry::make('created_at')->label('Masuk')->dateTime('d M Y H:i'),
+                    TextEntry::make('title')->label('Judul')->columnSpanFull()->weight('semibold'),
+                    TextEntry::make('description')->label('Uraian')->columnSpanFull()->prose(),
+                    TextEntry::make('service.name')->label('Layanan terkait')->placeholder('–'),
+                    TextEntry::make('related_ticket_number')->label('Tiket terkait')->placeholder('–'),
+                    TextEntry::make('incident_date')->label('Tanggal kejadian')->date('d M Y')->placeholder('–'),
+                    TextEntry::make('incident_location')->label('Lokasi kejadian')->placeholder('–'),
+                    TextEntry::make('involved_parties')->label('Pihak terlibat')->placeholder('–')->columnSpanFull(),
+                ]),
+            Grid::make(['default' => 1, 'lg' => 2])->schema([
+                Section::make('Pelapor')
+                    ->icon('heroicon-o-user')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('reporter_name')->label('Nama')->placeholder('Anonim'),
+                        TextEntry::make('reporter_email')->label('Email')->placeholder('–')->copyable(),
+                        TextEntry::make('reporter_phone')->label('Telepon')->placeholder('–')->copyable(),
+                        TextEntry::make('is_confidential')->label('Kerahasiaan')
+                            ->formatStateUsing(fn ($state) => $state ? 'Identitas dirahasiakan' : 'Tidak dirahasiakan'),
+                    ]),
+                Section::make('Bukti')
+                    ->icon('heroicon-o-paper-clip')
+                    ->schema([
+                        TextEntry::make('evidence')
+                            ->hiddenLabel()
+                            ->state(function (Complaint $record) {
+                                $files = ComplaintService::evidence($record);
+
+                                if (! $files) {
+                                    return 'Tidak ada lampiran.';
+                                }
+
+                                return new HtmlString(collect($files)->map(fn ($path, $index) => sprintf(
+                                    '<a href="%s" target="_blank" rel="noopener" style="color:rgb(var(--primary-600));text-decoration:underline">%s</a>',
+                                    e(route('complaints.evidence', [$record, $index])),
+                                    e(basename($path)),
+                                ))->implode('<br>'));
+                            }),
+                    ]),
+            ]),
+            Section::make('Tindak lanjut')
+                ->icon('heroicon-o-arrow-path-rounded-square')
+                ->columns(['default' => 1, 'sm' => 2])
+                ->schema([
+                    TextEntry::make('assignee.name')->label('Penangan')->placeholder('Belum ditentukan'),
+                    TextEntry::make('resolved_at')->label('Diselesaikan')->dateTime('d M Y H:i')->placeholder('–'),
+                    TextEntry::make('response')->label('Tanggapan kepada pelapor')->placeholder('Belum ada tanggapan.')->columnSpanFull()->prose(),
+                    TextEntry::make('resolution_notes')->label('Catatan internal')->placeholder('–')->columnSpanFull(),
+                ]),
+        ]);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListComplaints::route('/'),
-            'create' => Pages\CreateComplaint::route('/create'),
             'view' => Pages\ViewComplaint::route('/{record}'),
-            'edit' => Pages\EditComplaint::route('/{record}/edit'),
         ];
     }
 }

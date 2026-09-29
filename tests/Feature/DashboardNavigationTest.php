@@ -20,13 +20,13 @@ class DashboardNavigationTest extends TestCase
     {
         return [
             'admin' => ['ptsp@mtsn2malang.sch.id', '/cp'],
-            'kepala_sekolah' => ['kepsek@mtsn2malang.sch.id', '/pimpinan'],
-            'kepala_tu' => ['katu@mtsn2malang.sch.id', '/pimpinan'],
-            'back_office' => ['staff1@mtsn2malang.sch.id', '/backoffice/dashboard'],
-            'front_desk' => ['loket1@mtsn2malang.sch.id', '/frontdesk/dashboard'],
-            'supervisor' => ['pengawas@mtsn2malang.sch.id', '/supervision/management'],
-            'siswa' => ['ahmad.rizki@student.mtsn2malang.sch.id', '/portal/dashboard'],
-            'umum' => ['budi.santoso@email.com', '/portal/dashboard'],
+            'kepala_sekolah' => ['kepsek@mtsn2malang.sch.id', '/cp'],
+            'kepala_tu' => ['katu@mtsn2malang.sch.id', '/cp'],
+            'back_office' => ['staff1@mtsn2malang.sch.id', '/cp'],
+            'front_desk' => ['loket1@mtsn2malang.sch.id', '/cp'],
+            'supervisor' => ['pengawas@mtsn2malang.sch.id', '/cp'],
+            'siswa' => ['ahmad.rizki@student.mtsn2malang.sch.id', '/portal'],
+            'umum' => ['budi.santoso@email.com', '/portal'],
         ];
     }
 

@@ -13,7 +13,8 @@ class TicketPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // Every staff role reads the ticket list; applicants see their own in the portal.
+        return $user->isStaff();
     }
 
     /**
@@ -33,15 +34,17 @@ class TicketPolicy
      */
     public function create(User $user): bool
     {
+        // Walk-in requests are registered from the counter page, online ones by applicants.
         return false;
     }
 
     /**
      * Determine whether the user can update the model.
      */
+    /** Working a ticket: back office officers (and admins). */
     public function update(User $user, Ticket $ticket): bool
     {
-        return $user->id === $ticket->created_by || $user->hasRole(['admin', 'supervisor']);
+        return $user->can('backoffice.access');
     }
 
     /**
@@ -49,7 +52,18 @@ class TicketPolicy
      */
     public function delete(User $user, Ticket $ticket): bool
     {
-        return $user->id === $ticket->created_by || $user->hasRole(['admin', 'supervisor']);
+        return $user->hasRole('admin');
+    }
+
+    public function deleteAny(User $user): bool
+    {
+        return $user->hasRole('admin');
+    }
+
+    /** Handing a finished product over at the counter (Modul 9). */
+    public function handOver(User $user, Ticket $ticket): bool
+    {
+        return $user->can('frontdesk.access');
     }
 
     /**

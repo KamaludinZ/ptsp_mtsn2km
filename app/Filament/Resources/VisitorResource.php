@@ -6,6 +6,10 @@ use App\Filament\Resources\VisitorResource\Pages;
 use App\Models\Visitor;
 use Filament\Forms;
 use Filament\Forms\Form;
+use App\Exceptions\TicketActionException;
+use App\Models\User;
+use App\Services\FrontDeskService;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,68 +19,97 @@ class VisitorResource extends Resource
 {
     protected static ?string $model = Visitor::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationLabel = 'Buku Tamu';
 
-    protected static ?string $navigationLabel = 'Pengunjung';
+    protected static ?string $navigationGroup = 'Loket';
 
-    protected static ?string $navigationGroup = 'Manajemen Pengunjung';
+    protected static ?string $navigationIcon = 'heroicon-o-book-open';
 
-    protected static ?string $pluralModelLabel = 'Pengunjung';
+    protected static ?string $modelLabel = 'tamu';
+
+    protected static ?string $pluralModelLabel = 'Buku Tamu';
+
+    protected static ?int $navigationSort = 2;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Visitor::whereDate('check_in_time', today())->whereNull('check_out_time')->count();
+
+        return $count ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Tamu yang masih di lokasi';
+    }
 
     public static function form(Form $form): Form
     {
+        $creating = $form->getOperation() === 'create';
+
         return $form
             ->schema([
-                Forms\Components\Section::make('Informasi Pengunjung')
+                Forms\Components\Section::make('Identitas tamu')
                     ->schema([
                         Forms\Components\TextInput::make('name')
-                            ->label('Nama Lengkap')
+                            ->label('Nama lengkap')
                             ->required()
                             ->maxLength(255),
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Nomor telepon / WhatsApp')
+                            ->tel()
+                            ->maxLength(20),
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
                             ->email()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('phone')
-                            ->label('Telepon')
-                            ->tel()
-                            ->maxLength(20),
                         Forms\Components\TextInput::make('institution')
-                            ->label('Instansi/Organisasi')
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('institution_category')
-                            ->label('Kategori Instansi')
+                            ->label('Instansi / asal')
                             ->maxLength(255),
                     ])
                     ->columns(2),
 
                 Forms\Components\Section::make('Kunjungan')
                     ->schema([
-                        Forms\Components\TextInput::make('purpose')
-                            ->label('Tujuan Kunjungan')
+                        Forms\Components\Textarea::make('purpose')
+                            ->label('Keperluan')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(500)
+                            ->rows(3)
+                            ->columnSpanFull(),
+                        Forms\Components\Select::make('person_to_meet_id')
+                            ->label('Bertemu dengan')
+                            ->options(fn () => User::query()
+                                ->where('is_active', true)
+                                ->whereIn('user_type', ['guru', 'pegawai'])
+                                ->orderBy('name')
+                                ->pluck('name', 'id'))
+                            ->searchable()
+                            ->required()
+                            ->visible($creating),
                         Forms\Components\TextInput::make('person_to_meet')
-                            ->label('Bertemu Dengan')
-                            ->maxLength(255),
+                            ->label('Bertemu dengan')
+                            ->maxLength(255)
+                            ->hidden($creating),
+                        Forms\Components\FileUpload::make('photo_path')
+                            ->label('Foto tamu')
+                            ->image()
+                            ->disk('public')
+                            ->directory('visitor-photos')
+                            ->maxSize(2048)
+                            ->visible($creating),
                         Forms\Components\DateTimePicker::make('check_in_time')
-                            ->label('Waktu Check-in')
-                            ->default(now())
-                            ->required(),
+                            ->label('Waktu check-in')
+                            ->required()
+                            ->hidden($creating),
                         Forms\Components\DateTimePicker::make('check_out_time')
-                            ->label('Waktu Check-out'),
-                        Forms\Components\Select::make('status')
-                            ->label('Status')
-                            ->options([
-                                'active' => 'Sedang berkunjung',
-                                'checked_out' => 'Sudah check-out',
-                            ])
-                            ->default('active')
-                            ->required(),
+                            ->label('Waktu check-out')
+                            ->hidden($creating),
                         Forms\Components\Textarea::make('notes')
                             ->label('Catatan')
                             ->maxLength(500)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->hidden($creating),
                     ])
                     ->columns(2),
             ]);
@@ -89,66 +122,76 @@ class VisitorResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->description(fn (Visitor $record) => $record->phone),
                 Tables\Columns\TextColumn::make('institution')
                     ->label('Instansi')
                     ->searchable()
-                    ->limit(50),
+                    ->limit(40)
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('purpose')
-                    ->label('Tujuan')
+                    ->label('Keperluan')
                     ->searchable()
                     ->limit(50)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('person_to_meet')
-                    ->label('Bertemu')
+                    ->label('Menemui')
                     ->searchable()
+                    ->placeholder('–')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('check_in_time')
-                    ->label('Check-in')
-                    ->dateTime('d/m/Y H:i')
+                    ->label('Masuk')
+                    ->dateTime('d M Y H:i')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('check_out_time')
-                    ->label('Check-out')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->color(fn (string $state): string => $state === 'active' ? 'warning' : 'success')
-                    ->formatStateUsing(fn (string $state): string => $state === 'active' ? 'Berkunjung' : 'Selesai'),
+                    ->label('Keluar')
+                    ->time('H:i')
+                    ->placeholder('Masih di lokasi')
+                    ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
-                    ->options([
-                        'active' => 'Sedang berkunjung',
-                        'checked_out' => 'Sudah check-out',
-                    ]),
                 Tables\Filters\Filter::make('check_in_time')
-                    ->form([Forms\Components\DatePicker::make('check_in_time')->label('Tanggal Check-in')])
+                    ->label('Tanggal kunjungan')
+                    ->form([Forms\Components\DatePicker::make('date')->label('Tanggal kunjungan')])
                     ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        $data['check_in_time'],
+                        $data['date'] ?? null,
                         fn (Builder $query, $date): Builder => $query->whereDate('check_in_time', $date)
-                    )),
+                    ))
+                    ->indicateUsing(fn (array $data) => ($data['date'] ?? null) ? 'Tanggal: ' . \Illuminate\Support\Carbon::parse($data['date'])->translatedFormat('j F Y') : null),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('checkOut')
+                    ->label('Check-out')
+                    ->icon('heroicon-m-arrow-right-start-on-rectangle')
+                    ->color('warning')
+                    ->visible(fn (Visitor $record) => ! $record->check_out_time && auth()->user()->can('checkOut', $record))
+                    ->action(function (Visitor $record) {
+                        try {
+                            app(FrontDeskService::class)->checkOut($record);
+                            Notification::make()->title("{$record->name} sudah check-out.")->success()->send();
+                        } catch (TicketActionException $e) {
+                            Notification::make()->title($e->getMessage())->danger()->send();
+                        }
+                    }),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\Action::make('print')
+                        ->label('Cetak kartu tamu')
+                        ->icon('heroicon-m-printer')
+                        ->url(fn (Visitor $record) => route('visitors.print', $record))
+                        ->openUrlInNewTab(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('check_in_time', 'desc');
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
+            ->defaultSort('check_in_time', 'desc')
+            ->emptyStateHeading('Belum ada tamu')
+            ->emptyStateIcon('heroicon-o-user-group');
     }
 
     public static function getPages(): array

@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class RegistrationCodeResource extends Resource
 {
+    use \App\Filament\Concerns\AdminOnly;
+
     protected static ?string $model = RegistrationCode::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-key';

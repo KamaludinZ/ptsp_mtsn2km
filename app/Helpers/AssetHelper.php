@@ -329,12 +329,6 @@ class AssetHelper
                 return asset($compiledPath);
             }
         }
-        if ($path === 'resources/js/chart-bundle.js') {
-            $compiledPath = 'js/chart-bundle-compiled.js';
-            if (File::exists(public_path($compiledPath))) {
-                return asset($compiledPath);
-            }
-        }
         if ($path === 'resources/js/accessibility.js') {
             $compiledPath = 'js/accessibility-compiled.js';
             if (File::exists(public_path($compiledPath))) {

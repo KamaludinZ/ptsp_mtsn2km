@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class PengumumanResource extends Resource
 {
+    use \App\Filament\Concerns\AdminOnly;
+
     protected static ?string $model = Pengumuman::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-megaphone';

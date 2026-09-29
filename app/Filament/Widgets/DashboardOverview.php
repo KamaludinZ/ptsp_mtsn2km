@@ -14,6 +14,14 @@ use Illuminate\Support\Facades\Cache;
 
 class DashboardOverview extends BaseWidget
 {
+    protected static bool $isDiscovered = false;
+
+    /** Part of the administrator's dashboard. */
+    public static function canView(): bool
+    {
+        return (bool) auth()->user()?->hasRole('admin');
+    }
+
     protected static ?int $sort = 1;
 
     protected static ?string $pollingInterval = null;

@@ -17,6 +17,27 @@ class TicketDocuments
     /** Extensions accepted for applicant documents and service outputs. */
     public const MIMES = 'pdf,jpg,jpeg,png,doc,docx,xls,xlsx,zip';
 
+    /** The same formats as MIME types, for upload fields. */
+    public const MIME_TYPES = [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/zip',
+    ];
+
+    /** Requirement documents from applicants: PDF, images and Word files. */
+    public const REQUIREMENT_MIME_TYPES = [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+
     public static function store(UploadedFile $file, string $directory): string
     {
         return $file->store($directory, 'local');

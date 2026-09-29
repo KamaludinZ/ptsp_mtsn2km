@@ -16,6 +16,8 @@ use FilamentTiptapEditor\TiptapEditor;
 
 class ServiceResource extends Resource
 {
+    use \App\Filament\Concerns\AdminOnly;
+
     protected static ?string $model = Service::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';

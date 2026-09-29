@@ -19,11 +19,8 @@ export default defineConfig({
                 'resources/css/public-layout.css',
                 'resources/css/loading.css',
                 'resources/css/inline-style-fix.css',
-                'resources/css/admin.css',
-                'resources/css/filament/admin/theme.css',
                 'resources/js/app.js',
                 'resources/js/bootstrap-bundle.js',
-                'resources/js/chart-bundle.js',
                 'resources/js/accessibility.js',
             ],
             refresh: true,
@@ -57,9 +54,6 @@ export default defineConfig({
                         if (id.includes('bootstrap')) {
                             return 'bootstrap';
                         }
-                        if (id.includes('chart.js')) {
-                            return 'charts';
-                        }
                         if (id.includes('alpinejs')) {
                             return 'alpine';
                         }
@@ -80,7 +74,6 @@ export default defineConfig({
             'alpinejs',
             'axios',
             'bootstrap',
-            'chart.js',
             '@fortawesome/fontawesome-free',
         ],
     },

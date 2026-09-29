@@ -109,7 +109,7 @@
                                     </div>
                                 @elseif ($isTicket)
                                     <div class="input-group">
-                                        <input type="text" id="{{ $id }}" name="{{ $name }}" value="{{ old($field) }}"
+                                        <input type="text" id="{{ $id }}" name="{{ $name }}" value="{{ old($field, request()->query('tiket')) }}"
                                                class="form-control @error($field) is-invalid @enderror"
                                                placeholder="Contoh: LAYANAN-N-2025-001" autocomplete="off" @required($required)>
                                         <button class="btn btn-outline-secondary" type="button" id="checkTicketBtn" data-input="{{ $id }}">

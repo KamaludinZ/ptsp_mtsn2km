@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class WorkflowResource extends Resource
 {
+    use \App\Filament\Concerns\AdminOnly;
+
     protected static ?string $model = Workflow::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-path';

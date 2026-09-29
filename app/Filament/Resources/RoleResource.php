@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class RoleResource extends Resource
 {
+    use \App\Filament\Concerns\AdminOnly;
+
     protected static ?string $model = RoleModel::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';

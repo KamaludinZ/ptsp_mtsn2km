@@ -7,6 +7,14 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Role;
+use App\Filament\Pages\FrontDesk\RegisterService;
+use App\Filament\Pages\Leadership\Approvals;
+use App\Filament\Pages\Reports\Performance;
+use App\Filament\Portal\Resources\TicketResource as PortalTicketResource;
+use App\Filament\Resources\ComplaintResource;
+use App\Filament\Resources\TicketResource;
+use App\Filament\Resources\UserResource;
+use App\Filament\Resources\VisitorResource;
 use Tests\TestCase;
 
 class RolesAndNavigationTest extends TestCase
@@ -32,12 +40,12 @@ class RolesAndNavigationTest extends TestCase
     {
         $expected = [
             'admin' => '/cp',
-            'kepala_sekolah' => '/pimpinan',
-            'kepala_tu' => '/pimpinan',
-            'back_office' => '/backoffice/dashboard',
-            'front_desk' => '/frontdesk/dashboard',
-            'supervisor' => '/supervision/management',
-            'umum' => '/portal/dashboard',
+            'kepala_sekolah' => '/cp',
+            'kepala_tu' => '/cp',
+            'back_office' => '/cp',
+            'front_desk' => '/cp',
+            'supervisor' => '/cp',
+            'umum' => '/portal',
         ];
 
         foreach ($expected as $role => $url) {
@@ -45,60 +53,68 @@ class RolesAndNavigationTest extends TestCase
         }
     }
 
-    public function test_sidebar_shows_staff_menus_for_canonical_roles(): void
+    /**
+     * [role => [menus shown, menus hidden]]. One test per role: Filament
+     * registers the navigation once per application instance.
+     */
+    public static function menus(): array
     {
-        $this->actingAs($this->userWithRole('front_desk'))->get('/profile')
-            ->assertOk()
-            ->assertSee(route('frontdesk.triage'), false);
-
-        $this->actingAs($this->userWithRole('back_office'))->get('/profile')
-            ->assertOk()
-            ->assertSee(route('backoffice.tickets.queue'), false)
-            ->assertDontSee(route('frontdesk.triage'), false);
-
-        $this->actingAs($this->userWithRole('kepala_sekolah'))->get('/profile')
-            ->assertOk()
-            ->assertSee(route('leadership.approvals'), false)
-            ->assertSee(route('backoffice.tickets.queue'), false)
-            ->assertSee(route('admin.complaints.index'), false)
-            ->assertDontSee(route('frontdesk.triage'), false)
-            ->assertDontSee(route('admin.services.index'), false);
-
-        $this->actingAs($this->userWithRole('supervisor'))->get('/profile')
-            ->assertOk()
-            ->assertSee(route('supervision.performance'), false)
-            ->assertSee(route('admin.complaints.index'), false)
-            ->assertDontSee(route('leadership.approvals'), false)
-            ->assertDontSee(route('backoffice.tickets.queue'), false);
-
-        $this->actingAs($this->userWithRole('umum'))->get('/profile')
-            ->assertOk()
-            ->assertSee(route('onlineportal.service.catalog'), false)
-            ->assertSee(route('survey.form'), false)
-            ->assertDontSee(route('backoffice.tickets.queue'), false)
-            ->assertDontSee(route('admin.complaints.index'), false);
+        return [
+            'front_desk' => ['front_desk', ['register', 'guestBook', 'tickets'], ['approvals', 'complaints', 'users']],
+            'back_office' => ['back_office', ['tickets', 'performance'], ['register', 'approvals', 'users']],
+            'kepala_sekolah' => ['kepala_sekolah', ['approvals', 'tickets', 'complaints', 'performance'], ['register', 'users']],
+            'kepala_tu' => ['kepala_tu', ['approvals', 'register', 'guestBook', 'tickets', 'complaints'], ['users']],
+            'supervisor' => ['supervisor', ['performance', 'complaints'], ['approvals', 'register', 'users']],
+            'admin' => ['admin', ['register', 'guestBook', 'tickets', 'approvals', 'complaints', 'performance', 'users'], []],
+        ];
     }
 
-    public function test_each_area_is_limited_to_its_roles(): void
+    #[\PHPUnit\Framework\Attributes\DataProvider('menus')]
+    public function test_sidebar_shows_each_role_its_own_menus(string $role, array $shown, array $hidden): void
     {
-        $matrix = [
-            '/pimpinan' => ['admin', 'kepala_sekolah', 'kepala_tu'],
-            '/frontdesk/dashboard' => ['admin', 'kepala_tu', 'front_desk'],
-            '/backoffice/dashboard' => ['admin', 'kepala_sekolah', 'kepala_tu', 'back_office'],
-            '/supervision/management' => ['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor'],
-            '/admin/complaints' => ['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor'],
-            '/admin/services' => ['admin'],
+        $urls = [
+            'register' => RegisterService::getUrl(),
+            'guestBook' => VisitorResource::getUrl('index'),
+            'tickets' => TicketResource::getUrl('index'),
+            'approvals' => Approvals::getUrl(),
+            'complaints' => ComplaintResource::getUrl('index'),
+            'performance' => Performance::getUrl(),
+            'users' => UserResource::getUrl('index'),
         ];
-        $roles = ['admin', 'kepala_sekolah', 'kepala_tu', 'back_office', 'front_desk', 'supervisor', 'umum'];
-        $users = collect($roles)->mapWithKeys(fn ($role) => [$role => $this->userWithRole($role)]);
 
-        foreach ($matrix as $url => $allowed) {
-            foreach ($users as $role => $user) {
-                $status = $this->actingAs($user)->get($url)->getStatusCode();
-                in_array($role, $allowed, true)
-                    ? $this->assertSame(200, $status, "{$role} should open {$url}")
-                    : $this->assertSame(403, $status, "{$role} must not open {$url}");
-            }
+        $page = $this->actingAs($this->userWithRole($role))->get('/cp')->assertOk();
+
+        foreach ($shown as $menu) {
+            $page->assertSee('href="' . $urls[$menu] . '"', false);
+        }
+        foreach ($hidden as $menu) {
+            $page->assertDontSee('href="' . $urls[$menu] . '"', false);
+        }
+    }
+
+    public function test_applicants_see_the_portal_menus(): void
+    {
+        $this->actingAs($this->userWithRole('umum'))->get('/portal')->assertOk()
+            ->assertSee(route('onlineportal.service.catalog'), false)
+            ->assertSee(PortalTicketResource::getUrl('index', panel: 'portal'), false)
+            ->assertDontSee('/cp/', false);
+    }
+
+    public function test_former_dashboard_addresses_forward_to_the_panels(): void
+    {
+        $forwards = [
+            '/admin' => '/cp',
+            '/pimpinan' => '/cp',
+            '/pimpinan/persetujuan' => '/cp/pimpinan/persetujuan',
+            '/frontdesk/dashboard' => '/cp',
+            '/backoffice/dashboard' => '/cp',
+            '/supervision/management' => '/cp',
+            '/portal/dashboard' => '/portal',
+            '/portal/my-tickets' => '/portal/permohonan',
+        ];
+
+        foreach ($forwards as $from => $to) {
+            $this->get($from)->assertRedirect($to);
         }
     }
 

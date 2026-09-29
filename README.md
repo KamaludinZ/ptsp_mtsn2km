@@ -8,15 +8,12 @@ back-office yang sama, sesuai standar pelayanan Permen PANRB 15/2014.
 
 | Area | Fungsi | URL |
 | --- | --- | --- |
-| Portal publik | Katalog layanan (14 komponen standar pelayanan), pengajuan online, lacak tiket | `/services`, `/tracking` |
+| Portal publik | Katalog layanan (14 komponen standar pelayanan), lacak tiket | `/services`, `/tracking` |
 | Pengaduan | Pengaduan masyarakat (Dumas) dan Whistleblowing (anonim), lacak pengaduan | `/complaints`, `/whistleblowing` |
 | Survei | SKM dan SPAK 3 langkah (identitas, SKM, SPAK) sesuai Permenpan RB 14/2017 | `/survey` |
 | Buku tamu | Pendaftaran tamu dan pemohon walk-in | `/visitor-book` |
-| Portal pemohon | Riwayat tiket, detail, unduh produk layanan digital | `/portal/*` |
-| Front desk | Triage, registrasi layanan offline, tamu aktif | `/frontdesk/*` |
-| Back office | Antrian tugas, disposisi, status, unggah hasil layanan | `/backoffice/*` |
-| Supervisi | Manajemen survei dan laporan kinerja | `/supervision/*` |
-| Admin | Master layanan, pengguna, peran, pengaduan, survei, keamanan | `/admin`, panel Filament `/cp` |
+| Portal pemohon | Panel Filament: pengajuan layanan, riwayat tiket, unduh hasil, tanda terima, profil | `/portal` |
+| Panel staf | Panel Filament untuk semua peran staf: dashboard per peran, loket (registrasi, buku tamu), tiket layanan, persetujuan pimpinan, kinerja, pengaduan & WBS, laporan SKM/SPAK, master data, survei, keamanan | `/cp` |
 
 Rancangan lengkap ada di [`docs/`](docs):
 [rancangan aplikasi](docs/rancangan_app.md),

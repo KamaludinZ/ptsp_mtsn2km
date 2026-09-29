@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Complaint;
-use App\Models\Survey;
-use App\Support\ServiceMetrics;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -196,96 +194,6 @@ class SupervisionController extends Controller
     {
         $complaint = Complaint::where('complaint_number', $complaintNumber)->firstOrFail();
         return view('supervision.whistleblowing-success', compact('complaint'));
-    }
-
-    /**
-     * SKM Survey form
-     */
-    public function skmSurveyForm()
-    {
-        // The public survey is the 3-step SKM/SPAK flow (SurveyController),
-        // whose questions are managed from the admin survey menu. Keep this
-        // URL working for old links and e-mails.
-        return redirect()->route('survey.form');
-    }
-
-    /**
-     * Supervision dashboard: SKM/SPAK indexes, complaint follow-up and the
-     * survey editions.
-     */
-    public function surveyManagement()
-    {
-        $surveys = Survey::withCount(['questions', 'responses'])
-            ->orderBy('type')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $survey = ServiceMetrics::survey(now()->startOfYear());
-        $complaints = ServiceMetrics::complaints(now()->startOfYear());
-
-        // Reports still waiting for someone to pick them up (Modul 10)
-        $newComplaints = Complaint::where('status', 'submitted')
-            ->latest()
-            ->limit(8)
-            ->get(['id', 'complaint_number', 'complaint_type', 'title', 'created_at']);
-
-        return view('supervision.survey-management', compact('surveys', 'survey', 'complaints', 'newComplaints'));
-    }
-
-    /**
-     * Survey results
-     */
-    public function surveyResults($surveyId)
-    {
-        $survey = Survey::with(['questions', 'responses.answers'])
-            ->findOrFail($surveyId);
-
-        // Calculate results
-        $results = [];
-        foreach ($survey->questions as $question) {
-            $answers = $question->answers()->whereNotNull('rating_value')->pluck('rating_value');
-            $totalAnswers = $answers->count();
-
-            if ($totalAnswers > 0) {
-                $results[$question->id] = [
-                    'question' => $question,
-                    'total_responses' => $totalAnswers,
-                    'average_score' => round($answers->avg(), 2),
-                    'distribution' => [
-                        1 => $answers->where(fn ($v) => (int) $v === 1)->count(),
-                        2 => $answers->where(fn ($v) => (int) $v === 2)->count(),
-                        3 => $answers->where(fn ($v) => (int) $v === 3)->count(),
-                        4 => $answers->where(fn ($v) => (int) $v === 4)->count(),
-                    ],
-                ];
-            }
-        }
-
-        // Calculate overall satisfaction index
-        $overallScore = 0;
-        $totalQuestions = count($results);
-        if ($totalQuestions > 0) {
-            $totalScore = array_sum(array_column($results, 'average_score'));
-            $overallScore = round($totalScore / $totalQuestions, 2);
-        }
-
-        // Index on a 0-100 scale (average unsur score x 25, Permenpan RB 14/2017)
-        $satisfactionIndex = round($overallScore * 25, 2);
-
-        return view('supervision.survey-results', compact(
-            'survey',
-            'results',
-            'overallScore',
-            'satisfactionIndex'
-        ));
-    }
-
-    /**
-     * Performance dashboard
-     */
-    public function performance()
-    {
-        return view('supervision.performance', ServiceMetrics::overview(ServiceMetrics::period(request('periode'))));
     }
 
     /**

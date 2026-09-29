@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AppSettingResource extends Resource
 {
+    use \App\Filament\Concerns\AdminOnly;
+
     protected static ?string $model = AppSetting::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';

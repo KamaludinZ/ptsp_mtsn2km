@@ -3,17 +3,29 @@
 namespace App\Filament\Resources\ComplaintResource\Pages;
 
 use App\Filament\Resources\ComplaintResource;
-use Filament\Actions;
+use App\Models\Complaint;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListComplaints extends ListRecords
 {
     protected static string $resource = ComplaintResource::class;
 
-    protected function getHeaderActions(): array
+    public function getTabs(): array
     {
+        $newCount = fn (array $types) => Complaint::whereIn('complaint_type', $types)->where('status', 'submitted')->count() ?: null;
+
         return [
-            Actions\CreateAction::make(),
+            'pengaduan' => Tab::make('Pengaduan & Saran')
+                ->icon('heroicon-m-chat-bubble-left-right')
+                ->badge($newCount(['complaint', 'suggestion']))
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('complaint_type', ['complaint', 'suggestion'])),
+            'whistleblowing' => Tab::make('Whistleblowing')
+                ->icon('heroicon-m-shield-exclamation')
+                ->badge($newCount(['whistleblowing']))
+                ->badgeColor('danger')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('complaint_type', 'whistleblowing')),
         ];
     }
 }

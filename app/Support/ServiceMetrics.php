@@ -28,7 +28,9 @@ class ServiceMetrics
     ];
 
     public const PERIODS = [
+        'week' => 'Minggu ini',
         'month' => 'Bulan ini',
+        'quarter' => 'Triwulan ini',
         'year' => 'Tahun ini',
         'all' => 'Semua data',
     ];
@@ -42,7 +44,9 @@ class ServiceMetrics
     public static function periodStart(string $period): ?CarbonInterface
     {
         return match ($period) {
+            'week' => now()->startOfWeek(),
             'month' => now()->startOfMonth(),
+            'quarter' => now()->startOfQuarter(),
             'year' => now()->startOfYear(),
             default => null,
         };

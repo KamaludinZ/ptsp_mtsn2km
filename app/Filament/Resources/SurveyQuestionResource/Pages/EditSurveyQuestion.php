@@ -13,8 +13,17 @@ class EditSurveyQuestion extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make(),
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        return SurveyQuestionResource::syncSurveyType($data);
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return SurveyQuestionResource::getUrl('index');
     }
 }

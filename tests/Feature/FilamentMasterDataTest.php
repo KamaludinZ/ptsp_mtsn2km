@@ -37,18 +37,23 @@ class FilamentMasterDataTest extends TestCase
         return $user;
     }
 
-    public function test_only_admin_can_open_the_control_panel(): void
+    public function test_only_admin_manages_master_data(): void
     {
+        // Every staff role works in the panel, but master data stays with administrators.
         foreach (['kepala_sekolah', 'kepala_tu', 'back_office', 'front_desk', 'supervisor'] as $role) {
             $this->actingAsRole($role);
-            $this->get('/cp')->assertForbidden();
+            $this->get('/cp')->assertOk();
+            $this->get('/cp/users')->assertForbidden();
             $this->get('/cp/users/create')->assertForbidden();
             $this->get('/cp/roles/create')->assertForbidden();
+            $this->get('/cp/services/create')->assertForbidden();
+            $this->get('/cp/app-settings')->assertForbidden();
             auth()->logout();
         }
 
         $this->actingAsRole('admin');
         $this->get('/cp')->assertOk();
+        $this->get('/cp/users/create')->assertOk();
     }
 
     public function test_admin_manages_users_and_roles_through_forms(): void
@@ -109,8 +114,10 @@ class FilamentMasterDataTest extends TestCase
         $this->assertSame('Kategori Diubah', $category->refresh()->name);
     }
 
-    public function test_admin_manages_visitors(): void
+    public function test_counter_registers_guests_and_admin_corrects_them(): void
     {
+        $host = \App\Models\User::factory()->create(['user_type' => 'guru', 'name' => 'Bu Guru']);
+
         $this->actingAsRole('admin');
 
         Livewire::test(VisitorPages\CreateVisitor::class)
@@ -118,13 +125,15 @@ class FilamentMasterDataTest extends TestCase
                 'name' => 'Tamu Uji',
                 'institution' => 'Dinas Pendidikan',
                 'purpose' => 'Koordinasi',
-                'check_in_time' => now()->toDateTimeString(),
+                'person_to_meet_id' => $host->id,
             ])
             ->call('create')
             ->assertHasNoFormErrors();
 
         $visitor = Visitor::where('name', 'Tamu Uji')->firstOrFail();
         $this->assertSame('active', $visitor->status);
+        $this->assertSame('Bu Guru', $visitor->person_to_meet);
+        $this->assertNotNull($visitor->check_in_time);
 
         Livewire::test(VisitorPages\EditVisitor::class, ['record' => $visitor->getRouteKey()])
             ->fillForm(['purpose' => 'Rapat'])
@@ -132,6 +141,12 @@ class FilamentMasterDataTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertSame('Rapat', $visitor->refresh()->purpose);
+
+        Livewire::test(VisitorPages\ListVisitors::class)
+            ->callTableAction('checkOut', $visitor);
+
+        $this->assertNotNull($visitor->refresh()->check_out_time);
+        $this->assertSame('checked_out', $visitor->status);
     }
 
     public function test_admin_manages_announcements(): void
