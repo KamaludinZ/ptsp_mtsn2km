@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Complaint;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class SupervisionController extends Controller
 {
@@ -24,15 +24,10 @@ class SupervisionController extends Controller
             ->limit(10)
             ->get();
 
-        return view('supervision.complaints', compact('stats', 'recentComplaints'));
-    }
+        $tab = old('form', request('tab'));
+        $activeTab = in_array($tab, ['whistleblowing', 'saran'], true) ? $tab : 'dumas';
 
-    /**
-     * Submit complaint form
-     */
-    public function submitComplaintForm()
-    {
-        return view('supervision.complaint-form');
+        return view('supervision.complaints', compact('stats', 'recentComplaints', 'activeTab'));
     }
 
     /**
@@ -52,7 +47,6 @@ class SupervisionController extends Controller
         ]);
 
         $complaint = Complaint::create([
-            'complaint_number' => $this->generateComplaintNumber(),
             'complaint_type' => $validated['complaint_type'],
             'reporter_name' => $validated['reporter_name'],
             'reporter_email' => $validated['reporter_email'],
@@ -72,6 +66,33 @@ class SupervisionController extends Controller
 
         return redirect()->route('supervision.complaint.success', $complaint->complaint_number)
             ->with('success', 'Pengaduan berhasil disimpan dengan nomor: ' . $complaint->complaint_number);
+    }
+
+    /**
+     * Submit a suggestion (saran): only the text is required.
+     */
+    public function submitSuggestion(Request $request)
+    {
+        $validated = $request->validate([
+            'reporter_name' => 'nullable|string|max:255',
+            'reporter_email' => 'nullable|email|max:255',
+            'suggestion' => 'required|string|max:2000',
+        ], [
+            'suggestion.required' => 'Tuliskan saran Anda.',
+        ]);
+
+        Complaint::create([
+            'complaint_type' => 'suggestion',
+            'title' => Str::limit(Str::squish($validated['suggestion']), 80),
+            'description' => $validated['suggestion'],
+            'reporter_name' => $validated['reporter_name'] ?? null,
+            'reporter_email' => $validated['reporter_email'] ?? null,
+            'status' => 'submitted',
+            'anonymous' => empty($validated['reporter_name']),
+        ]);
+
+        return redirect()->route('supervision.complaints.dashboard', ['tab' => 'saran'])
+            ->with('suggestion_success', 'Terima kasih! Saran Anda sudah kami terima.');
     }
 
     /**
@@ -138,14 +159,6 @@ class SupervisionController extends Controller
     }
 
     /**
-     * Whistleblowing form
-     */
-    public function whistleblowingForm()
-    {
-        return view('supervision.complaint-form', ['activeTab' => 'whistleblowing']);
-    }
-
-    /**
      * Submit whistleblowing
      */
     public function submitWhistleblowing(Request $request)
@@ -159,13 +172,12 @@ class SupervisionController extends Controller
             'reporter_name' => 'nullable|string|max:255',
             'reporter_email' => 'nullable|email|max:255',
             'reporter_phone' => 'nullable|string|max:20',
-            'attachment.*' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf',
+            'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf',
         ]);
 
         $isAnonymous = (bool) ($validated['anonymous'] ?? false);
 
         $complaint = Complaint::create([
-            'complaint_number' => $this->generateComplaintNumber(),
             'complaint_type' => 'whistleblowing',
             'category' => $validated['violation_category'] ?? null,
             'title' => $validated['complaint_title'],
@@ -194,31 +206,5 @@ class SupervisionController extends Controller
     {
         $complaint = Complaint::where('complaint_number', $complaintNumber)->firstOrFail();
         return view('supervision.whistleblowing-success', compact('complaint'));
-    }
-
-    /**
-     * Generate complaint number
-     */
-    private function generateComplaintNumber()
-    {
-        $prefix = match(request()->segment(2)) {
-            'complaints' => 'KPL',
-            'whistleblowing' => 'WBL',
-            default => 'KPL',
-        };
-
-        $date = Carbon::now()->format('Ym');
-
-        // Count alone can collide with a soft-deleted row still holding a
-        // number (unique constraint applies regardless of deleted_at), so
-        // derive the next sequence from the highest existing number instead.
-        $lastNumber = Complaint::withTrashed()
-            ->where('complaint_number', 'like', "{$prefix}-{$date}-%")
-            ->orderByRaw("CAST(RIGHT(complaint_number, 4) AS INTEGER) DESC")
-            ->value('complaint_number');
-
-        $sequence = $lastNumber ? ((int) substr($lastNumber, -4)) + 1 : 1;
-
-        return sprintf('%s-%s-%04d', $prefix, $date, $sequence);
     }
 }

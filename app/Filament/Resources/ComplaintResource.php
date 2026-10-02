@@ -46,9 +46,15 @@ class ComplaintResource extends Resource
         return false;
     }
 
+    /** Suggestions have their own menu (SuggestionResource). */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('complaint_type', '!=', 'suggestion');
+    }
+
     public static function getNavigationBadge(): ?string
     {
-        $count = Complaint::where('status', 'submitted')->count();
+        $count = static::getEloquentQuery()->where('status', 'submitted')->count();
 
         return $count ? (string) $count : null;
     }

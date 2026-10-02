@@ -44,7 +44,7 @@ class DashboardOverview extends BaseWidget
                 $todayVisitors = Visitor::whereDate('created_at', now()->today())->count();
 
                 // Complaint & WBS
-                $pendingComplaints = Complaint::where('complaint_type', '!=', 'whistleblowing')
+                $pendingComplaints = Complaint::where('complaint_type', 'complaint')
                     ->whereIn('status', ['submitted', 'in_review', 'in_progress'])
                     ->count();
                 $pendingWBS = Complaint::where('complaint_type', 'whistleblowing')

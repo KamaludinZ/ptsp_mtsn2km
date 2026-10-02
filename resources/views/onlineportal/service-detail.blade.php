@@ -24,7 +24,7 @@
         ['key' => 'kompetensi_pelaksana', 'no' => 8, 'icon' => 'fa-user-tie', 'title' => 'Kompetensi Pelaksana'],
         ['key' => 'pengawasan_internal', 'no' => 9, 'icon' => 'fa-user-shield', 'title' => 'Pengawasan Internal'],
         ['key' => 'penanganan_pengaduan', 'no' => 10, 'icon' => 'fa-comments', 'title' => 'Penanganan Pengaduan, Saran, dan Masukan',
-            'value' => $service->complaint_handling, 'link' => [route('supervision.complaint.submit'), 'Sampaikan pengaduan']],
+            'value' => $service->complaint_handling, 'link' => [route('supervision.complaints.dashboard'), 'Sampaikan pengaduan']],
         ['key' => 'jumlah_pelaksana', 'no' => 11, 'icon' => 'fa-users', 'title' => 'Jumlah Pelaksana'],
         ['key' => 'jaminan_pelayanan', 'no' => 12, 'icon' => 'fa-handshake', 'title' => 'Jaminan Pelayanan'],
         ['key' => 'jaminan_keamanan', 'no' => 13, 'icon' => 'fa-lock', 'title' => 'Jaminan Keamanan dan Keselamatan'],

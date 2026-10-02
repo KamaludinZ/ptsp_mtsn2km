@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Complaint;
 use App\Models\Service;
 use App\Models\Survey;
+use App\Models\SurveyEdition;
 use App\Models\SurveyQuestion;
 use App\Models\Ticket;
 use App\Models\User;
@@ -63,6 +64,36 @@ class ApplicationTest extends TestCase
         $response->assertRedirect(route('verification.notice', absolute: false));
 
         $this->assertAuthenticated();
+    }
+
+    public function test_civitas_registers_with_the_shared_code_and_picks_a_status(): void
+    {
+        Role::findOrCreate('guru');
+        $form = [
+            'is_civitas' => '1',
+            'name' => 'Bu Guru',
+            'email' => 'guru@example.com',
+            'whatsapp_number' => '081234567890',
+            'civitas_type' => 'guru',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ];
+
+        // No code set yet: civitas registration is closed.
+        $this->post('/register', $form + ['registration_code' => 'APAPUN'])->assertSessionHasErrors('registration_code');
+
+        \App\Support\CivitasRegistration::setCode('MTSN2-2026');
+
+        $this->post('/register', $form + ['registration_code' => 'SALAH'])->assertSessionHasErrors('registration_code');
+        $this->post('/register', ['civitas_type' => 'admin'] + $form + ['registration_code' => 'MTSN2-2026'])
+            ->assertSessionHasErrors('civitas_type');
+        $this->assertGuest();
+
+        $this->post('/register', $form + ['registration_code' => 'MTSN2-2026'])->assertSessionHasNoErrors();
+
+        $user = User::where('email', 'guru@example.com')->first();
+        $this->assertSame('guru', $user->user_type);
+        $this->assertTrue($user->hasRole('guru'));
     }
 
     public function test_service_catalog_lists_services_for_the_user_type(): void
@@ -131,6 +162,40 @@ class ApplicationTest extends TestCase
         $this->assertDatabaseCount('tickets', 0);
     }
 
+    public function test_complaint_and_whistleblowing_forms_live_on_one_page(): void
+    {
+        $this->get('/complaints')->assertOk()
+            ->assertSee(route('supervision.complaint.submit.store'))
+            ->assertSee(route('supervision.whistleblowing.submit'));
+
+        $this->get('/complaints/submit')->assertRedirect('/complaints');
+        $this->get('/whistleblowing')->assertRedirect('/complaints?tab=whistleblowing');
+    }
+
+    public function test_public_sends_a_suggestion_that_only_leadership_reads(): void
+    {
+        $this->post('/complaints/saran', ['suggestion' => ''])->assertSessionHasErrors('suggestion');
+
+        $this->post('/complaints/saran', ['suggestion' => 'Tambah kursi di ruang tunggu.'])
+            ->assertRedirect(route('supervision.complaints.dashboard', ['tab' => 'saran']));
+
+        $suggestion = Complaint::where('complaint_type', 'suggestion')->first();
+        $this->assertSame('Tambah kursi di ruang tunggu.', $suggestion->description);
+        $this->assertStringStartsWith('SRN-', $suggestion->complaint_number);
+
+        $this->get('/complaints?tab=saran')->assertOk()->assertSee('Kirim Saran');
+
+        Role::findOrCreate('kepala_sekolah');
+        $this->actingAs($this->staff('kepala_sekolah'));
+        $this->get('/cp/saran')->assertOk()->assertSee('Tambah kursi di ruang tunggu.');
+        // Suggestions no longer appear among complaints.
+        $this->get("/cp/pengaduan/{$suggestion->id}")->assertNotFound();
+
+        Role::findOrCreate('supervisor');
+        $this->actingAs($this->staff('supervisor'));
+        $this->get('/cp/saran')->assertForbidden();
+    }
+
     public function test_public_can_submit_complaint_and_track_it(): void
     {
         $response = $this->post('/complaints/submit', [
@@ -144,6 +209,7 @@ class ApplicationTest extends TestCase
         $complaint = Complaint::where('title', 'Layanan legalisir lambat')->first();
 
         $this->assertNotNull($complaint);
+        $this->assertStringStartsWith('PEM-', $complaint->complaint_number);
         $response->assertRedirect(route('supervision.complaint.success', $complaint->complaint_number));
 
         $this->post('/complaints/track', [
@@ -170,6 +236,7 @@ class ApplicationTest extends TestCase
         $report = Complaint::where('title', 'Dugaan pungutan liar')->first();
 
         $this->assertSame('whistleblowing', $report->complaint_type);
+        $this->assertStringStartsWith('WSB-', $report->complaint_number);
         $this->assertSame('Anonim', $report->reporter_name);
         $this->assertNull($report->reporter_email);
     }
@@ -177,6 +244,7 @@ class ApplicationTest extends TestCase
     public function test_user_can_submit_three_step_survey(): void
     {
         Survey::factory()->create(['is_active' => true]);
+        $edition = $this->edition('Triwulan 3 2026', true);
 
         $identity = SurveyQuestion::create([
             'type' => 'identity', 'question' => 'Nama Lengkap', 'field_type' => 'text',
@@ -193,7 +261,7 @@ class ApplicationTest extends TestCase
             'order' => 1, 'is_required' => true, 'is_active' => true, 'survey_type' => 'spak',
         ]);
 
-        $this->get('/survey')->assertOk()->assertSee('Nama Lengkap');
+        $this->get('/survey')->assertOk()->assertSee('Nama Lengkap')->assertSee('Triwulan 3 2026');
 
         $this->post('/survey/step1', ['answers' => [$identity->id => 'Budi']])
             ->assertRedirect(route('survey.step2'));
@@ -207,9 +275,43 @@ class ApplicationTest extends TestCase
             ->assertRedirect(route('survey.success'));
 
         $this->assertDatabaseCount('survey_responses', 1);
+        $this->assertDatabaseHas('survey_responses', ['survey_edition_id' => $edition->id]);
         $this->assertDatabaseCount('survey_answers', 3);
         $this->assertDatabaseHas('survey_answers', ['survey_question_id' => $skm->id, 'rating_value' => 4]);
         $this->assertDatabaseHas('survey_answers', ['survey_question_id' => $spak->id, 'rating_value' => 4]);
+    }
+
+    public function test_survey_is_closed_without_an_active_edition(): void
+    {
+        $this->edition('Triwulan 2 2026', false);
+
+        $this->get('/survey')->assertOk()->assertSee('Survei belum dibuka');
+        $this->get('/survey/step2')->assertRedirect(route('survey.form'));
+        $this->post('/survey/step3', [])->assertRedirect(route('survey.form'));
+        $this->assertDatabaseCount('survey_responses', 0);
+    }
+
+    public function test_only_one_survey_edition_is_active(): void
+    {
+        $q2 = $this->edition('Triwulan 2 2026', true);
+        $q3 = $this->edition('Triwulan 3 2026', true);
+
+        $this->assertFalse($q2->fresh()->is_active);
+        $this->assertTrue(SurveyEdition::current()->is($q3));
+
+        $q2->fresh()->update(['is_active' => true]);
+
+        $this->assertFalse($q3->fresh()->is_active);
+        $this->assertSame(1, SurveyEdition::where('is_active', true)->count());
+        $this->get('/survey')->assertSee('Triwulan 2 2026')->assertDontSee('Triwulan 3 2026');
+    }
+
+    private function edition(string $name, bool $active): SurveyEdition
+    {
+        return SurveyEdition::create([
+            'name' => $name, 'type' => 'quarterly', 'period' => 'Q' . substr($name, 9, 1), 'year' => 2026,
+            'start_date' => '2026-01-01', 'end_date' => '2026-12-31', 'is_active' => $active,
+        ]);
     }
 
     public function test_admin_can_access_control_panel(): void
@@ -222,11 +324,59 @@ class ApplicationTest extends TestCase
         $this->post('/visitor-book/submit-visitor', [
             'name' => 'Siti',
             'phone' => '081234567890',
-            'purpose' => 'Rapat komite',
+            'purpose' => 'Komite',
             'obscure_name' => 'on',
         ])->assertRedirect(route('public.visitor.book'))->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('visitors', ['name' => 'Siti', 'is_obscured' => true]);
+        $this->assertDatabaseHas('visitors', ['name' => 'Siti', 'purpose' => 'Komite', 'is_obscured' => true]);
+        $this->get('/visitor-book')->assertSee('S**i')->assertDontSee('Siti');
+    }
+
+    public function test_visitor_book_purpose_other_requires_free_text(): void
+    {
+        $this->post('/visitor-book/submit-visitor', [
+            'name' => 'Rina',
+            'phone' => '081234567890',
+            'purpose' => 'Lainnya',
+        ])->assertSessionHasErrors('purpose_other');
+
+        $this->post('/visitor-book/submit-visitor', [
+            'name' => 'Rina',
+            'phone' => '081234567890',
+            'purpose' => 'Lainnya',
+            'purpose_other' => 'Antar dokumen dinas',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('visitors', ['name' => 'Rina', 'purpose' => 'Antar dokumen dinas']);
+    }
+
+    public function test_visitor_book_applicant_picks_a_listed_service_or_other(): void
+    {
+        $service = Service::factory()->create(['name' => 'Legalisir Ijazah', 'is_active' => true]);
+
+        $this->get('/visitor-book')->assertSee('Legalisir Ijazah');
+
+        $this->post('/visitor-book/submit-applicant', [
+            'name' => 'Andi',
+            'phone' => '081234567890',
+            'target_service' => 'Layanan Palsu',
+        ])->assertSessionHasErrors('target_service');
+
+        $this->post('/visitor-book/submit-applicant', [
+            'name' => 'Andi',
+            'phone' => '081234567890',
+            'target_service' => $service->name,
+        ])->assertSessionHasNoErrors();
+
+        $this->post('/visitor-book/submit-applicant', [
+            'name' => 'Dewi',
+            'phone' => '081234567890',
+            'target_service' => 'Lainnya',
+            'target_service_other' => 'Legalisir rapor',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('visitors', ['name' => 'Andi', 'purpose' => 'Pemohon Layanan: Legalisir Ijazah']);
+        $this->assertDatabaseHas('visitors', ['name' => 'Dewi', 'purpose' => 'Pemohon Layanan: Legalisir rapor']);
     }
 
     public function test_front_desk_can_register_offline_service(): void

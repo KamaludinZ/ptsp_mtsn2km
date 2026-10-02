@@ -17,10 +17,10 @@ class ListComplaints extends ListRecords
         $newCount = fn (array $types) => Complaint::whereIn('complaint_type', $types)->where('status', 'submitted')->count() ?: null;
 
         return [
-            'pengaduan' => Tab::make('Pengaduan & Saran')
+            'pengaduan' => Tab::make('Pengaduan')
                 ->icon('heroicon-m-chat-bubble-left-right')
-                ->badge($newCount(['complaint', 'suggestion']))
-                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('complaint_type', ['complaint', 'suggestion'])),
+                ->badge($newCount(['complaint']))
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('complaint_type', 'complaint')),
             'whistleblowing' => Tab::make('Whistleblowing')
                 ->icon('heroicon-m-shield-exclamation')
                 ->badge($newCount(['whistleblowing']))

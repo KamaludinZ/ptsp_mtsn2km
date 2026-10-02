@@ -485,9 +485,15 @@
                         <div class="info-box">
                             <p class="mb-0" style="color: #1e40af; font-size: 14px;">
                                 <i class="fas fa-info-circle me-2"></i>
-                                <strong>Civitas Internal:</strong> Untuk Siswa, Guru, dan Pegawai MTsN 2 Kota Malang. Memerlukan kode registrasi khusus.
+                                <strong>Civitas Internal:</strong> Untuk siswa, guru, pegawai, wali murid, alumni, dan mitra MTsN 2 Kota Malang. Memerlukan kode registrasi dari madrasah.
                             </p>
                         </div>
+
+                        @unless ($civitasOpen)
+                            <div class="alert alert-warning" role="status" style="font-size: 14px;">
+                                <i class="fas fa-lock me-2"></i>Pendaftaran civitas sedang ditutup. Hubungi admin madrasah untuk mendapatkan kode registrasi.
+                            </div>
+                        @endunless
 
                         <form method="POST" action="{{ route('register') }}" id="form-civitas">
                             @csrf
@@ -500,12 +506,28 @@
                                 <input type="text" id="registration_code" name="registration_code"
                                        class="form-control @error('registration_code') is-invalid @enderror"
                                        value="{{ old('registration_code') }}"
-                                       placeholder="Masukkan kode 10 digit"
-                                       maxlength="10"
-                                       pattern="[0-9]{10}"
+                                       placeholder="Masukkan kode registrasi"
+                                       maxlength="64"
+                                       autocomplete="off"
                                        required>
-                                <small class="text-muted">Kode registrasi 10 digit angka yang diberikan oleh admin</small>
+                                <small class="text-muted">Kode registrasi yang diberikan oleh madrasah</small>
                                 @error('registration_code')
+                                    <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label for="civitas_type" class="form-label">
+                                    Status <span class="text-danger">*</span>
+                                </label>
+                                <select id="civitas_type" name="civitas_type"
+                                        class="form-control @error('civitas_type') is-invalid @enderror" required>
+                                    <option value="">Pilih status Anda</option>
+                                    @foreach ($civitasTypes as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('civitas_type') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('civitas_type')
                                     <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
                                 @enderror
                             </div>

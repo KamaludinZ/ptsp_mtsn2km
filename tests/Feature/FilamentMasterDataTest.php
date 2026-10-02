@@ -89,10 +89,60 @@ class FilamentMasterDataTest extends TestCase
         $this->assertSame($originalHash, $created->password);
 
         Livewire::test(RolePages\CreateRole::class)
-            ->fillForm(['name' => 'peninjau', 'guard_name' => 'web'])
+            ->fillForm(['name' => 'peninjau'])
             ->call('create')
             ->assertHasNoFormErrors();
-        $this->assertTrue(Role::where('name', 'peninjau')->exists());
+        $this->assertTrue(Role::where('name', 'peninjau')->where('guard_name', 'web')->exists());
+
+        Livewire::test(RolePages\CreateRole::class)
+            ->fillForm(['name' => 'Bukan Kode!'])
+            ->call('create')
+            ->assertHasFormErrors(['name' => 'regex']);
+    }
+
+    public function test_built_in_roles_are_protected(): void
+    {
+        $this->actingAsRole('admin');
+        $frontDesk = Role::findByName('front_desk');
+
+        // Unticking every permission still keeps the role's staff-area access.
+        Livewire::test(RolePages\EditRole::class, ['record' => $frontDesk->getRouteKey()])
+            ->fillForm(['permissions' => []])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertTrue($frontDesk->fresh()->hasPermissionTo('frontdesk.access'));
+
+        Livewire::test(RolePages\ListRoles::class)
+            ->assertTableActionHidden('delete', $frontDesk);
+
+        $custom = Role::create(['name' => 'peninjau', 'guard_name' => 'web']);
+        Livewire::test(RolePages\ListRoles::class)
+            ->assertTableActionVisible('delete', $custom);
+
+        User::factory()->create()->assignRole($custom);
+        Livewire::test(RolePages\ListRoles::class)
+            ->assertTableActionHidden('delete', $custom);
+    }
+
+    public function test_admin_sets_the_civitas_registration_code(): void
+    {
+        $this->actingAsRole('admin');
+
+        Livewire::test(\App\Livewire\RegistrationCodeSettings::class)
+            ->set('data.code', 'MTSN2-2026')
+            ->call('save')
+            ->assertHasNoErrors();
+        $this->assertSame('MTSN2-2026', \App\Support\CivitasRegistration::code());
+
+        Livewire::test(\App\Livewire\RegistrationCodeSettings::class)
+            ->set('data.code', 'ada spasi')
+            ->call('save')
+            ->assertHasErrors('data.code');
+
+        Livewire::test(\App\Livewire\RegistrationCodeSettings::class)
+            ->set('data.code', '')
+            ->call('save');
+        $this->assertNull(\App\Support\CivitasRegistration::code());
     }
 
     public function test_admin_manages_service_categories(): void
@@ -216,8 +266,6 @@ class FilamentMasterDataTest extends TestCase
             \App\Filament\Resources\ComplaintResource\Pages\ListComplaints::class,
             \App\Filament\Resources\FaqResource\Pages\ListFaqs::class,
             \App\Filament\Resources\SurveyQuestionResource\Pages\ListSurveyQuestions::class,
-            \App\Filament\Resources\RegistrationCodeResource\Pages\ListRegistrationCodes::class,
-            \App\Filament\Resources\WorkflowResource\Pages\ListWorkflows::class,
         ];
 
         foreach ($lists as $page) {

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\RegistrationCode;
+use App\Support\CivitasRegistration;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +22,10 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        return view('auth.register', [
+            'civitasTypes' => CivitasRegistration::USER_TYPES,
+            'civitasOpen' => CivitasRegistration::code() !== null,
+        ]);
     }
 
     /**
@@ -45,38 +48,32 @@ class RegisteredUserController extends Controller
 
         // Additional validation for civitas
         if ($isCivitas) {
-            $rules['registration_code'] = ['required', 'string', 'size:10', 'regex:/^[0-9]{10}$/'];
+            $rules['registration_code'] = ['required', 'string', 'max:64'];
+            $rules['civitas_type'] = ['required', 'in:' . implode(',', array_keys(CivitasRegistration::USER_TYPES))];
         } else {
             $rules['user_type'] = ['required', 'in:umum'];
         }
 
-        $validated = $request->validate($rules);
+        $request->validate($rules, [
+            'civitas_type.required' => 'Pilih status Anda.',
+            'civitas_type.in' => 'Status yang dipilih tidak valid.',
+        ]);
 
-        // Handle civitas registration
+        // Civitas: the shared code proves membership, the chosen status sets the account type
         $userType = 'umum';
         $registrationCode = null;
 
         if ($isCivitas) {
-            // Verify registration code
-            $regCode = RegistrationCode::where('code', $request->registration_code)
-                ->active()
-                ->first();
-
-            if (!$regCode) {
+            if (! CivitasRegistration::matches($request->registration_code)) {
                 throw ValidationException::withMessages([
-                    'registration_code' => 'Kode registrasi tidak valid atau sudah tidak aktif.',
+                    'registration_code' => CivitasRegistration::code() === null
+                        ? 'Pendaftaran civitas sedang ditutup. Hubungi admin madrasah.'
+                        : 'Kode registrasi tidak valid.',
                 ]);
             }
 
-            if (!$regCode->canBeUsed()) {
-                throw ValidationException::withMessages([
-                    'registration_code' => 'Kode registrasi sudah tidak dapat digunakan (sudah mencapai batas penggunaan atau kadaluarsa).',
-                ]);
-            }
-
-            // Set user type from registration code
-            $userType = $regCode->user_type;
-            $registrationCode = $request->registration_code;
+            $userType = $request->civitas_type;
+            $registrationCode = trim($request->registration_code);
         }
 
         // Create user
@@ -89,11 +86,6 @@ class RegisteredUserController extends Controller
             'registration_code' => $registrationCode,
             'is_active' => true,
         ]);
-
-        // Increment registration code usage if civitas
-        if ($isCivitas && isset($regCode)) {
-            $regCode->incrementUsage();
-        }
 
         // Assign role based on user type
         $user->assignRole($userType);

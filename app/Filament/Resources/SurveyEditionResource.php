@@ -48,20 +48,19 @@ class SurveyEditionResource extends Resource
                         ->default(now()->year)->required(),
                     Forms\Components\Textarea::make('description')->label('Keterangan')->maxLength(1000)->rows(2)->columnSpanFull(),
                     Forms\Components\Toggle::make('is_active')->label('Jadikan edisi aktif')
-                        ->helperText('Edisi lain otomatis dinonaktifkan.'),
+                        ->helperText('Hanya satu edisi yang aktif; edisi lain otomatis dinonaktifkan. Survei publik (/survey) memakai edisi aktif dan ditutup bila tidak ada edisi aktif.'),
                 ]),
         ]);
     }
 
-    /** Name and date range follow from the quarter; activating one edition deactivates the rest. */
+    /**
+     * Name and date range follow from the quarter. Activating one edition
+     * deactivates the rest (SurveyEdition::booted()).
+     */
     public static function prepare(array $data, ?SurveyEdition $record = null): array
     {
         $quarter = (int) substr($data['period'], 1);
         $start = Carbon::create((int) $data['year'], ($quarter - 1) * 3 + 1, 1)->startOfDay();
-
-        if (! empty($data['is_active'])) {
-            SurveyEdition::query()->when($record, fn ($q) => $q->whereKeyNot($record->id))->update(['is_active' => false]);
-        }
 
         return $data + [
             'name' => "Triwulan {$quarter} {$data['year']}",
@@ -83,6 +82,14 @@ class SurveyEditionResource extends Resource
             ])
             ->defaultSort('start_date', 'desc')
             ->actions([
+                Tables\Actions\Action::make('activate')
+                    ->label('Aktifkan')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn (SurveyEdition $record) => ! $record->is_active)
+                    ->requiresConfirmation()
+                    ->modalDescription('Edisi yang sedang aktif akan dinonaktifkan.')
+                    ->action(fn (SurveyEdition $record) => $record->update(['is_active' => true])),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ]);

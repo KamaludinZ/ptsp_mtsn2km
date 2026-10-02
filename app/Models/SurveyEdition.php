@@ -26,6 +26,36 @@ class SurveyEdition extends Model
         'settings' => 'array',
     ];
 
+    protected static function booted(): void
+    {
+        // Only one edition may be active: activating one switches the rest off
+        // (a partial unique index backs this up in the database).
+        static::saving(function (SurveyEdition $edition) {
+            if ($edition->is_active && $edition->isDirty('is_active')) {
+                static::query()
+                    ->when($edition->exists, fn ($q) => $q->whereKeyNot($edition->getKey()))
+                    ->where('is_active', true)
+                    ->update(['is_active' => false]);
+            }
+        });
+    }
+
+    /** The edition the public survey currently counts responses in, if any. */
+    public static function current(): ?self
+    {
+        return static::active()->first();
+    }
+
+    /** "1 Jul – 30 Sep 2026" */
+    public function dateRange(): ?string
+    {
+        if (! $this->start_date || ! $this->end_date) {
+            return null;
+        }
+
+        return $this->start_date->translatedFormat('j M') . ' – ' . $this->end_date->translatedFormat('j M Y');
+    }
+
     // Relationship with surveys
     public function surveys(): HasMany
     {

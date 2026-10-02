@@ -1,0 +1,1174 @@
+{
+  ".claude/settings.local.json": {
+    "summary": "Konfigurasi lokal Claude AI untuk proyek PTSP MTsN 2 Kota Malang, berisi pengaturan izin tool yang diizinkan untuk agent."
+  },
+  ".claude/skills/ngodingpakeai/SKILL.md": {
+    "summary": "Skill definition NgodingPakeAI untuk Claude AI agent: menjelaskan cara sinkronisasi codebase ke workspace NgodingPakeAI, format summaries.json, perintah CLI (connect, sync, status), dan aturan privasi (tidak upload raw source code)."
+  },
+  ".codex/skills/ngodingpakeai/SKILL.md": {
+    "summary": "Skill definition NgodingPakeAI untuk Codex AI agent, identik dengan versi Claude: panduan sinkronisasi codebase, format summaries.json, dan perintah CLI NgodingPakeAI."
+  },
+  ".dockerignore": {
+    "summary": "Daftar file dan direktori yang dikecualikan dari Docker build context: node_modules, .git, storage logs, dan file pengembangan lokal agar image lebih ringan."
+  },
+  ".gitattributes": {
+    "summary": "Konfigurasi Git attributes untuk normalisasi line ending (CRLF/LF) pada file teks dan penandaan file biner seperti gambar dan font."
+  },
+  ".github/workflows/docker.yml": {
+    "summary": "GitHub Actions workflow untuk membangun dan mempublikasikan Docker image ke GitHub Container Registry (GHCR) setiap push ke branch main, mendukung multi-platform (amd64/arm64)."
+  },
+  ".github/workflows/generator-generic-ossf-slsa3-publish.yml": {
+    "summary": "GitHub Actions workflow OSSF SLSA Level 3 untuk menghasilkan provenance artifact yang dapat diverifikasi keamanannya, memenuhi standar supply chain security."
+  },
+  ".github/workflows/laravel.yml": {
+    "summary": "GitHub Actions CI workflow untuk Laravel: menjalankan tes PHPUnit dengan PostgreSQL 16, composer audit keamanan dependensi, dan memastikan semua tes lulus setiap push atau pull request."
+  },
+  ".gitignore": {
+    "summary": "Daftar file yang tidak di-track Git: .env, vendor, node_modules, storage/app/public (kecuali .gitignore), file compiled assets, dan file IDE lokal."
+  },
+  ".ngodingpakeaiignore": {
+    "summary": "Daftar file yang dikecualikan dari indeks NgodingPakeAI: vendor, node_modules, storage, public/build, file lock, dan file binary agar hanya kode sumber yang diringkas."
+  },
+  "AGENTS.md": {
+    "summary": "Skill NgodingPakeAI yang terpasang di root repo: instruksi lengkap untuk AI agent melakukan sinkronisasi codebase ke workspace 22b02de3-b994-4ee1-bf2e-18ca61964174, format summaries.json, perintah CLI, dan aturan privasi (raw source tidak pernah dikirim ke server)."
+  },
+  "Dockerfile": {
+    "summary": "Dockerfile multi-stage untuk aplikasi PTSP MTsN 2 Kota Malang: PHP 8.2-FPM + Nginx + Supervisor dalam satu container, menginstal ekstensi pgsql, menjalankan composer install dan npm build, menyalin entrypoint.sh untuk migrasi otomatis saat deploy."
+  },
+  "README.md": {
+    "summary": "Dokumentasi utama proyek PTSP MTsN 2 Kota Malang: deskripsi modul (portal publik, pengaduan, survei, buku tamu, panel staf /cp, portal pemohon /portal), teknologi (Laravel 12, Filament 3, PostgreSQL), cara menjalankan lokal, tes, dan panduan deploy Docker/Coolify."
+  },
+  "artisan": {
+    "summary": "Entry point CLI Laravel artisan untuk menjalankan perintah Artisan dari terminal, seperti migrasi, seeder, cache, dan perintah kustom aplikasi PTSP."
+  },
+  "bootstrap/app.php": {
+    "summary": "Bootstrap aplikasi Laravel: mendaftarkan routes (web, api, console), middleware global SecurityHeaders/CheckBlockedIP/LogSuspiciousActivity/TrackSiteVisit, alias middleware (role, permission, check.email.verification), dan konfigurasi trusted proxies untuk deployment di balik reverse proxy Coolify/Traefik.",
+    "sections": [
+      { "symbol": "withMiddleware", "startLine": 13, "endLine": 35, "summary": "Mendaftarkan SecurityHeaders, CheckBlockedIP, LogSuspiciousActivity sebagai global middleware dan TrackSiteVisit sebagai web middleware. Alias: check.blocked.ip, security.headers, log.suspicious, user.type, check.email.verification, role, permission." }
+    ]
+  },
+  "bootstrap/cache/.gitignore": {
+    "summary": "File .gitignore untuk direktori bootstrap/cache agar file cache yang di-generate (config.php, routes.php, dll) tidak masuk ke repository Git."
+  },
+  "composer.json": {
+    "summary": "Konfigurasi dependensi PHP proyek PTSP: Laravel 12, Filament 3.2, spatie/laravel-permission, spatie/laravel-activitylog, spatie/laravel-medialibrary, maatwebsite/excel, barryvdh/laravel-dompdf, awcodes/filament-tiptap-editor. Dev: PHPUnit 11, Laravel Pint, Faker.",
+    "sections": [
+      { "symbol": "require", "startLine": 14, "endLine": 28, "summary": "Dependensi produksi: Laravel 12, Filament 3.2, spatie/permission 6.9, spatie/activitylog 4.10, spatie/medialibrary 11.17, maatwebsite/excel 3.1, barryvdh/laravel-dompdf, guzzlehttp/guzzle." }
+    ]
+  },
+  "composer.lock": {
+    "summary": "Lock file Composer yang mencatat versi pasti semua dependensi PHP beserta hash integritas, digunakan untuk reproducible installs di semua environment."
+  },
+  "config/app.php": {
+    "summary": "Konfigurasi utama aplikasi Laravel PTSP: APP_NAME=PTSP MTsN 2 Kota Malang, timezone=Asia/Jakarta, locale=id, didefinisikan environment (local/production) dan debug mode, serta daftar service providers dan facades."
+  },
+  "config/assets.php": {
+    "summary": "Konfigurasi manajemen aset: mode (vite/compiled), check_vite_server, daftar file CSS dan JS yang dikompilasi untuk mode non-Vite (production). Digunakan oleh AssetHelper untuk memuat aset yang benar sesuai environment."
+  },
+  "config/auth.php": {
+    "summary": "Konfigurasi autentikasi Laravel: guard web menggunakan session driver dengan provider users (model User), guard api menggunakan token sanctum, konfigurasi reset password via tabel password_reset_tokens."
+  },
+  "config/cache.php": {
+    "summary": "Konfigurasi cache Laravel: default store dari env CACHE_STORE (database), konfigurasi store database (tabel cache, lock), file, redis, dan array. Digunakan untuk cache blocked IPs, app_settings, dan statistik dashboard."
+  },
+  "config/database.php": {
+    "summary": "Konfigurasi database Laravel: hanya PostgreSQL (pgsql) yang didukung sebagai koneksi default dan untuk testing (DB_CONNECTION=pgsql). Konfigurasi SSL untuk produksi dan database ptsp_testing untuk PHPUnit."
+  },
+  "config/maintenance.php": {
+    "summary": "Konfigurasi maintenance mode Laravel: driver file, template view errors.503, redirect URL saat maintenance. Digunakan oleh SecurityMonitor saat admin mengaktifkan mode pemeliharaan melalui panel /cp."
+  },
+  "config/media-library.php": {
+    "summary": "Konfigurasi spatie/laravel-medialibrary: disk default (public), konversi gambar, path generator, dan pengaturan media untuk attachment dokumen tiket dan file layanan."
+  },
+  "config/permission.php": {
+    "summary": "Konfigurasi spatie/laravel-permission: cache permission menggunakan key spatie.permission.cache, model Role dan Permission, tabel permissions/roles/model_has_roles/model_has_permissions/role_has_permissions. Guard web digunakan untuk semua peran staf PTSP."
+  },
+  "config/production.php": {
+    "summary": "Konfigurasi khusus produksi: memaksa HTTPS, session secure cookie, log ke stderr untuk Docker, dan pengaturan optimasi produksi lainnya."
+  },
+  "config/sanctum.php": {
+    "summary": "Konfigurasi Laravel Sanctum untuk API token authentication: stateful domains, expiration token, middleware, dan guard. Digunakan untuk API internal aplikasi PTSP."
+  },
+  "config/session.php": {
+    "summary": "Konfigurasi sesi Laravel: driver database, tabel sessions, lifetime 120 menit, secure cookie di produksi, http_only, same_site=lax. Digunakan untuk autentikasi user di panel /cp dan /portal."
+  },
+  "config/views.php": {
+    "summary": "Konfigurasi view caching Laravel: path cache views dan apakah view dikompilasi secara eager. Digunakan untuk optimasi performa rendering Blade template."
+  },
+  "config/vite.php": {
+    "summary": "Konfigurasi integrasi Vite untuk pengembangan lokal: hot module replacement, manifest path, dan pengaturan dev server. Di produksi menggunakan compiled assets dari public/build."
+  },
+  "config/whatsapp.php": {
+    "summary": "Konfigurasi WhatsApp API: base URL, API key, dan nomor pengirim untuk layanan notifikasi WhatsApp yang digunakan oleh WhatsAppService saat pemohon mendaftar layanan walk-in."
+  },
+  "docker-compose.yml": {
+    "summary": "Docker Compose untuk menjalankan aplikasi PTSP dan PostgreSQL 16 bersama-sama: service app (build dari Dockerfile, port 80) dan service db (postgres:16, volume persistent ptsp_db_data), environment dari .env."
+  },
+  "docker/db-check.php": {
+    "summary": "Script PHP untuk memeriksa koneksi database PostgreSQL sebelum aplikasi dimulai di container Docker, digunakan oleh entrypoint.sh sebagai health check."
+  },
+  "docker/entrypoint.sh": {
+    "summary": "Shell script entrypoint Docker: menunggu database siap, menjalankan php artisan migrate --force, php artisan db:seed (jika fresh), php artisan optimize, lalu memulai Supervisor (Nginx + PHP-FPM)."
+  },
+  "docker/nginx.conf": {
+    "summary": "Konfigurasi Nginx untuk aplikasi Laravel PTSP di Docker: root ke public/, try_files untuk SPA routing, PHP-FPM fastcgi_pass, gzip compression, dan security headers dasar."
+  },
+  "docker/php-fpm.conf": {
+    "summary": "Konfigurasi PHP-FPM pool untuk container Docker: worker processes, timeout, dan pengaturan performa untuk melayani request Laravel PTSP."
+  },
+  "docker/php.ini": {
+    "summary": "Konfigurasi PHP untuk container Docker: upload_max_filesize=20M, post_max_size=20M, memory_limit=256M, max_execution_time=60, timezone Asia/Jakarta."
+  },
+  "docker/supervisord.conf": {
+    "summary": "Konfigurasi Supervisor untuk menjalankan Nginx dan PHP-FPM dalam satu container Docker, memastikan keduanya restart otomatis jika crash."
+  },
+  "package.json": {
+    "summary": "Konfigurasi npm proyek PTSP: Vite 7 sebagai build tool, dependencies Bootstrap 5, FontAwesome, AOS, SweetAlert2. Script: dev (vite), build (vite build), preview (vite preview)."
+  },
+  "package-lock.json": {
+    "summary": "Lock file npm yang mencatat versi pasti semua dependensi JavaScript untuk reproducible installs di semua environment."
+  },
+  "phpunit.xml.dist": {
+    "summary": "Konfigurasi PHPUnit untuk tes PTSP: database ptsp_testing (PostgreSQL), environment APP_ENV=testing, DB_CONNECTION=pgsql, dan path test suite Feature dan Unit di tests/."
+  },
+  "postcss.config.cjs": {
+    "summary": "Konfigurasi PostCSS untuk Vite: menggunakan plugin autoprefixer untuk kompatibilitas CSS lintas browser."
+  },
+  "tailwind.config.js": {
+    "summary": "Konfigurasi Tailwind CSS: content path mencakup resources/views dan app/, extend theme dengan warna dan font kustom. Digunakan bersama Filament untuk panel /cp dan /portal."
+  },
+  "vite.config.js": {
+    "summary": "Konfigurasi Vite untuk PTSP: entry points resources/js/app.js dan semua file resources/css/*.css, output ke public/build, refresh otomatis saat file Blade atau PHP berubah saat development.",
+    "sections": [
+      { "symbol": "defineConfig", "startLine": 1, "endLine": 40, "summary": "Setup Vite dengan plugin Laravel, input multiple CSS files (app, home, about, dark-mode, accessibility, dll) dan JS app.js, dikonfigurasi untuk HMR di development." }
+    ]
+  },
+  "scripts/build-production.sh": {
+    "summary": "Shell script build produksi untuk Linux/macOS: composer install --no-dev, npm ci && npm run build, php artisan optimize, php artisan migrate --force."
+  },
+  "scripts/build-production.bat": {
+    "summary": "Batch script build produksi untuk Windows/Laragon: composer install --no-dev, npm ci && npm run build, php artisan optimize, php artisan migrate --force."
+  },
+  "scripts/dev-setup.sh": {
+    "summary": "Shell script setup development untuk Linux/macOS: composer install, copy .env.example, php artisan key:generate, php artisan migrate --seed, npm install."
+  },
+  "scripts/dev-setup.bat": {
+    "summary": "Batch script setup development untuk Windows/Laragon: composer install, copy .env.example, php artisan key:generate, php artisan migrate --seed, npm install."
+  },
+  "database/setup_postgres.sql": {
+    "summary": "Script SQL untuk setup awal PostgreSQL: membuat database ptsp_mtsn2km dan ptsp_testing, user ptsp_user dengan password, dan grant privileges. Dijalankan sekali sebelum migrasi pertama."
+  },
+  "storage/app/public/.gitignore": {
+    "summary": "File .gitignore untuk direktori storage/app/public agar file upload user tidak masuk ke repository Git."
+  },
+  "storage/framework/cache/.gitignore": {
+    "summary": "File .gitignore untuk direktori cache framework Laravel agar file cache runtime tidak masuk ke repository."
+  },
+  "storage/framework/sessions/.gitignore": {
+    "summary": "File .gitignore untuk direktori sessions framework agar file sesi user tidak masuk ke repository Git."
+  },
+  "storage/framework/testing/.gitignore": {
+    "summary": "File .gitignore untuk direktori testing framework agar file temporary dari tes tidak masuk ke repository."
+  },
+  "storage/framework/views/.gitignore": {
+    "summary": "File .gitignore untuk direktori compiled views agar file Blade yang sudah dikompilasi tidak masuk ke repository Git."
+  },
+
+  "app/Models/Ticket.php": {
+    "summary": "Model Eloquent untuk tabel tickets: status (submitted/verified/in_process/approved/completed/rejected/cancelled), mode (online/offline/hybrid), prioritas, field persetujuan pimpinan (approval_required/approval_status/approved_by). Generate nomor tiket otomatis (format N/F/H-YYYYMM-NNN). SLA dari service.processing_time. Relasi ke User, Service, TicketLog, TicketFile, TicketOutput, TicketWorkflow, SurveyResponse.",
+    "sections": [
+      { "symbol": "Ticket::boot", "startLine": 47, "endLine": 61, "summary": "Membuat ticket_number otomatis dan menghitung estimated_completion_date dari SLA layanan saat creating." },
+      { "symbol": "Ticket::scopeOverdue", "startLine": 107, "endLine": 112, "summary": "Scope tiket aktif yang melewati tanggal target SLA." },
+      { "symbol": "Ticket::scopeAwaitingApproval", "startLine": 118, "endLine": 123, "summary": "Scope tiket yang menunggu keputusan pimpinan (approval_required=true, approval_status pending, status verified/in_process)." },
+      { "symbol": "Ticket::markCompleted", "startLine": 140, "endLine": 147, "summary": "Menandai tiket selesai, set ready_for_pickup=true untuk tiket offline atau produk non-digital." },
+      { "symbol": "Ticket::generateTicketNumber", "startLine": 227, "endLine": 251, "summary": "Generate nomor tiket berformat prefix-YYYYMM-NNN, prefix N=online, F=offline, H=hybrid." }
+    ]
+  },
+  "app/Models/User.php": {
+    "summary": "Model User yang juga merupakan FilamentUser: user_type (guru/pegawai/siswa/walimurid/alumni/instansi/umum), roles via spatie/permission, is_active. Method canAccessPanel: staf masuk /cp, non-staf masuk /portal. Relasi ke tickets, assignedTickets, handlingTickets.",
+    "sections": [
+      { "symbol": "User::canAccessPanel", "startLine": 131, "endLine": 142, "summary": "Staf (admin/front_desk/back_office/kepala_sekolah/kepala_tu/supervisor) mengakses panel admin (id=admin, path=/cp); non-staf mengakses portal (id=portal, path=/portal). Akun is_active=false dikunci." }
+    ]
+  },
+  "app/Models/Service.php": {
+    "summary": "Model layanan PTSP di tabel services: mode (online/offline/hybrid), user_types_allowed (jsonb array), is_digital_product, approval_required. Slug di-generate otomatis dari nama. Method slaWorkingDays() mengekstrak angka hari kerja dari field processing_time untuk SLA tiket.",
+    "sections": [
+      { "symbol": "Service::slaWorkingDays", "startLine": 79, "endLine": 90, "summary": "Mengekstrak batas atas hari kerja dari string processing_time (misal '2-5 hari kerja' -> 5). Null jika tidak dalam format hari." },
+      { "symbol": "Service::scopeAvailableFor", "startLine": 67, "endLine": 76, "summary": "Filter layanan berdasarkan user_type: layanan 'umum' tersedia untuk semua, layanan spesifik hanya untuk user_type yang sesuai." }
+    ]
+  },
+  "app/Models/Complaint.php": {
+    "summary": "Model pengaduan dan whistleblowing di tabel complaints: tipe (complaint/suggestion/whistleblowing), status (submitted/in_review/in_progress/resolved/closed), nomor otomatis PEM-YYYYMM-NNNN/SRN/WSB. Field khusus WBS: is_whistleblowing, incident_date, involved_parties, is_confidential.",
+    "sections": [
+      { "symbol": "Complaint::generateComplaintNumber", "startLine": 142, "endLine": 164, "summary": "Generate nomor pengaduan berformat prefix-YYYYMM-NNNN. Prefix PEM=pengaduan, SRN=saran, WSB=whistleblowing. Aman terhadap soft-deleted rows karena menggunakan withTrashed()." }
+    ]
+  },
+  "app/Models/Visitor.php": {
+    "summary": "Model tamu di tabel visitors: check_in_time/check_out_time, status (active/checked_out), is_obscured untuk privasi nama. VISIT_PURPOSES berisi daftar tujuan kunjungan. Method publicName() menyamarkan nama jika is_obscured (misal 'Budi Santoso' -> 'B**i S******o'). maskedPhone() hanya tampilkan 3 digit terakhir.",
+    "sections": [
+      { "symbol": "Visitor::publicName", "startLine": 92, "endLine": 108, "summary": "Menyamarkan nama tamu jika is_obscured=true: karakter tengah diganti '*', hanya karakter pertama dan terakhir tiap kata yang terlihat." }
+    ]
+  },
+  "app/Models/AppSetting.php": {
+    "summary": "Model pengaturan aplikasi di tabel app_settings: key/value/type/category. Cache otomatis per-key (app_setting_{key}) dan ALL_CACHE_KEY=app_settings_all. Cache di-flush saat saved/deleted. Method get/set/getByCategory untuk akses programatik."
+  },
+  "app/Models/SurveyEdition.php": {
+    "summary": "Model edisi survei di tabel survey_editions: hanya satu yang is_active=true sekaligus (enforced via boot() dan partial unique index DB). Method current() mengembalikan edisi aktif. Digunakan SurveyController untuk memvalidasi apakah survei sedang berlangsung."
+  },
+  "app/Models/Survey.php": {
+    "summary": "Model survei di tabel surveys: type (skm/spak/other), is_active, start_date/end_date. Relasi ke SurveyQuestion via survey_type (bukan foreign key langsung) dan ke SurveyResponse."
+  },
+  "app/Models/Faq.php": {
+    "summary": "Model FAQ di tabel faqs: question dan answer (rich text). Method safeAnswer() men-sanitize HTML menggunakan symfony/html-sanitizer untuk mencegah XSS sebelum ditampilkan di halaman publik /about."
+  },
+  "app/Models/Pengumuman.php": {
+    "summary": "Model pengumuman di tabel pengumumen: title, content, category, publish_date, end_date, is_active, attachment, url, view_count. scopeActive() memfilter berdasarkan is_active dan rentang publish_date/end_date. Relasi ke User dan PengumumanView."
+  },
+  "app/Models/PengumumanView.php": {
+    "summary": "Model untuk tracking view pengumuman di tabel pengumuman_views: pengumuman_id, ip_address, session_id. Digunakan untuk menghitung unique view count per pengumuman."
+  },
+  "app/Models/LoginAttempt.php": {
+    "summary": "Model untuk mencatat percobaan login di tabel login_attempts: email, ip_address, user_agent, successful, failure_reason. Method static log(), getRecentFailedAttempts(), getRecentFailedAttemptsByIp() digunakan SecurityMonitor dan middleware LogSuspiciousActivity."
+  },
+  "app/Models/TicketFile.php": {
+    "summary": "Model berkas persyaratan tiket di tabel ticket_files: ticket_id, file_path (disk local/private), file_name, file_type, uploaded_by. Relasi ke Ticket dan User (uploader)."
+  },
+  "app/Models/TicketLog.php": {
+    "summary": "Model log riwayat tiket di tabel ticket_logs: ticket_id, action, performed_by, from_status, to_status, notes. Setiap perubahan status/aksi oleh TicketService dicatat di sini untuk audit trail dan tracking pemohon."
+  },
+  "app/Models/TicketOutput.php": {
+    "summary": "Model hasil layanan tiket di tabel ticket_outputs: ticket_id, output_type (digital/physical), file_path, output_description, is_delivered. Satu tiket memiliki satu output aktif (latest). Diunduh pemohon via route documents.ticket-output."
+  },
+  "app/Models/TicketWorkflow.php": {
+    "summary": "Model workflow instance untuk tiket di tabel ticket_workflows: ticket_id, workflow_id, current_step_id, completed_at. Menghubungkan tiket dengan template workflow layanan, relasi ke TicketWorkflowStep."
+  },
+  "app/Models/TicketWorkflowStep.php": {
+    "summary": "Model langkah workflow instance tiket di tabel ticket_workflow_steps: ticket_workflow_id, workflow_step_id, status, completed_at, completed_by, notes. Diproses TicketService::completeWorkflowStep() saat petugas menyelesaikan langkah."
+  },
+  "app/Models/Workflow.php": {
+    "summary": "Model template workflow layanan di tabel workflows: service_id, name. Setiap layanan bisa punya satu workflow dengan beberapa langkah. Relasi ke WorkflowStep dan Service."
+  },
+  "app/Models/WorkflowStep.php": {
+    "summary": "Model langkah template workflow di tabel workflow_steps: workflow_id, name, order, description. Digunakan untuk membuat TicketWorkflowStep saat tiket baru dibuka."
+  },
+  "app/Models/ServiceCategory.php": {
+    "summary": "Model kategori layanan di tabel service_categories: name, description. Relasi many-to-many ke Service via tabel pivot service_category_service. Digunakan ServiceCategoryResource di panel admin."
+  },
+  "app/Models/ServiceComponent.php": {
+    "summary": "Model komponen standar layanan (14 komponen Permen PANRB 15/2014) di tabel service_components: service_id, component_type (dasar_hukum/persyaratan/mekanisme/jangka_waktu/biaya/produk_layanan/dll), content. Ditampilkan di halaman detail layanan publik."
+  },
+  "app/Models/ServiceRequirement.php": {
+    "summary": "Model persyaratan layanan di tabel service_requirements: service_id, requirement (teks), is_required. Melengkapi ServiceComponent untuk daftar persyaratan yang lebih terstruktur."
+  },
+  "app/Models/SurveyQuestion.php": {
+    "summary": "Model pertanyaan survei di tabel survey_questions: type (identity/skm/spak), field_type (text/select/radio/email/tel), options (array), order, is_required, is_active. Scope: active(), byType(), ordered(). Digunakan SurveyController untuk validasi jawaban."
+  },
+  "app/Models/SurveyAnswer.php": {
+    "summary": "Model jawaban survei di tabel survey_answers: survey_response_id, survey_question_id, selected_option, answer_text, rating_value (1-4 untuk skm/spak). rating_value digunakan perhitungan IKM/IPAK per Permenpan RB 14/2017."
+  },
+  "app/Models/SurveyResponse.php": {
+    "summary": "Model respons survei di tabel survey_responses: survey_id, survey_edition_id, user_id, ticket_id, ip_address, completed_at. Satu respons berisi banyak SurveyAnswer untuk semua pertanyaan identity/skm/spak."
+  },
+  "app/Models/SurveyUnsur.php": {
+    "summary": "Model unsur/dimensi survei di tabel survey_unsur: name, type (skm/spak), order. Mengelompokkan pertanyaan SKM/SPAK berdasarkan unsur pelayanan sesuai Permenpan RB 14/2017."
+  },
+  "app/Models/SurveyArchive.php": {
+    "summary": "Model arsip survei per kuartal di tabel survey_archives: type (skm/spak), year, quarter (Q1-Q4), is_quarterly_archive, data (jsonb hasil perhitungan). Dibuat oleh Command CreateQuarterlySurveyArchives untuk laporan historis."
+  },
+  "app/Models/Notification.php": {
+    "summary": "Model notifikasi di tabel notifications (bawaan Laravel): type, notifiable_type/notifiable_id, data, read_at. Digunakan untuk notifikasi internal ke staf dan pemohon."
+  },
+  "app/Models/Whistleblowing.php": {
+    "summary": "Model alias untuk laporan whistleblowing yang merupakan bagian dari tabel complaints dengan complaint_type=whistleblowing. Menyediakan interface terpisah untuk pelaporan anonim pelanggaran integritas."
+  },
+
+  "app/Services/TicketService.php": {
+    "summary": "Service layer utama untuk siklus tiket layanan (Modul 7-9): open (buka tiket baru), assign (tugaskan ke staf), changeStatus (ubah status oleh back office), uploadOutput (upload hasil layanan + selesaikan), decide (persetujuan/penolakan pimpinan Modul 8), handOver (serahkan ke pemohon di loket Modul 9). Setiap aksi dicatat ke tabel ticket_logs.",
+    "sections": [
+      { "symbol": "TicketService::open", "startLine": 53, "endLine": 84, "summary": "Membuka tiket baru: buat record tickets, catat berkas di ticket_files, inisialisasi workflow step pertama jika layanan punya workflow, log 'created'." },
+      { "symbol": "TicketService::decide", "startLine": 155, "endLine": 189, "summary": "Pimpinan menyetujui atau menolak tiket yang awaiting approval. Validasi: hanya role yang boleh approve, tiket harus awaitingApproval, wajib pilih jenis tanda tangan (tte/ttd) saat approve." },
+      { "symbol": "TicketService::uploadOutput", "startLine": 116, "endLine": 137, "summary": "Upload hasil layanan ke disk local/private, hapus output lama, tandai tiket completed. Gagal jika tiket masih needsApproval." }
+    ]
+  },
+  "app/Services/ComplaintService.php": {
+    "summary": "Service untuk tindak lanjut pengaduan dan whistleblowing (Modul 10): method followUp() memperbarui status, prioritas, handler, dan tanggapan. Validasi: tanggapan wajib diisi sebelum status resolved/closed. Method static evidence() mengembalikan path berkas bukti.",
+    "sections": [
+      { "symbol": "ComplaintService::followUp", "startLine": 18, "endLine": 44, "summary": "Update status/prioritas/handler/response pengaduan. Wajib ada response sebelum resolved/closed. Set resolved_at dan resolved_by saat selesai." }
+    ]
+  },
+  "app/Services/FrontDeskService.php": {
+    "summary": "Service loket (Modul 1 & 6): registerGuest() mendaftarkan tamu ke tabel visitors, checkOut() mencatat waktu keluar, registerWalkIn() mendaftarkan permohonan offline dengan memanggil TicketService::open(), findOrCreateApplicant() mencari atau membuat akun pemohon berdasarkan email/WhatsApp.",
+    "sections": [
+      { "symbol": "FrontDeskService::findOrCreateApplicant", "startLine": 95, "endLine": 120, "summary": "Cari user berdasarkan email atau WhatsApp. Jika tidak ada, buat akun baru dengan email fallback {phone}@walkin.local untuk pemohon walk-in yang tidak punya email." },
+      { "symbol": "FrontDeskService::registerWalkIn", "startLine": 76, "endLine": 91, "summary": "Daftarkan permohonan walk-in offline: cari/buat applicant, panggil TicketService::open() dengan mode=offline." }
+    ]
+  },
+  "app/Services/WhatsAppService.php": {
+    "summary": "Service notifikasi WhatsApp: method sendMessage() mengirim pesan ke nomor tujuan via API eksternal (konfigurasi dari config/whatsapp.php). Digunakan untuk notifikasi saat pemohon mendaftar layanan walk-in di PublicController."
+  },
+  "app/Support/RoleAccess.php": {
+    "summary": "Konstanta dan helper untuk sistem peran: AREA_PERMISSIONS (frontdesk.access/backoffice.access/supervision.access), SYSTEM_ROLES (13 peran dari admin hingga umum), ROLE_PERMISSIONS (pemetaan peran ke permission), COMPLAINT_HANDLERS, LEADERSHIP. Method sync() membuat/memperbarui role dan permission di database.",
+    "sections": [
+      { "symbol": "RoleAccess::sync", "startLine": 95, "endLine": 102, "summary": "Membuat permission dan role yang belum ada, assign permission ke role sesuai ROLE_PERMISSIONS, flush cache permission Spatie." }
+    ]
+  },
+  "app/Support/SecurityMonitor.php": {
+    "summary": "Alat keamanan sistem untuk admin: metrics() mengembalikan statistik keamanan, runScan() memeriksa file permissions/env/DB/session/SSL, blockedIps()/blockIp()/unblockIp() mengelola daftar IP terblokir via cache 'blocked_ips', enableMaintenance()/disableMaintenance() untuk mode pemeliharaan, clearCache() untuk berbagai jenis cache.",
+    "sections": [
+      { "symbol": "SecurityMonitor::blockIp", "startLine": 76, "endLine": 84, "summary": "Tambahkan IP ke cache 'blocked_ips' dengan reason, waktu, dan expiry (null=permanen). Log ke Laravel log." },
+      { "symbol": "SecurityMonitor::runScan", "startLine": 44, "endLine": 58, "summary": "Jalankan 10 pemeriksaan keamanan (file permissions, .env, DB, session, password policy, dependencies, headers, SSL, directory listing, debug mode) dan simpan hasil ke cache." }
+    ]
+  },
+  "app/Support/ServiceMetrics.php": {
+    "summary": "Kalkulasi statistik layanan bersama untuk semua dashboard: tickets() menghitung workload dan compliance SLA, perService() statistik per layanan, survey() IKM/IPAK index (skala 0-100 per Permenpan RB 14/2017), complaints() statistik Dumas dan WBS, visitors() statistik buku tamu. Method grade() mengembalikan mutu pelayanan A/B/C/D.",
+    "sections": [
+      { "symbol": "ServiceMetrics::overview", "startLine": 61, "endLine": 74, "summary": "Menggabungkan semua statistik (tickets, perService, survey, complaints, visitors, overdueTickets) untuk satu periode pelaporan. Digunakan halaman Performance." },
+      { "symbol": "ServiceMetrics::grade", "startLine": 168, "endLine": 177, "summary": "Konversi index 0-100 ke mutu pelayanan: A>=88.31, B>=76.61, C>=65, D<65 sesuai Permenpan RB 14/2017." }
+    ]
+  },
+  "app/Support/SurveyReports.php": {
+    "summary": "Laporan SKM (IKM) dan SPAK (IPAK) per bulan berjalan menggunakan metodologi Permenpan RB 14/2017: calculateSkmResultsPermenpan142017() dan calculateSpakResultsPermenpan142017() menghitung rata-rata per pertanyaan, konversi ke persentase skala 1-4. archives() mengembalikan arsip kuartalan dari tabel survey_archives.",
+    "sections": [
+      { "symbol": "SurveyReports::calculateSkmResultsPermenpan142017", "startLine": 71, "endLine": 115, "summary": "Hitung IKM: rata-rata per pertanyaan SKM (skala 1-4), total rata-rata, konversi ke persen dengan rumus (avg-1)/3*100 sesuai Permenpan RB 14/2017." }
+    ]
+  },
+  "app/Support/TicketDocuments.php": {
+    "summary": "Helper untuk dokumen tiket di disk local (private): MIME_TYPES daftar tipe file yang diizinkan untuk output layanan, REQUIREMENT_MIME_TYPES untuk berkas persyaratan. Method delete() menghapus file dari disk local."
+  },
+  "app/Support/TicketLabels.php": {
+    "summary": "Helper label dan warna untuk tampilan tiket di Filament: STATUSES, MODES, PRIORITIES dengan label bahasa Indonesia, method statusColor() dan priorityColor() mengembalikan warna Filament badge, logAction() untuk label aksi di riwayat tiket."
+  },
+  "app/Support/ServiceSummary.php": {
+    "summary": "Helper untuk menampilkan ringkasan standar pelayanan layanan: method html() menghasilkan HTML tabel komponen layanan (persyaratan, waktu, biaya, produk) untuk ditampilkan di form pengajuan portal dan loket."
+  },
+  "app/Support/SiteStats.php": {
+    "summary": "Helper statistik situs publik: total tiket, layanan aktif, pengunjung, dan IKM untuk ditampilkan di homepage. Data di-cache untuk performa."
+  },
+  "app/Support/CivitasRegistration.php": {
+    "summary": "Helper untuk kode registrasi warga sekolah (civitas): setCode()/getCode() menyimpan kode ke tabel app_settings, validateCode() memvalidasi kode yang dimasukkan saat registrasi. Memungkinkan guru/pegawai/siswa mendaftar dengan kode khusus sekolah."
+  },
+  "app/Providers/AppServiceProvider.php": {
+    "summary": "Service provider utama: bind LogoutResponse kustom Filament, mendaftarkan rate limiter (api: 60/menit, public-forms: 10/menit), force HTTPS di produksi, share variabel useVite/themePublic/themeAdmin ke semua views, render hook sidebar Filament untuk mobile.",
+    "sections": [
+      { "symbol": "AppServiceProvider::boot", "startLine": 27, "endLine": 65, "summary": "Bootstrap: rate limiter, force HTTPS produksi, View::composer untuk useVite dan tema, render hook sidebar mobile Filament." }
+    ]
+  },
+  "app/Providers/AppSettingsServiceProvider.php": {
+    "summary": "Service provider untuk memuat pengaturan aplikasi dari tabel app_settings ke konfigurasi Laravel saat boot: app_name, tema panel, pengaturan registrasi. Cache ke cache key app_settings_all."
+  },
+  "app/Providers/AuthServiceProvider.php": {
+    "summary": "Service provider autentikasi: mendaftarkan policy TicketPolicy, ComplaintPolicy, VisitorPolicy ke model Ticket, Complaint, Visitor masing-masing."
+  },
+  "app/Providers/EventServiceProvider.php": {
+    "summary": "Service provider event: mendaftarkan event listener untuk Registered (kirim email verifikasi) dan event Laravel lainnya yang digunakan aplikasi PTSP."
+  },
+  "app/Providers/Filament/AdminPanelProvider.php": {
+    "summary": "Konfigurasi panel staf Filament di /cp (id=admin): warna primary green, navigasi grup (Pimpinan/Loket/Back Office/Pengawasan/Manajemen Layanan/Manajemen Survey/Manajemen Pengguna/Manajemen Pengumuman/Manajemen Sistem), sidebar collapsible, SPA mode, brandName dari app_brand_name()."
+  },
+  "app/Providers/Filament/PortalPanelProvider.php": {
+    "summary": "Konfigurasi portal pemohon Filament di /portal (id=portal): top navigation, warna green, middleware CheckEmailVerification (redirect ke verifikasi jika belum verifikasi email), discover resources di Filament/Portal. Untuk semua non-staf (guru/pegawai/siswa/walimurid/alumni/instansi/umum)."
+  },
+  "app/Http/Controllers/Controller.php": {
+    "summary": "Base controller Laravel yang di-extend semua controller PTSP. Mewarisi fitur AuthorizesRequests dan ValidatesRequests dari Laravel."
+  },
+  "app/Http/Controllers/PublicController.php": {
+    "summary": "Controller halaman publik: home() (landing page dengan stats IKM/tiket/layanan), about() (halaman tentang + FAQ), contact(), visitorBook() (buku tamu dengan filter tanggal), submitVisitor() dan submitApplicant() (form pendaftaran buku tamu publik di route POST /visitor-book/*).",
+    "sections": [
+      { "symbol": "PublicController::home", "startLine": 16, "endLine": 19, "summary": "Render halaman beranda dengan statistik publik: IKM, rata-rata hari penyelesaian, jumlah layanan, tiket, persen selesai, responden survei. Cache 10 menit." },
+      { "symbol": "PublicController::submitVisitor", "startLine": 60, "endLine": 90, "summary": "Handle POST /visitor-book/submit-visitor: validasi, simpan ke tabel visitors, redirect dengan pesan sukses." }
+    ]
+  },
+  "app/Http/Controllers/DashboardController.php": {
+    "summary": "Controller dashboard: method index() redirect user ke panel yang sesuai berdasarkan peran (staf ke /cp, non-staf ke /portal)."
+  },
+  "app/Http/Controllers/SurveyController.php": {
+    "summary": "Controller survei SKM/SPAK 3 langkah: showForm/storeStep1 (identitas), showStep2/storeStep2 (pertanyaan SKM), showStep3/storeStep3 (pertanyaan SPAK + simpan semua ke DB), results (hitung IKM/IPAK). Route prefix /survey. Validasi per tipe pertanyaan (select/radio/email/tel/ticket_number).",
+    "sections": [
+      { "symbol": "SurveyController::storeStep3", "startLine": 135, "endLine": 204, "summary": "Simpan semua jawaban survei: buat SurveyResponse, iterasi session step1+step2+step3, hitung rating_value dari posisi opsi (Permenpan 14/2017), commit ke DB. Kirim email ThankYouSurveyMail jika ada tiket terkait." }
+    ]
+  },
+  "app/Http/Controllers/SupervisionController.php": {
+    "summary": "Controller pengaduan publik: complaints() tampilkan halaman /complaints, submitComplaint() (POST pengaduan masyarakat), submitSuggestion() (POST saran), submitWhistleblowing() (POST WBS anonim), showTrackForm/trackComplaint (lacak pengaduan via nomor PEM/SRN/WSB), complaintSuccess/whistleblowingSuccess halaman konfirmasi.",
+    "sections": [
+      { "symbol": "SupervisionController::submitWhistleblowing", "startLine": 1, "endLine": 50, "summary": "Terima laporan WBS anonim (POST /whistleblowing): validasi, buat Complaint dengan complaint_type=whistleblowing, is_whistleblowing=true, is_confidential=true." }
+    ]
+  },
+  "app/Http/Controllers/OnlinePortalController.php": {
+    "summary": "Controller portal online publik: serviceCatalog() (GET /services, filter by user_type), serviceDetail() (GET /services/{slug}), trackTicketForm/trackTicket (GET/POST /tracking, lacak tiket by nomor + tampilkan log).",
+    "sections": [
+      { "symbol": "OnlinePortalController::trackTicket", "startLine": 1, "endLine": 60, "summary": "POST /tracking: cari tiket by ticket_number, muat relasi user/service/logs, tampilkan status dan riwayat. Throttle 30 request/menit." }
+    ]
+  },
+  "app/Http/Controllers/PengumumanController.php": {
+    "summary": "Controller pengumuman publik: index() (GET /pengumuman, paginate, filter kategori/search), show() (GET /pengumuman/{id}, tambah view count via tabel pengumuman_views jika belum pernah dilihat sesi ini).",
+    "sections": [
+      { "symbol": "PengumumanController::show", "startLine": 1, "endLine": 50, "summary": "Tampilkan detail pengumuman, catat view ke tabel pengumuman_views (unique per session+ip), increment view_count." }
+    ]
+  },
+  "app/Http/Controllers/ContactController.php": {
+    "summary": "Controller form kontak: store() (POST /contact) memvalidasi dan mengirim email ContactFormMail ke email admin. Throttle public-forms (10/menit)."
+  },
+  "app/Http/Controllers/TicketDocumentController.php": {
+    "summary": "Controller dokumen tiket private: file() (GET /documents/ticket-files/{file}) dan output() (GET /documents/ticket-outputs/{output}) melayani file dari disk local hanya untuk user yang berhak (pemohon tiket atau staf)."
+  },
+
+  "app/Http/Middleware/Authenticate.php": {
+    "summary": "Middleware autentikasi Laravel: redirect ke route login jika unauthenticated. Override redirectTo() untuk mengembalikan URL login kustom."
+  },
+  "app/Http/Middleware/CheckBlockedIP.php": {
+    "summary": "Middleware global: memeriksa apakah IP request ada di cache 'blocked_ips'. Jika terblokir dan belum expired, tampilkan view errors.blocked (HTTP 403). Expired blocks dihapus otomatis. Skip untuk localhost di environment lokal."
+  },
+  "app/Http/Middleware/CheckEmailVerification.php": {
+    "summary": "Middleware untuk portal pemohon /portal: redirect ke halaman verifikasi email jika user belum memverifikasi email. Dikonfigurasi di PortalPanelProvider sebagai authMiddleware."
+  },
+  "app/Http/Middleware/EncryptCookies.php": {
+    "summary": "Middleware enkripsi cookie Laravel: daftar cookie yang dikecualikan dari enkripsi. Cookie sesi dan Filament selalu dienkripsi."
+  },
+  "app/Http/Middleware/FixSecureHeaders.php": {
+    "summary": "Middleware untuk memperbaiki header keamanan HTTP: menambahkan X-Content-Type-Options, X-Frame-Options, X-XSS-Protection sebelum respons dikirim ke client."
+  },
+  "app/Http/Middleware/LogSuspiciousActivity.php": {
+    "summary": "Middleware global: mendeteksi pola aktivitas mencurigakan (SQL injection, XSS, path traversal, dll) dari URL, parameter, dan user agent. Log ke Laravel log dan increment counter di cache. IP yang melewati threshold dapat diblokir otomatis.",
+    "sections": [
+      { "symbol": "LogSuspiciousActivity::handle", "startLine": 1, "endLine": 80, "summary": "Analisis request: cek pola berbahaya di URL/query string/user agent. Catat ke log dan cache counter per IP. Jika melebihi threshold, trigger auto-block via SecurityMonitor." }
+    ]
+  },
+  "app/Http/Middleware/OptimizeResponse.php": {
+    "summary": "Middleware optimasi respons: kompresi whitespace HTML, set cache headers yang tepat untuk aset statis, minify output untuk performa halaman publik."
+  },
+  "app/Http/Middleware/PreventRequestsDuringMaintenance.php": {
+    "summary": "Middleware maintenance mode Laravel: mengembalikan view errors.503 dengan Retry-After header saat aplikasi dalam maintenance mode (artisan down)."
+  },
+  "app/Http/Middleware/RedirectIfAuthenticated.php": {
+    "summary": "Middleware redirect user yang sudah login: staf diarahkan ke /cp, non-staf ke /portal, jika mencoba mengakses halaman guest (login/register)."
+  },
+  "app/Http/Middleware/SecurityHeaders.php": {
+    "summary": "Middleware global keamanan HTTP: menambahkan Content-Security-Policy, Strict-Transport-Security (HSTS), X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy ke setiap respons.",
+    "sections": [
+      { "symbol": "SecurityHeaders::handle", "startLine": 1, "endLine": 60, "summary": "Tambahkan security headers ke semua respons: CSP, HSTS (produksi), X-Frame-Options: SAMEORIGIN, X-Content-Type-Options: nosniff, Referrer-Policy: strict-origin-when-cross-origin." }
+    ]
+  },
+  "app/Http/Middleware/SetLocale.php": {
+    "summary": "Middleware untuk mengatur locale aplikasi dari session ('locale'): mendukung bahasa id/en/ar. Dipanggil di boot AppServiceProvider."
+  },
+  "app/Http/Middleware/TrackSiteVisit.php": {
+    "summary": "Middleware web: mencatat statistik kunjungan situs ke cache (total visits, visits_today) untuk ditampilkan di dashboard admin. Skip untuk route Filament panel, assets, dan API."
+  },
+  "app/Http/Middleware/TrimStrings.php": {
+    "summary": "Middleware trim string input: membersihkan whitespace dari semua input request kecuali password dan password_confirmation."
+  },
+  "app/Http/Middleware/TrustProxies.php": {
+    "summary": "Middleware trust proxies: mengatur header yang dipercaya dari reverse proxy (Coolify/Traefik/Docker) agar IP client, HTTPS, dan URL terdeteksi dengan benar."
+  },
+  "app/Http/Middleware/UserTypeMiddleware.php": {
+    "summary": "Middleware validasi user_type: memeriksa apakah user memiliki tipe yang diizinkan untuk mengakses route tertentu. Digunakan sebagai alias 'user.type' di route."
+  },
+  "app/Http/Middleware/ValidateSignature.php": {
+    "summary": "Middleware validasi URL signature Laravel: digunakan untuk route verify-email yang memerlukan signed URL dari email verifikasi."
+  },
+  "app/Http/Middleware/VerifyCsrfToken.php": {
+    "summary": "Middleware verifikasi CSRF token Laravel: daftar URL yang dikecualikan dari pengecekan CSRF (misalnya webhook endpoint)."
+  },
+  "app/Http/Requests/Auth/LoginRequest.php": {
+    "summary": "Form request untuk login: validasi email/password, rate limiting 5 kali per menit per IP+email, catat LoginAttempt sukses/gagal ke tabel login_attempts, throttle dengan 'login' key.",
+    "sections": [
+      { "symbol": "LoginRequest::authenticate", "startLine": 1, "endLine": 50, "summary": "Coba autentikasi via Auth::attempt(), jika gagal catat LoginAttempt gagal dan throw ValidationException dengan pesan 'kredensial tidak valid'." }
+    ]
+  },
+  "app/Http/Responses/LogoutResponse.php": {
+    "summary": "Response kustom Filament logout: redirect ke halaman login publik (/login) setelah logout, bukan ke halaman default Filament. Di-bind di AppServiceProvider."
+  },
+  "app/Policies/TicketPolicy.php": {
+    "summary": "Policy otorisasi tiket: view (staf atau pemohon tiket sendiri), update (staf aktif dengan role back_office/front_desk/kepala_tu/admin), approve (kepala_sekolah/kepala_tu/admin yang punya permission), handOver (front_desk/admin). Terdaftar di AuthServiceProvider.",
+    "sections": [
+      { "symbol": "TicketPolicy::approve", "startLine": 1, "endLine": 30, "summary": "Hanya kepala_sekolah, kepala_tu, atau admin yang boleh approve tiket. Validasi tambahan: layanan harus memiliki approval_roles/approval_users yang mencakup user ini." }
+    ]
+  },
+  "app/Policies/ComplaintPolicy.php": {
+    "summary": "Policy otorisasi pengaduan: viewAny/view untuk complaint_handlers (admin/supervisor/kepala_sekolah/kepala_tu), update untuk handler yang sama. Pelapor anonim tidak bisa mengklaim laporan WBS.",
+    "sections": [
+      { "symbol": "ComplaintPolicy::update", "startLine": 1, "endLine": 30, "summary": "Hanya role complaint_handlers yang boleh update/follow-up pengaduan. WBS is_confidential hanya bisa dilihat admin." }
+    ]
+  },
+  "app/Policies/VisitorPolicy.php": {
+    "summary": "Policy otorisasi tamu: view (staf dengan frontdesk.access atau back_office), update/delete (front_desk/admin). Digunakan route /buku-tamu/{visitor}/cetak."
+  },
+  "app/Exceptions/TicketActionException.php": {
+    "summary": "Exception kustom untuk aksi tiket yang tidak valid: dilempar oleh TicketService saat operasi gagal (misal tiket belum disetujui, status tidak valid). Ditangkap di ViewTicket Filament dan ditampilkan sebagai notifikasi error."
+  },
+  "app/Mail/ContactFormMail.php": {
+    "summary": "Mailable untuk form kontak: mengirim email berisi nama, email, dan pesan pengirim ke admin. Digunakan ContactController. Template di resources/views/emails/contact-form.blade.php."
+  },
+  "app/Mail/ThankYouSurveyMail.php": {
+    "summary": "Mailable ucapan terima kasih survei: dikirim ke email pemohon setelah survei terkait tiket selesai diisi. Template di resources/views/emails/thank-you-survey.blade.php."
+  },
+  "app/Livewire/RegistrationCodeSettings.php": {
+    "summary": "Komponen Livewire untuk pengaturan kode registrasi civitas di panel admin: menampilkan dan mengupdate kode via AppSetting. Dirender di halaman pengaturan sistem."
+  },
+  "app/Helpers/AssetHelper.php": {
+    "summary": "Helper manajemen aset: memilih antara Vite dev server (lokal) atau compiled assets (produksi) berdasarkan config/assets.php. Method asset(), css(), js() menghasilkan URL atau tag HTML yang tepat. Fallback ke Laravel asset() jika error.",
+    "sections": [
+      { "symbol": "AssetHelper::asset", "startLine": 14, "endLine": 40, "summary": "Tentukan mode: jika local dan Vite berjalan gunakan viteAsset(), jika tidak gunakan manifestAsset() (dari public/build/manifest.json)." }
+    ]
+  },
+  "app/Helpers/helpers.php": {
+    "summary": "Helper global PHP yang di-autoload: fungsi app_brand_name() mengembalikan nama aplikasi dari AppSetting atau APP_NAME config, digunakan brandName() di AdminPanelProvider dan PortalPanelProvider."
+  },
+  "app/View/Components/GuestLayout.php": {
+    "summary": "Blade component GuestLayout: wrapper layout untuk halaman auth (login, register, forgot-password). Menggunakan template resources/views/layouts/guest.blade.php."
+  },
+  "app/Console/Kernel.php": {
+    "summary": "Console Kernel Laravel: mendaftarkan schedule untuk perintah berkala (CreateQuarterlySurveyArchives dijadwalkan setiap kuartal) dan konfigurasi timezone schedule."
+  },
+  "app/Console/Commands/CreateQuarterlySurveyArchives.php": {
+    "summary": "Artisan command untuk membuat arsip survei kuartalan: mengagregat hasil SKM dan SPAK periode kuartal ke tabel survey_archives. Dijadwalkan berjalan setiap akhir kuartal via Console Kernel.",
+    "sections": [
+      { "symbol": "CreateQuarterlySurveyArchives::handle", "startLine": 1, "endLine": 80, "summary": "Hitung rata-rata per pertanyaan SKM dan SPAK untuk kuartal yang ditentukan, simpan ke tabel survey_archives dengan is_quarterly_archive=true." }
+    ]
+  },
+  "app/Console/Commands/CreateSampleSurveyData.php": {
+    "summary": "Artisan command untuk membuat data sampel survei: generate SurveyResponse dan SurveyAnswer acak untuk keperluan development/testing tampilan laporan survei."
+  },
+  "app/Console/Commands/WhitelistLocalhostIP.php": {
+    "summary": "Artisan command untuk menambahkan 127.0.0.1 dan ::1 ke whitelist IP, menghapusnya dari daftar blocked_ips di cache. Berguna saat testing di lokal."
+  },
+  "app/Exports/SurveyResponsesExport.php": {
+    "summary": "Export Excel untuk respons survei menggunakan maatwebsite/excel: mengekspor SurveyResponse dengan semua jawaban per baris, digunakan di halaman SurveyReport panel admin untuk unduh laporan.",
+    "sections": [
+      { "symbol": "SurveyResponsesExport::collection", "startLine": 1, "endLine": 50, "summary": "Ambil semua respons survei dengan relasi answers.question, filter berdasarkan periode/edisi, format sebagai collection untuk Excel." },
+      { "symbol": "SurveyResponsesExport::headings", "startLine": 1, "endLine": 30, "summary": "Header kolom Excel: ID, Tanggal, Edisi, kemudian satu kolom per pertanyaan survei (identity/skm/spak)." }
+    ]
+  },
+
+  "app/Filament/Concerns/AdminOnly.php": {
+    "summary": "Trait Filament untuk membatasi akses resource hanya ke role admin: override canAccess() dan canViewAny() mengembalikan true hanya jika user memiliki role 'admin'. Digunakan ServiceResource, UserResource."
+  },
+  "app/Filament/Concerns/NotifiesActionResult.php": {
+    "summary": "Trait Filament untuk menampilkan notifikasi hasil aksi: method attempt() membungkus callback dalam try-catch, menampilkan notifikasi sukses atau error (dari TicketActionException). Digunakan ViewTicket."
+  },
+  "app/Filament/Pages/Dashboard.php": {
+    "summary": "Halaman dashboard panel staf /cp: menampilkan widget sesuai peran (Pimpinan/Loket/Back Office/Pengawasan/Admin). Heading dinamis berdasarkan role. Footer widget: RecentActivitiesWidget.",
+    "sections": [
+      { "symbol": "Dashboard::getHeaderWidgets", "startLine": 18, "endLine": 46, "summary": "Daftar semua widget header: Leadership (Stats, PendingApprovals), FrontDesk (Stats, PickupTickets, TodayVisitors), BackOffice (Stats, TicketQueue), Supervision (Stats, NewComplaints), Admin (DashboardOverview, UserStats, ServiceStats, dll)." }
+    ]
+  },
+  "app/Filament/Pages/FrontDesk/RegisterService.php": {
+    "summary": "Halaman Filament untuk loket offline (navigasi Loket): form pendaftaran permohonan walk-in. Petugas mengisi data pemohon (nama, tipe, WhatsApp, email) dan detail layanan (service_id, deskripsi, prioritas, berkas). Submit memanggil FrontDeskService::registerWalkIn() dan redirect ke ViewTicket dengan notifikasi nomor tiket."
+  },
+  "app/Filament/Pages/Leadership/Approvals.php": {
+    "summary": "Halaman daftar tiket yang menunggu persetujuan pimpinan (navigasi Pimpinan): menampilkan tiket dengan scopeAwaitingApproval(), aksi approve/reject inline menggunakan TicketService::decide()."
+  },
+  "app/Filament/Pages/Reports/Performance.php": {
+    "summary": "Halaman laporan kinerja layanan (navigasi Pengawasan): menampilkan statistik ServiceMetrics::overview() untuk periode yang dipilih (minggu/bulan/kuartal/tahun), chart per layanan dan status tiket."
+  },
+  "app/Filament/Pages/Reports/SurveyReport.php": {
+    "summary": "Halaman laporan survei SKM/SPAK (navigasi Pengawasan): menampilkan IKM, IPAK, grafik per unsur, demografis responden. Tombol unduh Excel via SurveyResponsesExport. View: filament/pages/survey-report.blade.php."
+  },
+  "app/Filament/Pages/System/Security.php": {
+    "summary": "Halaman keamanan sistem (navigasi Manajemen Sistem, admin only): menampilkan SecurityMonitor::metrics(), daftar IP terblokir, aksi blokir/unblokir IP, jalankan scan keamanan, toggle maintenance mode, clear cache. View: filament/pages/security.blade.php."
+  },
+  "app/Filament/Shared/Pages/EditProfile.php": {
+    "summary": "Halaman edit profil yang digunakan di kedua panel (admin dan portal): update nama, email, password, nomor WhatsApp. Dikonfigurasi di kedua PanelProvider sebagai profile page."
+  },
+  "app/Filament/Resources/TicketResource.php": {
+    "summary": "Resource Filament utama untuk tiket layanan di panel staf /cp (navigasi Back Office): tabel dengan kolom ticket_number/pemohon/layanan/mode/status/prioritas/petugas/target, filter status/service/mode/prioritas/tanggal, infolist detail tiket dengan seksi ringkasan/pemohon/persetujuan/berkas/hasil/workflow/riwayat. Navigation badge menampilkan tiket aktif yang belum ditugaskan.",
+    "sections": [
+      { "symbol": "TicketResource::infolist", "startLine": 97, "endLine": 230, "summary": "Definisi tampilan detail tiket: 8 section (ringkasan, pemohon, persetujuan pimpinan, keterangan, berkas, hasil layanan, langkah workflow, riwayat log). Persetujuan hanya tampil jika approval_required=true." }
+    ]
+  },
+  "app/Filament/Resources/TicketResource/Pages/ListTickets.php": {
+    "summary": "Halaman daftar tiket di panel staf: tabel tiket dengan aksi view, header action untuk export atau filter tambahan."
+  },
+  "app/Filament/Resources/TicketResource/Pages/ViewTicket.php": {
+    "summary": "Halaman detail tiket dengan semua aksi: approve/reject (pimpinan), handOver (loket), uploadOutput, assign, changeStatus, priority, completeStep, note, uploadFile. Setiap aksi memanggil TicketService dan refresh data tiket. Aksi ditampilkan berdasarkan policy/role.",
+    "sections": [
+      { "symbol": "ViewTicket::getHeaderActions", "startLine": 58, "endLine": 78, "summary": "Daftar aksi header: approve, reject, handOver (top-level), dan grup 'Proses tiket' (assign, status, priority, completeStep, note, uploadFile). Plus receipt dan delete." }
+    ]
+  },
+  "app/Filament/Resources/ComplaintResource.php": {
+    "summary": "Resource pengaduan dan WBS di panel staf (navigasi Pengawasan): hanya tampil complaint_type != suggestion, tidak ada create (laporan masuk dari form publik). Tabel: nomor/tipe/judul/status/prioritas/pelapor/tanggal. Navigation badge untuk laporan baru.",
+    "sections": [
+      { "symbol": "ComplaintResource::canCreate", "startLine": 46, "endLine": 49, "summary": "Selalu return false: laporan pengaduan hanya masuk dari form publik /complaints dan /whistleblowing, tidak bisa dibuat dari panel admin." }
+    ]
+  },
+  "app/Filament/Resources/ComplaintResource/Pages/ListComplaints.php": {
+    "summary": "Halaman daftar pengaduan: tabel dengan filter status/tipe/prioritas, aksi view untuk membuka detail laporan."
+  },
+  "app/Filament/Resources/ComplaintResource/Pages/ViewComplaint.php": {
+    "summary": "Halaman detail pengaduan dengan form follow-up inline: ubah status (submitted/in_review/in_progress/resolved/closed), prioritas, assign handler, isi tanggapan. Memanggil ComplaintService::followUp()."
+  },
+  "app/Filament/Resources/ServiceResource.php": {
+    "summary": "Resource layanan PTSP (admin only, navigasi Manajemen Layanan): form dengan TiptapEditor untuk description/requirements/mechanism/complaint_handling, field mode/user_types_allowed/approval_required/is_digital_product. CRUD penuh untuk master data layanan.",
+    "sections": [
+      { "symbol": "ServiceResource::form", "startLine": 40, "endLine": 130, "summary": "Form 3 section: Informasi Dasar (nama/kode/mode/is_active/TiptapEditor description), Detail Layanan (TiptapEditor requirements/mechanism, processing_time, fee, product), Pengaturan (user_types_allowed, approval_required, approval_roles, is_digital_product)." }
+    ]
+  },
+  "app/Filament/Resources/ServiceResource/Pages/CreateService.php": {
+    "summary": "Halaman buat layanan baru di panel admin. Hanya admin (via AdminOnly trait) yang bisa mengakses."
+  },
+  "app/Filament/Resources/ServiceResource/Pages/EditService.php": {
+    "summary": "Halaman edit layanan di panel admin. Menyimpan perubahan layanan termasuk konten TiptapEditor."
+  },
+  "app/Filament/Resources/ServiceResource/Pages/ListServices.php": {
+    "summary": "Halaman daftar layanan di panel admin: tabel nama/kode/mode/status aktif, aksi edit/delete, header action untuk tambah layanan baru."
+  },
+  "app/Filament/Resources/UserResource.php": {
+    "summary": "Resource pengguna (admin only, navigasi Manajemen Pengguna): CRUD user dengan form nama/email/user_type/registration_code/is_active/password/roles. Tabel: nama/email/tipe/role/status/tanggal. Filter aktif/tipe.",
+    "sections": [
+      { "symbol": "UserResource::form", "startLine": 25, "endLine": 80, "summary": "Form 3 section: Informasi Pengguna (nama/email/user_type/registration_code/is_active), Password (dehydrated hanya jika diisi), Role & Permission (select roles via relasi spatie)." }
+    ]
+  },
+  "app/Filament/Resources/UserResource/Pages/CreateUser.php": {
+    "summary": "Halaman buat pengguna baru di panel admin. Hanya admin yang bisa mengakses via AdminOnly trait."
+  },
+  "app/Filament/Resources/UserResource/Pages/EditUser.php": {
+    "summary": "Halaman edit pengguna di panel admin: update data profil, reset password, ubah role."
+  },
+  "app/Filament/Resources/UserResource/Pages/ListUsers.php": {
+    "summary": "Halaman daftar pengguna: tabel semua user dengan filter role/tipe/status, aksi edit/delete, header action tambah user."
+  },
+  "app/Filament/Resources/VisitorResource.php": {
+    "summary": "Resource buku tamu (navigasi Loket): form daftar tamu baru (nama/phone/email/institution/purpose/person_to_meet), tabel check_in/check_out/status. Navigation badge jumlah tamu aktif hari ini. Aksi checkout inline dan cetak kartu tamu.",
+    "sections": [
+      { "symbol": "VisitorResource::getNavigationBadge", "startLine": 39, "endLine": 45, "summary": "Badge navigasi: jumlah tamu dengan check_in hari ini dan check_out_time=null (masih di lokasi)." }
+    ]
+  },
+  "app/Filament/Resources/VisitorResource/Pages/CreateVisitor.php": {
+    "summary": "Halaman daftar tamu baru dari loket: form pendaftaran tamu walk-in oleh petugas front desk."
+  },
+  "app/Filament/Resources/VisitorResource/Pages/EditVisitor.php": {
+    "summary": "Halaman edit data tamu untuk koreksi informasi yang salah oleh petugas."
+  },
+  "app/Filament/Resources/VisitorResource/Pages/ListVisitors.php": {
+    "summary": "Halaman daftar buku tamu: filter tanggal, tabel nama/keperluan/check_in/check_out/status, aksi checkout dan cetak kartu tamu."
+  },
+  "app/Filament/Resources/VisitorResource/Pages/ViewVisitor.php": {
+    "summary": "Halaman detail tamu: informasi lengkap kunjungan, tombol cetak kartu tamu."
+  },
+  "app/Filament/Resources/AppSettingResource.php": {
+    "summary": "Resource pengaturan aplikasi (admin only, navigasi Manajemen Sistem): CRUD untuk tabel app_settings. Kelola key/value/type/category pengaturan aplikasi seperti nama, tema, kode registrasi."
+  },
+  "app/Filament/Resources/AppSettingResource/Pages/CreateAppSetting.php": { "summary": "Halaman buat pengaturan baru di panel admin." },
+  "app/Filament/Resources/AppSettingResource/Pages/EditAppSetting.php": { "summary": "Halaman edit pengaturan di panel admin: update value pengaturan, otomatis flush cache AppSetting." },
+  "app/Filament/Resources/AppSettingResource/Pages/ListAppSettings.php": { "summary": "Halaman daftar pengaturan aplikasi: tabel key/display_name/category/value." },
+  "app/Filament/Resources/AppSettingResource/Pages/ViewAppSetting.php": { "summary": "Halaman lihat detail pengaturan aplikasi." },
+  "app/Filament/Resources/FaqResource.php": {
+    "summary": "Resource FAQ (navigasi Manajemen Sistem): CRUD untuk tabel faqs. Form question dan answer (TiptapEditor). Ditampilkan di halaman publik /about."
+  },
+  "app/Filament/Resources/FaqResource/Pages/CreateFaq.php": { "summary": "Halaman buat FAQ baru di panel admin." },
+  "app/Filament/Resources/FaqResource/Pages/EditFaq.php": { "summary": "Halaman edit FAQ di panel admin." },
+  "app/Filament/Resources/FaqResource/Pages/ListFaqs.php": { "summary": "Halaman daftar FAQ: tabel question/is_active, aksi edit/delete." },
+  "app/Filament/Resources/PengumumanResource.php": {
+    "summary": "Resource pengumuman (navigasi Manajemen Pengumuman): CRUD untuk tabel pengumumen. Form: title/content/category/publish_date/end_date/is_active/attachment/url. Ditampilkan di halaman publik /pengumuman."
+  },
+  "app/Filament/Resources/PengumumanResource/Pages/CreatePengumuman.php": { "summary": "Halaman buat pengumuman baru di panel admin." },
+  "app/Filament/Resources/PengumumanResource/Pages/EditPengumuman.php": { "summary": "Halaman edit pengumuman di panel admin." },
+  "app/Filament/Resources/PengumumanResource/Pages/ListPengumumen.php": { "summary": "Halaman daftar pengumuman: tabel title/category/publish_date/is_active, filter status/kategori." },
+  "app/Filament/Resources/PengumumanResource/Pages/ViewPengumuman.php": { "summary": "Halaman lihat detail pengumuman di panel admin." },
+  "app/Filament/Resources/RoleResource.php": {
+    "summary": "Resource peran (navigasi Manajemen Pengguna): mengelola role Spatie Permission. System roles (admin/kepala_sekolah/dll) tidak bisa dihapus. Form: nama role dan permission area (frontdesk.access/backoffice.access/supervision.access).",
+    "sections": [
+      { "symbol": "RoleResource::form", "startLine": 1, "endLine": 60, "summary": "Form role: nama (disabled untuk system roles), checkboxes permission AREA_PERMISSIONS. Required permissions untuk system role otomatis dijaga." }
+    ]
+  },
+  "app/Filament/Resources/RoleResource/Pages/CreateRole.php": { "summary": "Halaman buat role baru di panel admin: role kustom di luar SYSTEM_ROLES." },
+  "app/Filament/Resources/RoleResource/Pages/EditRole.php": { "summary": "Halaman edit role: ubah permission area. Nama system role tidak bisa diubah." },
+  "app/Filament/Resources/RoleResource/Pages/ListRoles.php": { "summary": "Halaman daftar role: tabel nama/permissions, badge system role, aksi edit." },
+  "app/Filament/Resources/ServiceCategoryResource.php": {
+    "summary": "Resource kategori layanan (navigasi Manajemen Layanan): CRUD untuk tabel service_categories. Form: nama dan deskripsi. Relasi many-to-many ke Service."
+  },
+  "app/Filament/Resources/ServiceCategoryResource/Pages/CreateServiceCategory.php": { "summary": "Halaman buat kategori layanan baru." },
+  "app/Filament/Resources/ServiceCategoryResource/Pages/EditServiceCategory.php": { "summary": "Halaman edit kategori layanan." },
+  "app/Filament/Resources/ServiceCategoryResource/Pages/ListServiceCategories.php": { "summary": "Halaman daftar kategori layanan." },
+  "app/Filament/Resources/ServiceCategoryResource/Pages/ViewServiceCategory.php": { "summary": "Halaman lihat detail kategori layanan." },
+  "app/Filament/Resources/SuggestionResource.php": {
+    "summary": "Resource saran (navigasi Pengawasan): menampilkan complaint dengan complaint_type=suggestion secara terpisah dari pengaduan. Read-only dengan aksi follow-up status."
+  },
+  "app/Filament/Resources/SuggestionResource/Pages/ListSuggestions.php": { "summary": "Halaman daftar saran dari masyarakat: filter status/prioritas." },
+  "app/Filament/Resources/SurveyEditionResource.php": {
+    "summary": "Resource edisi survei (navigasi Manajemen Survey): CRUD untuk tabel survey_editions. Hanya satu yang bisa aktif sekaligus. Form: nama/type/period/year/start_date/end_date/is_active/settings."
+  },
+  "app/Filament/Resources/SurveyEditionResource/Pages/CreateSurveyEdition.php": { "summary": "Halaman buat edisi survei baru. Mengaktifkan edisi ini otomatis menonaktifkan yang lain." },
+  "app/Filament/Resources/SurveyEditionResource/Pages/EditSurveyEdition.php": { "summary": "Halaman edit edisi survei: ubah periode, tanggal, status aktif." },
+  "app/Filament/Resources/SurveyEditionResource/Pages/ListSurveyEditions.php": { "summary": "Halaman daftar edisi survei: tabel nama/tahun/periode/is_active." },
+  "app/Filament/Resources/SurveyQuestionResource.php": {
+    "summary": "Resource pertanyaan survei (navigasi Manajemen Survey): CRUD untuk tabel survey_questions. Form: question/type(identity/skm/spak)/field_type/options(array)/order/is_required/is_active/unsur_id."
+  },
+  "app/Filament/Resources/SurveyQuestionResource/Pages/CreateSurveyQuestion.php": { "summary": "Halaman buat pertanyaan survei baru dengan tipe dan opsi jawaban." },
+  "app/Filament/Resources/SurveyQuestionResource/Pages/EditSurveyQuestion.php": { "summary": "Halaman edit pertanyaan survei: ubah teks, opsi, urutan, tipe." },
+  "app/Filament/Resources/SurveyQuestionResource/Pages/ListSurveyQuestions.php": { "summary": "Halaman daftar pertanyaan survei: filter tipe (identity/skm/spak), tabel urutan/pertanyaan/tipe/is_required." },
+  "app/Filament/Resources/SurveyUnsurResource.php": {
+    "summary": "Resource unsur/dimensi survei (navigasi Manajemen Survey): CRUD untuk tabel survey_unsur. Satu unsur berisi beberapa pertanyaan SKM atau SPAK."
+  },
+  "app/Filament/Resources/SurveyUnsurResource/Pages/ManageSurveyUnsurs.php": { "summary": "Halaman kelola unsur survei: CRUD inline tanpa halaman terpisah (ManageRecords)." },
+
+  "app/Filament/Portal/Pages/ApplyService.php": {
+    "summary": "Halaman pengajuan layanan online di portal pemohon /portal/ajukan?layanan={slug}: load service dari slug, tampilkan standar pelayanan (ServiceSummary), form deskripsi/prioritas/berkas. Submit memanggil TicketService::open() mode=online, redirect ke ViewTicket dengan notifikasi nomor tiket.",
+    "sections": [
+      { "symbol": "ApplyService::submit", "startLine": 90, "endLine": 110, "summary": "Proses pengajuan: ambil state form, map file paths ke nama, panggil TicketService::open() sebagai user sendiri dengan mode online." }
+    ]
+  },
+  "app/Filament/Portal/Pages/Dashboard.php": {
+    "summary": "Dashboard portal pemohon /portal: halaman landing dengan widget ApplicantStats, RecentRequests, ReadyResults, SurveyReminder."
+  },
+  "app/Filament/Portal/Resources/TicketResource.php": {
+    "summary": "Resource tiket read-only di portal pemohon: hanya tiket milik user yang login (where user_id = auth()->id()). Tabel: nomor tiket/layanan/status/tanggal/perkiraan selesai. Aksi: detail + unduh hasil layanan. Infolist: ringkasan/keterangan/berkas/perkembangan (log). Tidak ada aksi CRUD.",
+    "sections": [
+      { "symbol": "TicketResource::can", "startLine": 37, "endLine": 44, "summary": "Override policy: viewAny (semua user login), view (hanya jika record.user_id == auth id). Semua aksi lain return false." }
+    ]
+  },
+  "app/Filament/Portal/Resources/TicketResource/Pages/ListTickets.php": {
+    "summary": "Halaman daftar permohonan saya di portal: tabel tiket dengan filter status, link ke detail."
+  },
+  "app/Filament/Portal/Resources/TicketResource/Pages/ViewTicket.php": {
+    "summary": "Halaman detail permohonan di portal: infolist ringkasan + berkas + log perkembangan. Tombol unduh hasil layanan jika status completed dan output tersedia."
+  },
+  "app/Filament/Portal/Widgets/ApplicantStats.php": {
+    "summary": "Widget statistik pemohon di dashboard portal: total permohonan, permohonan aktif, permohonan selesai milik user yang login. StatsOverviewWidget."
+  },
+  "app/Filament/Portal/Widgets/ReadyResults.php": {
+    "summary": "Widget permohonan siap diambil/diunduh di dashboard portal: daftar tiket status completed dengan output tersedia atau ready_for_pickup. TableWidget."
+  },
+  "app/Filament/Portal/Widgets/RecentRequests.php": {
+    "summary": "Widget permohonan terbaru di dashboard portal: 5 tiket terkini user yang login dengan status dan tanggal. TableWidget."
+  },
+  "app/Filament/Portal/Widgets/SurveyReminder.php": {
+    "summary": "Widget pengingat survei di dashboard portal: ditampilkan jika ada tiket completed yang belum diisi survei. Link ke /survey. View: filament/portal/widgets/survey-reminder.blade.php."
+  },
+  "app/Filament/Widgets/DashboardOverview.php": {
+    "summary": "Widget statistik admin keseluruhan: 8 stat (total pengguna, layanan aktif, tiket aktif, pengunjung hari ini, pengaduan pending, WBS pending, survei bulan ini, aktivitas 7 hari). Hanya admin, cache 60 detik."
+  },
+  "app/Filament/Widgets/BackOffice/BackOfficeStats.php": {
+    "summary": "Widget statistik back office: tiket masuk hari ini, tiket aktif, tiket selesai bulan ini, tiket overdue. canView() hanya back_office/kepala_tu/admin."
+  },
+  "app/Filament/Widgets/BackOffice/TicketQueue.php": {
+    "summary": "Widget antrian tiket untuk back office: tabel tiket aktif yang belum ditugaskan atau ditugaskan ke user ini, diurutkan prioritas. Link ke ViewTicket. canView() hanya back_office/admin."
+  },
+  "app/Filament/Widgets/ComplaintWhistleblowingStats.php": {
+    "summary": "Widget statistik pengaduan dan WBS untuk admin/supervisor: total Dumas (pengaduan+saran) dan WBS, breakdown per status (baru/proses/selesai). StatsOverviewWidget."
+  },
+  "app/Filament/Widgets/ComplaintsReportingHeading.php": {
+    "summary": "Widget heading section 'Pengaduan & Pelaporan' di dashboard admin: judul/deskripsi visual pemisah antar kelompok widget. View: filament/widgets/complaints-reporting-heading.blade.php."
+  },
+  "app/Filament/Widgets/FrontDesk/FrontDeskStats.php": {
+    "summary": "Widget statistik front desk: pengunjung hari ini, tamu aktif, permohonan offline masuk hari ini. canView() hanya front_desk/kepala_tu/admin."
+  },
+  "app/Filament/Widgets/FrontDesk/PickupTickets.php": {
+    "summary": "Widget tiket siap diambil untuk loket: tabel tiket status completed dengan ready_for_pickup=true. Aksi handOver inline. canView() hanya front_desk/admin."
+  },
+  "app/Filament/Widgets/FrontDesk/TodayVisitors.php": {
+    "summary": "Widget tamu hari ini untuk loket: tabel tamu dengan check_in hari ini, status, dan tombol checkout. canView() hanya front_desk/kepala_tu/admin."
+  },
+  "app/Filament/Widgets/Leadership/DecisionHistory.php": {
+    "summary": "Widget riwayat keputusan pimpinan: tabel tiket yang sudah diapprove atau direject oleh user pimpinan yang login. canView() hanya kepala_sekolah/kepala_tu/admin."
+  },
+  "app/Filament/Widgets/Leadership/LeadershipStats.php": {
+    "summary": "Widget statistik pimpinan: tiket menunggu persetujuan (awaiting approval), tiket disetujui/ditolak bulan ini. canView() hanya kepala_sekolah/kepala_tu/admin."
+  },
+  "app/Filament/Widgets/Leadership/PendingApprovals.php": {
+    "summary": "Widget tiket menunggu keputusan pimpinan: tabel tiket scopeAwaitingApproval() yang bisa di-approve user ini. Link ke Approvals page atau ViewTicket. canView() hanya kepala_sekolah/kepala_tu/admin."
+  },
+  "app/Filament/Widgets/Performance/OverdueTickets.php": {
+    "summary": "Widget tiket melewati batas SLA: tabel 5 tiket overdue teratas dengan tanggal target dan nama layanan. canView() untuk staf dengan backoffice.access."
+  },
+  "app/Filament/Widgets/Performance/PerformanceStats.php": {
+    "summary": "Widget statistik kinerja layanan: completion rate, on-time rate, rata-rata hari penyelesaian, IKM, IPAK. Data dari ServiceMetrics::tickets() dan ServiceMetrics::survey(). Filter periode via ReadsPeriod."
+  },
+  "app/Filament/Widgets/Performance/ReadsPeriod.php": {
+    "summary": "Trait/widget pemilih periode pelaporan (minggu/bulan/kuartal/tahun) yang digunakan bersama PerformanceStats dan ServicePerformance. Menyimpan period ke URL query string."
+  },
+  "app/Filament/Widgets/Performance/ServicePerformance.php": {
+    "summary": "Widget kinerja per layanan: tabel ServiceMetrics::perService() menampilkan total/completed/overdue/rata-rata hari per layanan, diurutkan paling sibuk. canView() staf dengan backoffice.access/supervision.access."
+  },
+  "app/Filament/Widgets/Performance/TicketStatusChart.php": {
+    "summary": "Widget chart distribusi status tiket: pie/donut chart jumlah tiket per status (submitted/verified/in_process/approved/completed/rejected/cancelled). ChartWidget Filament."
+  },
+  "app/Filament/Widgets/RecentActivitiesWidget.php": {
+    "summary": "Widget aktivitas terbaru (footer dashboard): tabel aktivitas Spatie activitylog 10 terbaru (perubahan tiket, login, dll) dengan waktu/deskripsi/pelaku. View: filament/widgets/recent-activities.blade.php."
+  },
+  "app/Filament/Widgets/RegistrationStats.php": {
+    "summary": "Widget statistik registrasi pengguna untuk admin: chart registrasi per bulan/hari, breakdown per user_type (guru/pegawai/siswa/walimurid/alumni/instansi/umum)."
+  },
+  "app/Filament/Widgets/ServiceStats.php": {
+    "summary": "Widget statistik layanan untuk admin: total layanan aktif, breakdown per mode (online/offline/hybrid), layanan paling banyak diminta. StatsOverviewWidget."
+  },
+  "app/Filament/Widgets/ServicesTicketingHeading.php": {
+    "summary": "Widget heading section 'Layanan & Tiket' di dashboard admin. View: filament/widgets/services-ticketing-heading.blade.php."
+  },
+  "app/Filament/Widgets/Supervision/NewComplaints.php": {
+    "summary": "Widget pengaduan baru untuk pengawasan: tabel Complaint status=submitted terbaru. canView() hanya complaint_handlers (admin/supervisor/kepala_sekolah/kepala_tu)."
+  },
+  "app/Filament/Widgets/Supervision/SupervisionStats.php": {
+    "summary": "Widget statistik pengawasan: pengaduan baru, WBS baru, tingkat penyelesaian Dumas, IKM bulan ini. canView() hanya complaint_handlers."
+  },
+  "app/Filament/Widgets/SurveyFeedbackHeading.php": {
+    "summary": "Widget heading section 'Survei & Umpan Balik' di dashboard admin. View: filament/widgets/survey-feedback-heading.blade.php."
+  },
+  "app/Filament/Widgets/SurveyStats.php": {
+    "summary": "Widget statistik survei untuk admin/supervisor: total responden, IKM, IPAK bulan ini, chart responden per bulan. Data dari ServiceMetrics::survey(). canView() admin/supervisor/kepala."
+  },
+  "app/Filament/Widgets/TicketStats.php": {
+    "summary": "Widget statistik tiket untuk admin: total tiket, breakdown per status dan mode (online/offline/hybrid), tiket hari ini. StatsOverviewWidget."
+  },
+  "app/Filament/Widgets/UserManagementHeading.php": {
+    "summary": "Widget heading section 'Manajemen Pengguna' di dashboard admin. View: filament/widgets/user-management-heading.blade.php."
+  },
+  "app/Filament/Widgets/UserRoleStats.php": {
+    "summary": "Widget statistik pengguna berdasarkan role untuk admin: jumlah user per role (staf/publik), total user aktif/nonaktif. ChartWidget atau StatsOverviewWidget."
+  },
+  "app/Filament/Widgets/VisitorManagementHeading.php": {
+    "summary": "Widget heading section 'Manajemen Buku Tamu' di dashboard admin. View: filament/widgets/visitor-management-heading.blade.php."
+  },
+  "app/Filament/Widgets/VisitorStats.php": {
+    "summary": "Widget statistik buku tamu untuk admin: pengunjung hari ini, bulan ini, tamu aktif, chart pengunjung per hari/minggu. Data dari ServiceMetrics::visitors()."
+  },
+  "routes/web.php": {
+    "summary": "Routes web utama: halaman publik (/, /about, /contact, /pengumuman, /visitor-book, /services, /tracking, /complaints, /whistleblowing, /survey/*), API check-ticket, locale switcher, dashboard redirect per peran, route printable (tanda terima tiket, kartu tamu), dokumen private tiket, redirect legacy URLs. Rate limit throttle:public-forms untuk form-form publik.",
+    "sections": [
+      { "symbol": "routes.public", "startLine": 16, "endLine": 55, "summary": "Route publik tanpa auth: /, /about, /contact, /pengumuman, /visitor-book, /services/{slug?}, /tracking, /complaints/*, /whistleblowing, /survey/* dengan throttle public-forms." },
+      { "symbol": "routes.auth-required", "startLine": 90, "endLine": 115, "summary": "Route yang butuh auth: /dashboard (redirect ke panel), /documents/ticket-files/*, /documents/ticket-outputs/*, /tiket/{ticket}/tanda-terima, /buku-tamu/{visitor}/cetak, /pengaduan/{complaint}/bukti/{index}." }
+    ]
+  },
+  "routes/auth.php": {
+    "summary": "Routes autentikasi Laravel Breeze: register, login, logout, forgot-password, reset-password, verify-email, email/verification-notification, confirm-password, password update. Semua rate-limited, guest routes diproteksi middleware guest."
+  },
+  "routes/api.php": {
+    "summary": "Routes API (prefix /api): saat ini kosong atau hanya health check. API check-ticket dipindahkan ke routes/web.php sebagai /api/check-ticket dengan throttle 30/menit."
+  },
+  "routes/console.php": {
+    "summary": "Routes console Artisan: mendefinisikan perintah schedule seperti inspire atau schedule call untuk archive survei kuartalan."
+  },
+  "app/Http/Controllers/Auth/RegisteredUserController.php": {
+    "summary": "Controller registrasi pengguna: create() tampilkan form register, store() validasi dan buat User baru. Mendukung dua jalur: civitas (dengan kode registrasi sekolah) mendapat user_type dari pilihan, publik mendapat user_type='umum'. Trigger SendEmailVerificationNotification.",
+    "sections": [
+      { "symbol": "RegisteredUserController::store", "startLine": 30, "endLine": 80, "summary": "POST /register: validasi nama/email/WhatsApp/user_type/password, jika is_civitas=true validasi kode sekolah via CivitasRegistration::validateCode(), buat User, dispatch SendEmailVerificationNotification, login." }
+    ]
+  },
+  "app/Http/Controllers/Auth/AuthenticatedSessionController.php": {
+    "summary": "Controller login/logout: create() tampilkan form login dengan CAPTCHA, store() autentikasi via LoginRequest, destroy() logout dan redirect ke homepage. refreshCaptcha() untuk AJAX refresh CAPTCHA."
+  },
+  "app/Http/Controllers/Auth/ConfirmablePasswordController.php": {
+    "summary": "Controller konfirmasi password: show() tampilkan form konfirmasi, store() verifikasi password dan set timestamp confirmed di session."
+  },
+  "app/Http/Controllers/Auth/EmailVerificationNotificationController.php": {
+    "summary": "Controller kirim ulang email verifikasi: store() POST /email/verification-notification mengirim ulang link verifikasi jika belum terverifikasi."
+  },
+  "app/Http/Controllers/Auth/EmailVerificationPromptController.php": {
+    "summary": "Controller halaman prompt verifikasi email: __invoke() GET /verify-email menampilkan halaman instruksi verifikasi atau redirect ke dashboard jika sudah terverifikasi."
+  },
+  "app/Http/Controllers/Auth/NewPasswordController.php": {
+    "summary": "Controller reset password: create() tampilkan form reset dengan token, store() POST /reset-password validasi dan update password user via Password::reset()."
+  },
+  "app/Http/Controllers/Auth/PasswordController.php": {
+    "summary": "Controller update password (saat login): update() PUT /password memvalidasi current_password, update password baru, re-auth session."
+  },
+  "app/Http/Controllers/Auth/PasswordResetLinkController.php": {
+    "summary": "Controller kirim link reset password: create() tampilkan form forgot-password, store() POST /forgot-password kirim email reset via Password::sendResetLink()."
+  },
+  "app/Http/Controllers/Auth/VerifyEmailController.php": {
+    "summary": "Controller verifikasi email: __invoke() GET /verify-email/{id}/{hash} validasi signed URL, tandai email_verified_at, redirect ke dashboard."
+  },
+
+  "database/migrations/2024_01_01_000001_create_personal_access_tokens_table.php": { "summary": "Migrasi membuat tabel personal_access_tokens untuk Laravel Sanctum API token authentication." },
+  "database/migrations/2024_01_01_000002_create_users_table.php": { "summary": "Migrasi membuat tabel users: id, name, email (unique), email_verified_at, password, user_type (guru/pegawai/siswa/walimurid/alumni/instansi/umum), registration_code, is_active, remember_token, timestamps, soft_deletes." },
+  "database/migrations/2024_01_01_000003_create_services_table.php": { "summary": "Migrasi membuat tabel services: id, name, code, description, requirements, mechanism, processing_time, fee, product, complaint_handling, is_active, created_by, timestamps, soft_deletes." },
+  "database/migrations/2024_01_01_000004_create_visitors_table.php": { "summary": "Migrasi membuat tabel visitors: id, name, phone, institution, purpose, person_to_meet, check_in_time, check_out_time, photo_path, visitor_card_number, status, created_by, timestamps, soft_deletes." },
+  "database/migrations/2024_01_01_000005_create_workflows_table.php": { "summary": "Migrasi membuat tabel workflows: id, service_id (FK services), name, timestamps." },
+  "database/migrations/2024_01_01_000006_create_workflow_steps_table.php": { "summary": "Migrasi membuat tabel workflow_steps: id, workflow_id (FK workflows), name, order, description, timestamps." },
+  "database/migrations/2024_01_01_000007_create_surveys_table.php": { "summary": "Migrasi membuat tabel surveys: id, name, description, type (skm/spak/other), is_active, start_date, end_date, timestamps." },
+  "database/migrations/2024_01_01_000008_create_service_categories_table.php": { "summary": "Migrasi membuat tabel service_categories: id, name, description, timestamps." },
+  "database/migrations/2024_01_01_000009_create_service_category_service_table.php": { "summary": "Migrasi membuat tabel pivot service_category_service: service_id, service_category_id. Relasi many-to-many antara layanan dan kategori." },
+  "database/migrations/2024_01_01_000010_create_complaints_table.php": { "summary": "Migrasi membuat tabel complaints: id, complaint_type, title, description, complainant_name/contact/email, user_id, status, priority, assigned_to, resolution_notes, resolved_at, anonymous, is_whistleblowing, timestamps, soft_deletes." },
+  "database/migrations/2024_01_01_000011_create_tickets_table.php": { "summary": "Migrasi membuat tabel tickets awal: ticket_number (unique), user_id, service_id, channel (online/offline), status enum, current_handler_id, assigned_to_id, priority, notes, estimated_completion_date, actual_completion_date, is_urgent, created_by, soft_deletes." },
+  "database/migrations/2024_01_01_000012_create_ticket_workflows_table.php": { "summary": "Migrasi membuat tabel ticket_workflows: id, ticket_id (FK), workflow_id (FK), current_step_id, completed_at, timestamps." },
+  "database/migrations/2024_01_01_000013_create_ticket_workflow_steps_table.php": { "summary": "Migrasi membuat tabel ticket_workflow_steps: id, ticket_workflow_id (FK), workflow_step_id (FK), status, notes, completed_at, completed_by, timestamps." },
+  "database/migrations/2024_01_01_000014_create_service_components_table.php": { "summary": "Migrasi membuat tabel service_components: id, service_id (FK), component_type (14 komponen Permen PANRB 15/2014), content (text), timestamps." },
+  "database/migrations/2024_01_01_000015_create_service_requirements_table.php": { "summary": "Migrasi membuat tabel service_requirements: id, service_id (FK), requirement (text), is_required (boolean), timestamps." },
+  "database/migrations/2024_01_01_000016_create_ticket_files_table.php": { "summary": "Migrasi membuat tabel ticket_files: id, ticket_id (FK), file_path, file_name, file_type, uploaded_by (FK users), timestamps." },
+  "database/migrations/2024_01_01_000017_create_ticket_logs_table.php": { "summary": "Migrasi membuat tabel ticket_logs: id, ticket_id (FK), action, performed_by (FK users), from_status, to_status, notes, timestamps. Audit trail semua aksi tiket." },
+  "database/migrations/2024_01_01_000018_create_ticket_outputs_table.php": { "summary": "Migrasi membuat tabel ticket_outputs: id, ticket_id (FK), output_type (digital/physical), file_path, output_description, is_delivered, delivery_date, delivery_method, delivered_to, timestamps." },
+  "database/migrations/2024_01_01_000019_create_survey_responses_table.php": { "summary": "Migrasi membuat tabel survey_responses: id, survey_id (FK), user_id (nullable FK), ticket_id (nullable FK), ip_address, completed_at, comments, timestamps." },
+  "database/migrations/2024_01_01_000020_create_survey_questions_table.php": { "summary": "Migrasi membuat tabel survey_questions: id, question, type (identity/skm/spak), field_type, options (jsonb), order, is_required, is_active, timestamps." },
+  "database/migrations/2024_01_01_000021_create_survey_answers_table.php": { "summary": "Migrasi membuat tabel survey_answers: id, survey_response_id (FK), survey_question_id (FK), selected_option, answer_text, rating_value (1-4), timestamps." },
+  "database/migrations/2024_01_01_000022_create_survey_editions_table.php": { "summary": "Migrasi membuat tabel survey_editions: id, name, type, period, year, description, start_date, end_date, is_active, settings (jsonb), timestamps." },
+  "database/migrations/2024_01_01_000023_create_survey_unsur_table.php": { "summary": "Migrasi membuat tabel survey_unsur: id, name, type (skm/spak), order, timestamps. Unsur/dimensi penilaian survei per Permenpan RB 14/2017." },
+  "database/migrations/2024_01_01_000024_create_survey_archives_table.php": { "summary": "Migrasi membuat tabel survey_archives: id, type, year, quarter, is_quarterly_archive, data (jsonb hasil agregasi), survey_edition_id, timestamps." },
+  "database/migrations/2025_01_30_000001_create_app_settings_table.php": { "summary": "Migrasi membuat tabel app_settings: id, key (unique), value (text), type, category, display_name, description, validation_rules (jsonb), timestamps." },
+  "database/migrations/2025_01_30_000002_create_hero_sliders_table.php": { "summary": "Migrasi membuat tabel hero_sliders untuk slider gambar di homepage: id, title, subtitle, image_path, button_text, button_url, order, is_active, timestamps." },
+  "database/migrations/2025_10_30_030713_create_cache_table.php": { "summary": "Migrasi membuat tabel cache dan cache_locks untuk Laravel cache driver database." },
+  "database/migrations/2025_10_30_030821_create_permission_tables.php": { "summary": "Migrasi membuat tabel-tabel spatie/laravel-permission: permissions, roles, model_has_permissions, model_has_roles, role_has_permissions." },
+  "database/migrations/2025_11_01_010347_add_mode_to_services_table.php": { "summary": "Migrasi menambahkan kolom mode (online/offline/hybrid) ke tabel services." },
+  "database/migrations/2025_11_01_011617_add_slug_to_services_table.php": { "summary": "Migrasi menambahkan kolom slug (unique) ke tabel services, di-backfill dari nama layanan yang ada." },
+  "database/migrations/2025_11_01_013554_add_components_to_services_table.php": { "summary": "Migrasi menambahkan kolom user_types_allowed (jsonb), approval_required, approval_roles, approval_users, approval_instructions ke tabel services." },
+  "database/migrations/2025_11_01_020635_add_is_digital_product_to_services_table.php": { "summary": "Migrasi menambahkan kolom is_digital_product (boolean, default true) ke tabel services untuk menentukan apakah output layanan dapat diunduh atau harus diambil di loket." },
+  "database/migrations/2025_11_01_092641_add_is_obscured_to_visitors_table.php": { "summary": "Migrasi menambahkan kolom is_obscured (boolean) ke tabel visitors untuk fitur privasi nama tamu di buku tamu publik." },
+  "database/migrations/2025_11_01_124643_create_registration_codes_table.php": { "summary": "Migrasi membuat tabel registration_codes untuk kode registrasi civitas sekolah (guru/pegawai/siswa/walimurid/alumni): code (unique), user_type, is_active, expires_at." },
+  "database/migrations/2025_11_03_115705_create_sessions_table.php": { "summary": "Migrasi membuat tabel sessions untuk Laravel session driver database: id, user_id (nullable), ip_address, user_agent, payload, last_activity." },
+  "database/migrations/2025_11_05_051604_create_pengumumen_table.php": { "summary": "Migrasi membuat tabel pengumumen (sic): id, title, content (text), category, publish_date, end_date, is_active, author, user_id, timestamps." },
+  "database/migrations/2025_11_05_060330_add_attachment_to_pengumumen_table.php": { "summary": "Migrasi menambahkan kolom attachment ke tabel pengumumen untuk file lampiran pengumuman." },
+  "database/migrations/2025_11_05_061521_add_url_to_pengumumen_table.php": { "summary": "Migrasi menambahkan kolom url (nullable) ke tabel pengumumen untuk link sumber berita eksternal." },
+  "database/migrations/2025_11_06_010103_add_fields_to_survey_questions_table.php": { "summary": "Migrasi menambahkan kolom field_type, options, unsur_id, category ke tabel survey_questions untuk mendukung berbagai jenis pertanyaan." },
+  "database/migrations/2025_11_06_023946_update_tickets_table_add_updated_by_and_change_channel_to_mode.php": { "summary": "Migrasi besar: rename kolom channel ke mode di tabel tickets, tambah updated_by, email, whatsapp_number, approval_required, is_approved, approved_by, approved_at, approval_notes, signature_type, survey_sent, survey_sent_at, ready_for_pickup, pickup_notified_at." },
+  "database/migrations/2025_11_06_025113_update_existing_ticket_numbers.php": { "summary": "Migrasi data: update format nomor tiket yang sudah ada dari format lama ke format baru N/F/H-YYYYMM-NNN." },
+  "database/migrations/2025_11_06_025545_add_email_and_whatsapp_to_tickets_table.php": { "summary": "Migrasi menambahkan kolom email dan whatsapp_number ke tabel tickets untuk kontak pemohon." },
+  "database/migrations/2025_11_06_063642_add_complaint_number_to_complaints_table.php": { "summary": "Migrasi menambahkan kolom complaint_number ke tabel complaints." },
+  "database/migrations/2025_11_06_063650_add_complaint_number_generation.php": { "summary": "Migrasi data: generate complaint_number untuk pengaduan lama yang belum punya nomor, format PEM/SRN/WSB-YYYYMM-NNNN." },
+  "database/migrations/2025_11_06_075719_add_approval_fields_to_tickets_table.php": { "summary": "Migrasi menambahkan kolom approval_status (enum: pending/approved/rejected) ke tabel tickets." },
+  "database/migrations/2025_11_06_075824_add_approval_fields_to_services_table.php": { "summary": "Migrasi menambahkan kolom approval_instructions ke tabel services." },
+  "database/migrations/2025_11_06_100001_add_ticket_status_and_survey_fields.php": { "summary": "Migrasi menambahkan status enum baru dan kolom survey-related ke tabel tickets: survey_sent, survey_sent_at, ready_for_pickup." },
+  "database/migrations/2025_11_06_100002_add_ticket_code_and_email_to_survey_responses.php": { "summary": "Migrasi menambahkan ticket_code dan email ke tabel survey_responses untuk identifikasi responden." },
+  "database/migrations/2025_11_07_021030_add_survey_edition_id_to_survey_responses_table.php": { "summary": "Migrasi menambahkan survey_edition_id (FK nullable) ke tabel survey_responses untuk menghubungkan respons ke edisi survei aktif." },
+  "database/migrations/2025_11_07_021820_add_survey_edition_id_to_survey_archives_table.php": { "summary": "Migrasi menambahkan survey_edition_id ke tabel survey_archives untuk arsip per edisi." },
+  "database/migrations/2025_11_13_032319_create_media_table.php": { "summary": "Migrasi membuat tabel media untuk spatie/laravel-medialibrary: menyimpan metadata file media (attachment tiket/layanan)." },
+  "database/migrations/2025_11_13_032331_create_activity_log_table.php": { "summary": "Migrasi membuat tabel activity_log untuk spatie/laravel-activitylog: mencatat semua perubahan model (User, Ticket) untuk audit trail." },
+  "database/migrations/2025_11_13_032332_add_event_column_to_activity_log_table.php": { "summary": "Migrasi menambahkan kolom event ke tabel activity_log untuk mencatat jenis event (created/updated/deleted)." },
+  "database/migrations/2025_11_13_032333_add_batch_uuid_column_to_activity_log_table.php": { "summary": "Migrasi menambahkan kolom batch_uuid ke tabel activity_log untuk mengelompokkan perubahan dalam satu transaksi." },
+  "database/migrations/2025_11_14_084423_update_visitors_table_for_public_access.php": { "summary": "Migrasi update tabel visitors: buat beberapa kolom nullable (institution), tambah status default 'active'." },
+  "database/migrations/2025_11_17_010944_create_faqs_table.php": { "summary": "Migrasi membuat tabel faqs: id, question (text), answer (text/HTML), is_active, timestamps." },
+  "database/migrations/2025_11_17_012616_add_whatsapp_number_to_users_table.php": { "summary": "Migrasi menambahkan kolom whatsapp_number (nullable) ke tabel users." },
+  "database/migrations/2025_11_17_013903_add_email_to_visitors_table.php": { "summary": "Migrasi menambahkan kolom email (nullable) ke tabel visitors untuk kontak tamu." },
+  "database/migrations/2025_11_17_014841_add_institution_category_to_visitors_table.php": { "summary": "Migrasi menambahkan kolom institution_category ke tabel visitors untuk kategorisasi asal instansi tamu." },
+  "database/migrations/2025_11_17_044814_add_view_count_to_pengumuman_table.php": { "summary": "Migrasi menambahkan kolom view_count (integer, default 0) ke tabel pengumumen." },
+  "database/migrations/2025_11_17_045612_create_pengumuman_views_table.php": { "summary": "Migrasi membuat tabel pengumuman_views: pengumuman_id (FK), ip_address, session_id, created_at. Untuk tracking unique views." },
+  "database/migrations/2025_11_29_000001_setup_postgresql_extensions_and_optimizations.php": { "summary": "Migrasi setup PostgreSQL: aktifkan extension pg_trgm (fuzzy search), unaccent, btree_gin. Buat GIN index untuk pencarian full-text di kolom name/title/description. Optimasi VACUUM dan statistik." },
+  "database/migrations/2025_11_29_023233_create_login_attempts_table.php": { "summary": "Migrasi membuat tabel login_attempts: id, email, ip_address, user_agent, successful (boolean), failure_reason, attempted_at, timestamps." },
+  "database/migrations/2025_12_10_000001_convert_json_to_jsonb.php": { "summary": "Migrasi konversi kolom JSON ke JSONB di PostgreSQL untuk performa query lebih baik: user_types_allowed (services), options (survey_questions), validation_rules (app_settings), settings (survey_editions)." },
+  "database/migrations/2026_09_21_082305_add_missing_columns_to_complaints_table.php": { "summary": "Migrasi menambahkan kolom-kolom yang belum ada ke tabel complaints: subject, related_ticket_number, type, reporter_name/email/phone, service_id, category, assigned_to_id, response, incident_date, incident_location, involved_parties, is_confidential, evidence_files." },
+  "database/migrations/2026_09_21_082317_create_password_reset_tokens_table.php": { "summary": "Migrasi membuat tabel password_reset_tokens: email (primary), token, created_at untuk fitur reset password Breeze." },
+  "database/migrations/2026_09_21_125142_fix_ticket_child_tables_foreign_keys.php": { "summary": "Migrasi memperbaiki foreign key constraint pada tabel ticket_files, ticket_logs, ticket_outputs, ticket_workflow_steps agar cascade delete mengikuti parent ticket." },
+  "database/migrations/2026_09_24_120000_fix_double_encoded_service_user_types.php": { "summary": "Migrasi data: memperbaiki kolom user_types_allowed yang ter-encode ganda (JSON string dalam JSON) di tabel services." },
+  "database/migrations/2026_09_24_120100_make_visitors_institution_nullable.php": { "summary": "Migrasi membuat kolom institution di tabel visitors nullable agar tamu tanpa instansi bisa mendaftar." },
+  "database/migrations/2026_09_24_130000_move_ticket_documents_to_private_disk.php": { "summary": "Migrasi data: memindahkan path dokumen tiket lama dari disk public ke disk local (private) agar file tidak dapat diakses langsung via URL." },
+  "database/migrations/2026_09_25_090000_merge_legacy_staff_roles.php": { "summary": "Migrasi data: menggabungkan role staf lama (kepala_sekolah_lama, dll) ke role baru yang sesuai, update relasi model_has_roles." },
+  "database/migrations/2026_09_25_100000_grant_area_permissions_to_roles.php": { "summary": "Migrasi data: menjalankan RoleAccess::sync() untuk memastikan semua permission area (frontdesk.access/backoffice.access/supervision.access) sudah di-assign ke role yang benar." },
+  "database/migrations/2026_09_25_100100_backfill_ticket_service_dates.php": { "summary": "Migrasi data: mengisi estimated_completion_date untuk tiket lama yang null berdasarkan SLA layanan masing-masing." },
+  "database/migrations/2026_09_25_100200_add_signature_type_to_tickets.php": { "summary": "Migrasi menambahkan kolom signature_type (tte/ttd) ke tabel tickets untuk mencatat jenis tanda tangan pimpinan saat approve." },
+  "database/migrations/2026_09_26_100000_add_app_name_setting_and_site_visits.php": { "summary": "Migrasi data: insert pengaturan app_name ke tabel app_settings dan menambahkan kolom site_visits untuk statistik kunjungan." },
+  "database/migrations/2026_09_27_100000_require_survey_identity_fields.php": { "summary": "Migrasi: membuat beberapa field identitas survei menjadi required (is_required=true) di tabel survey_questions." },
+  "database/migrations/2026_09_29_100000_single_active_survey_edition.php": { "summary": "Migrasi: menambahkan partial unique index di tabel survey_editions untuk memastikan hanya satu edisi aktif (WHERE is_active=true)." },
+  "database/seeders/DatabaseSeeder.php": {
+    "summary": "Seeder utama: memanggil UserSeeder, ServiceSeeder, SchoolServicesSeeder, SurveySeeder, SurveyUnsurSeeder, SurveyQuestionSeeder, FaqSeeder. Di non-produksi juga menjalankan TicketSeeder, VisitorSeeder, ComplaintSeeder, PengumumanSeeder dan set kode civitas demo '1234567890'."
+  },
+  "database/seeders/UserSeeder.php": {
+    "summary": "Seeder pengguna: membuat 13 role Spatie (admin hingga umum), semua permission, assign permission ke role. Di non-produksi buat 7 akun demo staf (admin, front_desk, back_office, supervisor, kepala_sekolah, kepala_tu) + akun demo publik. Di produksi buat satu admin dengan ADMIN_PASSWORD atau random."
+  },
+  "database/seeders/ServiceSeeder.php": { "summary": "Seeder layanan dasar: membuat layanan-layanan PTSP umum (surat keterangan, legalisir, dll) dengan komponen standar pelayanan 14 poin Permen PANRB 15/2014." },
+  "database/seeders/SchoolServicesSeeder.php": { "summary": "Seeder layanan khusus madrasah: membuat layanan-layanan spesifik MTsN 2 Kota Malang (mutasi siswa, surat kelulusan, rekomendasi, dll) dengan user_types_allowed per jenis pemohon." },
+  "database/seeders/SurveySeeder.php": { "summary": "Seeder data awal survei: membuat SurveyEdition aktif untuk tahun berjalan dan record Survey default tipe SKM dan SPAK." },
+  "database/seeders/SurveyUnsurSeeder.php": { "summary": "Seeder unsur survei: membuat 9 unsur SKM dan unsur SPAK sesuai Permenpan RB 14/2017 (persyaratan, prosedur, waktu, biaya, produk, kompetensi, perilaku, maklumat, penanganan pengaduan)." },
+  "database/seeders/SurveyQuestionSeeder.php": { "summary": "Seeder pertanyaan survei: membuat pertanyaan identity (nama, pendidikan, pekerjaan, nomor tiket), pertanyaan SKM (9 unsur x1 pertanyaan skala 1-4), dan pertanyaan SPAK sesuai Permenpan RB 14/2017." },
+  "database/seeders/FaqSeeder.php": { "summary": "Seeder FAQ: membuat pertanyaan-jawaban umum tentang PTSP MTsN 2 Kota Malang untuk ditampilkan di halaman /about." },
+  "database/seeders/AppSettingsSeeder.php": { "summary": "Seeder pengaturan aplikasi: insert nilai default ke tabel app_settings (app_name, tema, kode registrasi, pengaturan email, dll) hanya jika belum ada." },
+  "database/seeders/TicketSeeder.php": { "summary": "Seeder tiket demo (non-produksi saja): membuat tiket contoh dengan berbagai status menggunakan TicketFactory." },
+  "database/seeders/VisitorSeeder.php": { "summary": "Seeder tamu demo (non-produksi saja): membuat data tamu contoh menggunakan VisitorFactory." },
+  "database/seeders/ComplaintSeeder.php": { "summary": "Seeder pengaduan demo (non-produksi saja): membuat pengaduan dan WBS contoh menggunakan ComplaintFactory." },
+  "database/seeders/PengumumanSeeder.php": { "summary": "Seeder pengumuman demo (non-produksi saja): membuat beberapa pengumuman contoh untuk halaman /pengumuman." },
+  "database/seeders/SurveyResponseSeeder.php": { "summary": "Seeder respons survei demo: membuat data respons survei SKM dan SPAK dengan jawaban acak untuk keperluan testing laporan." },
+  "database/factories/UserFactory.php": { "summary": "Factory User untuk testing: generate name/email/password/user_type/whatsapp_number acak. State: admin(), staffRole(), publicUser() untuk membuat user dengan karakteristik tertentu." },
+  "database/factories/ServiceFactory.php": { "summary": "Factory Service untuk testing: generate data layanan acak dengan name/code/mode/processing_time/is_active." },
+  "database/factories/TicketFactory.php": { "summary": "Factory Ticket untuk testing: generate tiket dengan status/mode/priority acak, user_id dan service_id dari record yang ada." },
+  "database/factories/VisitorFactory.php": { "summary": "Factory Visitor untuk testing: generate data tamu dengan nama/phone/purpose acak, check_in_time hari ini." },
+  "database/factories/ComplaintFactory.php": { "summary": "Factory Complaint untuk testing: generate pengaduan dengan complaint_type/status/priority acak." },
+  "database/factories/SurveyFactory.php": { "summary": "Factory Survey untuk testing: generate data survei dengan tipe SKM/SPAK dan tanggal periode." },
+
+  "resources/js/app.js": {
+    "summary": "Entry point JavaScript frontend publik: import Bootstrap 5, Font Awesome (lokal), AOS animation, SweetAlert2. Inisialisasi AOS, dark mode toggle (simpan ke localStorage), dan window.Toast/window.Swal global. Diproses Vite dari resources/js/app.js ke public/build.",
+    "sections": [
+      { "symbol": "darkMode", "startLine": 24, "endLine": 55, "summary": "Dark mode toggle: baca localStorage.theme atau prefers-color-scheme, tambah/hapus class 'dark' dari html element, toggle ikon moon/sun di #theme-icon." }
+    ]
+  },
+  "resources/js/bootstrap.js": { "summary": "Bootstrap JS Laravel: import axios dan set default header X-CSRF-TOKEN dan X-Requested-With." },
+  "resources/js/bootstrap-bundle.js": { "summary": "Import Bootstrap JS bundle (dengan Popper.js) untuk komponen interaktif Bootstrap 5 seperti dropdown, modal, tooltip." },
+  "resources/js/accessibility.js": {
+    "summary": "Modul aksesibilitas frontend: kontrol ukuran font (A-/A+), toggle high contrast mode, dyslexia font, simpan preferensi ke localStorage. Digunakan di layout publik."
+  },
+  "resources/js/service-catalog.js": {
+    "summary": "Modul JavaScript untuk halaman katalog layanan /services: filter layanan by kategori/mode secara client-side, animasi transisi, search highlight nama layanan."
+  },
+  "resources/css/app.css": { "summary": "CSS utama frontend publik: import Tailwind base/components/utilities, custom CSS minimal untuk komponen dasar." },
+  "resources/css/public-layout.css": { "summary": "CSS layout halaman publik PTSP: navbar, hero section, footer, card layanan, responsive breakpoints. Digunakan di semua halaman publik via layout.blade.php." },
+  "resources/css/home.css": { "summary": "CSS khusus halaman beranda: animasi counter statistik, hero slider, section layanan unggulan, cards pengumuman terbaru." },
+  "resources/css/about.css": { "summary": "CSS halaman tentang (/about): section visi-misi, FAQ accordion, profil tim, timeline sejarah madrasah." },
+  "resources/css/dark-mode.css": { "summary": "CSS dark mode: override warna untuk semua komponen publik (navbar, cards, form, tabel, footer) saat class 'dark' aktif di html element." },
+  "resources/css/accessibility.css": { "summary": "CSS aksesibilitas: class font-size-large/xlarge, high-contrast mode, dyslexia font (OpenDyslexic), focus visible, skip-to-content link." },
+  "resources/css/bootstrap-custom.css": { "summary": "Override Bootstrap 5: penyesuaian warna primary ke hijau madrasah, border radius, font stack Indonesia." },
+  "resources/css/contact.css": { "summary": "CSS halaman kontak (/contact): form layout, peta embed, info kontak cards." },
+  "resources/css/fontawesome.css": { "summary": "Placeholder CSS import Font Awesome dari node_modules (diproses Vite menjadi bundle lokal, tidak CDN)." },
+  "resources/css/inline-style-fix.css": { "summary": "CSS fix untuk mengganti inline style di beberapa template: override spesifik yang tidak bisa dilakukan via class." },
+  "resources/css/loading.css": { "summary": "CSS loading skeleton/spinner: digunakan saat konten Livewire/Filament sedang dimuat." },
+  "resources/css/pengumuman.css": { "summary": "CSS halaman pengumuman (/pengumuman): card pengumuman, badge kategori, filter sidebar, pagination style." },
+  "resources/css/visitor-book.css": { "summary": "CSS halaman buku tamu publik (/visitor-book): tabel tamu, form pendaftaran, badge status aktif/checkout." },
+  "resources/lang/id.json": { "summary": "Terjemahan bahasa Indonesia untuk key Laravel/Breeze: validasi form, notifikasi, pesan error, teks UI dasar." },
+  "resources/lang/en.json": { "summary": "Terjemahan bahasa Inggris untuk key Laravel/Breeze: pesan validasi, notifikasi, error messages." },
+  "resources/lang/ar.json": { "summary": "Terjemahan bahasa Arab untuk key Laravel/Breeze: mendukung tampilan RTL untuk komunitas madrasah." },
+  "resources/views/welcome.blade.php": {
+    "summary": "View halaman beranda PTSP (/): hero section dengan statistik publik (IKM, layanan aktif, tiket selesai), grid layanan unggulan, pengumuman terbaru, survey CTA, buku tamu CTA. Menggunakan layout public.blade.php.",
+    "sections": [
+      { "symbol": "stats-section", "startLine": 1, "endLine": 100, "summary": "Tampilkan $stats (IKM, average_days, services, completed_percent) dari PublicController::publicStats() yang di-cache 10 menit." }
+    ]
+  },
+  "resources/views/layouts/public.blade.php": {
+    "summary": "Layout utama halaman publik PTSP: navbar responsif dengan menu (Beranda/Layanan/Pengumuman/Buku Tamu/Pengaduan/Survei), dark mode toggle, aksesibilitas toggle, footer dengan kontak madrasah. Include Bootstrap 5, AOS, font, custom CSS via AssetHelper atau Vite."
+  },
+  "resources/views/layouts/auth.blade.php": {
+    "summary": "Layout halaman autentikasi: header dengan logo madrasah, card centered untuk form login/register/reset-password, footer minimal."
+  },
+  "resources/views/layouts/guest.blade.php": {
+    "summary": "Layout guest Breeze: wrapper sederhana untuk halaman auth Breeze (login, register), digunakan GuestLayout component."
+  },
+  "resources/views/layouts/navigation.blade.php": {
+    "summary": "Komponen navigasi Breeze: navbar untuk halaman auth dengan link login/register dan menu user jika sudah login."
+  },
+  "resources/views/auth/login.blade.php": {
+    "summary": "View form login PTSP: email, password, remember me, CAPTCHA image (refresh via AJAX), link lupa password dan registrasi. Menggunakan layout auth.blade.php."
+  },
+  "resources/views/auth/register.blade.php": {
+    "summary": "View form registrasi dua jalur: toggle civitas (kode sekolah) vs umum. Field: nama, email, WhatsApp, user_type (untuk civitas), password. Layout auth.blade.php."
+  },
+  "resources/views/auth/forgot-password.blade.php": { "summary": "View form lupa password: input email untuk kirim link reset. Layout auth.blade.php." },
+  "resources/views/auth/reset-password.blade.php": { "summary": "View form reset password: token tersembunyi, email, password baru, konfirmasi password." },
+  "resources/views/auth/verify-email.blade.php": { "summary": "View halaman verifikasi email: instruksi cek inbox, tombol kirim ulang email verifikasi, tombol logout." },
+  "resources/views/auth/confirm-password.blade.php": { "summary": "View konfirmasi password untuk aksi sensitif: input password untuk konfirmasi identitas." },
+  "resources/views/onlineportal/service-catalog.blade.php": {
+    "summary": "View katalog layanan publik (/services): grid card semua layanan aktif dengan nama, deskripsi singkat, mode, waktu proses. Filter kategori dan search. Tombol 'Ajukan' redirect ke /portal/ajukan?layanan={slug}."
+  },
+  "resources/views/onlineportal/service-detail.blade.php": {
+    "summary": "View detail satu layanan (/services/{slug}): menampilkan 14 komponen standar pelayanan (persyaratan, mekanisme, biaya, produk, dll). Tombol ajukan ke portal."
+  },
+  "resources/views/onlineportal/track-ticket-form.blade.php": {
+    "summary": "View form pelacakan tiket (/tracking): input nomor tiket, tampilkan hasil dengan status terkini dan timeline log riwayat tiket. AJAX atau form POST. Nomor tiket dan nama pemohon disamarkan di hasil publik."
+  },
+  "resources/views/public/about.blade.php": {
+    "summary": "View halaman tentang PTSP (/about): visi-misi madrasah, struktur organisasi PTSP, FAQ accordion (dari tabel faqs, sanitize via Faq::safeAnswer()), info kontak."
+  },
+  "resources/views/public/contact.blade.php": {
+    "summary": "View halaman kontak (/contact): form kontak (nama/email/subjek/pesan, throttle public-forms), peta lokasi madrasah, jam operasional, nomor telepon dan WhatsApp."
+  },
+  "resources/views/public/visitor-book.blade.php": {
+    "summary": "View buku tamu publik (/visitor-book): dua tab (Kunjungan Biasa / Pemohon Layanan), form pendaftaran mandiri oleh tamu, tabel tamu hari ini dengan nama ter-mask (Visitor::publicName()), phone ter-mask."
+  },
+  "resources/views/supervision/complaints.blade.php": {
+    "summary": "View halaman pengaduan publik (/complaints): tiga tab (Pengaduan/Saran/Whistleblowing), form masing-masing dengan field sesuai tipe, nomor pengaduan untuk lacak."
+  },
+  "resources/views/supervision/complaint-success.blade.php": { "summary": "View konfirmasi pengaduan/saran berhasil: tampilkan nomor PEM/SRN dan instruksi pelacakan." },
+  "resources/views/supervision/whistleblowing-success.blade.php": { "summary": "View konfirmasi WBS berhasil: tampilkan nomor WSB, penjelasan kerahasiaan laporan." },
+  "resources/views/supervision/complaint-track-form.blade.php": { "summary": "View form lacak pengaduan (/complaints/track): input nomor PEM/SRN/WSB untuk cek status." },
+  "resources/views/supervision/complaint-track-result.blade.php": { "summary": "View hasil lacak pengaduan: tampilkan status, tanggal, tanggapan petugas (jika sudah ada)." },
+  "resources/views/survey/form-step1.blade.php": { "summary": "View survei langkah 1 (/survey): form identitas responden (nama, pendidikan, pekerjaan, nomor tiket) sesuai SurveyQuestion type=identity." },
+  "resources/views/survey/form-step2.blade.php": { "summary": "View survei langkah 2 (/survey/step2): pertanyaan SKM dengan pilihan radio 1-4, satu pertanyaan per unsur." },
+  "resources/views/survey/form-step3.blade.php": { "summary": "View survei langkah 3 (/survey/step3): pertanyaan SPAK dengan pilihan radio, textarea saran/masukan." },
+  "resources/views/survey/closed.blade.php": { "summary": "View survei ditutup: ditampilkan jika SurveyEdition::current() null (tidak ada edisi aktif)." },
+  "resources/views/survey/success.blade.php": { "summary": "View konfirmasi survei berhasil: ucapan terima kasih, IKM terakhir, link ke hasil survei publik." },
+  "resources/views/survey/results.blade.php": { "summary": "View hasil survei publik: IKM dan IPAK dalam gauge/chart, kategori mutu pelayanan (A/B/C/D), total responden." },
+  "resources/views/survey/partials/edition.blade.php": { "summary": "Partial tampilan nama dan periode edisi survei aktif di form survei." },
+  "resources/views/survey/partials/rating-questions.blade.php": { "summary": "Partial radio button pertanyaan rating SKM/SPAK: iterasi $questions, render label + 4 pilihan." },
+  "resources/views/pengumuman/index.blade.php": { "summary": "View daftar pengumuman (/pengumuman): grid card dengan thumbnail, judul, kategori, tanggal terbit, filter kategori, pagination." },
+  "resources/views/pengumuman/show.blade.php": { "summary": "View detail pengumuman: konten HTML, lampiran download, view count, tanggal, share button." },
+  "resources/views/print/ticket-receipt.blade.php": { "summary": "View tanda terima tiket untuk cetak: nomor tiket, layanan, pemohon, tanggal, barcode/QR nomor tiket, instruksi pelacakan. CSS print-only." },
+  "resources/views/print/visitor-pass.blade.php": { "summary": "View kartu tanda tamu untuk cetak dari loket: nama, asal, tujuan, jam masuk, kode kartu. CSS print-only." },
+  "resources/views/emails/contact-form.blade.php": { "summary": "Template email form kontak: nama pengirim, email, pesan. Dikirim ContactFormMail ke admin." },
+  "resources/views/emails/thank-you-survey.blade.php": { "summary": "Template email ucapan terima kasih survei kepada pemohon setelah mengisi survei terkait tiket." },
+  "resources/views/errors/layout.blade.php": { "summary": "Layout halaman error: desain konsisten untuk semua halaman error (403/404/419/429/500/503/blocked) dengan navbar minimal dan branding madrasah." },
+  "resources/views/errors/403.blade.php": { "summary": "View error 403 Forbidden: pesan akses ditolak, link kembali ke beranda." },
+  "resources/views/errors/404.blade.php": { "summary": "View error 404 Not Found: pesan halaman tidak ditemukan, link ke beranda dan layanan." },
+  "resources/views/errors/419.blade.php": { "summary": "View error 419 Page Expired: pesan CSRF token expired, instruksi refresh halaman." },
+  "resources/views/errors/429.blade.php": { "summary": "View error 429 Too Many Requests: pesan rate limit tercapai, instruksi tunggu sebelum coba lagi." },
+  "resources/views/errors/500.blade.php": { "summary": "View error 500 Server Error: pesan kesalahan server, link ke beranda." },
+  "resources/views/errors/503.blade.php": { "summary": "View error 503 Service Unavailable: tampilan maintenance mode dengan pesan dan Retry-After header." },
+  "resources/views/errors/blocked.blade.php": { "summary": "View IP terblokir: tampilan HTTP 403 khusus dengan pesan alasan blokir dan waktu expired jika ada." },
+  "resources/views/filament/pages/dashboard.blade.php": { "summary": "Template Blade kosong untuk override halaman dashboard Filament: hanya memanggil parent slots widget." },
+  "resources/views/filament/pages/form-page.blade.php": { "summary": "Template Blade untuk halaman Filament dengan form (RegisterService, ApplyService): render form Filament dengan header dan actions." },
+  "resources/views/filament/pages/security.blade.php": {
+    "summary": "View halaman keamanan sistem /cp/system/security: tabel IP terblokir, form blokir/unblokir, tombol scan keamanan, toggle maintenance mode, tombol clear cache. Dirender oleh Security page Filament."
+  },
+  "resources/views/filament/pages/survey-report.blade.php": {
+    "summary": "View laporan survei /cp/reports/survey-report: chart IKM/IPAK per bulan, tabel per unsur pertanyaan, demografis responden, tombol unduh Excel."
+  },
+  "resources/views/filament/pages/table-page.blade.php": { "summary": "Template Blade minimal untuk halaman Filament dengan tabel: render tabel widget." },
+  "resources/views/filament/portal/widgets/survey-reminder.blade.php": { "summary": "View widget pengingat survei di portal: banner/card dengan link ke /survey jika ada tiket selesai tanpa survei." },
+  "resources/views/filament/resources/role-resource/list-roles.blade.php": { "summary": "View kustom daftar role di panel admin: tabel role dengan badge SYSTEM/custom dan daftar permission yang dimiliki." },
+  "resources/views/filament/widgets/complaints-reporting-heading.blade.php": { "summary": "View heading widget 'Pengaduan & Pelaporan' di dashboard admin: judul, deskripsi, dan link ke halaman pengaduan." },
+  "resources/views/filament/widgets/recent-activities.blade.php": { "summary": "View widget aktivitas terbaru: tabel 10 log aktivitas Spatie (created/updated/deleted) dari activity_log dengan waktu, model, dan aktor." },
+  "resources/views/filament/widgets/services-ticketing-heading.blade.php": { "summary": "View heading widget 'Layanan & Tiket' di dashboard admin: judul dan shortcut ke resource TicketResource dan ServiceResource." },
+  "resources/views/filament/widgets/survey-feedback-heading.blade.php": { "summary": "View heading widget 'Survei & Umpan Balik' di dashboard admin: judul dan link ke laporan survei." },
+  "resources/views/filament/widgets/user-management-heading.blade.php": { "summary": "View heading widget 'Manajemen Pengguna' di dashboard admin: judul dan link ke UserResource." },
+  "resources/views/filament/widgets/visitor-management-heading.blade.php": { "summary": "View heading widget 'Manajemen Buku Tamu' di dashboard admin: judul dan link ke VisitorResource." },
+  "resources/views/livewire/registration-code-settings.blade.php": { "summary": "View komponen Livewire RegistrationCodeSettings: form input kode registrasi civitas dengan tombol simpan." },
+  "resources/views/components/application-logo.blade.php": { "summary": "Blade component logo aplikasi: menampilkan logo MTsN 2 Kota Malang (SVG atau img) dengan alt text." },
+  "resources/views/components/input-error.blade.php": { "summary": "Blade component pesan error input Breeze: menampilkan $messages validasi dengan class text-danger." },
+  "resources/views/components/input-label.blade.php": { "summary": "Blade component label input Breeze: label HTML dengan for attribute." },
+  "resources/views/components/primary-button.blade.php": { "summary": "Blade component tombol primary Breeze: button dengan class btn btn-primary dan slot konten." },
+  "resources/views/components/text-input.blade.php": { "summary": "Blade component text input Breeze: input HTML dengan class form-control dan atribut yang diteruskan." },
+  "public/index.php": { "summary": "Entry point web server Laravel: bootstrap framework, tangani request via Application. Semua request HTTP diarahkan ke file ini oleh Nginx/Apache." },
+  "public/.htaccess": { "summary": "Konfigurasi Apache untuk PTSP: rewrite semua request ke index.php (front controller pattern), blokir akses ke file sensitif, set header keamanan, kompresi gzip, browser caching untuk aset statis." },
+  "public/robots.txt": { "summary": "Instruksi crawler mesin pencari: Allow semua path publik, Disallow /cp (panel admin), /portal, /api, /documents." },
+  "public/manifest.json": { "summary": "Web App Manifest PWA: nama PTSP MTsN 2 Kota Malang, ikon, warna tema, display standalone untuk install di homescreen." },
+  "public/browserconfig.xml": { "summary": "Konfigurasi Microsoft browser tile untuk Windows pinned sites: warna tile dan ikon aplikasi PTSP." },
+  "public/offline.html": { "summary": "Halaman offline PWA: ditampilkan Service Worker saat tidak ada koneksi internet, berisi pesan dan tombol coba lagi." },
+  "public/sw.js": { "summary": "Service Worker PWA PTSP: cache-first strategy untuk aset statis, network-first untuk halaman HTML, fallback ke offline.html saat fetch gagal dan tidak ada cache." },
+  "public/css/dark-mode.css": { "summary": "CSS dark mode yang sudah dikompilasi: copy dari resources/css/dark-mode.css untuk digunakan tanpa Vite di mode production." },
+  "public/css/awcodes/tiptap-editor/tiptap.css": { "summary": "CSS TipTap editor yang sudah dikompilasi: styling WYSIWYG editor untuk form ServiceResource di Filament (deskripsi layanan, persyaratan, mekanisme)." },
+  "public/css/filament/filament/app.css": { "summary": "CSS utama Filament 3 yang sudah di-publish: styling panel admin /cp dan portal /portal." },
+  "public/css/filament/forms/forms.css": { "summary": "CSS forms Filament 3 yang sudah di-publish: styling semua komponen form Filament (input, select, file upload, dll)." },
+  "public/css/filament/support/support.css": { "summary": "CSS support utilities Filament 3 yang sudah di-publish." },
+  "public/js/accessibility.js": { "summary": "JavaScript aksesibilitas yang sudah dikompilasi dari resources/js/accessibility.js: font size, high contrast, dyslexia font." },
+  "public/js/filament/filament/app.js": { "summary": "JavaScript utama Filament 3 yang sudah di-publish: Alpine.js integration, panel navigation, SPA routing." },
+  "public/js/filament/filament/echo.js": { "summary": "JavaScript Laravel Echo untuk Filament: WebSocket/Pusher integration untuk real-time notifications di panel." },
+  "public/js/filament/forms/components/color-picker.js": { "summary": "JavaScript color picker komponen Filament forms." },
+  "public/js/filament/forms/components/date-time-picker.js": { "summary": "JavaScript date/time picker komponen Filament forms: flatpickr integration." },
+  "public/js/filament/forms/components/file-upload.js": { "summary": "JavaScript file upload komponen Filament forms: Filepond integration untuk upload multi-file." },
+  "public/js/filament/forms/components/key-value.js": { "summary": "JavaScript key-value input komponen Filament forms." },
+  "public/js/filament/forms/components/markdown-editor.js": { "summary": "JavaScript markdown editor komponen Filament forms: EasyMDE integration." },
+  "public/js/filament/forms/components/rich-editor.js": { "summary": "JavaScript rich text editor komponen Filament forms: Quill atau Trix integration." },
+  "public/js/filament/forms/components/select.js": { "summary": "JavaScript select komponen Filament forms: Tom Select/Choices.js integration untuk searchable select." },
+  "public/js/filament/forms/components/tags-input.js": { "summary": "JavaScript tags input komponen Filament forms." },
+  "public/js/filament/forms/components/textarea.js": { "summary": "JavaScript textarea auto-resize komponen Filament forms." },
+  "public/js/filament/notifications/notifications.js": { "summary": "JavaScript notifikasi Filament: Alpine.js component untuk toast/flash notification di panel." },
+  "public/js/filament/support/support.js": { "summary": "JavaScript support utilities Filament: Alpine.js directives, portal, teleport untuk panel admin." },
+  "public/js/filament/tables/components/table.js": { "summary": "JavaScript tabel Filament: bulk actions, column sorting, pagination interaction." },
+  "public/js/filament/widgets/components/chart.js": { "summary": "JavaScript chart widget Filament: Chart.js integration untuk grafik statistik di dashboard." },
+  "public/js/filament/widgets/components/stats-overview/stat/chart.js": { "summary": "JavaScript mini chart untuk stats overview widget Filament: sparkline chart di StatCard." },
+  "public/js/awcodes/tiptap-editor/components/tiptap.js": { "summary": "JavaScript TipTap WYSIWYG editor yang sudah di-publish: editor konten rich text untuk form ServiceResource di Filament." },
+  "tests/TestCase.php": { "summary": "Base TestCase untuk semua tes PTSP: extends Laravel TestCase dengan trait CreatesApplication. Semua Feature dan Unit tests mewarisi class ini." },
+  "tests/CreatesApplication.php": { "summary": "Trait CreatesApplication: membuat instance aplikasi Laravel untuk testing, digunakan TestCase." },
+  "tests/Feature/ApplicationTest.php": {
+    "summary": "Tes end-to-end flow utama PTSP: registrasi+login user, registrasi civitas dengan kode sekolah, pengajuan layanan online, front desk walk-in, survei 3 langkah, pengaduan publik, WBS anonim, lacak tiket. Menggunakan RefreshDatabase.",
+    "sections": [
+      { "symbol": "ApplicationTest::test_user_can_register_and_login", "startLine": 42, "endLine": 58, "summary": "POST /register dengan data valid, assert redirect ke verification.notice dan user authenticated." },
+      { "symbol": "ApplicationTest::test_civitas_registers_with_the_shared_code", "startLine": 60, "endLine": 85, "summary": "Registrasi civitas: is_civitas=1, civitas_type=guru dengan kode sekolah valid, user mendapat role guru." }
+    ]
+  },
+  "tests/Feature/Auth/AuthenticationTest.php": { "summary": "Tes autentikasi: login dengan kredensial valid/invalid, logout, redirect setelah login ke panel yang sesuai per role." },
+  "tests/Feature/Auth/EmailVerificationTest.php": { "summary": "Tes verifikasi email: kirim ulang email, akses dengan link valid/invalid/expired." },
+  "tests/Feature/Auth/PasswordConfirmationTest.php": { "summary": "Tes konfirmasi password: akses halaman confirm-password, submit password benar/salah." },
+  "tests/Feature/Auth/PasswordResetTest.php": { "summary": "Tes reset password: kirim link reset, akses halaman reset dengan token valid/expired, update password." },
+  "tests/Feature/Auth/PasswordUpdateTest.php": { "summary": "Tes update password saat login: PUT /password dengan current_password benar/salah." },
+  "tests/Feature/Auth/RegistrationTest.php": { "summary": "Tes registrasi: form valid membuat user, redirect ke verifikasi email, validasi field duplikat." },
+  "tests/Feature/AdminDashboardWidgetsTest.php": { "summary": "Tes widget dashboard admin: assert semua widget StatsOverview render tanpa error untuk user admin." },
+  "tests/Feature/DashboardNavigationTest.php": { "summary": "Tes navigasi dashboard: staf redirect ke /cp, pemohon ke /portal, tamu ke login." },
+  "tests/Feature/FilamentMasterDataTest.php": { "summary": "Tes CRUD master data di Filament: ServiceResource, UserResource, SurveyQuestionResource. Assert admin bisa buat/edit/hapus, non-admin tidak bisa." },
+  "tests/Feature/FilamentPanelsTest.php": { "summary": "Tes akses panel Filament: admin bisa akses /cp, pemohon tidak bisa. Pemohon bisa akses /portal, staf tidak bisa. User nonaktif tidak bisa akses keduanya." },
+  "tests/Feature/MultiLanguageTest.php": { "summary": "Tes multi-bahasa: switch locale via /set-locale/en, assert teks berubah bahasa, session locale tersimpan." },
+  "tests/Feature/ProfileTest.php": { "summary": "Tes edit profil: update nama/email/WhatsApp, update password, hapus akun." },
+  "tests/Feature/PublicChromeTest.php": { "summary": "Smoke test halaman publik: GET / /about /contact /services /tracking /complaints /survey semuanya HTTP 200." },
+  "tests/Feature/RolesAndNavigationTest.php": { "summary": "Tes peran dan navigasi Filament: setiap role (admin/front_desk/back_office/kepala_tu/supervisor) melihat menu navigasi yang sesuai dan tidak melihat menu role lain." },
+  "tests/Feature/ServiceWorkflowTest.php": {
+    "summary": "Tes workflow tiket end-to-end: buka tiket (TicketService::open), assign, change status, upload output, decide (approve/reject pimpinan), handOver. Assert setiap langkah mengubah status dan log yang benar.",
+    "sections": [
+      { "symbol": "ServiceWorkflowTest::test_full_ticket_lifecycle", "startLine": 1, "endLine": 100, "summary": "Test siklus lengkap: open->assign->in_process->approve(pimpinan)->completed->handOver." }
+    ]
+  },
+  "tests/Feature/StaffPagesSmokeTest.php": { "summary": "Smoke test halaman-halaman panel staf /cp: assert semua halaman utama (dashboard, tiket, pengaduan, laporan, keamanan) HTTP 200 untuk role yang sesuai." },
+  "tests/Feature/SurveyIdentityTest.php": { "summary": "Tes validasi identitas survei: pertanyaan is_required=true wajib diisi, nomor tiket harus exist di tabel tickets jika diisi." },
+  "tests/Feature/TicketDocumentTest.php": { "summary": "Tes akses dokumen tiket: pemohon bisa unduh dokumen tiket sendiri, tidak bisa dokumen tiket orang lain, staf bisa akses semua." },
+  "tests/Unit/ModelTest.php": { "summary": "Tes unit model: Ticket::generateTicketNumber() format benar, Service::slaWorkingDays() parsing tepat, Visitor::publicName() masking benar, Complaint::generateComplaintNumber() prefix sesuai tipe." },
+  "docs/rancangan_app.md": { "summary": "Dokumen rancangan aplikasi PTSP MTsN 2 Kota Malang: arsitektur sistem, 13 modul (buku tamu, registrasi, portal layanan, pengajuan online, pelayanan offline, back office, survei, persetujuan, penyelesaian, pengaduan, WBS, laporan, dashboard), alur kerja tiket, dan kebijakan privasi." },
+  "docs/arsitektur_paket.md": { "summary": "Dokumen arsitektur paket aplikasi: struktur folder Laravel, deskripsi setiap namespace (Models, Services, Support, Filament), diagram ketergantungan antar komponen." },
+  "docs/survei.md": { "summary": "Dokumentasi sistem survei: alur 3 langkah (identitas->SKM->SPAK), cara menghitung IKM dan IPAK per Permenpan RB 14/2017, manajemen edisi survei, arsip kuartalan." },
+  "docs/SURVEY_SYSTEM_DOCUMENTATION.md": { "summary": "Dokumentasi teknis lengkap sistem survei: skema database (survey_questions/survey_responses/survey_answers/survey_editions/survey_archives), SurveyController flow, rumus IKM/IPAK, export Excel, konfigurasi pertanyaan." },
+  "docs/perbedaan_dumas_wistle.md": { "summary": "Penjelasan perbedaan Pengaduan Masyarakat (Dumas) dan Whistleblowing System (WBS): tipe complaint_type, anonimitas, kerahasiaan, alur tindak lanjut, field is_whistleblowing/is_confidential." },
+  "docs/ROLES_PERMISSIONS.md": { "summary": "Dokumentasi peran dan hak akses: tabel 13 role (admin/kepala_sekolah/kepala_tu/supervisor/back_office/front_desk + tipe pengguna publik), permission matrix per area (frontdesk/backoffice/supervision), SYSTEM_ROLES yang tidak bisa dihapus." },
+  "docs/database_schema.md": { "summary": "Skema database lengkap PTSP: diagram tabel (users, tickets, services, complaints, visitors, surveys, dll), kolom penting, foreign keys, index, dan relasi antar tabel." },
+  "docs/DEPLOYMENT.md": { "summary": "Panduan deploy ke server biasa/cPanel: setup .env dari .env.production.example, jalankan build-production.sh, konfigurasi web server (Nginx/Apache), setup cron untuk scheduler, permission storage." },
+  "docs/DEPLOY_COOLIFY.md": { "summary": "Panduan deploy ke Docker/Coolify: konfigurasi docker-compose.yml, variabel environment yang diperlukan, volume persistent untuk PostgreSQL, migrasi otomatis via entrypoint.sh, SSL/domain setup di Coolify." }
+}

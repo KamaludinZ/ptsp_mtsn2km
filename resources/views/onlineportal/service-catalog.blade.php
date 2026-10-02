@@ -563,7 +563,7 @@
                                             <i class="fas fa-headset me-2"></i> Pengaduan
                                         </h6>
                                         <p class="text-muted mb-2">{{ $service->complaint_handling ?? 'Hubungi kami melalui halaman pengaduan' }}</p>
-                                        <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ route('supervision.complaints.dashboard') }}" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-comment-dots me-1"></i> Ajukan Pengaduan
                                         </a>
                                     </div>
@@ -729,7 +729,7 @@
                                 <i class="fas fa-headset me-2"></i> Pengaduan
                             </h6>
                             <p class="text-muted mb-2">{{ $service->complaint_handling ?? 'Hubungi kami melalui halaman pengaduan' }}</p>
-                            <a href="{{ route('supervision.complaint.submit') }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ route('supervision.complaints.dashboard') }}" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-comment-dots me-1"></i> Ajukan Pengaduan
                             </a>
 

@@ -32,7 +32,7 @@ class ComplaintWhistleblowingStats extends BaseWidget
                     ->whereIn('status', $statuses)
                     ->count();
 
-                $dumas = ['complaint', 'suggestion'];
+                $dumas = ['complaint'];
 
                 return [
                     Stat::make('Pengaduan Diproses', $count($dumas, ['in_review', 'in_progress']))

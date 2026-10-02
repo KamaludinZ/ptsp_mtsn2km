@@ -11,6 +11,7 @@ class SurveyResponse extends Model
 
     protected $fillable = [
         'survey_id',
+        'survey_edition_id',
         'user_id',
         'ticket_id',
         'ticket_code',
@@ -22,6 +23,11 @@ class SurveyResponse extends Model
     protected $casts = [
         'completed_at' => 'datetime',
     ];
+
+    public function edition()
+    {
+        return $this->belongsTo(SurveyEdition::class, 'survey_edition_id');
+    }
 
     // Relationship with survey
     public function survey()

@@ -12,7 +12,7 @@
                     <i class="fas fa-shield-alt me-2"></i>
                     Survei Persepsi Anti Korupsi (SPAK)
                 </h2>
-                <p class="text-muted">MTsN 2 Kota Malang</p>
+                @include('survey.partials.edition')
             </div>
 
             <!-- Progress Indicator -->

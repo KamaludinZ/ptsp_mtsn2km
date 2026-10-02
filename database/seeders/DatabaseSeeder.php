@@ -25,8 +25,10 @@ class DatabaseSeeder extends Seeder
         // Fake tickets, visitors, complaints and announcements are demo data
         // only; never publish them on the live site.
         if (!app()->isProduction()) {
+            // Well-known demo civitas registration code
+            \App\Support\CivitasRegistration::setCode('1234567890');
+
             $this->call([
-                RegistrationCodeSeeder::class, // well-known demo codes
                 TicketSeeder::class,
                 VisitorSeeder::class,
                 ComplaintSeeder::class,

@@ -33,12 +33,14 @@ Route::post('/tracking', [OnlinePortalController::class, 'trackTicket'])->middle
 
 // Complaints (Dumas) and whistleblowing from the public
 Route::get('/complaints', [SupervisionController::class, 'complaints'])->name('supervision.complaints.dashboard');
-Route::get('/complaints/submit', [SupervisionController::class, 'submitComplaintForm'])->name('supervision.complaint.submit');
+// The complaint and whistleblowing forms both live on /complaints; the old form URLs just point there.
+Route::redirect('/complaints/submit', '/complaints', 301);
 Route::post('/complaints/submit', [SupervisionController::class, 'submitComplaint'])->middleware('throttle:public-forms')->name('supervision.complaint.submit.store');
+Route::post('/complaints/saran', [SupervisionController::class, 'submitSuggestion'])->middleware('throttle:public-forms')->name('supervision.suggestion.submit');
 Route::get('/complaints/success/{complaintNumber}', [SupervisionController::class, 'complaintSuccess'])->name('supervision.complaint.success');
 Route::get('/complaints/track', [SupervisionController::class, 'showTrackForm'])->name('supervision.complaint.track.form');
 Route::post('/complaints/track', [SupervisionController::class, 'trackComplaint'])->middleware('throttle:30,1')->name('supervision.complaint.track');
-Route::get('/whistleblowing', [SupervisionController::class, 'whistleblowingForm'])->name('supervision.whistleblowing.form');
+Route::redirect('/whistleblowing', '/complaints?tab=whistleblowing', 301);
 Route::post('/whistleblowing', [SupervisionController::class, 'submitWhistleblowing'])->middleware('throttle:public-forms')->name('supervision.whistleblowing.submit');
 Route::get('/whistleblowing/success/{complaintNumber}', [SupervisionController::class, 'whistleblowingSuccess'])->name('supervision.whistleblowing.success');
 

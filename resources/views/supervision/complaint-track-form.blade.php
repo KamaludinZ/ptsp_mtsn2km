@@ -254,7 +254,7 @@
                        name="complaint_number" 
                        required
                        class="form-control"
-                       placeholder="Contoh: KPL-2025-0001">
+                       placeholder="Contoh: PEM-202609-0001">
                 <p class="mt-2 text-muted" style="font-size: 0.875rem; color: var(--bs-secondary-text);">
                     Nomor tiket pengaduan biasanya berupa kombinasi huruf dan angka yang dikirim saat pengaduan berhasil dikirim
                 </p>

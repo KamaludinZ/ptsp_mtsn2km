@@ -69,7 +69,10 @@ class PublicController extends Controller
         $activeCount = Visitor::whereDate('check_in_time', $date)->whereNull('check_out_time')->count();
         $finishedCount = Visitor::whereDate('check_in_time', $date)->whereNotNull('check_out_time')->count();
 
-        return view('public.visitor-book', compact('visitors', 'date', 'activeCount', 'finishedCount'));
+        $services = Service::where('is_active', true)->orderBy('name')->pluck('name');
+        $visitPurposes = Visitor::VISIT_PURPOSES;
+
+        return view('public.visitor-book', compact('visitors', 'date', 'activeCount', 'finishedCount', 'services', 'visitPurposes'));
     }
 
     /**
@@ -100,10 +103,15 @@ class PublicController extends Controller
             'email' => 'nullable|string|email|max:255',
             'institution' => 'nullable|string|max:255',
             'institution_category' => 'nullable|string|max:255',
-            'purpose' => 'required|string|max:500',
+            'purpose' => ['required', 'string', \Illuminate\Validation\Rule::in(Visitor::VISIT_PURPOSES)],
+            'purpose_other' => 'required_if:purpose,Lainnya|nullable|string|max:500',
             'notes' => 'nullable|string|max:1000',
             'obscure_name' => 'nullable',
+        ], [
+            'purpose_other.required_if' => 'Tuliskan tujuan kunjungan Anda.',
         ]);
+
+        $purpose = $validated['purpose'] === 'Lainnya' ? $validated['purpose_other'] : $validated['purpose'];
 
         Visitor::create([
             'name' => $validated['name'],
@@ -111,7 +119,7 @@ class PublicController extends Controller
             'email' => $validated['email'] ?? null,
             'institution' => $validated['institution'] ?? null,
             'institution_category' => $validated['institution_category'] ?? null,
-            'purpose' => $validated['purpose'],
+            'purpose' => $purpose,
             'notes' => $validated['notes'] ?? null,
             'is_obscured' => $request->boolean('obscure_name'),
             'check_in_time' => Carbon::now(),
@@ -133,10 +141,21 @@ class PublicController extends Controller
             'institution' => 'nullable|string|max:255',
             'institution_category' => 'nullable|string|max:255',
             'applicant_type' => 'nullable|string|max:255',
-            'target_service' => 'required|string|max:500',
+            'target_service' => ['required', 'string', function ($attribute, $value, $fail) {
+                if ($value !== 'Lainnya' && !Service::where('is_active', true)->where('name', $value)->exists()) {
+                    $fail('Pilih layanan dari daftar yang tersedia.');
+                }
+            }],
+            'target_service_other' => 'required_if:target_service,Lainnya|nullable|string|max:500',
             'notes' => 'nullable|string|max:1000',
             'obscure_name' => 'nullable',
+        ], [
+            'target_service_other.required_if' => 'Tuliskan layanan yang Anda tuju.',
         ]);
+
+        if ($validated['target_service'] === 'Lainnya') {
+            $validated['target_service'] = $validated['target_service_other'];
+        }
 
         Visitor::create([
             'name' => $validated['name'],

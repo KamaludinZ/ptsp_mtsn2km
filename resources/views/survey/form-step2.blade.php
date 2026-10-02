@@ -12,7 +12,7 @@
                     <i class="fas fa-clipboard-check me-2"></i>
                     Survey Kepuasan Masyarakat (SKM)
                 </h2>
-                <p class="text-muted">MTsN 2 Kota Malang</p>
+                @include('survey.partials.edition')
             </div>
 
             <!-- Progress Indicator -->

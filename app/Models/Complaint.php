@@ -146,35 +146,29 @@ class Complaint extends Model
     }
 
     /**
-     * Generate complaint number based on type
+     * Generate complaint number based on type, e.g. PEM-202609-0001.
      */
     public function generateComplaintNumber()
     {
         $prefix = match($this->complaint_type ?? $this->type) {
-            'complaint', 'pengaduan' => 'P',        // P for complaints
-            'suggestion', 'saran' => 'S',            // S for suggestions
-            'whistleblowing' => 'W',                // W for whistleblowing
-            default => 'P'
+            'complaint', 'pengaduan' => 'PEM',      // Pengaduan masyarakat
+            'suggestion', 'saran' => 'SRN',
+            'whistleblowing' => 'WSB',
+            default => 'PEM'
         };
-        
+
         $yearMonth = now()->format('Ym');
-        
-        // Get the next sequence number
-        $lastComplaint = static::where('complaint_number', 'LIKE', "{$prefix}-{$yearMonth}-%")
-            ->orderByRaw("CAST(RIGHT(complaint_number, 3) AS INTEGER) DESC")
-            ->first();
-        
-        $sequence = 1;
-        if ($lastComplaint) {
-            $lastSequence = substr($lastComplaint->complaint_number, -3);
-            if (is_numeric($lastSequence)) {
-                $sequence = intval($lastSequence) + 1;
-            }
-        }
-        
-        // Format the sequence number to be 3 digits
-        $sequenceNumber = str_pad($sequence, 3, '0', STR_PAD_LEFT);
-        
-        return "{$prefix}-{$yearMonth}-{$sequenceNumber}";
+
+        // Count alone can collide with a soft-deleted row still holding a
+        // number (unique constraint applies regardless of deleted_at), so
+        // derive the next sequence from the highest existing number instead.
+        $lastNumber = static::withTrashed()
+            ->where('complaint_number', 'like', "{$prefix}-{$yearMonth}-%")
+            ->orderByRaw("CAST(RIGHT(complaint_number, 4) AS INTEGER) DESC")
+            ->value('complaint_number');
+
+        $sequence = $lastNumber ? ((int) substr($lastNumber, -4)) + 1 : 1;
+
+        return sprintf('%s-%s-%04d', $prefix, $yearMonth, $sequence);
     }
 }

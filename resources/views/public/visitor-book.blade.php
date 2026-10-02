@@ -465,7 +465,18 @@
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-bullseye me-2 text-primary"></i>Tujuan Kunjungan *
                             </label>
-                            <input type="text" name="purpose" class="form-control form-control-lg" required>
+                            <select name="purpose" id="visit_purpose" class="form-select form-select-lg" required>
+                                <option value="">Pilih Tujuan</option>
+                                @foreach ($visitPurposes as $visitPurpose)
+                                    <option value="{{ $visitPurpose }}" @selected(old('purpose') === $visitPurpose)>{{ $visitPurpose }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 hidden" id="visit-purpose-other">
+                            <label for="purpose_other" class="form-label fw-semibold">
+                                <i class="fas fa-pen me-2 text-primary"></i>Tuliskan Tujuan Kunjungan *
+                            </label>
+                            <input type="text" name="purpose_other" id="purpose_other" class="form-control form-control-lg" maxlength="500" value="{{ old('purpose_other') }}">
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold">
@@ -475,10 +486,11 @@
                         </div>
                         <div class="col-12">
                             <div class="form-check">
-                                <input type="checkbox" name="obscure_name" class="form-check-input" id="obscure1">
+                                <input type="checkbox" name="obscure_name" class="form-check-input" id="obscure1" checked>
                                 <label class="form-check-label" for="obscure1">
                                     <i class="fas fa-user-secret me-2"></i>Samarkan Nama di Daftar Tamu
                                 </label>
+                                <div class="form-text">Nama hanya disamarkan di daftar tamu publik; petugas tetap melihat nama lengkap.</div>
                             </div>
                         </div>
                         <div class="col-12">
@@ -561,7 +573,19 @@
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-clipboard-list me-2 text-primary"></i>Layanan yang Dituju *
                             </label>
-                            <input type="text" name="target_service" class="form-control form-control-lg" required placeholder="Contoh: Pengambilan Ijazah, Surat Keterangan, dll">
+                            <select name="target_service" id="target_service" class="form-select form-select-lg" required>
+                                <option value="">Pilih Layanan</option>
+                                @foreach ($services as $serviceName)
+                                    <option value="{{ $serviceName }}" @selected(old('target_service') === $serviceName)>{{ $serviceName }}</option>
+                                @endforeach
+                                <option value="Lainnya" @selected(old('target_service') === 'Lainnya')>Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="col-12 hidden" id="target-service-other">
+                            <label for="target_service_other" class="form-label fw-semibold">
+                                <i class="fas fa-pen me-2 text-primary"></i>Tuliskan Layanan yang Dituju *
+                            </label>
+                            <input type="text" name="target_service_other" id="target_service_other" class="form-control form-control-lg" maxlength="500" value="{{ old('target_service_other') }}" placeholder="Contoh: Legalisir rapor">
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold">
@@ -571,10 +595,11 @@
                         </div>
                         <div class="col-12">
                             <div class="form-check">
-                                <input type="checkbox" name="obscure_name" class="form-check-input" id="obscure2">
+                                <input type="checkbox" name="obscure_name" class="form-check-input" id="obscure2" checked>
                                 <label class="form-check-label" for="obscure2">
                                     <i class="fas fa-user-secret me-2"></i>Samarkan Nama di Daftar Tamu
                                 </label>
+                                <div class="form-text">Nama hanya disamarkan di daftar tamu publik; petugas tetap melihat nama lengkap.</div>
                             </div>
                         </div>
                         <div class="col-12">
@@ -704,6 +729,26 @@
         if (applicantTypeSelect) {
             applicantTypeSelect.addEventListener('change', toggleInstitutionFields);
         }
+
+        // "Lainnya" in a dropdown reveals a required free-text field
+        function bindOtherField(selectId, wrapperId, inputId) {
+            var select = document.getElementById(selectId);
+            var wrapper = document.getElementById(wrapperId);
+            var input = document.getElementById(inputId);
+            if (!select || !wrapper || !input) return;
+
+            function toggle() {
+                var isOther = select.value === 'Lainnya';
+                wrapper.classList.toggle('hidden', !isOther);
+                input.required = isOther;
+            }
+
+            toggle();
+            select.addEventListener('change', toggle);
+        }
+
+        bindOtherField('visit_purpose', 'visit-purpose-other', 'purpose_other');
+        bindOtherField('target_service', 'target-service-other', 'target_service_other');
 
         // Force show first tab immediately
         const firstTab = document.querySelector('#visitor-form');

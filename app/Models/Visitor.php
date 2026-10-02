@@ -43,6 +43,24 @@ class Visitor extends Model
     const STATUS_ACTIVE = 'active';
     const STATUS_CHECKED_OUT = 'checked_out';
 
+    // Choices for "Tujuan Kunjungan" on the public visitor book; "Lainnya" asks for free text.
+    const VISIT_PURPOSES = [
+        'Kepala Madrasah',
+        'Kepala TU',
+        'Waka Humas',
+        'Waka Kurikulum',
+        'Waka Kesiswaan',
+        'Waka Sarpras',
+        'Komite',
+        'Unit Tatib',
+        'Unit UKS',
+        'Unit BK',
+        'Mahad/Asrama',
+        'Wali Kelas',
+        'Layanan PTSP',
+        'Lainnya',
+    ];
+
     /**
      * Name for the public visitor book: "Budi Santoso" -> "B**i S*****o"
      * when the visitor asked to hide it. Done server-side so the real name

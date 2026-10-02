@@ -282,19 +282,35 @@
 
 <!-- Main Content -->
 <div class="container complaint-container">
+    @if ($errors->any())
+        <div class="alert alert-danger mb-4" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>Periksa kembali isian formulir:
+            <ul class="mb-0 mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <!-- Alternative: Direct Tabbed Interface -->
     <div class="card border-0 shadow-sm rounded-4 mb-6">
         <div class="card-header bg-white py-4 border-bottom-0">
             <!-- Nav tabs -->
             <ul class="nav nav-tabs nav-tabs-visitor mb-0" id="complaintTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="dumas-alt-tab" data-bs-toggle="tab" data-bs-target="#dumas-alt" type="button" role="tab" aria-controls="dumas-alt" aria-selected="true">
+                    <button class="nav-link {{ $activeTab === 'dumas' ? 'active' : '' }}" id="dumas-alt-tab" data-bs-toggle="tab" data-bs-target="#dumas-alt" type="button" role="tab" aria-controls="dumas-alt" aria-selected="{{ $activeTab === 'dumas' ? 'true' : 'false' }}">
                         <i class="fas fa-comment me-2"></i>Pengaduan Masyarakat
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="whistleblowing-alt-tab" data-bs-toggle="tab" data-bs-target="#whistleblowing-alt" type="button" role="tab" aria-controls="whistleblowing-alt" aria-selected="false">
+                    <button class="nav-link {{ $activeTab === 'whistleblowing' ? 'active' : '' }}" id="whistleblowing-alt-tab" data-bs-toggle="tab" data-bs-target="#whistleblowing-alt" type="button" role="tab" aria-controls="whistleblowing-alt" aria-selected="{{ $activeTab === 'whistleblowing' ? 'true' : 'false' }}">
                         <i class="fas fa-user-secret me-2"></i>Whistleblowing
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ $activeTab === 'saran' ? 'active' : '' }}" id="saran-alt-tab" data-bs-toggle="tab" data-bs-target="#saran-alt" type="button" role="tab" aria-controls="saran-alt" aria-selected="{{ $activeTab === 'saran' ? 'true' : 'false' }}">
+                        <i class="fas fa-lightbulb me-2"></i>Saran
                     </button>
                 </li>
             </ul>
@@ -304,9 +320,10 @@
             <!-- Tab panes -->
             <div class="tab-content" id="complaintTabContentAlt">
                 <!-- Dumas Tab -->
-                <div class="tab-pane fade show active" id="dumas-alt" role="tabpanel" aria-labelledby="dumas-alt-tab">
-                    <form action="{{ route('supervision.complaint.submit') }}" method="POST" enctype="multipart/form-data">
+                <div class="tab-pane fade {{ $activeTab === 'dumas' ? 'show active' : '' }}" id="dumas-alt" role="tabpanel" aria-labelledby="dumas-alt-tab">
+                    <form action="{{ route('supervision.complaint.submit.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        <input type="hidden" name="form" value="dumas">
                         <input type="hidden" name="complaint_type" value="complaint">
 
                         <div class="row g-3">
@@ -314,43 +331,44 @@
                                 <label for="reporter_name_alt" class="form-label fw-semibold">
                                     <i class="fas fa-user me-2 text-primary"></i>Nama Pelapor <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control" id="reporter_name_alt" name="reporter_name" required>
+                                <input type="text" class="form-control" id="reporter_name_alt" name="reporter_name" value="{{ $activeTab === 'dumas' ? old('reporter_name') : '' }}" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="reporter_email_alt" class="form-label fw-semibold">
                                     <i class="fas fa-envelope me-2 text-primary"></i>Email Pelapor <span class="text-danger">*</span>
                                 </label>
-                                <input type="email" class="form-control" id="reporter_email_alt" name="reporter_email" required>
+                                <input type="email" class="form-control" id="reporter_email_alt" name="reporter_email" value="{{ $activeTab === 'dumas' ? old('reporter_email') : '' }}" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="reporter_phone_alt" class="form-label fw-semibold">
                                     <i class="fas fa-phone me-2 text-primary"></i>Nomor Telepon
                                 </label>
-                                <input type="tel" class="form-control" id="reporter_phone_alt" name="reporter_phone">
+                                <input type="tel" class="form-control" id="reporter_phone_alt" name="reporter_phone" value="{{ $activeTab === 'dumas' ? old('reporter_phone') : '' }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="complaint_date_alt" class="form-label fw-semibold">
                                     <i class="fas fa-calendar-alt me-2 text-primary"></i>Tanggal Kejadian <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" class="form-control" id="complaint_date_alt" name="complaint_date" required>
+                                <input type="date" class="form-control" id="complaint_date_alt" name="incident_date" max="{{ now()->toDateString() }}" value="{{ $activeTab === 'dumas' ? old('incident_date') : '' }}" required>
                             </div>
                             <div class="col-12">
                                 <label for="complaint_title_alt" class="form-label fw-semibold">
                                     <i class="fas fa-heading me-2 text-primary"></i>Judul Pengaduan <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control" id="complaint_title_alt" name="complaint_title" required>
+                                <input type="text" class="form-control" id="complaint_title_alt" name="complaint_title" value="{{ $activeTab === 'dumas' ? old('complaint_title') : '' }}" required>
                             </div>
                             <div class="col-12">
                                 <label for="complaint_description_alt" class="form-label fw-semibold">
                                     <i class="fas fa-file-alt me-2 text-primary"></i>Isi Pengaduan <span class="text-danger">*</span>
                                 </label>
-                                <textarea class="form-control" id="complaint_description_alt" name="complaint_description" rows="5" required></textarea>
+                                <textarea class="form-control" id="complaint_description_alt" name="complaint_description" rows="5" required>{{ $activeTab === 'dumas' ? old('complaint_description') : '' }}</textarea>
                             </div>
                             <div class="col-12">
                                 <label for="attachment_alt" class="form-label fw-semibold">
                                     <i class="fas fa-paperclip me-2 text-primary"></i>Lampiran (jika ada)
                                 </label>
-                                <input type="file" class="form-control" id="attachment_alt" name="attachment">
+                                <input type="file" class="form-control" id="attachment_alt" name="attachment" accept=".jpg,.jpeg,.png,.pdf">
+                                <div class="form-text">JPG, PNG, atau PDF - maks. 10MB</div>
                             </div>
                             <div class="col-12 d-grid">
                                 <button type="submit" class="btn btn-primary btn-lg">
@@ -362,7 +380,7 @@
                 </div>
                 
                 <!-- Whistleblowing Tab -->
-                <div class="tab-pane fade" id="whistleblowing-alt" role="tabpanel" aria-labelledby="whistleblowing-alt-tab">
+                <div class="tab-pane fade {{ $activeTab === 'whistleblowing' ? 'show active' : '' }}" id="whistleblowing-alt" role="tabpanel" aria-labelledby="whistleblowing-alt-tab">
                     <div class="alert alert-danger mb-4" role="alert">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         <strong>Whistleblowing</strong> - Gunakan formulir ini untuk melaporkan pelanggaran serius seperti korupsi, penipuan, suap, atau penyalahgunaan wewenang yang terjadi di dalam organisasi.
@@ -386,9 +404,9 @@
                         </div>
                     </div>
                     
-                    <form action="{{ route('supervision.complaint.submit') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('supervision.whistleblowing.submit') }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        <input type="hidden" name="complaint_type" value="whistleblowing">
+                        <input type="hidden" name="form" value="whistleblowing">
 
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -397,47 +415,47 @@
                                 </label>
                                 <select class="form-select" id="violation_category_alt" name="violation_category" required>
                                     <option value="">Pilih Kategori</option>
-                                    <option value="corruption">Korupsi</option>
-                                    <option value="gratification">Gratifikasi</option>
-                                    <option value="nepotism">Nepotisme/Kolusi</option>
-                                    <option value="misconduct">Pelanggaran Etika</option>
-                                    <option value="misuse">Penyalahgunaan Wewenang</option>
-                                    <option value="other">Lainnya</option>
+                                    <option value="corruption" @selected($activeTab === 'whistleblowing' && old('violation_category') === 'corruption')>Korupsi</option>
+                                    <option value="gratification" @selected($activeTab === 'whistleblowing' && old('violation_category') === 'gratification')>Gratifikasi</option>
+                                    <option value="nepotism" @selected($activeTab === 'whistleblowing' && old('violation_category') === 'nepotism')>Nepotisme/Kolusi</option>
+                                    <option value="misconduct" @selected($activeTab === 'whistleblowing' && old('violation_category') === 'misconduct')>Pelanggaran Etika</option>
+                                    <option value="misuse" @selected($activeTab === 'whistleblowing' && old('violation_category') === 'misuse')>Penyalahgunaan Wewenang</option>
+                                    <option value="other" @selected($activeTab === 'whistleblowing' && old('violation_category') === 'other')>Lainnya</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
                                 <label for="incident_date_alt" class="form-label fw-semibold">
                                     <i class="fas fa-calendar-alt me-2 text-danger"></i>Tanggal Kejadian
                                 </label>
-                                <input type="date" class="form-control" id="incident_date_alt" name="incident_date">
+                                <input type="date" class="form-control" id="incident_date_alt" name="incident_date" max="{{ now()->toDateString() }}" value="{{ $activeTab === 'whistleblowing' ? old('incident_date') : '' }}">
                             </div>
                             <div class="col-12">
                                 <label for="incident_title_alt" class="form-label fw-semibold">
                                     <i class="fas fa-heading me-2 text-danger"></i>Judul Laporan <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control" id="incident_title_alt" name="complaint_title" required placeholder="Ringkasan Pelanggaran">
+                                <input type="text" class="form-control" id="incident_title_alt" name="complaint_title" value="{{ $activeTab === 'whistleblowing' ? old('complaint_title') : '' }}" required placeholder="Ringkasan Pelanggaran">
                             </div>
                             <div class="col-12">
                                 <label for="incident_description_alt" class="form-label fw-semibold">
                                     <i class="fas fa-file-alt me-2 text-danger"></i>Deskripsi Kejadian <span class="text-danger">*</span>
                                 </label>
-                                <textarea class="form-control" id="incident_description_alt" name="complaint_description" rows="5" required placeholder="Jelaskan secara detail kejadian pelanggaran..."></textarea>
+                                <textarea class="form-control" id="incident_description_alt" name="complaint_description" rows="5" required placeholder="Jelaskan secara detail kejadian pelanggaran...">{{ $activeTab === 'whistleblowing' ? old('complaint_description') : '' }}</textarea>
                             </div>
                             <div class="col-12">
                                 <label for="evidence_alt" class="form-label fw-semibold">
                                     <i class="fas fa-paperclip me-2 text-danger"></i>Bukti Pendukung
                                 </label>
                                 <div class="input-group">
-                                    <input type="file" class="form-control" id="evidence_alt" name="attachment" multiple>
+                                    <input type="file" class="form-control" id="evidence_alt" name="attachment" accept=".jpg,.jpeg,.png,.pdf">
                                     <label class="input-group-text" for="evidence_alt">Unggah File</label>
                                 </div>
                                 <div class="form-text">
-                                    Anda dapat mengunggah beberapa file sebagai bukti pendukung (PNG, JPG, PDF, DOCX - Maks 10MB)
+                                    JPG, PNG, atau PDF - maks. 10MB
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="anonymous_report_alt" name="anonymous" value="1">
+                                    <input class="form-check-input" type="checkbox" id="anonymous_report_alt" name="anonymous" value="1" @checked($activeTab === 'whistleblowing' && old('anonymous'))>
                                     <label class="form-check-label fw-semibold" for="anonymous_report_alt">
                                         <i class="fas fa-user-secret me-2 text-danger"></i>Laporkan secara anonim
                                     </label>
@@ -449,7 +467,7 @@
                                             <label for="reporter_name_whistle_alt" class="form-label fw-semibold">
                                                 <i class="fas fa-user me-2 text-danger"></i>Nama Lengkap
                                             </label>
-                                            <input type="text" class="form-control" id="reporter_name_whistle_alt" name="reporter_name">
+                                            <input type="text" class="form-control" id="reporter_name_whistle_alt" name="reporter_name" value="{{ $activeTab === 'whistleblowing' ? old('reporter_name') : '' }}">
                                         </div>
                                         <div class="col-md-6">
                                             <label for="reporter_position_alt" class="form-label fw-semibold">
@@ -463,13 +481,13 @@
                                             <label for="reporter_email_whistle_alt" class="form-label fw-semibold">
                                                 <i class="fas fa-envelope me-2 text-danger"></i>Email
                                             </label>
-                                            <input type="email" class="form-control" id="reporter_email_whistle_alt" name="reporter_email">
+                                            <input type="email" class="form-control" id="reporter_email_whistle_alt" name="reporter_email" value="{{ $activeTab === 'whistleblowing' ? old('reporter_email') : '' }}">
                                         </div>
                                         <div class="col-md-6">
                                             <label for="reporter_phone_whistle_alt" class="form-label fw-semibold">
                                                 <i class="fas fa-phone me-2 text-danger"></i>Nomor Telepon
                                             </label>
-                                            <input type="tel" class="form-control" id="reporter_phone_whistle_alt" name="reporter_phone">
+                                            <input type="tel" class="form-control" id="reporter_phone_whistle_alt" name="reporter_phone" value="{{ $activeTab === 'whistleblowing' ? old('reporter_phone') : '' }}">
                                         </div>
                                     </div>
                                 </div>
@@ -478,6 +496,50 @@
                             <div class="col-12 d-grid">
                                 <button type="submit" class="btn btn-danger btn-lg">
                                     <i class="fas fa-bullhorn me-2"></i> Kirim Laporan Rahasia
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Saran Tab -->
+                <div class="tab-pane fade {{ $activeTab === 'saran' ? 'show active' : '' }}" id="saran-alt" role="tabpanel" aria-labelledby="saran-alt-tab">
+                    @if (session('suggestion_success'))
+                        <div class="alert alert-success mb-4" role="status">
+                            <i class="fas fa-check-circle me-2"></i>{{ session('suggestion_success') }}
+                        </div>
+                    @endif
+
+                    <p class="text-muted mb-4">
+                        Punya ide untuk membuat layanan kami lebih baik? Tuliskan di sini. Nama dan email boleh dikosongkan.
+                    </p>
+
+                    <form action="{{ route('supervision.suggestion.submit') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="form" value="saran">
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="suggestion_name" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-2 text-primary"></i>Nama <span class="text-muted fw-normal">(opsional)</span>
+                                </label>
+                                <input type="text" class="form-control" id="suggestion_name" name="reporter_name" maxlength="255" value="{{ $activeTab === 'saran' ? old('reporter_name') : '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="suggestion_email" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope me-2 text-primary"></i>Email <span class="text-muted fw-normal">(opsional)</span>
+                                </label>
+                                <input type="email" class="form-control" id="suggestion_email" name="reporter_email" maxlength="255" value="{{ $activeTab === 'saran' ? old('reporter_email') : '' }}">
+                            </div>
+                            <div class="col-12">
+                                <label for="suggestion_text" class="form-label fw-semibold">
+                                    <i class="fas fa-lightbulb me-2 text-primary"></i>Saran <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" id="suggestion_text" name="suggestion" rows="5" maxlength="2000" required placeholder="Tuliskan saran Anda...">{{ $activeTab === 'saran' ? old('suggestion') : '' }}</textarea>
+                            </div>
+                            <div class="col-12 d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i> Kirim Saran
                                 </button>
                             </div>
                         </div>
@@ -571,11 +633,12 @@
                                 
                                 <div class="form-group mb-4">
                                     <label for="reporter_email" class="form-label fw-semibold">
-                                        <i class="fas fa-envelope me-2 text-primary"></i>Email Pelapor (Opsional)
+                                        <i class="fas fa-envelope me-2 text-primary"></i>Email Pelapor
                                     </label>
                                     <input type="email" 
                                            id="reporter_email" 
                                            name="reporter_email" 
+                                           required
                                            class="form-control"
                                            placeholder="Email yang digunakan saat pengiriman">
                                 </div>

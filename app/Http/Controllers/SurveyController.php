@@ -6,6 +6,7 @@ use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
 use App\Models\SurveyAnswer;
 use App\Models\Survey;
+use App\Models\SurveyEdition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -17,13 +18,17 @@ class SurveyController extends Controller
      */
     public function showForm()
     {
+        if (! $edition = SurveyEdition::current()) {
+            return view('survey.closed');
+        }
+
         // Get identity questions
         $identityQuestions = SurveyQuestion::where('type', 'identity')
             ->active()
             ->orderBy('order')
             ->get();
 
-        return view('survey.form-step1', compact('identityQuestions'));
+        return view('survey.form-step1', compact('identityQuestions', 'edition'));
     }
 
     /**
@@ -31,6 +36,10 @@ class SurveyController extends Controller
      */
     public function storeStep1(Request $request)
     {
+        if (! SurveyEdition::current()) {
+            return redirect()->route('survey.form');
+        }
+
         $questions = SurveyQuestion::where('type', 'identity')->active()->get();
 
         $rules = ['answers' => 'required|array'];
@@ -76,6 +85,10 @@ class SurveyController extends Controller
      */
     public function showStep2()
     {
+        if (! SurveyEdition::current()) {
+            return redirect()->route('survey.form');
+        }
+
         // Check if step 1 completed
         if (!Session::has('survey_step1')) {
             return redirect()->route('survey.form')->with('error', 'Silakan isi data identitas terlebih dahulu');
@@ -87,7 +100,7 @@ class SurveyController extends Controller
             ->ordered()
             ->get();
 
-        return view('survey.form-step2', compact('skmQuestions'));
+        return view('survey.form-step2', ['skmQuestions' => $skmQuestions, 'edition' => SurveyEdition::current()]);
     }
 
     /**
@@ -95,6 +108,10 @@ class SurveyController extends Controller
      */
     public function storeStep2(Request $request)
     {
+        if (! SurveyEdition::current()) {
+            return redirect()->route('survey.form');
+        }
+
         // Check if step 1 completed
         if (!Session::has('survey_step1')) {
             return redirect()->route('survey.form')->with('error', 'Silakan isi data identitas terlebih dahulu');
@@ -111,6 +128,10 @@ class SurveyController extends Controller
      */
     public function showStep3()
     {
+        if (! SurveyEdition::current()) {
+            return redirect()->route('survey.form');
+        }
+
         // Check if step 1 and 2 completed
         if (!Session::has('survey_step1') || !Session::has('survey_step2')) {
             return redirect()->route('survey.form')->with('error', 'Silakan lengkapi tahap sebelumnya');
@@ -122,7 +143,7 @@ class SurveyController extends Controller
             ->ordered()
             ->get();
 
-        return view('survey.form-step3', compact('spakQuestions'));
+        return view('survey.form-step3', ['spakQuestions' => $spakQuestions, 'edition' => SurveyEdition::current()]);
     }
 
     /**
@@ -130,6 +151,11 @@ class SurveyController extends Controller
      */
     public function storeStep3(Request $request)
     {
+        // Responses count toward the edition active at submission time.
+        if (! $edition = SurveyEdition::current()) {
+            return redirect()->route('survey.form');
+        }
+
         // Check if step 1 and 2 completed
         if (!Session::has('survey_step1') || !Session::has('survey_step2')) {
             return redirect()->route('survey.form')->with('error', 'Silakan lengkapi tahap sebelumnya');
@@ -177,6 +203,7 @@ class SurveyController extends Controller
             // Create survey response
             $surveyResponse = SurveyResponse::create([
                 'survey_id' => $survey->id,
+                'survey_edition_id' => $edition->id,
                 'user_id' => auth()->id(),
                 'ticket_id' => $ticketId,
                 'ip_address' => $request->ip(),

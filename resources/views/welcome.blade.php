@@ -465,7 +465,7 @@
                 <p class="text-center text-muted mt-4 mb-0" data-aos="fade-up">
                     <i class="fas fa-circle-info me-1" aria-hidden="true"></i>
                     Setiap permohonan diverifikasi petugas TU dan disetujui pimpinan sesuai standar pelayanan.
-                    Ada kendala? <a href="{{ route('supervision.complaint.submit') }}">Sampaikan pengaduan atau saran</a>.
+                    Ada kendala? <a href="{{ route('supervision.complaints.dashboard') }}">Sampaikan pengaduan atau saran</a>.
                 </p>
             </div>
         </section>
@@ -556,7 +556,7 @@
                     </div>
 
                     <div class="col-md-4" data-aos="fade-up" data-aos-delay="500">
-                        <a href="{{ route('supervision.whistleblowing.form') }}" class="text-decoration-none">
+                        <a href="{{ route('supervision.complaints.dashboard', ['tab' => 'whistleblowing']) }}" class="text-decoration-none">
                             <div class="feature-card h-100">
                                 <div class="feature-icon mx-auto" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">
                                     <i class="fas fa-bell text-white"></i>

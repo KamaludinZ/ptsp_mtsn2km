@@ -3,14 +3,22 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RoleResource\Pages;
-use Spatie\Permission\Models\Role as RoleModel;
+use App\Support\RoleAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role as RoleModel;
+use Spatie\Permission\PermissionRegistrar;
 
+/**
+ * Roles and their permissions. Built-in roles (RoleAccess::SYSTEM_ROLES)
+ * cannot be renamed or deleted and always keep their staff-area access; a
+ * role still held by users cannot be deleted.
+ */
 class RoleResource extends Resource
 {
     use \App\Filament\Concerns\AdminOnly;
@@ -23,37 +31,54 @@ class RoleResource extends Resource
 
     protected static ?string $navigationGroup = 'Manajemen Sistem';
 
+    protected static ?string $modelLabel = 'peran';
+
     protected static ?string $pluralModelLabel = 'Peran';
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('guard_name', 'web')->withCount(['users', 'permissions']);
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('Informasi Peran')
+                    ->description(fn (?RoleModel $record) => RoleAccess::isSystemRole($record?->name)
+                        ? 'Peran bawaan sistem: namanya tidak bisa diubah dan peran ini tidak bisa dihapus.'
+                        : null)
                     ->schema([
                         Forms\Components\TextInput::make('name')
-                            ->label('Nama Peran')
+                            ->label('Kode peran')
+                            ->helperText('Huruf kecil, angka, dan garis bawah. Contoh: operator_perpustakaan')
                             ->required()
-                            ->maxLength(255)
-                            ->unique(ignoreRecord: true),
-                        Forms\Components\TextInput::make('guard_name')
-                            ->label('Nama Guard')
-                            ->default('web')
-                            ->required()
-                            ->maxLength(255),
+                            ->maxLength(64)
+                            ->regex('/^[a-z][a-z0-9_]*$/')
+                            ->validationMessages(['regex' => 'Gunakan huruf kecil, angka, dan garis bawah; diawali huruf.'])
+                            ->unique(ignoreRecord: true, modifyRuleUsing: fn ($rule) => $rule->where('guard_name', 'web'))
+                            ->dehydrateStateUsing(fn (?string $state) => strtolower(trim((string) $state)))
+                            ->disabled(fn (?RoleModel $record) => RoleAccess::isSystemRole($record?->name))
+                            ->dehydrated(fn (?RoleModel $record) => ! RoleAccess::isSystemRole($record?->name)),
+                        Forms\Components\Placeholder::make('label')
+                            ->label('Nama tampilan')
+                            ->content(fn (?RoleModel $record) => $record ? RoleAccess::roleLabel($record->name) : '–'),
                     ])
                     ->columns(2),
 
                 Forms\Components\Section::make('Izin')
+                    ->description(fn (?RoleModel $record) => ($required = RoleAccess::requiredPermissions($record?->name))
+                        ? 'Izin area berikut selalu dipertahankan untuk peran ini: ' . collect($required)->map(fn ($p) => RoleAccess::permissionLabel($p))->implode(', ') . '.'
+                        : 'Centang izin yang dimiliki peran ini.')
                     ->schema([
                         Forms\Components\CheckboxList::make('permissions')
-                            ->label('Izin')
-                            ->relationship('permissions', 'name')
-                            ->columns(3)
-                            ->columnSpanFull()
-                            ->searchable(),
-                    ])
-                    ->columns(1),
+                            ->hiddenLabel()
+                            ->relationship('permissions', 'name', fn (Builder $query) => $query->where('guard_name', 'web')->orderBy('name'))
+                            ->getOptionLabelFromRecordUsing(fn (Permission $record) => RoleAccess::permissionLabel($record->name))
+                            ->columns(2)
+                            ->searchable()
+                            ->bulkToggleable(),
+                    ]),
             ]);
     }
 
@@ -61,24 +86,25 @@ class RoleResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nama Peran')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('guard_name')
-                    ->label('Guard')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('permissions')
-                    ->label('Izin')
+                Tables\Columns\TextColumn::make('label')
+                    ->label('Peran')
+                    ->state(fn (RoleModel $record) => RoleAccess::roleLabel($record->name))
+                    ->description(fn (RoleModel $record) => $record->name)
+                    ->weight('semibold')
+                    ->searchable(query: fn (Builder $query, string $search) => $query->where('name', 'ilike', "%{$search}%")),
+                Tables\Columns\TextColumn::make('kind')
+                    ->label('Jenis')
                     ->badge()
-                    ->color('primary')
-                    ->formatStateUsing(fn ($record): string => $record->permissions->count() . ' izin'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d/m/Y H:i')
+                    ->state(fn (RoleModel $record) => RoleAccess::isSystemRole($record->name) ? 'Bawaan' : 'Kustom')
+                    ->color(fn (string $state) => $state === 'Bawaan' ? 'gray' : 'info'),
+                Tables\Columns\TextColumn::make('users_count')
+                    ->label('Pengguna')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->alignCenter(),
+                Tables\Columns\TextColumn::make('permissions_count')
+                    ->label('Izin')
+                    ->sortable()
+                    ->alignCenter(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Diubah')
                     ->dateTime('d/m/Y H:i')
@@ -86,26 +112,42 @@ class RoleResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('system')
+                    ->label('Jenis')
+                    ->trueLabel('Bawaan')
+                    ->falseLabel('Kustom')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereIn('name', array_keys(RoleAccess::SYSTEM_ROLES)),
+                        false: fn (Builder $query) => $query->whereNotIn('name', array_keys(RoleAccess::SYSTEM_ROLES)),
+                    ),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn (RoleModel $record) => static::canBeDeleted($record))
+                    ->after(fn () => static::flushPermissionCache()),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('name');
     }
 
-    public static function getRelations(): array
+    public static function canBeDeleted(RoleModel $record): bool
     {
-        return [
-            //
-        ];
+        return ! RoleAccess::isSystemRole($record->name) && ! $record->users()->exists();
+    }
+
+    /** Keep a system role's area permissions and drop Spatie's permission cache. */
+    public static function afterSave(RoleModel $record): void
+    {
+        if ($required = RoleAccess::requiredPermissions($record->name)) {
+            $record->givePermissionTo($required);
+        }
+
+        static::flushPermissionCache();
+    }
+
+    public static function flushPermissionCache(): void
+    {
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
     public static function getPages(): array
@@ -113,7 +155,6 @@ class RoleResource extends Resource
         return [
             'index' => Pages\ListRoles::route('/'),
             'create' => Pages\CreateRole::route('/create'),
-            'view' => Pages\ViewRole::route('/{record}'),
             'edit' => Pages\EditRole::route('/{record}/edit'),
         ];
     }

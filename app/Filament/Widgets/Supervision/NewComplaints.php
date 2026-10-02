@@ -27,7 +27,7 @@ class NewComplaints extends TableWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn () => Complaint::query()->where('status', 'submitted'))
+            ->query(fn () => Complaint::query()->where('status', 'submitted')->where('complaint_type', '!=', 'suggestion'))
             ->defaultSort('created_at', 'desc')
             ->paginated([5, 10])
             ->defaultPaginationPageOption(5)

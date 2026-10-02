@@ -30,6 +30,8 @@ class FilamentPanelsTest extends TestCase
         '/cp/visitors/create' => ['admin', 'kepala_tu', 'front_desk'],
         '/cp/loket/registrasi-layanan' => ['admin', 'kepala_tu', 'front_desk'],
         '/cp/pengaduan' => ['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor'],
+        '/cp/saran' => ['admin', 'kepala_sekolah', 'kepala_tu'],
+        '/cp/roles?bagian=kode-registrasi' => ['admin'],
         '/cp/laporan-survei' => ['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor'],
         '/cp/survei/pertanyaan' => ['admin'],
         '/cp/survei/unsur' => ['admin'],

@@ -13,8 +13,19 @@ class EditRole extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->visible(fn () => RoleResource::canBeDeleted($this->getRecord()))
+                ->after(fn () => RoleResource::flushPermissionCache()),
         ];
+    }
+
+    protected function afterSave(): void
+    {
+        RoleResource::afterSave($this->getRecord());
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

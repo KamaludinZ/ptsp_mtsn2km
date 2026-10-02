@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\SurveyEdition;
 use App\Models\SurveyQuestion;
 use Database\Seeders\SurveyQuestionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -10,6 +11,16 @@ use Tests\TestCase;
 class SurveyIdentityTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        SurveyEdition::create([
+            'name' => 'Triwulan 3 2026', 'type' => 'quarterly', 'period' => 'Q3', 'year' => 2026,
+            'start_date' => '2026-07-01', 'end_date' => '2026-09-30', 'is_active' => true,
+        ]);
+    }
 
     public function test_required_identity_fields_show_red_asterisk_and_are_enforced(): void
     {
