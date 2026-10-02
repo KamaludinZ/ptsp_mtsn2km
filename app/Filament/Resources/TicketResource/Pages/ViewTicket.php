@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\TicketResource\Pages;
 
 use App\Filament\Concerns\NotifiesActionResult;
+use App\Filament\Forms\DispositionForm;
+use App\Filament\Pages\Leadership\Approvals;
 use App\Filament\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Models\User;
@@ -11,7 +13,6 @@ use App\Support\TicketDocuments;
 use App\Support\TicketLabels;
 use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -133,7 +134,7 @@ class ViewTicket extends ViewRecord
                     ->label('Status baru')
                     ->options(TicketService::OFFICER_STATUSES)
                     ->default(fn () => array_key_exists($this->getRecord()->status, TicketService::OFFICER_STATUSES) ? $this->getRecord()->status : null)
-                    ->helperText('Persetujuan diberikan pimpinan melalui menu Persetujuan.')
+                    ->helperText('Disposisi diberikan pimpinan melalui menu Disposisi Masuk.')
                     ->required(),
                 Textarea::make('notes')->label('Catatan')->required()->maxLength(1000)->rows(3),
             ])
@@ -256,20 +257,20 @@ class ViewTicket extends ViewRecord
     private function approveAction(): Actions\Action
     {
         return Actions\Action::make('approve')
-            ->label('Setujui')
+            ->label('Disposisikan')
             ->icon('heroicon-m-check-badge')
             ->color('success')
             ->visible(fn () => $this->awaitingMyDecision())
-            ->form([
-                Radio::make('signature_type')
-                    ->label('Jenis tanda tangan')
-                    ->options(['tte' => 'TTE (tanda tangan elektronik)', 'ttd' => 'TTD (tanda tangan basah)'])
-                    ->required(),
-                Textarea::make('notes')->label('Catatan (opsional)')->maxLength(500)->rows(3),
-            ])
+            ->modalHeading('Disposisi permohonan')
+            ->form(fn () => DispositionForm::schema($this->getRecord()))
             ->action(function (array $data) {
-                self::attempt(fn () => $this->service()->decide($this->getRecord(), true, auth()->user(), $data['signature_type'], $data['notes'] ?? null), 'Permohonan disetujui. Petugas TU dapat menyiapkan produk layanan.');
+                $done = self::attempt(fn () => DispositionForm::submit($this->getRecord(), $data), 'Permohonan telah didisposisi. Petugas dapat menyiapkan produk layanan.');
                 $this->refreshTicket();
+
+                // Leaders usually work through the queue: take them back to the next request.
+                if ($done && Ticket::approvableBy(auth()->user())->isNotEmpty()) {
+                    $this->redirect(Approvals::getUrl());
+                }
             });
     }
 

@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use App\Models\ServiceCategory;
+use App\Models\ServiceTemplate;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class OnlinePortalController extends Controller
 {
@@ -40,11 +42,20 @@ class OnlinePortalController extends Controller
         $userType = $user ? $user->user_type : 'umum';
 
         $service = Service::where('slug', $slug)
-            ->with(['categories', 'components'])
+            ->with(['categories', 'components', 'templates'])
             ->availableFor($userType)
             ->firstOrFail();
 
         return view('onlineportal.service-detail', compact('service', 'user'));
+    }
+
+    /** A template berkas of an active service: public, like the service page itself. */
+    public function downloadTemplate(string $slug, ServiceTemplate $template)
+    {
+        $service = Service::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        abort_unless($template->service_id === $service->id && Storage::disk(ServiceTemplate::DISK)->exists($template->file_path), 404);
+
+        return Storage::disk(ServiceTemplate::DISK)->download($template->file_path, $template->file_name ?: basename($template->file_path));
     }
 
     /**

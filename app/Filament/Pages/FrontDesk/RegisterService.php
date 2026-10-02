@@ -96,6 +96,12 @@ class RegisterService extends Page implements HasForms
                             ->visible(fn (Get $get) => filled($get('service_id')))
                             ->content(fn (Get $get) => ServiceSummary::html(Service::find($get('service_id'))))
                             ->columnSpanFull(),
+                        Placeholder::make('service_templates')
+                            ->label('Template berkas')
+                            ->helperText('Cetakkan atau kirimkan template ini kepada pemohon bila belum dilengkapi.')
+                            ->visible(fn (Get $get) => (bool) Service::find($get('service_id'))?->templates->isNotEmpty())
+                            ->content(fn (Get $get) => ServiceSummary::templates(Service::find($get('service_id'))))
+                            ->columnSpanFull(),
                         Textarea::make('description')->label('Keperluan / keterangan')->required()->maxLength(1000)->rows(4)->columnSpanFull(),
                         Select::make('priority')->label('Prioritas')->options(array_intersect_key(TicketLabels::PRIORITIES, array_flip(['normal', 'high', 'urgent'])))->required(),
                         FileUpload::make('files')

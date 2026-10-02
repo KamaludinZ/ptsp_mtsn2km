@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicController::class, 'home'])->name('home');
 Route::get('/about', [PublicController::class, 'about'])->name('public.about');
+Route::get('/faq', [PublicController::class, 'faq'])->name('public.faq');
 Route::get('/contact', [PublicController::class, 'contact'])->name('public.contact');
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:public-forms')->name('public.contact.store');
 Route::get('/pengumuman', [PengumumanController::class, 'index'])->name('pengumuman.index');
@@ -27,6 +28,7 @@ Route::post('/visitor-book/submit-applicant', [PublicController::class, 'submitA
 // Service catalogue and ticket tracking. Applying happens in the portal.
 Route::get('/services', [OnlinePortalController::class, 'serviceCatalog'])->name('onlineportal.service.catalog');
 Route::get('/services/{slug}', [OnlinePortalController::class, 'serviceDetail'])->name('onlineportal.service.detail');
+Route::get('/services/{slug}/template/{template}', [OnlinePortalController::class, 'downloadTemplate'])->name('onlineportal.service.template');
 Route::get('/services/{slug}/apply', fn (string $slug) => redirect('/portal/ajukan?layanan=' . urlencode($slug)))->name('onlineportal.service.apply');
 Route::get('/tracking', [OnlinePortalController::class, 'trackTicketForm'])->name('onlineportal.track.ticket.form');
 Route::post('/tracking', [OnlinePortalController::class, 'trackTicket'])->middleware('throttle:30,1')->name('onlineportal.track.ticket.result');
@@ -114,6 +116,11 @@ Route::middleware('auth')->get('/tiket/{ticket}/tanda-terima', fn (\App\Models\T
     ->can('view', 'ticket')
     ->name('tickets.receipt');
 
+// Printable disposition sheet: printed and signed (TTD) or saved as PDF and signed electronically (TTE)
+Route::middleware('auth')->get('/tiket/{ticket}/lembar-disposisi', fn (\App\Models\Ticket $ticket) => view('print.disposition-sheet', ['ticket' => $ticket->load(['user', 'service'])]))
+    ->can('approve', 'ticket')
+    ->name('tickets.disposition-sheet');
+
 // Evidence attached to complaint/whistleblowing reports: private files for complaint handlers
 Route::middleware('auth')->get('/pengaduan/{complaint}/bukti/{index}', function (\App\Models\Complaint $complaint, int $index) {
     $path = \App\Services\ComplaintService::evidence($complaint)[$index] ?? abort(404);
@@ -131,7 +138,8 @@ Route::middleware('auth')->prefix('documents')->name('documents.')->group(functi
 Route::redirect('/admin', '/cp')->name('admin.dashboard');
 Route::redirect('/admin/dashboard', '/cp');
 Route::redirect('/pimpinan', '/cp');
-Route::redirect('/pimpinan/persetujuan', '/cp/pimpinan/persetujuan');
+Route::redirect('/pimpinan/persetujuan', '/cp/pimpinan/disposisi');
+Route::redirect('/cp/pimpinan/persetujuan', '/cp/pimpinan/disposisi');
 Route::redirect('/frontdesk/dashboard', '/cp');
 Route::redirect('/backoffice/dashboard', '/cp');
 Route::redirect('/supervision/management', '/cp');

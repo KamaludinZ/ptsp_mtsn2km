@@ -163,3 +163,7 @@
     }
 </style>
 @endpush
+
+@push('scripts')
+@include('survey.partials.draft', ['form' => 'step3Form'])
+@endpush

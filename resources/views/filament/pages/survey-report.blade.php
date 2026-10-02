@@ -14,9 +14,40 @@
         </x-filament::tabs.item>
     </x-filament::tabs>
 
+    <style>
+        @media print {
+            .fi-sidebar, .fi-topbar, .fi-header-actions, .fi-tabs, [data-survey-filters] { display: none !important; }
+            .fi-main-ctn, .fi-main { padding: 0 !important; margin: 0 !important; }
+        }
+    </style>
+
+    <div data-survey-filters style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:end">
+        <label style="min-width:12rem">
+            <span class="text-sm font-medium text-gray-950 dark:text-white">Periode</span>
+            <x-filament::input.wrapper>
+                <x-filament::input.select wire:model.live="period">
+                    @foreach ($periods as $value => $name)
+                        <option value="{{ $value }}">{{ $name }}</option>
+                    @endforeach
+                </x-filament::input.select>
+            </x-filament::input.wrapper>
+        </label>
+        <label style="min-width:14rem">
+            <span class="text-sm font-medium text-gray-950 dark:text-white">Edisi survei</span>
+            <x-filament::input.wrapper>
+                <x-filament::input.select wire:model.live="edition">
+                    <option value="">Semua edisi</option>
+                    @foreach ($editions as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
+                    @endforeach
+                </x-filament::input.select>
+            </x-filament::input.wrapper>
+        </label>
+    </div>
+
     <div style="{{ $grid }}">
         <x-filament::section>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Indeks {{ $label }} bulan ini</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Indeks {{ $label }} {{ $periodLabel }}</p>
             <p class="text-3xl font-bold text-primary-600">{{ $index !== null ? number_format($index, 2, ',', '.') : '–' }}</p>
             <p class="text-sm text-gray-500 dark:text-gray-400">{{ $grade ?? 'Belum ada data survei' }}</p>
         </x-filament::section>
@@ -26,7 +57,7 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">Persentase {{ number_format($results['percentage'] ?? 0, 2, ',', '.') }}%</p>
         </x-filament::section>
         <x-filament::section>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Responden bulan ini</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Responden {{ $periodLabel }}</p>
             <p class="text-3xl font-bold">{{ $results['total_respondents'] ?? 0 }}</p>
             <p class="text-sm text-gray-500 dark:text-gray-400">{{ $report['responses_count'] ?? 0 }} jawaban tercatat</p>
         </x-filament::section>
@@ -34,7 +65,7 @@
 
     <x-filament::section heading="Nilai per pertanyaan" icon="heroicon-o-list-bullet">
         @if (empty($results['scores']))
-            <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada jawaban survei bulan ini.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada jawaban survei pada {{ $periodLabel }}.</p>
         @else
             <table class="w-full text-start text-sm">
                 <thead>
@@ -57,7 +88,7 @@
         @endif
     </x-filament::section>
 
-    <x-filament::section heading="Demografi responden bulan ini" icon="heroicon-o-user-group" collapsible>
+    <x-filament::section :heading="'Demografi responden ' . $periodLabel" icon="heroicon-o-user-group" collapsible>
         <div style="{{ $grid }}">
             @foreach ($demographicLabels as $key => $title)
                 <div>

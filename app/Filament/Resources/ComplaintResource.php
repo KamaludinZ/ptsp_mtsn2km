@@ -78,7 +78,10 @@ class ComplaintResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('complaint_number')->label('No. Laporan')->searchable()->sortable()->weight('semibold')->copyable(),
+                Tables\Columns\TextColumn::make('complaint_number')->label('No. Laporan')->searchable()->sortable()->weight('semibold')->copyable()
+                    ->icon(fn (Complaint $record) => $record->isSecret() ? 'heroicon-m-lock-closed' : null)
+                    ->iconColor('danger')
+                    ->description(fn (Complaint $record) => $record->isSecret() ? 'Rahasia' : null),
                 Tables\Columns\TextColumn::make('complaint_type')->label('Jenis')->badge()
                     ->formatStateUsing(fn (?string $state) => Complaint::TYPES[$state] ?? $state)
                     ->color(fn (?string $state) => match ($state) {
@@ -125,6 +128,13 @@ class ComplaintResource extends Resource
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist->schema([
+            Section::make('Laporan rahasia')
+                ->icon('heroicon-o-lock-closed')
+                ->iconColor('danger')
+                ->description('Identitas pelapor dan isi laporan hanya untuk penangan. Jangan diteruskan atau dibahas di luar proses tindak lanjut.')
+                ->visible(fn (Complaint $record) => $record->isSecret())
+                ->extraAttributes(['class' => 'ring-1 ring-danger-600/30'])
+                ->schema([]),
             Section::make('Laporan')
                 ->icon('heroicon-o-document-text')
                 ->columns(['default' => 1, 'sm' => 2, 'lg' => 4])

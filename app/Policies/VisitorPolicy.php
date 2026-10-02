@@ -6,8 +6,8 @@ use App\Models\User;
 use App\Models\Visitor;
 
 /**
- * Guest book (Modul 1): the counter registers and checks guests out;
- * corrections and deletions are left to administrators.
+ * Guest book (Modul 1): the counter registers guests, notes their visit and
+ * checks them out; corrections and deletions are left to administrators.
  */
 class VisitorPolicy
 {
@@ -27,6 +27,12 @@ class VisitorPolicy
     }
 
     public function checkOut(User $user, Visitor $visitor): bool
+    {
+        return $user->can('frontdesk.access');
+    }
+
+    /** A note about the visit (who they met, what is pending); not a correction of the guest's data. */
+    public function note(User $user, Visitor $visitor): bool
     {
         return $user->can('frontdesk.access');
     }

@@ -265,3 +265,7 @@
     }
 </style>
 @endpush
+
+@push('scripts')
+@include('survey.partials.draft')
+@endpush

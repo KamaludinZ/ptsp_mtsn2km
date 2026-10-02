@@ -195,6 +195,7 @@
 @endpush
 
 @push('scripts')
+@include('survey.partials.draft', ['form' => 'step1Form'])
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var btn = document.getElementById('checkTicketBtn');

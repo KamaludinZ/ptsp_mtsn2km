@@ -31,7 +31,7 @@ class LeadershipStats extends StatsOverviewWidget
 
         return [
             Stat::make('Menunggu keputusan Anda', $myApprovals)
-                ->description($myApprovals ? 'Buka menu Persetujuan' : 'Tidak ada yang menunggu')
+                ->description($myApprovals ? 'Buka menu Disposisi Masuk' : 'Tidak ada yang menunggu')
                 ->descriptionIcon('heroicon-m-clipboard-document-check')
                 ->color($myApprovals ? 'warning' : 'success')
                 ->url(Approvals::getUrl()),

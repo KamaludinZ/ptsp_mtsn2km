@@ -114,6 +114,22 @@ class ServiceMetrics
         ];
     }
 
+    /** Today's intake and output, shown to every role on the dashboard. */
+    public static function today(): array
+    {
+        $in = Ticket::whereDate('created_at', today());
+
+        return [
+            'in' => (clone $in)->count(),
+            'in_online' => (clone $in)->where('mode', 'online')->count(),
+            'in_offline' => (clone $in)->where('mode', 'offline')->count(),
+            'completed' => Ticket::where('status', 'completed')->whereDate('actual_completion_date', today())->count(),
+            'rejected' => Ticket::where('status', 'rejected')->whereDate('updated_at', today())->count(),
+            'open' => Ticket::open()->count(),
+            'overdue' => Ticket::overdue()->count(),
+        ];
+    }
+
     /** Per-service workload and timeliness, busiest first. */
     public static function perService(?CarbonInterface $from = null, int $limit = 10): array
     {

@@ -61,7 +61,7 @@ class AuthenticationTest extends TestCase
             ->assertSee('Registrasi Layanan')
             ->assertSee('Buku Tamu')
             ->assertSee('Tiket Layanan')
-            ->assertSee('Persetujuan')
+            ->assertSee('Disposisi Masuk')
             ->assertSee('Pengaduan &amp; WBS', false)
             ->assertSee('Laporan SKM &amp; SPAK', false)
             ->assertSee('Keamanan Sistem');

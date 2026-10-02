@@ -24,7 +24,7 @@ class FilamentPanelsTest extends TestCase
     private const STAFF_PAGES = [
         '/cp' => ['admin', 'kepala_sekolah', 'kepala_tu', 'back_office', 'front_desk', 'supervisor'],
         '/cp/tiket' => ['admin', 'kepala_sekolah', 'kepala_tu', 'back_office', 'front_desk', 'supervisor'],
-        '/cp/pimpinan/persetujuan' => ['admin', 'kepala_sekolah', 'kepala_tu'],
+        '/cp/pimpinan/disposisi' => ['admin', 'kepala_sekolah', 'kepala_tu'],
         '/cp/kinerja' => ['admin', 'kepala_sekolah', 'kepala_tu', 'back_office', 'supervisor'],
         '/cp/visitors' => ['admin', 'kepala_tu', 'front_desk'],
         '/cp/visitors/create' => ['admin', 'kepala_tu', 'front_desk'],

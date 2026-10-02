@@ -5,11 +5,13 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TicketResource\Pages;
 use App\Models\Service;
 use App\Models\Ticket;
+use App\Support\ServiceDisposition;
 use App\Support\TicketLabels;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -206,7 +208,7 @@ class TicketResource extends Resource
                             })
                             ->default('pending'),
                         TextEntry::make('approver.name')->label('Oleh')->placeholder('–'),
-                        TextEntry::make('signature_type')->label('Tanda tangan')->formatStateUsing(fn (?string $state) => strtoupper((string) $state))->placeholder('–'),
+                        TextEntry::make('signature_type')->label('Tanda tangan')->formatStateUsing(fn (?string $state) => ServiceDisposition::signatureTypeLabel($state))->placeholder('–'),
                         TextEntry::make('approved_at')->label('Tanggal')->dateTime('d M Y H:i')->placeholder('–'),
                         TextEntry::make('approval_notes')->label('Catatan')->placeholder('–')->columnSpanFull(),
                     ]),
@@ -219,6 +221,7 @@ class TicketResource extends Resource
             Grid::make(['default' => 1, 'lg' => 2])->schema([
                 Section::make('Berkas')
                     ->icon('heroicon-o-paper-clip')
+                    ->description(fn (Ticket $record) => ServiceDisposition::recommendationHint($record->service))
                     ->schema([
                         RepeatableEntry::make('files')
                             ->hiddenLabel()
@@ -271,20 +274,32 @@ class TicketResource extends Resource
                             TextEntry::make('completed_at')->label('Selesai')->dateTime('d M Y H:i')->placeholder('–'),
                         ]),
                 ]),
-            Section::make('Riwayat')
+            Section::make('Riwayat disposisi & tanda tangan')
+                ->icon('heroicon-o-pencil-square')
+                ->collapsible()
+                ->visible(fn (Ticket $record) => (bool) $record->approval_required)
+                ->schema([
+                    ViewEntry::make('disposition_history')
+                        ->hiddenLabel()
+                        ->view('filament.infolists.disposition-history'),
+                ]),
+            Section::make('Riwayat berkas & hasil layanan')
+                ->icon('heroicon-o-document-duplicate')
+                ->collapsible()
+                ->collapsed()
+                ->schema([
+                    ViewEntry::make('document_history')
+                        ->hiddenLabel()
+                        ->view('filament.infolists.document-history'),
+                ]),
+            Section::make('Riwayat layanan')
                 ->icon('heroicon-o-clock')
+                ->description('Tahapan permohonan dari diterima sampai selesai. Riwayat tidak dapat diubah.')
                 ->collapsible()
                 ->schema([
-                    RepeatableEntry::make('logs')
+                    ViewEntry::make('timeline')
                         ->hiddenLabel()
-                        ->columns(['default' => 1, 'md' => 4])
-                        ->placeholder('Belum ada riwayat.')
-                        ->schema([
-                            TextEntry::make('created_at')->label('Waktu')->dateTime('d M Y H:i'),
-                            TextEntry::make('action')->label('Kegiatan')->formatStateUsing(fn (?string $state) => TicketLabels::logAction($state)),
-                            TextEntry::make('performer.name')->label('Oleh')->placeholder('Sistem'),
-                            TextEntry::make('notes')->label('Catatan')->placeholder('–'),
-                        ]),
+                        ->view('filament.infolists.ticket-timeline'),
                 ]),
         ]);
     }

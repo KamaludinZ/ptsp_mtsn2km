@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets\Leadership;
 
+use App\Filament\Pages\Leadership\DispositionHistory;
 use App\Filament\Resources\TicketResource;
 use App\Models\Ticket;
 use Filament\Tables;
@@ -32,11 +33,15 @@ class DecisionHistory extends TableWidget
                 Tables\Columns\TextColumn::make('service.name')->label('Layanan')->wrap(),
                 Tables\Columns\TextColumn::make('user.name')->label('Pemohon'),
                 Tables\Columns\TextColumn::make('approval_status')->label('Keputusan')->badge()
-                    ->formatStateUsing(fn (?string $state) => $state === 'approved' ? 'Disetujui' : 'Ditolak')
+                    ->formatStateUsing(fn (?string $state) => $state === 'approved' ? 'Didisposisi' : 'Ditolak')
                     ->color(fn (?string $state) => $state === 'approved' ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('approved_at')->label('Tanggal')->dateTime('d M Y H:i'),
             ])
             ->recordUrl(fn (Ticket $record) => TicketResource::getUrl('view', ['record' => $record]))
+            ->headerActions([
+                Tables\Actions\Action::make('all')->label('Lihat semua riwayat')->link()
+                    ->url(DispositionHistory::getUrl()),
+            ])
             ->emptyStateHeading('Belum ada keputusan');
     }
 }

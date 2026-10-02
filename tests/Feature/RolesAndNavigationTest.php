@@ -105,7 +105,8 @@ class RolesAndNavigationTest extends TestCase
         $forwards = [
             '/admin' => '/cp',
             '/pimpinan' => '/cp',
-            '/pimpinan/persetujuan' => '/cp/pimpinan/persetujuan',
+            '/pimpinan/persetujuan' => '/cp/pimpinan/disposisi',
+            '/cp/pimpinan/persetujuan' => '/cp/pimpinan/disposisi',
             '/frontdesk/dashboard' => '/cp',
             '/backoffice/dashboard' => '/cp',
             '/supervision/management' => '/cp',

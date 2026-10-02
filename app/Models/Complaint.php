@@ -171,4 +171,10 @@ class Complaint extends Model
 
         return sprintf('%s-%s-%04d', $prefix, $yearMonth, $sequence);
     }
+
+    /** Whistleblowing reports and reports whose reporter asked for confidentiality. */
+    public function isSecret(): bool
+    {
+        return $this->complaint_type === 'whistleblowing' || (bool) $this->is_confidential;
+    }
 }

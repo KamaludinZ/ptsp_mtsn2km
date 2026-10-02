@@ -18,6 +18,11 @@ class Dashboard extends BaseDashboard
     protected function getHeaderWidgets(): array
     {
         return [
+            // Semua peran
+            Widgets\TodaySummary::class,
+            Widgets\ServiceConditionOverview::class,
+            Widgets\QuickActions::class,
+
             // Pimpinan (Kepala Sekolah, Kepala TU)
             Widgets\Leadership\LeadershipStats::class,
             Widgets\Leadership\PendingApprovals::class,
@@ -55,6 +60,8 @@ class Dashboard extends BaseDashboard
     protected function getFooterWidgets(): array
     {
         return [
+            Widgets\MonthlyReportSnapshot::class,
+            Widgets\TicketTrendChart::class,
             Widgets\RecentActivitiesWidget::class,
         ];
     }

@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
                 VisitorSeeder::class,
                 ComplaintSeeder::class,
                 PengumumanSeeder::class,
+                SuratKeluarSeeder::class,
             ]);
         }
     }

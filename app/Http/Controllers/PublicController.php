@@ -80,8 +80,16 @@ class PublicController extends Controller
      */
     public function about()
     {
-        $faqs = Faq::where('is_active', true)->orderBy('created_at', 'desc')->get();
+        $faqs = Faq::where('is_active', true)->orderBy('created_at', 'desc')->limit(5)->get();
         return view('public.about', compact('faqs'));
+    }
+
+    /** Pertanyaan umum (FAQ), searchable. */
+    public function faq()
+    {
+        $faqs = Faq::where('is_active', true)->orderBy('created_at', 'desc')->get();
+
+        return view('public.faq', compact('faqs'));
     }
 
     /**

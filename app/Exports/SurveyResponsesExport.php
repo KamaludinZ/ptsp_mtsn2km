@@ -17,13 +17,13 @@ class SurveyResponsesExport implements WithMultipleSheets
 {
     protected $startDate;
     protected $endDate;
-    protected $surveyId;
+    protected $editionId;
 
-    public function __construct($startDate = null, $endDate = null, $surveyId = null)
+    public function __construct($startDate = null, $endDate = null, $editionId = null)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
-        $this->surveyId = $surveyId;
+        $this->editionId = $editionId;
     }
 
     public function sheets(): array
@@ -31,16 +31,16 @@ class SurveyResponsesExport implements WithMultipleSheets
         $sheets = [];
 
         // Sheet 1: Summary
-        $sheets[] = new SurveySummarySheet($this->startDate, $this->endDate, $this->surveyId);
+        $sheets[] = new SurveySummarySheet($this->startDate, $this->endDate, $this->editionId);
 
         // Sheet 2: Identity Responses
-        $sheets[] = new IdentityResponsesSheet($this->startDate, $this->endDate, $this->surveyId);
+        $sheets[] = new IdentityResponsesSheet($this->startDate, $this->endDate, $this->editionId);
 
         // Sheet 3: SKM Responses
-        $sheets[] = new SKMResponsesSheet($this->startDate, $this->endDate, $this->surveyId);
+        $sheets[] = new SKMResponsesSheet($this->startDate, $this->endDate, $this->editionId);
 
         // Sheet 4: SPAK Responses
-        $sheets[] = new SPAKResponsesSheet($this->startDate, $this->endDate, $this->surveyId);
+        $sheets[] = new SPAKResponsesSheet($this->startDate, $this->endDate, $this->editionId);
 
         return $sheets;
     }
@@ -51,21 +51,21 @@ class SurveySummarySheet implements FromCollection, WithHeadings, WithTitle, Sho
 {
     protected $startDate;
     protected $endDate;
-    protected $surveyId;
+    protected $editionId;
 
-    public function __construct($startDate, $endDate, $surveyId)
+    public function __construct($startDate, $endDate, $editionId)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
-        $this->surveyId = $surveyId;
+        $this->editionId = $editionId;
     }
 
     public function collection()
     {
         $query = SurveyResponse::query();
 
-        if ($this->surveyId) {
-            $query->where('survey_id', $this->surveyId);
+        if ($this->editionId) {
+            $query->where('survey_edition_id', $this->editionId);
         }
         if ($this->startDate) {
             $query->whereDate('completed_at', '>=', $this->startDate);
@@ -181,21 +181,21 @@ class IdentityResponsesSheet implements FromCollection, WithHeadings, WithMappin
 {
     protected $startDate;
     protected $endDate;
-    protected $surveyId;
+    protected $editionId;
 
-    public function __construct($startDate, $endDate, $surveyId)
+    public function __construct($startDate, $endDate, $editionId)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
-        $this->surveyId = $surveyId;
+        $this->editionId = $editionId;
     }
 
     public function collection()
     {
         $query = SurveyResponse::query();
 
-        if ($this->surveyId) {
-            $query->where('survey_id', $this->surveyId);
+        if ($this->editionId) {
+            $query->where('survey_edition_id', $this->editionId);
         }
         if ($this->startDate) {
             $query->whereDate('completed_at', '>=', $this->startDate);
@@ -256,21 +256,21 @@ class SKMResponsesSheet implements FromCollection, WithHeadings, WithMapping, Wi
 {
     protected $startDate;
     protected $endDate;
-    protected $surveyId;
+    protected $editionId;
 
-    public function __construct($startDate, $endDate, $surveyId)
+    public function __construct($startDate, $endDate, $editionId)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
-        $this->surveyId = $surveyId;
+        $this->editionId = $editionId;
     }
 
     public function collection()
     {
         $query = SurveyResponse::query();
 
-        if ($this->surveyId) {
-            $query->where('survey_id', $this->surveyId);
+        if ($this->editionId) {
+            $query->where('survey_edition_id', $this->editionId);
         }
         if ($this->startDate) {
             $query->whereDate('completed_at', '>=', $this->startDate);
@@ -330,21 +330,21 @@ class SPAKResponsesSheet implements FromCollection, WithHeadings, WithMapping, W
 {
     protected $startDate;
     protected $endDate;
-    protected $surveyId;
+    protected $editionId;
 
-    public function __construct($startDate, $endDate, $surveyId)
+    public function __construct($startDate, $endDate, $editionId)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
-        $this->surveyId = $surveyId;
+        $this->editionId = $editionId;
     }
 
     public function collection()
     {
         $query = SurveyResponse::query();
 
-        if ($this->surveyId) {
-            $query->where('survey_id', $this->surveyId);
+        if ($this->editionId) {
+            $query->where('survey_edition_id', $this->editionId);
         }
         if ($this->startDate) {
             $query->whereDate('completed_at', '>=', $this->startDate);

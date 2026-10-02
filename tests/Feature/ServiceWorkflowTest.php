@@ -90,15 +90,19 @@ class ServiceWorkflowTest extends TestCase
         }
         $this->assertSame('verified', $ticket->fresh()->status);
 
-        // The leader sees it, must pick a signature type, then approves.
+        // The leader sees it, must pick a signature model, then disposes it.
         $this->actingAs($headmaster);
         Livewire::test(Widgets\Leadership\LeadershipStats::class)->assertSee('Menunggu keputusan Anda');
         Livewire::test(Approvals::class)
             ->assertCanSeeTableRecords([$ticket])
-            ->callTableAction('approve', $ticket, ['signature_type' => null])
-            ->assertHasTableActionErrors(['signature_type' => 'required']);
+            ->callTableAction('approve', $ticket, ['signature_model' => null])
+            ->assertHasTableActionErrors(['signature_model' => 'required']);
         Livewire::test(Approvals::class)
-            ->callTableAction('approve', $ticket, ['signature_type' => 'ttd'])
+            ->callTableAction('approve', $ticket, [
+                'signature_model' => 'ttd_upload',
+                'recipients' => ['waka_kurikulum'],
+                'instruction' => 'Untuk diproses',
+            ])
             ->assertHasNoTableActionErrors();
 
         $ticket->refresh();
@@ -106,7 +110,12 @@ class ServiceWorkflowTest extends TestCase
         $this->assertSame('approved', $ticket->approval_status);
         $this->assertSame('ttd', $ticket->signature_type);
         $this->assertSame($headmaster->id, $ticket->approved_by);
-        $this->assertDatabaseHas('ticket_logs', ['ticket_id' => $ticket->id, 'action' => 'approved', 'to_status' => 'approved']);
+        $this->assertDatabaseHas('ticket_logs', [
+            'ticket_id' => $ticket->id,
+            'action' => 'approved',
+            'to_status' => 'approved',
+            'notes' => 'Didisposisi pimpinan (TTD). Diteruskan kepada: Waka Kurikulum. Instruksi: Untuk diproses.',
+        ]);
 
         // Deciding twice is refused.
         $this->expectExceptionRefused(fn () => app(TicketService::class)->decide($ticket->fresh(), false, $headmaster, null, 'x'));

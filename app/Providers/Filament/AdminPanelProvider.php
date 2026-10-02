@@ -53,6 +53,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Pimpinan'),
                 NavigationGroup::make('Loket'),
                 NavigationGroup::make('Back Office'),
+                NavigationGroup::make('Persuratan'),
                 NavigationGroup::make('Pengawasan'),
                 NavigationGroup::make('Manajemen Layanan')->collapsed(),
                 NavigationGroup::make('Manajemen Survey')->collapsed(),

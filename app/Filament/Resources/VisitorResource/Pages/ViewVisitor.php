@@ -10,6 +10,11 @@ class ViewVisitor extends ViewRecord
 {
     protected static string $resource = VisitorResource::class;
 
+    protected function getFooterWidgets(): array
+    {
+        return [VisitorResource\Widgets\VisitHistory::class];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

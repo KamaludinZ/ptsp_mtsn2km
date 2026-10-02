@@ -97,6 +97,36 @@
             </div>
         </section>
 
+        @if ($service->templates->isNotEmpty())
+            <!-- Template berkas: diunduh, dilengkapi, lalu diunggah saat mengajukan -->
+            <section class="card border-0 shadow-sm mb-4" aria-labelledby="templates-heading">
+                <div class="card-body p-4">
+                    <h2 id="templates-heading" class="h5 fw-bold mb-1">
+                        <i class="fas fa-file-download me-2" style="color: var(--bs-primary);" aria-hidden="true"></i>Template Berkas
+                    </h2>
+                    <p class="text-muted small mb-3">Unduh dan lengkapi template berikut, lalu unggah bersama berkas persyaratan saat mengajukan permohonan.</p>
+                    <ul class="list-group list-group-flush">
+                        @foreach ($service->templates as $template)
+                            <li class="list-group-item px-0 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <span>
+                                    <span class="fw-semibold">{{ $template->nama }}</span>
+                                    @if ($template->is_required)
+                                        <span class="badge bg-warning text-dark ms-1">Wajib</span>
+                                    @endif
+                                    @if ($info = $template->fileInfo())
+                                        <span class="d-block small text-muted">{{ $info }}</span>
+                                    @endif
+                                </span>
+                                <a href="{{ $template->downloadUrl() }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-download me-1" aria-hidden="true"></i>Unduh
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </section>
+        @endif
+
         <!-- 14 komponen standar pelayanan -->
         <section aria-labelledby="standard-heading">
             <h2 id="standard-heading" class="h4 fw-bold mb-1">Standar Pelayanan</h2>

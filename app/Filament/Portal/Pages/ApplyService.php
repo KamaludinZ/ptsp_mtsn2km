@@ -85,6 +85,13 @@ class ApplyService extends Page implements HasForms
                     ->schema([
                         Placeholder::make('summary')->hiddenLabel()->content(fn () => ServiceSummary::html($this->service)),
                     ]),
+                Section::make('Template berkas')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->description('Unduh, lengkapi, lalu unggah bersama berkas persyaratan di bawah.')
+                    ->visible(fn () => (bool) $this->service?->templates->isNotEmpty())
+                    ->schema([
+                        Placeholder::make('templates')->hiddenLabel()->content(fn () => ServiceSummary::templates($this->service)),
+                    ]),
                 Section::make('Permohonan')
                     ->schema([
                         Textarea::make('description')

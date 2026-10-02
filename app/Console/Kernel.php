@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Heartbeat read by Monitoring Sistem to tell whether the scheduler runs.
+        $schedule->call(fn () => \App\Services\SystemMonitorService::beat())->everyMinute()->name('scheduler-heartbeat');
     }
 
     /**

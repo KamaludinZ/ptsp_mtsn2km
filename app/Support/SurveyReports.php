@@ -4,13 +4,25 @@ namespace App\Support;
 
 use App\Models\SurveyArchive;
 use App\Models\SurveyQuestion;
+use Carbon\CarbonInterface;
 
 /**
- * SKM (IKM) and SPAK (IPAK) reports for the current month, following the
- * Permenpan RB 14/2017 methodology, plus the respondent demographics.
+ * SKM (IKM) and SPAK (IPAK) reports for a period (the current month unless
+ * given) and optionally one survey edition, following the Permenpan RB
+ * 14/2017 methodology, plus the respondent demographics.
  */
 class SurveyReports
 {
+    private CarbonInterface $from;
+
+    private CarbonInterface $to;
+
+    public function __construct(?CarbonInterface $from = null, ?CarbonInterface $to = null, private ?int $editionId = null)
+    {
+        $this->from = $from ?? now()->startOfMonth();
+        $this->to = $to ?? now()->endOfMonth();
+    }
+
     public function skm(): array
     {
         return $this->getCurrentMonthSkmData();
@@ -43,8 +55,8 @@ class SurveyReports
             ->join('survey_answers as sa', 'sr.id', '=', 'sa.survey_response_id')
             ->join('survey_questions as sq', 'sa.survey_question_id', '=', 'sq.id')
             ->where('sq.survey_type', 'skm')
-            ->whereMonth('sr.created_at', now()->month)
-            ->whereYear('sr.created_at', now()->year)
+            ->whereBetween('sr.created_at', [$this->from, $this->to])
+            ->when($this->editionId, fn ($q) => $q->where('sr.survey_edition_id', $this->editionId))
             ->select('sr.id as response_id', 'sr.created_at', 'sq.id as question_id', 'sq.question', 'sq.type', 'sq.category', 'sa.answer_text', 'sa.rating_value', 'sa.selected_option')
             ->get();
 
@@ -124,8 +136,8 @@ class SurveyReports
             ->join('survey_answers as sa', 'sr.id', '=', 'sa.survey_response_id')
             ->join('survey_questions as sq', 'sa.survey_question_id', '=', 'sq.id')
             ->where('sq.survey_type', 'identity')
-            ->whereMonth('sr.created_at', now()->month)
-            ->whereYear('sr.created_at', now()->year)
+            ->whereBetween('sr.created_at', [$this->from, $this->to])
+            ->when($this->editionId, fn ($q) => $q->where('sr.survey_edition_id', $this->editionId))
             ->select('sq.question', 'sa.answer_text', 'sa.selected_option')
             ->get();
 
@@ -181,8 +193,8 @@ class SurveyReports
             ->join('survey_answers as sa', 'sr.id', '=', 'sa.survey_response_id')
             ->join('survey_questions as sq', 'sa.survey_question_id', '=', 'sq.id')
             ->where('sq.survey_type', 'spak')
-            ->whereMonth('sr.created_at', now()->month)
-            ->whereYear('sr.created_at', now()->year)
+            ->whereBetween('sr.created_at', [$this->from, $this->to])
+            ->when($this->editionId, fn ($q) => $q->where('sr.survey_edition_id', $this->editionId))
             ->select('sr.id as response_id', 'sr.created_at', 'sq.id as question_id', 'sq.question', 'sq.type', 'sq.category', 'sa.answer_text', 'sa.rating_value', 'sa.selected_option')
             ->get();
 
@@ -262,8 +274,8 @@ class SurveyReports
             ->join('survey_answers as sa', 'sr.id', '=', 'sa.survey_response_id')
             ->join('survey_questions as sq', 'sa.survey_question_id', '=', 'sq.id')
             ->where('sq.survey_type', 'identity')
-            ->whereMonth('sr.created_at', now()->month)
-            ->whereYear('sr.created_at', now()->year)
+            ->whereBetween('sr.created_at', [$this->from, $this->to])
+            ->when($this->editionId, fn ($q) => $q->where('sr.survey_edition_id', $this->editionId))
             ->select('sq.question', 'sa.answer_text', 'sa.selected_option')
             ->get();
 

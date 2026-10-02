@@ -4,7 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ServiceResource\Pages;
 use App\Filament\Resources\ServiceResource\RelationManagers;
+use App\Filament\Pages\Services\DispositionSettings;
 use App\Models\Service;
+use App\Support\ServiceDisposition;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -166,9 +168,22 @@ class ServiceResource extends Resource
                     ->label('Produk Digital')
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('approval_required')
-                    ->label('Perlu Persetujuan')
-                    ->boolean(),
+                Tables\Columns\TextColumn::make('disposition_mode')
+                    ->label('Disposisi')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state) => ServiceDisposition::mode($state))
+                    ->color(fn (string $state) => match ($state) {
+                        'none' => 'gray',
+                        'custom' => 'warning',
+                        default => 'primary',
+                    })
+                    ->description(fn (Service $record) => collect([
+                        ServiceDisposition::usesDefault($record) ? 'Belum diatur (aturan bawaan)' : null,
+                        $record->disposition_roles ? 'Ke: ' . ServiceDisposition::recipients($record->disposition_roles) : null,
+                        $record->signature_recommendation ? 'Anjuran ' . strtoupper($record->signature_recommendation) : null,
+                    ])->filter()->join(' · ') ?: null)
+                    ->wrap()
+                    ->url(fn () => DispositionSettings::getUrl()),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Dibuat Oleh')
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -213,7 +228,7 @@ class ServiceResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\TemplatesRelationManager::class,
         ];
     }
 

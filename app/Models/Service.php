@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ServiceDisposition;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -26,6 +27,9 @@ class Service extends Model
         'approval_roles',
         'approval_users',
         'approval_instructions',
+        'disposition_mode',
+        'disposition_roles',
+        'signature_recommendation',
         'user_types_allowed',
         'is_digital_product',
         'is_active',
@@ -37,6 +41,7 @@ class Service extends Model
         'user_types_allowed' => 'array',
         'approval_roles' => 'array',
         'approval_users' => 'array',
+        'disposition_roles' => 'array',
         'is_active' => 'boolean',
     ];
 
@@ -106,6 +111,12 @@ class Service extends Model
     }
 
     // Relationship with tickets
+    /** Template berkas the applicant can download. */
+    public function templates()
+    {
+        return $this->hasMany(ServiceTemplate::class)->orderBy('sort')->orderBy('id');
+    }
+
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
@@ -121,5 +132,22 @@ class Service extends Model
     public function workflow()
     {
         return $this->hasOne(Workflow::class);
+    }
+
+    /** Pengaturan disposisi: the approval fields read as one mode (see ServiceDisposition). */
+    public function getDispositionModeAttribute(): string
+    {
+        return ServiceDisposition::modeFor((bool) $this->approval_required, $this->approval_roles, $this->approval_users);
+    }
+
+    public function setDispositionModeAttribute(?string $mode): void
+    {
+        if (! array_key_exists((string) $mode, ServiceDisposition::MODES)) {
+            return; // 'custom': keep the hand-made approval setup
+        }
+
+        $this->attributes['approval_required'] = $mode !== 'none';
+        $this->approval_roles = ServiceDisposition::MODE_ROLES[$mode] ?: null;
+        $this->approval_users = null;
     }
 }

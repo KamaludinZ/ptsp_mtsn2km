@@ -154,14 +154,52 @@ class SecurityMonitor
         Log::info('Cache cleared', ['type' => $type, 'cleared_by' => $by]);
     }
 
+    /** Called on every failed sign-in (Illuminate\Auth\Events\Failed). */
+    public static function recordFailedLogin(?string $email, ?string $ip): void
+    {
+        Cache::put('failed_logins_today:' . now()->toDateString(), Cache::get('failed_logins_today:' . now()->toDateString(), 0) + 1, now()->endOfDay());
+        Cache::put('failed_logins_week:' . now()->format('o-W'), Cache::get('failed_logins_week:' . now()->format('o-W'), 0) + 1, now()->endOfWeek());
+
+        $recent = Cache::get('failed_logins_recent', []);
+        array_unshift($recent, ['at' => now()->toIso8601String(), 'email' => self::maskEmail($email), 'ip' => $ip]);
+        Cache::put('failed_logins_recent', array_slice($recent, 0, 20), now()->addDays(7));
+    }
+
+    /** Called when sign-in throttling locks someone out (Illuminate\Auth\Events\Lockout). */
+    public static function recordLockout(?string $ip): void
+    {
+        Cache::put('lockouts_today:' . now()->toDateString(), Cache::get('lockouts_today:' . now()->toDateString(), 0) + 1, now()->endOfDay());
+    }
+
+    /** "bu***@email.com": enough to recognise an account without exposing it. */
+    private static function maskEmail(?string $email): ?string
+    {
+        if (! $email || ! str_contains($email, '@')) {
+            return $email ? mb_substr($email, 0, 2) . '***' : null;
+        }
+        [$name, $domain] = explode('@', $email, 2);
+
+        return mb_substr($name, 0, 2) . '***@' . $domain;
+    }
+
+    public function recentFailedLogins(): array
+    {
+        return Cache::get('failed_logins_recent', []);
+    }
+
+    public function lockoutsToday(): int
+    {
+        return (int) Cache::get('lockouts_today:' . now()->toDateString(), 0);
+    }
+
     private function getFailedLoginsToday()
     {
-        return Cache::get('failed_logins_today', 0);
+        return (int) Cache::get('failed_logins_today:' . now()->toDateString(), 0);
     }
 
     private function getFailedLoginsThisWeek()
     {
-        return Cache::get('failed_logins_this_week', 0);
+        return (int) Cache::get('failed_logins_week:' . now()->format('o-W'), 0);
     }
 
     private function getBlockedIPsCount()

@@ -10,6 +10,7 @@ use App\Models\TicketLog;
 use App\Models\TicketOutput;
 use App\Models\User;
 use App\Support\TicketDocuments;
+use App\Support\ServiceDisposition;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -215,8 +216,8 @@ class TicketService
             throw new TicketActionException('Tiket ini tidak sedang menunggu persetujuan.');
         }
 
-        if ($approve && ! in_array($signatureType, ['tte', 'ttd'], true)) {
-            throw new TicketActionException('Pilih jenis tanda tangan (TTE atau TTD).');
+        if ($approve && ! in_array($signatureType, ServiceDisposition::SIGNATURE_TYPES, true)) {
+            throw new TicketActionException('Pilih model tanda tangan disposisi.');
         }
 
         if (! $approve && blank($notes)) {
@@ -236,8 +237,33 @@ class TicketService
         ]);
 
         $this->log($ticket, $leader, $approve ? 'approved' : 'rejected', $from, $ticket->status, $approve
-            ? trim('Disetujui pimpinan (' . strtoupper($signatureType) . '). ' . ($notes ?? ''))
+            ? trim('Didisposisi pimpinan (' . ServiceDisposition::signatureTypeLabel($signatureType) . '). ' . ($notes ?? ''))
             : 'Ditolak pimpinan: ' . $notes);
+    }
+
+    /**
+     * Panel aksi disposisi: dispose a ticket to back-office units with an
+     * instruction and a signature model, optionally attaching the signed sheet.
+     *
+     * @param  array<int, string>  $recipients  ServiceDisposition::RECIPIENTS keys
+     */
+    public function dispose(Ticket $ticket, User $leader, string $signatureModel, array $recipients = [], ?string $instruction = null, ?string $notes = null, ?string $signatureFile = null, ?string $signatureFileName = null): void
+    {
+        $signatureType = ServiceDisposition::SIGNATURE_TYPES[$signatureModel] ?? null;
+
+        $summary = collect([
+            $recipients ? 'Diteruskan kepada: ' . ServiceDisposition::recipients($recipients) . '.' : null,
+            filled($instruction) ? 'Instruksi: ' . trim($instruction) . '.' : null,
+            filled($notes) ? trim($notes) : null,
+        ])->filter()->join(' ');
+
+        DB::transaction(function () use ($ticket, $leader, $signatureType, $summary, $signatureFile, $signatureFileName) {
+            $this->decide($ticket, true, $leader, $signatureType, $summary ?: null);
+
+            if ($signatureFile) {
+                $this->attachFile($ticket, $signatureFile, $signatureFileName ?: basename($signatureFile), $leader, 'Lembar disposisi bertanda tangan.');
+            }
+        });
     }
 
     /** Hand a finished product over to the applicant at the counter (Modul 9). */

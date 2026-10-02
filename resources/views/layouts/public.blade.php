@@ -393,6 +393,7 @@
 
                 <nav class="bg-transparent">
                     <h6 class="font-bold uppercase mb-4 text-white">Link Terkait</h6> 
+                    <a href="{{ route('public.faq') }}" class="flex items-center gap-2 text-sm mb-2 text-white no-underline"><i class="fas fa-circle-question text-orange-500"></i><span>Pertanyaan Umum (FAQ)</span></a>
                     <a href="https://kemenag.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white no-underline"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kementerian Agama RI</span></a>
                     <a href="https://kanwil.kemenag.go.id/jatim" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white no-underline"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kanwil Kemenag Jatim</span></a>
                     <a href="https://kankemenag.malangkota.go.id" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm mb-2 text-white no-underline"><i class="fas fa-external-link-alt text-orange-500"></i><span>Kemenag Kota Malang</span></a>

@@ -32,7 +32,7 @@ class TicketLabels
         'output_uploaded' => 'Hasil layanan diunggah',
         'workflow_step_completed' => 'Langkah workflow selesai',
         'workflow_completed' => 'Workflow selesai',
-        'approved' => 'Disetujui pimpinan',
+        'approved' => 'Didisposisi pimpinan',
         'rejected' => 'Ditolak pimpinan',
         'picked_up' => 'Diserahkan ke pemohon',
     ];

@@ -121,7 +121,7 @@ class VisitorResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
-                    ->searchable()
+                    ->searchable(['name', 'phone'])
                     ->sortable()
                     ->description(fn (Visitor $record) => $record->phone),
                 Tables\Columns\TextColumn::make('institution')
@@ -158,7 +158,19 @@ class VisitorResource extends Resource
                         fn (Builder $query, $date): Builder => $query->whereDate('check_in_time', $date)
                     ))
                     ->indicateUsing(fn (array $data) => ($data['date'] ?? null) ? 'Tanggal: ' . \Illuminate\Support\Carbon::parse($data['date'])->translatedFormat('j F Y') : null),
+                Tables\Filters\TernaryFilter::make('on_site')
+                    ->label('Status kunjungan')
+                    ->trueLabel('Masih di lokasi')
+                    ->falseLabel('Sudah keluar')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNull('check_out_time'),
+                        false: fn (Builder $query) => $query->whereNotNull('check_out_time'),
+                    ),
+                Tables\Filters\SelectFilter::make('institution_category')
+                    ->label('Kategori instansi')
+                    ->options(fn () => Visitor::whereNotNull('institution_category')->distinct()->orderBy('institution_category')->pluck('institution_category', 'institution_category')),
             ])
+            ->searchPlaceholder('Cari nama, HP, instansi, keperluan')
             ->actions([
                 Tables\Actions\Action::make('checkOut')
                     ->label('Check-out')
@@ -172,6 +184,17 @@ class VisitorResource extends Resource
                         } catch (TicketActionException $e) {
                             Notification::make()->title($e->getMessage())->danger()->send();
                         }
+                    }),
+                Tables\Actions\Action::make('note')
+                    ->label('Catatan')
+                    ->icon('heroicon-m-pencil-square')
+                    ->color('gray')
+                    ->visible(fn (Visitor $record) => auth()->user()->can('note', $record))
+                    ->fillForm(fn (Visitor $record) => ['notes' => $record->notes])
+                    ->form([Forms\Components\Textarea::make('notes')->label('Catatan kunjungan')->rows(4)->maxLength(1000)])
+                    ->action(function (Visitor $record, array $data) {
+                        $record->update(['notes' => $data['notes']]);
+                        Notification::make()->title('Catatan disimpan.')->success()->send();
                     }),
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),

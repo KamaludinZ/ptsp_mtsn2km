@@ -298,28 +298,10 @@
                 <p class="lead text-muted">Temukan jawaban atas pertanyaan yang sering diajukan.</p>
             </div>
 
-            @if($faqs->count())
-            <div class="accordion" id="faqAccordion">
-                @foreach($faqs as $faq)
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading{{ $faq->id }}">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $faq->id }}" aria-expanded="false" aria-controls="collapse{{ $faq->id }}">
-                            {{ $faq->question }}
-                        </button>
-                    </h2>
-                    <div id="collapse{{ $faq->id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ $faq->id }}" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            {!! $faq->safeAnswer() !!}
-                        </div>
-                    </div>
-                </div>
-                @endforeach
+            @include('public.partials.faq-list', ['faqs' => $faqs])
+            <div class="text-center mt-4">
+                <a href="{{ route('public.faq') }}" class="btn btn-outline-primary">Lihat semua pertanyaan <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i></a>
             </div>
-            @else
-            <div class="text-center">
-                <p>Saat ini belum ada FAQ yang tersedia.</p>
-            </div>
-            @endif
         </div>
     </section>
 

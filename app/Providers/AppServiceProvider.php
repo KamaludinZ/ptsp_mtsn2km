@@ -35,6 +35,16 @@ class AppServiceProvider extends ServiceProvider
             fn (): string => '<script>document.addEventListener("alpine:initialized",()=>{if(window.innerWidth<1024){window.Alpine.store("sidebar")?.close()}})</script>',
         );
 
+        // Feed the security indicators on Monitoring Sistem.
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Failed::class,
+            fn ($event) => \App\Support\SecurityMonitor::recordFailedLogin($event->credentials['email'] ?? null, request()->ip()),
+        );
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Lockout::class,
+            fn ($event) => \App\Support\SecurityMonitor::recordLockout($event->request->ip()),
+        );
+
         if (session()->has('locale')) {
             app()->setLocale(session('locale'));
         }
