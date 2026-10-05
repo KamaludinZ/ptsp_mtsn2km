@@ -52,12 +52,14 @@ class ProcessorRoleListTest extends TestCase
         $this->assertSame(['Waka Kesiswaan'], $rows['waka_sarpras']['holders']->pluck('name')->all());
         $this->assertSame(1, $rows['waka_sarpras']['services']);
         $this->assertSame(1, $rows['tata_usaha']['services']);
-        $this->assertNull($rows['waka_humas']['role']);
+        // The units are system roles (RoleAccess::sync), so they always exist; this one has no holder yet.
+        $this->assertNotNull($rows['waka_humas']['role']);
+        $this->assertTrue($rows['waka_humas']['holders']->isEmpty());
 
         $this->actingAs($this->admin())
             ->get(ProcessorRoleList::getUrl())
             ->assertSee('Waka Kesiswaan')
-            ->assertSee('Peran belum dibuat');
+            ->assertSee('Belum ada pemegang');
     }
 
     public function test_back_office_cannot_open_the_page(): void

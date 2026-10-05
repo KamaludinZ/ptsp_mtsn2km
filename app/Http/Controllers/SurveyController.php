@@ -5,10 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
 use App\Models\SurveyAnswer;
-use App\Models\Survey;
 use App\Models\SurveyEdition;
+use App\Services\SurveySubmission;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class SurveyController extends Controller
@@ -40,42 +39,13 @@ class SurveyController extends Controller
             return redirect()->route('survey.form');
         }
 
-        $questions = SurveyQuestion::where('type', 'identity')->active()->get();
+        [$rules, $attributes] = SurveySubmission::identityRules();
 
-        $rules = ['answers' => 'required|array'];
-        $attributes = [];
-        foreach ($questions as $question) {
-            $key = 'answers.' . $question->id;
-            $rule = [$question->is_required ? 'required' : 'nullable', 'string', 'max:255'];
-
-            if (in_array($question->field_type, ['select', 'radio'], true) && $question->options) {
-                $rule[] = \Illuminate\Validation\Rule::in((array) $question->options);
-            } elseif ($question->field_type === 'email') {
-                $rule[] = 'email:rfc';
-            } elseif ($question->field_type === 'tel') {
-                $rule[] = 'regex:/^[0-9+\-\s()]{8,20}$/';
-            } elseif (stripos($question->question, 'tiket') !== false) {
-                $rule[] = 'exists:tickets,ticket_number';
-            }
-
-            $rules[$key] = $rule;
-            $attributes[$key] = $question->question;
-        }
-
-        $validated = $request->validate($rules, [
+        $validated = $request->validate(['answers' => 'required|array'] + $rules, [
             'answers.required' => 'Semua pertanyaan identitas wajib diisi',
-            'required' => ':attribute wajib diisi',
-            'in' => 'Pilihan :attribute tidak valid',
-            'email' => ':attribute harus berupa alamat email yang valid',
-            'regex' => ':attribute tidak valid (gunakan angka, 8-20 karakter)',
-            'exists' => ':attribute tidak ditemukan',
-        ], $attributes);
+        ] + SurveySubmission::MESSAGES, $attributes);
 
-        // Keep only answers to known identity questions
-        Session::put('survey_step1', array_filter(
-            array_intersect_key($validated['answers'], $questions->keyBy('id')->all()),
-            fn ($v) => $v !== null && $v !== ''
-        ));
+        Session::put('survey_step1', SurveySubmission::only('identity', $validated['answers']));
 
         return redirect()->route('survey.step2');
     }
@@ -167,94 +137,21 @@ class SurveyController extends Controller
         Session::put('survey_step3', $this->validateRatingAnswers($request, 'spak', 'Semua pertanyaan SPAK wajib diisi'));
         Session::put('spak_suggestions', $request->spak_suggestions ?? null);
 
-        // Save all data to database
         try {
-            DB::beginTransaction();
+            app(SurveySubmission::class)->save(
+                $edition,
+                Session::get('survey_step1', []),
+                Session::get('survey_step2', []),
+                Session::get('survey_step3', []),
+                $request->spak_suggestions ?? null,
+                auth()->id(),
+                $request->ip(),
+            );
 
-            // Get active survey (default to ID 1 or first active survey)
-            $survey = Survey::where('is_active', true)->first();
-
-            if (!$survey) {
-                // Create default survey if not exists
-                $survey = Survey::create([
-                    'name' => 'Survey Kepuasan Masyarakat & Persepsi Anti Korupsi ' . now()->year,
-                    'description' => 'Survey tahunan untuk mengukur IKM dan IPAK sesuai Permenpan RB No. 14 Tahun 2017',
-                    'type' => 'other',
-                    'is_active' => true,
-                    'start_date' => now(),
-                ]);
-            }
-
-            // Check if a ticket number was provided in the identity questions
-            $ticketId = null;
-            $identityAnswers = Session::get('survey_step1', []);
-            foreach ($identityAnswers as $questionId => $answer) {
-                $question = SurveyQuestion::find($questionId);
-                if ($question && $question->field_type === 'ticket_number') {
-                    // Find the ticket by number
-                    $ticket = \App\Models\Ticket::where('ticket_number', $answer)->first();
-                    if ($ticket) {
-                        $ticketId = $ticket->id;
-                    }
-                    break;
-                }
-            }
-
-            // Create survey response
-            $surveyResponse = SurveyResponse::create([
-                'survey_id' => $survey->id,
-                'survey_edition_id' => $edition->id,
-                'user_id' => auth()->id(),
-                'ticket_id' => $ticketId,
-                'ip_address' => $request->ip(),
-                'completed_at' => now(),
-                'comments' => $request->spak_suggestions ?? null, // Store suggestions as comments
-            ]);
-
-            // Save all answers
-            // "+" keeps the question-id keys; spreading (...) would renumber them.
-            $allAnswers = Session::get('survey_step1', [])
-                + Session::get('survey_step2', [])
-                + Session::get('survey_step3', []);
-
-            $questions = SurveyQuestion::whereIn('id', array_keys($allAnswers))->get()->keyBy('id');
-
-            foreach ($allAnswers as $questionId => $answer) {
-                $question = $questions->get($questionId);
-                if (!$question) {
-                    continue;
-                }
-
-                // Rating questions score 1..n by option position (Permenpan RB 14/2017).
-                $position = in_array($question->type, ['skm', 'spak'], true)
-                    ? array_search($answer, (array) $question->options, true)
-                    : false;
-
-                SurveyAnswer::create([
-                    'survey_response_id' => $surveyResponse->id,
-                    'survey_question_id' => $questionId,
-                    'selected_option' => is_array($answer) ? json_encode($answer) : $answer,
-                    'answer_text' => is_string($answer) ? $answer : null,
-                    'rating_value' => $position === false ? null : $position + 1,
-                ]);
-            }
-
-            DB::commit();
-
-            // Clear session data
             Session::forget(['survey_step1', 'survey_step2', 'survey_step3', 'spak_suggestions']);
-
-            // Send thank you email if a ticket was associated with the survey
-            if ($ticketId) {
-                $ticket = \App\Models\Ticket::find($ticketId);
-                if ($ticket && $ticket->email) {
-                    \Mail::to($ticket->email)->send(new \App\Mail\ThankYouSurveyMail($surveyResponse));
-                }
-            }
 
             return redirect()->route('survey.success')->with('success', 'Terima kasih! Survey Anda telah berhasil disimpan.');
         } catch (\Exception $e) {
-            DB::rollBack();
             report($e);
 
             return back()->with('error', 'Maaf, survei belum dapat disimpan. Silakan coba lagi.');
@@ -268,23 +165,13 @@ class SurveyController extends Controller
      */
     private function validateRatingAnswers(Request $request, string $type, string $requiredMessage): array
     {
-        $questions = SurveyQuestion::active()->byType($type)->get();
-
-        $rules = ['answers' => 'required|array'];
-        foreach ($questions as $question) {
-            $rules['answers.' . $question->id] = [
-                $question->is_required ? 'required' : 'nullable',
-                \Illuminate\Validation\Rule::in((array) $question->options),
-            ];
-        }
-
-        $validated = $request->validate($rules, [
+        $validated = $request->validate(['answers' => 'required|array'] + SurveySubmission::ratingRules($type), [
             'answers.required' => $requiredMessage,
             'answers.*.required' => 'Pertanyaan ini wajib diisi',
             'answers.*.in' => 'Pilihan jawaban tidak valid',
         ]);
 
-        return array_intersect_key($validated['answers'], $questions->keyBy('id')->all());
+        return SurveySubmission::only($type, $validated['answers']);
     }
 
     /**

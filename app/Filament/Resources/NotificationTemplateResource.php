@@ -63,8 +63,10 @@ class NotificationTemplateResource extends Resource
                     Forms\Components\TextInput::make('subject')->label('Subjek email')->maxLength(255)
                         ->required(fn (?NotificationTemplate $record) => $record?->channel === 'email')
                         ->visible(fn (?NotificationTemplate $record) => $record?->channel === 'email')
+                        ->rules([fn () => NotificationTemplates::placeholderRule()])
                         ->live(debounce: 500),
                     Forms\Components\Textarea::make('body')->label('Isi pesan')->required()->rows(8)->maxLength(4000)
+                        ->rules([fn () => NotificationTemplates::placeholderRule()])
                         ->helperText('Tulis {placeholder} untuk data yang diisi otomatis. Untuk WhatsApp, *tebal* dan _miring_ didukung.')
                         ->live(debounce: 500),
                 ]),

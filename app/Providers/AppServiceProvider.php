@@ -35,6 +35,26 @@ class AppServiceProvider extends ServiceProvider
             fn (): string => '<script>document.addEventListener("alpine:initialized",()=>{if(window.innerWidth<1024){window.Alpine.store("sidebar")?.close()}})</script>',
         );
 
+        // Email/WhatsApp settings from Integrasi Notifikasi, without a restart.
+        if (! $this->app->runningUnitTests()) {
+            \App\Support\IntegrationRuntime::apply();
+        }
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Queue\Events\JobProcessing::class,
+            fn () => \App\Support\IntegrationRuntime::apply(),
+        );
+
+        // Log akses for Monitoring Sistem: who signed in and out, from where.
+        foreach ([\Illuminate\Auth\Events\Login::class => 'Masuk', \Illuminate\Auth\Events\Logout::class => 'Keluar'] as $event => $label) {
+            \Illuminate\Support\Facades\Event::listen($event, function ($e) use ($label) {
+                if ($e->user) {
+                    activity('access')->causedBy($e->user)
+                        ->withProperties(['ip' => request()->ip(), 'agent' => mb_substr((string) request()->userAgent(), 0, 200), 'guard' => $e->guard])
+                        ->log($label);
+                }
+            });
+        }
+
         // Feed the security indicators on Monitoring Sistem.
         \Illuminate\Support\Facades\Event::listen(
             \Illuminate\Auth\Events\Failed::class,

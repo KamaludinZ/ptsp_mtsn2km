@@ -22,6 +22,13 @@ class RoleAccess
         'back_office' => ['backoffice.access'],
         'front_desk' => ['frontdesk.access'],
         'supervisor' => ['supervision.access'],
+        // Back-office units that receive dispositions (ServiceDisposition::RECIPIENTS).
+        'waka_humas' => ['backoffice.access'],
+        'waka_kesiswaan' => ['backoffice.access'],
+        'waka_kurikulum' => ['backoffice.access'],
+        'waka_sarpras' => ['backoffice.access'],
+        'tata_usaha' => ['backoffice.access'],
+        'penjamin_mutu' => ['backoffice.access'],
     ];
 
     /** Roles that follow up complaints and whistleblowing reports (Modul 10) and read survey reports. */
@@ -41,6 +48,12 @@ class RoleAccess
         'supervisor' => 'Pengawas',
         'back_office' => 'Back Office',
         'front_desk' => 'Front Desk',
+        'waka_humas' => 'Waka Humas',
+        'waka_kesiswaan' => 'Waka Kesiswaan',
+        'waka_kurikulum' => 'Waka Kurikulum',
+        'waka_sarpras' => 'Waka Sarpras',
+        'tata_usaha' => 'Tata Usaha',
+        'penjamin_mutu' => 'Penjamin Mutu',
         'guru' => 'Guru',
         'pegawai' => 'Pegawai',
         'siswa' => 'Siswa',

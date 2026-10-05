@@ -10,6 +10,7 @@ class PersuratanMaster extends Model
 {
     public const TYPES = [
         'tujuan_naskah' => 'Tujuan Naskah',
+        'jenis_surat' => 'Jenis Surat',
         'tembusan' => 'Tembusan',
         'klasifikasi' => 'Klasifikasi Surat',
         'instruksi_disposisi' => 'Instruksi Disposisi',

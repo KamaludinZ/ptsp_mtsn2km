@@ -8,9 +8,11 @@ use App\Filament\Resources\NotificationTemplateResource\Pages\ListNotificationTe
 use App\Models\NotificationTemplate;
 use App\Models\User;
 use App\Support\NotificationTemplates;
+use Database\Seeders\NotificationTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -140,5 +142,104 @@ class NotificationTemplateTest extends TestCase
 
         $this->assertFalse($template->fresh()->is_active);
         $this->assertSame($this->admin()->id, $template->fresh()->updated_by);
+    }
+
+    public function test_each_change_keeps_the_previous_wording(): void
+    {
+        $this->actingAs($this->admin());
+        $template = NotificationTemplate::where('key', 'ticket_created')->where('channel', 'email')->firstOrFail();
+        $original = $template->body;
+
+        Livewire::test(EditNotificationTemplate::class, ['record' => $template->getRouteKey()])
+            ->fillForm(['subject' => 'Diterima: {nomor_tiket}', 'body' => 'Versi baru {nama}', 'is_active' => true])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $revision = $template->revisions()->firstOrFail();
+        $this->assertSame($original, $revision->body);
+        $this->assertSame($this->admin()->id, $revision->changed_by);
+
+        $template->refresh()->update(['updated_by' => $this->admin()->id]); // no wording change
+        $this->assertSame(1, $template->revisions()->count());
+    }
+
+    public function test_seeder_adds_missing_templates_without_overwriting_edits(): void
+    {
+        $edited = NotificationTemplate::where('key', 'ticket_created')->where('channel', 'email')->firstOrFail();
+        $edited->update(['body' => 'Teks buatan admin']);
+        NotificationTemplate::where('key', 'ticket_rejected')->where('channel', 'whatsapp')->delete();
+
+        $this->seed(NotificationTemplateSeeder::class);
+
+        $this->assertSame('Teks buatan admin', $edited->fresh()->body);
+        $this->assertDatabaseHas('notification_templates', ['key' => 'ticket_rejected', 'channel' => 'whatsapp']);
+        $this->assertSame(count(NotificationTemplates::EVENTS) * 2, NotificationTemplate::count());
+    }
+
+    public function test_templates_are_listed_and_shown_through_the_api(): void
+    {
+        Sanctum::actingAs($this->admin());
+        $template = NotificationTemplate::where('key', 'ticket_completed')->where('channel', 'whatsapp')->firstOrFail();
+        $template->update(['body' => 'Halo {nama}, {layanan} selesai.']);
+
+        $this->getJson('/api/template-notifikasi?kanal=whatsapp')->assertOk()
+            ->assertJsonCount(count(NotificationTemplates::EVENTS), 'data')
+            ->assertJsonPath('placeholder.nama', 'Nama penerima');
+
+        $this->getJson('/api/template-notifikasi/' . $template->id)->assertOk()
+            ->assertJsonPath('pratinjau.isi', 'Halo Budi Santoso, Legalisir Ijazah selesai.')
+            ->assertJsonCount(1, 'riwayat');
+
+        Sanctum::actingAs(User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail());
+        $this->getJson('/api/template-notifikasi')->assertForbidden();
+    }
+
+    public function test_template_wording_is_updated_through_the_api(): void
+    {
+        Sanctum::actingAs($this->admin());
+        $email = NotificationTemplate::where('key', 'ticket_created')->where('channel', 'email')->firstOrFail();
+
+        $this->putJson('/api/template-notifikasi/' . $email->id, ['subjek' => 'Tiket {nomor_tiket}', 'isi' => 'Halo {nama}'])
+            ->assertOk()->assertJsonPath('isi', 'Halo {nama}')->assertJsonCount(1, 'riwayat');
+        $this->putJson('/api/template-notifikasi/' . $email->id, ['isi' => 'Halo {nama}'])->assertJsonValidationErrors('subjek');
+        $this->putJson('/api/template-notifikasi/' . $email->id, ['subjek' => 'x', 'isi' => 'Nomor {nomer_tiket}'])
+            ->assertJsonValidationErrors(['isi' => 'Placeholder tidak dikenal: {nomer_tiket}.']);
+    }
+
+    public function test_editor_refuses_unknown_placeholders(): void
+    {
+        $this->actingAs($this->admin());
+        $template = NotificationTemplate::where('channel', 'whatsapp')->firstOrFail();
+
+        Livewire::test(EditNotificationTemplate::class, ['record' => $template->getRouteKey()])
+            ->fillForm(['body' => 'Halo {nma}'])
+            ->call('save')
+            ->assertHasFormErrors(['body']);
+    }
+
+    public function test_template_trigger_is_switched_through_the_api(): void
+    {
+        Sanctum::actingAs($this->admin());
+        $template = NotificationTemplate::where('key', 'ticket_status_changed')->where('channel', 'whatsapp')->firstOrFail();
+
+        $this->patchJson('/api/template-notifikasi/' . $template->id . '/aktif', ['aktif' => false])->assertOk()->assertJsonPath('aktif', false);
+        $this->assertFalse($template->fresh()->is_active);
+        $this->assertTrue($template->revisions()->firstOrFail()->is_active); // the revision keeps the earlier (active) state
+        $this->patchJson('/api/template-notifikasi/' . $template->id . '/aktif', [])->assertJsonValidationErrors('aktif');
+    }
+
+    public function test_template_changes_are_in_the_audit_trail(): void
+    {
+        Sanctum::actingAs($this->admin());
+        $template = NotificationTemplate::where('key', 'ticket_completed')->where('channel', 'email')->firstOrFail();
+
+        $this->putJson('/api/template-notifikasi/' . $template->id, ['subjek' => 'Selesai {nomor_tiket}', 'isi' => 'Halo {nama}'])->assertOk();
+
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'audit',
+            'description' => 'Mengubah template notifikasi Permohonan selesai (email)',
+            'causer_id' => $this->admin()->id,
+            'subject_id' => $template->id,
+        ]);
     }
 }

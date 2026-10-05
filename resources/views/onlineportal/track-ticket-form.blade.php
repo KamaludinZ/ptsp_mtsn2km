@@ -272,6 +272,12 @@
                             </button>
                         </div>
                     </div>
+                    <div class="mb-0">
+                        <label for="track_email" class="form-label fw-semibold mb-1">Email pemohon <span class="text-muted fw-normal small">(opsional)</span></label>
+                        <input type="email" class="form-control" id="track_email" name="email" autocomplete="email"
+                               placeholder="Email yang dipakai saat mengajukan">
+                        <div class="form-text">Isi untuk melihat keterangan permohonan dan catatan petugas. Tanpa email, hanya status dan tahapan yang ditampilkan.</div>
+                    </div>
                 </form>
 
                 <!-- Loading Indicator -->
@@ -409,7 +415,8 @@
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    ticket_number: ticketNumber
+                    ticket_number: ticketNumber,
+                    email: document.getElementById('track_email').value.trim() || null
                 })
             })
             .then(response => response.json())
@@ -444,7 +451,9 @@
                         estimatedDate = data.service.processing_time;
                     }
                     document.getElementById('estimatedDate').textContent = estimatedDate;
-                    document.getElementById('description').textContent = data.description || '-';
+                    document.getElementById('description').textContent = data.verified_owner
+                        ? (data.description || '-')
+                        : 'Isi email pemohon untuk melihat keterangan permohonan.';
                     
                     // Update status badge
                     const statusBadge = document.getElementById('statusBadge');
@@ -505,10 +514,10 @@
                                 const logDate = log.created_at ? new Date(log.created_at).toLocaleDateString('id-ID') : '-';
                                 
                                 row.innerHTML = `
-                                    <td>${escapeHtml(log.action || 'Aktivitas')}</td>
+                                    <td>${escapeHtml(log.action_label || log.action || 'Aktivitas')}</td>
                                     <td><span class="status-badge status-completed">Terupdate</span></td>
                                     <td>${logDate}</td>
-                                    <td>${escapeHtml(log.notes || 'Tidak ada catatan')}</td>
+                                    <td>${escapeHtml(log.notes || (data.verified_owner ? 'Tidak ada catatan' : '–'))}</td>
                                 `;
                                 processTableBody.appendChild(row);
                             }

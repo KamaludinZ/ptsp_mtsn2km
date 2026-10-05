@@ -126,23 +126,6 @@ class SystemMonitor extends Page
             ->get();
     }
 
-    private function securityDetail(SystemMonitorService $monitor): array
-    {
-        $security = app(SecurityMonitor::class);
-        $lastScan = $security->lastScan();
-
-        return [
-            'lockouts_today' => $security->lockoutsToday(),
-            'deactivated_accounts' => User::where('is_active', false)->count(),
-            'active_sessions' => $monitor->activeSessions(),
-            'https' => request()->isSecure() || str_starts_with((string) config('app.url'), 'https://'),
-            'recent_failed' => $security->recentFailedLogins(),
-            'blocked' => $security->blockedIps(),
-            'last_scan' => $lastScan,
-            'findings' => $monitor->findings($lastScan),
-        ];
-    }
-
     protected function getViewData(): array
     {
         $monitor = app(SystemMonitorService::class);
@@ -160,7 +143,7 @@ class SystemMonitor extends Page
             'app' => $app,
             'server' => $server,
             'security' => in_array($tab, ['ringkasan', 'keamanan'], true) ? app(SecurityMonitor::class)->metrics() : null,
-            'securityDetail' => $tab === 'keamanan' ? $this->securityDetail($monitor) : null,
+            'securityDetail' => $tab === 'keamanan' ? $monitor->security() : null,
             'logs' => $tab === 'log' ? LogReader::entries($this->logLevel ?: null, trim($this->logSearch) ?: null) : null,
             'logFile' => $tab === 'log' ? LogReader::latestFile() : null,
             'audit' => $tab === 'log' ? $this->audit() : null,

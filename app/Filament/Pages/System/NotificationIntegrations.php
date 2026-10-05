@@ -165,21 +165,7 @@ class NotificationIntegrations extends Page implements HasForms
         $data = $this->form->getState();
 
         foreach (array_keys(NotificationSetting::CHANNELS) as $channel) {
-            $setting = NotificationSetting::for($channel);
-            $values = collect($data[$channel])->except('is_enabled');
-
-            $config = array_merge(
-                $setting->config ?? [],
-                $values->except(NotificationSetting::SECRETS)->all(),
-                // A blank secret keeps the stored one.
-                $values->only(NotificationSetting::SECRETS)->filter(fn ($value) => filled($value))->all(),
-            );
-
-            $setting->fill([
-                'is_enabled' => (bool) $data[$channel]['is_enabled'],
-                'config' => $config,
-                'updated_by' => auth()->id(),
-            ])->save();
+            NotificationSetting::store($channel, (bool) $data[$channel]['is_enabled'], $data[$channel], auth()->id());
         }
 
         $this->form->fill(collect($this->data)->map(fn ($channel) => collect($channel)->except(NotificationSetting::SECRETS)->all())->all());

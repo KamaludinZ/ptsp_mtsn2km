@@ -7,7 +7,7 @@ use App\Models\Visitor;
 
 /**
  * Guest book (Modul 1): the counter registers guests, notes their visit and
- * checks them out; corrections and deletions are left to administrators.
+ * checks them out; administrators may correct an entry; nobody deletes one.
  */
 class VisitorPolicy
 {
@@ -42,13 +42,14 @@ class VisitorPolicy
         return $user->hasRole('admin');
     }
 
+    /** The guest book is a record of who entered: entries are corrected, never removed. */
     public function delete(User $user, Visitor $visitor): bool
     {
-        return $user->hasRole('admin');
+        return false;
     }
 
     public function deleteAny(User $user): bool
     {
-        return $user->hasRole('admin');
+        return false;
     }
 }

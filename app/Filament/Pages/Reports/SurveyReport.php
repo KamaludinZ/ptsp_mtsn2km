@@ -6,7 +6,9 @@ use App\Exports\SurveyResponsesExport;
 use App\Models\SurveyEdition;
 use App\Support\RoleAccess;
 use App\Support\ServiceMetrics;
+use App\Support\SurveyReportData;
 use App\Support\SurveyReports;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonInterface;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
@@ -61,7 +63,13 @@ class SurveyReport extends Page
     /** @return array{0: CarbonInterface, 1: CarbonInterface} */
     public function range(): array
     {
-        return match ($this->period) {
+        return self::rangeFor($this->period);
+    }
+
+    /** @return array{0: CarbonInterface, 1: CarbonInterface} */
+    public static function rangeFor(?string $period): array
+    {
+        return match ($period) {
             'last_month' => [now()->subMonthNoOverflow()->startOfMonth(), now()->subMonthNoOverflow()->endOfMonth()],
             'quarter' => [now()->startOfQuarter(), now()->endOfQuarter()],
             'year' => [now()->startOfYear(), now()->endOfYear()],
@@ -103,6 +111,16 @@ class SurveyReport extends Page
                 ->icon('heroicon-o-printer')
                 ->color('gray')
                 ->alpineClickHandler('window.print()'),
+            Action::make('pdf')
+                ->label('Unduh PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('gray')
+                ->action(function () {
+                    $data = SurveyReportData::build($this->type, $this->period, $this->edition ? (int) $this->edition : null);
+                    $pdf = Pdf::loadView('pdf.survey-report', ['data' => $data]);
+
+                    return response()->streamDownload(fn () => print $pdf->output(), 'laporan-' . $data['type'] . '-' . $data['from']->format('Ymd') . '-' . $data['to']->format('Ymd') . '.pdf');
+                }),
             Action::make('excel')
                 ->label('Unduh Excel')
                 ->icon('heroicon-o-arrow-down-tray')

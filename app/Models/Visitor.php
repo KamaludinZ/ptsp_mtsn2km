@@ -44,6 +44,7 @@ class Visitor extends Model
     const STATUS_CHECKED_OUT = 'checked_out';
 
     // Choices for "Tujuan Kunjungan" on the public visitor book; "Lainnya" asks for free text.
+    /** Initial content of the 'tujuan' list in visitor_masters (see VisitorMaster). */
     const VISIT_PURPOSES = [
         'Kepala Madrasah',
         'Kepala TU',

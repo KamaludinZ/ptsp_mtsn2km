@@ -4,7 +4,12 @@ namespace App\Filament\Portal\Resources\TicketResource\Pages;
 
 use App\Filament\Portal\Resources\TicketResource;
 use App\Models\Ticket;
+use App\Models\TicketLog;
+use App\Services\TicketService;
+use App\Support\TicketDocuments;
 use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewTicket extends ViewRecord
@@ -22,7 +27,7 @@ class ViewTicket extends ViewRecord
         return parent::resolveRecord($key)->load([
             'files',
             'output',
-            'logs' => fn ($q) => $q->whereIn('action', ['created', 'status_changed', 'assigned', 'approved', 'rejected', 'output_uploaded', 'picked_up', 'workflow_completed'])->latest(),
+            'logs' => fn ($q) => $q->whereIn('action', TicketLog::APPLICANT_VISIBLE)->latest(),
         ]);
     }
 
@@ -43,6 +48,26 @@ class ViewTicket extends ViewRecord
                 ->icon('heroicon-m-star')
                 ->visible($ticket->status === 'completed' && ! $ticket->surveyResponses()->exists())
                 ->url(fn () => route('survey.form', ['tiket' => $ticket->ticket_number])),
+            Action::make('upload')
+                ->label('Tambah berkas')
+                ->icon('heroicon-m-paper-clip')
+                ->color('gray')
+                ->visible(in_array($ticket->status, Ticket::OPEN_STATUSES, true))
+                ->modalDescription('Unggah berkas persyaratan yang belum dilampirkan atau diminta petugas.')
+                ->form([
+                    FileUpload::make('files')->label('Berkas')->multiple()->maxFiles(10)
+                        ->disk('local')->directory('ticket-files')->visibility('private')
+                        ->storeFileNamesIn('file_names')
+                        ->acceptedFileTypes(TicketDocuments::REQUIREMENT_MIME_TYPES)->maxSize(10240)
+                        ->required(),
+                ])
+                ->action(function (array $data) use ($ticket) {
+                    foreach ($data['files'] as $path) {
+                        app(TicketService::class)->attachFile($ticket, $path, $data['file_names'][$path] ?? basename($path), auth()->user(), 'Berkas susulan dari pemohon.');
+                    }
+                    $this->record = $this->resolveRecord($ticket->getKey());
+                    Notification::make()->title('Berkas ditambahkan')->success()->send();
+                }),
             Action::make('receipt')
                 ->label('Tanda terima')
                 ->icon('heroicon-m-printer')

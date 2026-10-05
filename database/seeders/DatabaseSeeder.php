@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             SurveyUnsurSeeder::class,         // Create survey unsurs
             SurveyQuestionSeeder::class,      // Create survey questions
             FaqSeeder::class,
+            PersuratanMasterSeeder::class,
+            NotificationTemplateSeeder::class,
         ]);
 
         // Fake tickets, visitors, complaints and announcements are demo data

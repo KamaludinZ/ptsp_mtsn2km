@@ -1,5 +1,6 @@
 @php
     use App\Support\DispositionHistory;
+    use App\Support\ServiceDisposition;
 
     $entries = DispositionHistory::forTicket($getRecord());
 @endphp
@@ -15,7 +16,7 @@
                     <th style="padding: 0.5rem 0.75rem; font-weight: 600;">Pejabat</th>
                     <th style="padding: 0.5rem 0.75rem; font-weight: 600;">Keputusan</th>
                     <th style="padding: 0.5rem 0.75rem; font-weight: 600;">Model tanda tangan</th>
-                    <th style="padding: 0.5rem 0 0.5rem 0.75rem; font-weight: 600;">Instruksi / catatan</th>
+                    <th style="padding: 0.5rem 0 0.5rem 0.75rem; font-weight: 600;">Penerima / instruksi / catatan</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,7 +38,11 @@
                                 <x-filament::link :href="$entry['signature_file']" target="_blank" icon="heroicon-m-document-arrow-down" size="sm">Berkas TTD/TTE</x-filament::link>
                             @endif
                         </td>
-                        <td class="text-gray-700 dark:text-gray-300" style="padding: 0.5rem 0 0.5rem 0.75rem; white-space: pre-line;">{{ collect([$entry['instruction'], $entry['note']])->filter()->join("\n") ?: '–' }}</td>
+                        <td class="text-gray-700 dark:text-gray-300" style="padding: 0.5rem 0 0.5rem 0.75rem; white-space: pre-line;">{{ collect([
+                            $entry['recipients'] ? 'Kepada: ' . ServiceDisposition::recipients($entry['recipients']) : null,
+                            $entry['instruction'] ? 'Instruksi: ' . $entry['instruction'] : null,
+                            $entry['note'],
+                        ])->filter()->join("\n") ?: '–' }}</td>
                     </tr>
                 @endforeach
             </tbody>

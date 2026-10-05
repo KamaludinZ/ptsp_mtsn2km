@@ -7,8 +7,10 @@ use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Models\Visitor;
+use App\Models\VisitorMaster;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 /**
  * The counter (Loket): guests who come to meet someone (Modul 1) and walk-in
@@ -53,6 +55,39 @@ class FrontDeskService
         Log::info('Visitor registered at the counter', ['visitor_id' => $visitor->id]);
 
         return $visitor;
+    }
+
+    /** Validation rules for a guest registering themselves (public guest book or kiosk). */
+    public static function selfRegistrationRules(): array
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'email' => 'nullable|string|email|max:255',
+            'institution' => 'nullable|string|max:255',
+            'institution_category' => 'nullable|string|max:255',
+            'purpose' => ['required', 'string', Rule::in(VisitorMaster::options('tujuan'))],
+            'purpose_other' => 'required_if:purpose,' . VisitorMaster::OTHER . '|nullable|string|max:500',
+            'notes' => 'nullable|string|max:1000',
+            'obscure_name' => 'nullable', // checkbox "on" from the web form, true/false from the API
+        ];
+    }
+
+    /** A guest registering themselves: no officer, checked in now. */
+    public function selfRegister(array $data): Visitor
+    {
+        return Visitor::create([
+            'name' => $data['name'],
+            'phone' => $data['phone'],
+            'email' => $data['email'] ?? null,
+            'institution' => $data['institution'] ?? null,
+            'institution_category' => $data['institution_category'] ?? null,
+            'purpose' => $data['purpose'] === VisitorMaster::OTHER ? $data['purpose_other'] : $data['purpose'],
+            'notes' => $data['notes'] ?? null,
+            'is_obscured' => filter_var($data['obscure_name'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'check_in_time' => now(),
+            'status' => 'active',
+        ]);
     }
 
     public function checkOut(Visitor $visitor): void

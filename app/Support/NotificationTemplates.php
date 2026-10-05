@@ -58,4 +58,22 @@ class NotificationTemplates
     {
         return preg_replace_callback('/\{([a-z_]+)\}/', fn ($m) => array_key_exists($m[1], $values) ? (string) $values[$m[1]] : $m[0], $text);
     }
+
+    /** Placeholders in $text that the app does not fill (likely typos). */
+    public static function unknownPlaceholders(?string $text): array
+    {
+        preg_match_all('/\{([a-z_]+)\}/', (string) $text, $matches);
+
+        return array_values(array_diff(array_unique($matches[1]), array_keys(self::PLACEHOLDERS)));
+    }
+
+    /** A validation rule (Laravel or Filament) rejecting unknown placeholders. */
+    public static function placeholderRule(): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) {
+            if ($unknown = self::unknownPlaceholders($value)) {
+                $fail('Placeholder tidak dikenal: {' . implode('}, {', $unknown) . '}.');
+            }
+        };
+    }
 }

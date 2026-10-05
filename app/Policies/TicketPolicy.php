@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Ticket;
 use App\Models\User;
+use App\Services\DispositionAuthority;
 use Illuminate\Auth\Access\Response;
 
 class TicketPolicy
@@ -71,37 +72,7 @@ class TicketPolicy
      */
     public function approve(User $user, Ticket $ticket): bool
     {
-        $service = $ticket->service;
-
-        if (! $service) {
-            return false;
-        }
-
-        $canApprove = false;
-        
-        // Check if user has required role
-        if ($service->approval_roles) {
-            foreach ($service->approval_roles as $role) {
-                if ($user->hasRole($role)) {
-                    $canApprove = true;
-                    break;
-                }
-            }
-        }
-        
-        // Check if user is specifically allowed
-        if (!$canApprove && $service->approval_users) {
-            if (in_array((string) $user->id, array_map('strval', (array) $service->approval_users), true)) {
-                $canApprove = true;
-            }
-        }
-        
-        // No approvers configured: school leaders approve (Modul 8)
-        if (!$canApprove && !$service->approval_roles && !$service->approval_users) {
-            $canApprove = $user->hasAnyRole(\App\Support\RoleAccess::LEADERSHIP);
-        }
-        
-        return $canApprove;
+        return app(DispositionAuthority::class)->canDispose($user, $ticket);
     }
 
     /**

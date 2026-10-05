@@ -141,7 +141,11 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     public const LEADERSHIP_ROLES = ['kepala_sekolah', 'kepala_tu', 'supervisor'];
 
     /** Every internal staff role; everyone else is an applicant (pemohon). */
-    public const STAFF_ROLES = ['admin', 'front_desk', 'back_office', 'kepala_sekolah', 'kepala_tu', 'supervisor'];
+    public const STAFF_ROLES = [
+        'admin', 'front_desk', 'back_office', 'kepala_sekolah', 'kepala_tu', 'supervisor',
+        // Back-office units receiving dispositions
+        'waka_humas', 'waka_kesiswaan', 'waka_kurikulum', 'waka_sarpras', 'tata_usaha', 'penjamin_mutu',
+    ];
 
     /**
      * Check if user is a service officer (front desk or back office)

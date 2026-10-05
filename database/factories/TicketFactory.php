@@ -19,7 +19,8 @@ class TicketFactory extends Factory
     public function definition(): array
     {
         return [
-            'ticket_number' => 'LAYANAN-' . date('Ym') . '-' . str_pad(fake()->numberBetween(1, 99999), 5, '0', STR_PAD_LEFT),
+            // unique(): 20 random numbers per seed collided now and then across the suite.
+            'ticket_number' => 'LAYANAN-' . date('Ym') . '-' . str_pad(fake()->unique()->numberBetween(1, 99999), 5, '0', STR_PAD_LEFT),
             'user_id' => User::factory(),
             'service_id' => Service::factory(),
             'mode' => fake()->randomElement(['online', 'offline']),

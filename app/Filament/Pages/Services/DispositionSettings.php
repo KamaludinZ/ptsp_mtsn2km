@@ -127,18 +127,12 @@ class DispositionSettings extends Page implements HasTable
                             ->options(ServiceDisposition::SIGNATURES + ['none' => 'Tidak ada anjuran'])
                             ->required(),
                     ])
-                    ->using(function (Service $record, array $data) {
-                        $record->fill([
-                            'disposition_roles' => ($data['disposition_mode'] ?? null) === 'none' ? null : ($data['disposition_roles'] ?: null),
-                            'signature_recommendation' => $data['signature_recommendation'] === 'none' ? null : $data['signature_recommendation'],
-                        ]);
-                        if (filled($data['disposition_mode'] ?? null)) {
-                            $record->disposition_mode = $data['disposition_mode'];
-                        }
-                        $record->save();
-
-                        return $record;
-                    })
+                    ->using(fn (Service $record, array $data) => ServiceDisposition::apply(
+                        $record,
+                        $data['disposition_mode'] ?? null,
+                        $data['disposition_roles'] ?? [],
+                        $data['signature_recommendation'] === 'none' ? null : $data['signature_recommendation'],
+                    ))
                     ->successNotification(fn (Service $record) => Notification::make()->success()
                         ->title('Pengaturan disposisi disimpan')
                         ->body($record->name . ': ' . ServiceDisposition::mode($record->disposition_mode) . '.')),

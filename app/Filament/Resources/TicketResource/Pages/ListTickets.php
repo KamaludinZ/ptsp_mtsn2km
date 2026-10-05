@@ -4,6 +4,7 @@ namespace App\Filament\Resources\TicketResource\Pages;
 
 use App\Filament\Resources\TicketResource;
 use App\Models\Ticket;
+use App\Support\ProcessorRoles;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,6 +37,16 @@ class ListTickets extends ListRecords
                 ->icon('heroicon-m-user')
                 ->badge($count($mine))
                 ->modifyQueryUsing($mine);
+        }
+
+        // Back-office units see what leadership disposed to them.
+        if ($units = ProcessorRoles::unitsOf($user)) {
+            $forwarded = fn (Builder $query) => $query->forwardedTo($units)->open();
+            $tabs['disposisi-unit'] = Tab::make('Disposisi unit saya')
+                ->icon('heroicon-m-arrow-right-circle')
+                ->badge($count($forwarded))
+                ->badgeColor('info')
+                ->modifyQueryUsing($forwarded);
         }
 
         $overdue = fn (Builder $query) => $query->overdue();

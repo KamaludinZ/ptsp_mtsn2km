@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Foundation\Inspiring;
+use App\Services\SystemMonitorService;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +19,16 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
+
+// Monitoring Sistem: heartbeat (is the scheduler running?) and health history.
+Schedule::call(fn () => SystemMonitorService::beat())->everyMinute()->name('scheduler-heartbeat');
+// Every five minutes: health snapshot, pruning, redeploy detection, critical alert (monitor:collect).
+Schedule::command('monitor:collect')->everyFiveMinutes()->name('monitor-record')->withoutOverlapping(10);
+
+// Laporan SKM & SPAK: archive the quarter that just ended (first day of each quarter).
+Schedule::call(function () {
+    $previous = now()->subQuarter();
+    foreach (['skm', 'spak'] as $type) {
+        Artisan::call('app:create-quarterly-survey-archives', ['--type' => $type, '--year' => $previous->year, '--quarter' => 'Q' . $previous->quarter]);
+    }
+})->quarterlyOn(1, '01:00')->name('survey-quarterly-archive');

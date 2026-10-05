@@ -57,7 +57,7 @@ class ServiceDisposition
         'Untuk diarsipkan',
     ];
 
-    /** Signature models for a disposition; the key prefix is what tickets.signature_type stores. */
+    /** Signature models for a disposition: value => label (see App\Enums\SignatureModel). */
     public const SIGNATURE_MODELS = [
         'ttd_upload' => 'TTD — cetak, tanda tangani, lalu unggah',
         'tte_upload' => 'TTE — unduh, tanda tangani elektronik, lalu unggah',
@@ -131,5 +131,26 @@ class ServiceDisposition
         return $service?->signature_recommendation
             ? 'Anjuran layanan ini: ' . self::signature($service->signature_recommendation) . '.'
             : null;
+    }
+
+    /**
+     * Save a service's disposition settings: mode (kepsek_tu|kepsek|tu|none),
+     * recipient units, and the signature recommendation (ttd|tte|null).
+     * Without a mode the hand-made approval setup is kept ('custom').
+     */
+    public static function apply(Service $service, ?string $mode, array $recipients = [], ?string $signature = null): Service
+    {
+        $service->fill([
+            'disposition_roles' => $mode === 'none' ? null : (array_values(array_intersect($recipients, array_keys(self::RECIPIENTS))) ?: null),
+            'signature_recommendation' => array_key_exists((string) $signature, self::SIGNATURES) ? $signature : null,
+        ]);
+
+        if (filled($mode)) {
+            $service->disposition_mode = $mode;
+        }
+
+        $service->save();
+
+        return $service;
     }
 }

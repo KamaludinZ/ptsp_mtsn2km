@@ -9,6 +9,8 @@ use App\Models\SurveyResponse;
 use App\Models\Ticket;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Visitor;
+use App\Models\VisitorMaster;
+use App\Services\FrontDeskService;
 use Illuminate\Http\Request; // Don't forget to import Request
 use Carbon\Carbon;
 use App\Services\WhatsAppService;
@@ -70,7 +72,7 @@ class PublicController extends Controller
         $finishedCount = Visitor::whereDate('check_in_time', $date)->whereNotNull('check_out_time')->count();
 
         $services = Service::where('is_active', true)->orderBy('name')->pluck('name');
-        $visitPurposes = Visitor::VISIT_PURPOSES;
+        $visitPurposes = VisitorMaster::options('tujuan');
 
         return view('public.visitor-book', compact('visitors', 'date', 'activeCount', 'finishedCount', 'services', 'visitPurposes'));
     }
@@ -105,34 +107,11 @@ class PublicController extends Controller
      */
     public function submitVisitor(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'email' => 'nullable|string|email|max:255',
-            'institution' => 'nullable|string|max:255',
-            'institution_category' => 'nullable|string|max:255',
-            'purpose' => ['required', 'string', \Illuminate\Validation\Rule::in(Visitor::VISIT_PURPOSES)],
-            'purpose_other' => 'required_if:purpose,Lainnya|nullable|string|max:500',
-            'notes' => 'nullable|string|max:1000',
-            'obscure_name' => 'nullable',
-        ], [
+        $validated = $request->validate(FrontDeskService::selfRegistrationRules(), [
             'purpose_other.required_if' => 'Tuliskan tujuan kunjungan Anda.',
         ]);
 
-        $purpose = $validated['purpose'] === 'Lainnya' ? $validated['purpose_other'] : $validated['purpose'];
-
-        Visitor::create([
-            'name' => $validated['name'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'] ?? null,
-            'institution' => $validated['institution'] ?? null,
-            'institution_category' => $validated['institution_category'] ?? null,
-            'purpose' => $purpose,
-            'notes' => $validated['notes'] ?? null,
-            'is_obscured' => $request->boolean('obscure_name'),
-            'check_in_time' => Carbon::now(),
-            'status' => 'active',
-        ]);
+        app(FrontDeskService::class)->selfRegister($validated);
 
         return redirect()->route('public.visitor.book')->with('success', 'Tamu berhasil didaftarkan!');
     }

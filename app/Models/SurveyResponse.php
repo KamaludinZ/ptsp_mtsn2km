@@ -17,7 +17,8 @@ class SurveyResponse extends Model
         'ticket_code',
         'respondent_email',
         'ip_address',
-        'completed_at'
+        'completed_at',
+        'comments',
     ];
 
     protected $casts = [

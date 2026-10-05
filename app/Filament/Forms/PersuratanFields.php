@@ -23,7 +23,7 @@ class PersuratanFields
     public static function jenis(): TextInput
     {
         return TextInput::make('jenis_surat')->label('Jenis surat')
-            ->datalist(Persuratan::JENIS_SURAT)
+            ->datalist(fn () => Persuratan::options('jenis_surat'))
             ->placeholder('Pilih atau ketik jenis')
             ->maxLength(100);
     }

@@ -7,9 +7,12 @@ use App\Filament\Resources\PersuratanMasterResource\Pages\ListPersuratanMasters;
 use App\Filament\Resources\SuratKeluarResource\Pages\ListSuratKeluar;
 use App\Models\PersuratanMaster;
 use App\Models\User;
+use App\Support\Persuratan;
+use Database\Seeders\PersuratanMasterSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -65,7 +68,7 @@ class PersuratanMasterTest extends TestCase
 
     public function test_officer_adds_a_choice_to_the_active_tab(): void
     {
-        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
 
         Livewire::test(ListPersuratanMasters::class)
             ->set('activeTab', 'klasifikasi')
@@ -94,7 +97,7 @@ class PersuratanMasterTest extends TestCase
 
     public function test_officer_edits_a_choice_and_duplicates_are_refused(): void
     {
-        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
         $archive = PersuratanMaster::where('type', 'tembusan')->where('nama', 'Arsip')->firstOrFail();
 
         Livewire::test(ListPersuratanMasters::class)
@@ -110,7 +113,7 @@ class PersuratanMasterTest extends TestCase
 
     public function test_choices_can_be_deactivated_and_deleted(): void
     {
-        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
         $choices = PersuratanMaster::where('type', 'tembusan')->get();
         $first = $choices->first();
 
@@ -139,7 +142,7 @@ class PersuratanMasterTest extends TestCase
 
     public function test_near_duplicates_and_malformed_codes_are_refused(): void
     {
-        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
 
         Livewire::test(ListPersuratanMasters::class)
             ->callAction('create', ['type' => 'tembusan', 'nama' => '  kepala   madrasah '])
@@ -160,7 +163,7 @@ class PersuratanMasterTest extends TestCase
 
     public function test_values_are_tidied_before_saving(): void
     {
-        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
 
         Livewire::test(ListPersuratanMasters::class)
             ->callAction('create', ['type' => 'klasifikasi', 'kode' => ' sr.01 ', 'nama' => '  Sarana   Prasarana ', 'sort' => 1, 'is_active' => true])
@@ -171,7 +174,7 @@ class PersuratanMasterTest extends TestCase
 
     public function test_empty_list_invites_adding_a_choice(): void
     {
-        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
         PersuratanMaster::where('type', 'tembusan')->delete();
 
         Livewire::test(ListPersuratanMasters::class)
@@ -186,5 +189,96 @@ class PersuratanMasterTest extends TestCase
             ->set('activeTab', 'tembusan')
             ->searchTable('tidak ada')
             ->assertSee('Tidak ada pilihan yang cocok');
+    }
+
+    public function test_staff_read_active_choices_through_the_api(): void
+    {
+        PersuratanMaster::create(['type' => 'jenis_surat', 'nama' => 'Surat Kuasa']);
+        PersuratanMaster::create(['type' => 'jenis_surat', 'nama' => 'Jenis Lama', 'is_active' => false]);
+        Sanctum::actingAs($this->user('staff1@mtsn2malang.sch.id'));
+
+        $jenis = $this->getJson('/api/persuratan/pilihan?jenis=jenis_surat')->assertOk()->json('jenis_surat');
+        $this->assertContains('Undangan', $jenis);
+        $this->assertContains('Surat Kuasa', $jenis);
+        $this->assertNotContains('Jenis Lama', $jenis);
+
+        $this->getJson('/api/persuratan/pilihan')->assertOk()->assertJsonStructure(array_keys(PersuratanMaster::TYPES));
+        $this->assertContains('PP.00', $this->getJson('/api/persuratan/pilihan?jenis=klasifikasi')->json('klasifikasi'));
+    }
+
+    public function test_seeder_restores_defaults_without_duplicates(): void
+    {
+        $before = PersuratanMaster::count();
+        PersuratanMaster::where('type', 'tembusan')->where('nama', 'Arsip')->delete();
+        PersuratanMaster::where('type', 'tembusan')->where('nama', 'Kepala Madrasah')->update(['is_active' => false]);
+
+        $this->seed(\Database\Seeders\PersuratanMasterSeeder::class);
+
+        $this->assertSame($before, PersuratanMaster::count());
+        $this->assertFalse(PersuratanMaster::where('type', 'tembusan')->where('nama', 'Kepala Madrasah')->value('is_active'));
+    }
+
+    public function test_masters_are_managed_through_the_api(): void
+    {
+        Sanctum::actingAs($this->user('ptsp@mtsn2malang.sch.id'));
+
+        $id = $this->postJson('/api/persuratan/master', ['jenis' => 'klasifikasi', 'kode' => 'SR.00', 'nama' => 'Sarana Prasarana'])
+            ->assertCreated()->assertJsonPath('nilai', 'SR.00')->json('id');
+        $this->postJson('/api/persuratan/master', ['jenis' => 'klasifikasi', 'nama' => 'Tanpa Kode'])->assertJsonValidationErrors('kode');
+        $this->postJson('/api/persuratan/master', ['jenis' => 'tembusan', 'nama' => 'Arsip'])->assertJsonValidationErrors('nama');
+
+        $this->putJson('/api/persuratan/master/' . $id, ['nama' => 'Sarana dan Prasarana', 'aktif' => false])
+            ->assertOk()->assertJsonPath('nama', 'Sarana dan Prasarana')->assertJsonPath('aktif', false);
+        $this->assertNotContains('SR.00', Persuratan::options('klasifikasi'));
+
+        $this->getJson('/api/persuratan/master?jenis=klasifikasi')->assertOk()->assertJsonFragment(['kode' => 'SR.00']);
+        $this->deleteJson('/api/persuratan/master/' . $id)->assertNoContent();
+        $this->assertDatabaseMissing('persuratan_masters', ['id' => $id]);
+
+        Sanctum::actingAs($this->user('loket1@mtsn2malang.sch.id'));
+        $this->postJson('/api/persuratan/master', ['jenis' => 'tembusan', 'nama' => 'X'])->assertForbidden();
+    }
+
+    public function test_master_list_api_searches_and_paginates(): void
+    {
+        Sanctum::actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        PersuratanMaster::where('type', 'tembusan')->where('nama', 'Arsip')->update(['is_active' => false]);
+
+        $this->getJson('/api/persuratan/master?q=arsip')->assertOk()->assertJsonPath('total', 2); // Arsip + "Untuk diarsipkan"
+        $this->getJson('/api/persuratan/master?q=arsip&jenis=tembusan')->assertOk()->assertJsonPath('total', 1)->assertJsonPath('data.0.nama', 'Arsip');
+        $this->getJson('/api/persuratan/master?q=PP.00')->assertOk()->assertJsonPath('data.0.kode', 'PP.00');
+        $this->getJson('/api/persuratan/master?jenis=tembusan&aktif=0')->assertOk()->assertJsonPath('total', 1);
+
+        $page = $this->getJson('/api/persuratan/master?per_halaman=5&halaman=1')->assertOk();
+        $this->assertCount(5, $page->json('data'));
+        $this->assertSame(PersuratanMaster::count(), $page->json('total'));
+        $this->assertSame(2, $this->getJson('/api/persuratan/master?per_halaman=5&page=2')->json('halaman'));
+    }
+
+    public function test_back_office_reads_but_only_managers_change_the_lists(): void
+    {
+        $choice = PersuratanMaster::firstOrFail();
+
+        Sanctum::actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $this->getJson('/api/persuratan/master')->assertOk();
+        $this->postJson('/api/persuratan/master', ['jenis' => 'tembusan', 'nama' => 'Baru'])->assertForbidden();
+        $this->putJson('/api/persuratan/master/' . $choice->id, ['aktif' => false])->assertForbidden();
+        $this->deleteJson('/api/persuratan/master/' . $choice->id)->assertForbidden();
+
+        Sanctum::actingAs($this->user('katu@mtsn2malang.sch.id'));
+        $this->postJson('/api/persuratan/master', ['jenis' => 'tembusan', 'nama' => 'Baru'])->assertCreated();
+
+        Sanctum::actingAs(tap(User::factory()->create())->assignRole('tata_usaha'));
+        $this->putJson('/api/persuratan/master/' . $choice->id, ['urutan' => 9])->assertOk();
+    }
+
+    public function test_back_office_sees_the_list_page_without_edit_actions(): void
+    {
+        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+
+        Livewire::test(ListPersuratanMasters::class)
+            ->assertOk()
+            ->assertActionHidden('create')
+            ->assertTableActionHidden('edit', PersuratanMaster::firstOrFail());
     }
 }

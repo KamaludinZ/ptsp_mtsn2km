@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Forms\PersuratanFields;
 use App\Filament\Resources\SuratKeluarResource\Pages;
 use App\Models\SuratKeluar;
+use App\Services\SuratKeluarService;
 use App\Support\SuratKeluarNumber;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -124,11 +125,7 @@ class SuratKeluarResource extends Resource
                 Tables\Actions\EditAction::make()
                     ->label(fn (SuratKeluar $record) => $record->isDraft() ? 'Lengkapi' : 'Ubah')
                     ->modalHeading(fn (SuratKeluar $record) => 'Data surat ' . $record->nomor_surat)
-                    ->mutateFormDataUsing(fn (array $data, SuratKeluar $record) => [
-                        ...$data,
-                        // The month and classification are part of the number.
-                        'nomor_surat' => SuratKeluarNumber::format($record->nomor_urut, Carbon::parse($data['tanggal_surat']), $data['klasifikasi'] ?? null),
-                    ]),
+                    ->using(fn (SuratKeluar $record, array $data) => app(SuratKeluarService::class)->describe($record, $data)),
             ])
             ->emptyStateHeading('Belum ada surat keluar')
             ->emptyStateDescription('Ambil nomor surat untuk mulai mencatat surat keluar tahun ini.')

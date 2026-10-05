@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\SystemMetric;
+use App\Models\User;
+use App\Support\SecurityMonitor;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -220,6 +223,54 @@ class SystemMonitorService
         };
 
         return ['level' => $level, 'label' => $label, 'issues' => [...$critical, ...$warnings], 'checked_at' => now()->toIso8601String()];
+    }
+
+    /** Keamanan aplikasi: sign-in failures, lockouts, sessions, blocks, HTTPS and risky settings. */
+    public function security(): array
+    {
+        $security = app(SecurityMonitor::class);
+        $lastScan = $security->lastScan();
+
+        return [
+            'metrics' => $security->metrics(),
+            'lockouts_today' => $security->lockoutsToday(),
+            'deactivated_accounts' => User::where('is_active', false)->count(),
+            'active_sessions' => $this->activeSessions(),
+            'https' => request()->isSecure() || str_starts_with((string) config('app.url'), 'https://'),
+            'recent_failed' => $security->recentFailedLogins(),
+            'blocked' => $security->blockedIps(),
+            'last_scan' => $lastScan,
+            'findings' => $this->findings($lastScan),
+        ];
+    }
+
+    /** Store a snapshot (scheduler, every 5 minutes) and prune old ones. */
+    /** Overall status computed by the last record() call (with its issues). */
+    public ?array $lastOverall = null;
+
+    public function record(): SystemMetric
+    {
+        $app = $this->application();
+        $server = $this->server();
+        $this->lastOverall = $this->overall($app, $server);
+
+        $metric = SystemMetric::create([
+            'recorded_at' => now(),
+            'app_up' => $app['up'],
+            'database_ok' => $app['database']['ok'],
+            'database_latency_ms' => $app['database']['latency_ms'],
+            'queue_pending' => $app['queue']['pending'],
+            'queue_failed' => $app['queue']['failed'],
+            'scheduler_ok' => $app['scheduler']['ok'],
+            'cpu_percent' => $server['load_percent'],
+            'memory_percent' => $server['memory']['used_percent'],
+            'disk_percent' => $server['disk']['used_percent'],
+            'status' => $this->lastOverall['level'],
+        ]);
+
+        SystemMetric::where('recorded_at', '<', now()->subDays(SystemMetric::KEEP_DAYS))->delete();
+
+        return $metric;
     }
 
     /** Overall health cached for a minute, for the navigation badge. */

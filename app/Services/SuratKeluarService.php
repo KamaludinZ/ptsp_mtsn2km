@@ -8,6 +8,7 @@ use App\Models\SuratKeluarBatch;
 use App\Models\User;
 use App\Support\SuratKeluarNumber;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -64,6 +65,31 @@ class SuratKeluarService
 
             return $letters;
         });
+    }
+
+    /**
+     * Fill in (or correct) a reserved letter. The date must stay in the
+     * number's year; month and classification are part of the number, so
+     * it is composed again.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function describe(SuratKeluar $letter, array $data): SuratKeluar
+    {
+        $date = Carbon::parse($data['tanggal_surat'] ?? $letter->tanggal_surat);
+
+        if ((int) $date->format('Y') !== $letter->tahun) {
+            throw new TicketActionException("Tanggal surat harus di tahun {$letter->tahun}, sesuai nomornya.");
+        }
+
+        $letter->fill([
+            ...array_intersect_key($data, array_flip(['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'lampiran', 'tembusan', 'keterangan'])),
+            'tanggal_surat' => $date,
+        ]);
+        $letter->nomor_surat = SuratKeluarNumber::format($letter->nomor_urut, $date, $letter->klasifikasi);
+        $letter->save();
+
+        return $letter;
     }
 
     /** The number the next request would receive for $year. */

@@ -6,6 +6,7 @@ use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\ServiceTemplate;
 use App\Models\Ticket;
+use App\Support\TicketTracking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -76,57 +77,14 @@ class OnlinePortalController extends Controller
             'email' => 'nullable|email',
         ]);
 
-        $ticketQuery = Ticket::with([
-            'service', 
-            'user', 
-            'logs', 
-            'files',
-            'workflowSteps' => function($query) {
-                $query->with('workflowStep')->orderBy('id');
-            },
-            'output' // Include output file info
-        ])
-        ->where('ticket_number', $validated['ticket_number']);
+        $ticket = TicketTracking::find($validated['ticket_number']);
 
-        // If email provided, verify ownership
-        if (!empty($validated['email'])) {
-            $ticketQuery->whereHas('user', function($query) use ($validated) {
-                $query->where('email', $validated['email']);
-            });
-        }
-
-        $ticket = $ticketQuery->first();
-
-        if (!$ticket) {
+        // A wrong e-mail is treated like a wrong number: nothing to tell.
+        if (! $ticket || (filled($validated['email'] ?? null) && ! TicketTracking::isOwner($ticket, $validated['email']))) {
             return response()->json(['message' => 'Nomor tiket tidak ditemukan'], 404);
         }
 
-        // Anyone with the ticket number may track it, so only return progress
-        // information — never the applicant's personal data.
-        return response()->json([
-            'ticket_number' => $ticket->ticket_number,
-            'status' => $ticket->status,
-            'submitted_at' => optional($ticket->created_at)->toIso8601String(),
-            'description' => $ticket->notes,
-            'service' => $ticket->service ? [
-                'name' => $ticket->service->name,
-                'mode' => $ticket->mode,
-                'processing_time' => $ticket->service->processing_time,
-            ] : null,
-            'has_output_file' => (bool) optional($ticket->output)->file_path,
-            'logs' => $ticket->logs->sortBy('created_at')->values()->map(fn ($log) => [
-                'action' => $log->action,
-                'notes' => $log->notes,
-                'created_at' => optional($log->created_at)->toIso8601String(),
-            ]),
-            'workflow_steps' => $ticket->workflowSteps->map(fn ($step) => [
-                'name' => optional($step->workflowStep)->name,
-                'pivot' => [
-                    'completed_at' => optional($step->completed_at)->toIso8601String(),
-                    'notes' => $step->notes,
-                ],
-            ]),
-        ]);
+        return response()->json(TicketTracking::summary($ticket, TicketTracking::isOwner($ticket, $validated['email'] ?? null)));
     }
 
 }

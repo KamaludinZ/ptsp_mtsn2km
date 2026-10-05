@@ -210,6 +210,9 @@ class TicketResource extends Resource
                         TextEntry::make('approver.name')->label('Oleh')->placeholder('–'),
                         TextEntry::make('signature_type')->label('Tanda tangan')->formatStateUsing(fn (?string $state) => ServiceDisposition::signatureTypeLabel($state))->placeholder('–'),
                         TextEntry::make('approved_at')->label('Tanggal')->dateTime('d M Y H:i')->placeholder('–'),
+                        TextEntry::make('disposition_recipients')->label('Diteruskan kepada')
+                            ->state(fn (Ticket $record) => $record->disposition_recipients ? ServiceDisposition::recipients($record->disposition_recipients) : null)
+                            ->placeholder('–')->columnSpanFull(),
                         TextEntry::make('approval_notes')->label('Catatan')->placeholder('–')->columnSpanFull(),
                     ]),
             ]),

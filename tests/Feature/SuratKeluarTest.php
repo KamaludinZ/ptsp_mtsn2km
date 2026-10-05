@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 use Maatwebsite\Excel\Facades\Excel;
 use Tests\TestCase;
@@ -184,5 +185,72 @@ class SuratKeluarTest extends TestCase
         Livewire::test(ListSuratKeluar::class)
             ->callAction('pdf')
             ->assertFileDownloaded('register-surat-keluar-' . now()->format('Ymd-His') . '.pdf');
+    }
+
+    public function test_numbers_can_be_reserved_through_the_api(): void
+    {
+        Sanctum::actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $next = app(SuratKeluarService::class)->nextNumber(now()->year);
+
+        $this->postJson('/api/surat-keluar/nomor', ['jumlah' => 3, 'perihal' => 'Undangan rapat', 'tembusan' => ['Kepala Madrasah', 'Arsip'], 'klasifikasi' => 'PP.00'])
+            ->assertCreated()
+            ->assertJsonPath('jumlah', 3)
+            ->assertJsonPath('data.0.nomor_urut', $next)
+            ->assertJsonPath('data.2.nomor_urut', $next + 2)
+            ->assertJsonPath('data.0.tembusan', ['Kepala Madrasah', 'Arsip'])
+            ->assertJsonPath('data.0.lengkap', false);
+
+        $this->postJson('/api/surat-keluar/nomor', ['jumlah' => 0])->assertUnprocessable()->assertJsonValidationErrors('jumlah');
+
+        DB::table('surat_sequences')->where('tahun', now()->year)->update(['last_number' => 9999]);
+        $this->postJson('/api/surat-keluar/nomor', ['jumlah' => 1])->assertUnprocessable()->assertJsonPath('message', 'Nomor surat tahun ' . now()->year . ' tinggal 0.');
+
+        Sanctum::actingAs($this->user('loket1@mtsn2malang.sch.id'));
+        $this->postJson('/api/surat-keluar/nomor', ['jumlah' => 1])->assertForbidden();
+    }
+
+    public function test_letter_data_is_saved_through_the_api(): void
+    {
+        $staff = $this->user('staff1@mtsn2malang.sch.id');
+        $letter = app(SuratKeluarService::class)->reserve(1, now()->setMonth(2), $staff)->first();
+        Sanctum::actingAs($staff);
+
+        $this->putJson('/api/surat-keluar/' . $letter->id, [
+            'tanggal_surat' => now()->setMonth(5)->toDateString(),
+            'tujuan_surat' => 'Kepala Dinas Pendidikan Kota Malang',
+            'perihal' => 'Permohonan data',
+            'klasifikasi' => 'KS.00',
+            'tembusan' => ['Arsip'],
+        ])
+            ->assertOk()
+            ->assertJsonPath('nomor_surat', 'B-' . $letter->nomor_urut . '/MTsN2KM/KS.00/05/' . now()->year)
+            ->assertJsonPath('lengkap', true);
+
+        $this->putJson('/api/surat-keluar/' . $letter->id, ['tujuan_surat' => 'x', 'perihal' => 'y', 'tanggal_surat' => now()->addYear()->toDateString()])
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Tanggal surat harus di tahun ' . now()->year . ', sesuai nomornya.');
+
+        $this->putJson('/api/surat-keluar/' . $letter->id, ['perihal' => 'tanpa tujuan'])->assertJsonValidationErrors('tujuan_surat');
+    }
+
+    public function test_register_is_listed_and_exported_through_the_api(): void
+    {
+        Excel::fake();
+        $this->freezeTime();
+        $staff = $this->user('staff1@mtsn2malang.sch.id');
+        app(SuratKeluarService::class)->reserve(1, now(), $staff, ['perihal' => 'Undangan wisuda 100%', 'tujuan_surat' => 'Wali murid', 'jenis_surat' => 'Undangan']);
+        Sanctum::actingAs($staff);
+
+        $this->getJson('/api/surat-keluar?q=' . urlencode('wisuda 100%'))->assertOk()->assertJsonPath('total', 1)->assertJsonPath('data.0.perihal', 'Undangan wisuda 100%');
+        $this->getJson('/api/surat-keluar?jenis_surat=Undangan&lengkap=1')->assertOk()->assertJsonPath('data.0.jenis_surat', 'Undangan');
+        $this->getJson('/api/surat-keluar?tahun=' . (now()->year + 5))->assertOk()->assertJsonPath('total', 0);
+
+        $this->get('/api/surat-keluar/ekspor')->assertOk();
+        Excel::assertDownloaded('register-surat-keluar-' . now()->format('Ymd-His') . '.xlsx');
+
+        $this->get('/api/surat-keluar/ekspor?format=pdf')->assertOk()->assertHeader('content-type', 'application/pdf');
+
+        Sanctum::actingAs($this->user('loket1@mtsn2malang.sch.id'));
+        $this->getJson('/api/surat-keluar')->assertForbidden();
     }
 }

@@ -56,6 +56,12 @@ class SurveyEdition extends Model
         return $this->start_date->translatedFormat('j M') . ' – ' . $this->end_date->translatedFormat('j M Y');
     }
 
+    /** Survey responses counted in this edition. */
+    public function responses(): HasMany
+    {
+        return $this->hasMany(SurveyResponse::class, 'survey_edition_id');
+    }
+
     // Relationship with surveys
     public function surveys(): HasMany
     {

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Complaint;
+use App\Services\ComplaintService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class SupervisionController extends Controller
 {
@@ -35,34 +35,10 @@ class SupervisionController extends Controller
      */
     public function submitComplaint(Request $request)
     {
-        $validated = $request->validate([
-            'complaint_type' => 'required|in:complaint,suggestion,whistleblowing',
-            'reporter_name' => 'required|string|max:255',
-            'reporter_email' => 'required|email|max:255',
-            'reporter_phone' => 'nullable|string|max:20',
-            'complaint_title' => 'required|string|max:255',
-            'complaint_description' => 'required|string|max:2000',
-            'incident_date' => 'nullable|date|before_or_equal:today',
-            'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf',
-        ]);
+        // This page sends complaints; suggestions and whistleblowing have their own forms.
+        $validated = $request->validate(ComplaintService::rulesFor('complaint'));
 
-        $complaint = Complaint::create([
-            'complaint_type' => $validated['complaint_type'],
-            'reporter_name' => $validated['reporter_name'],
-            'reporter_email' => $validated['reporter_email'],
-            'reporter_phone' => $validated['reporter_phone'] ?? null,
-            'complainant_name' => $validated['reporter_name'],
-            'complainant_email' => $validated['reporter_email'],
-            'complainant_contact' => $validated['reporter_phone'] ?? null,
-            'title' => $validated['complaint_title'],
-            'subject' => $validated['complaint_title'],
-            'description' => $validated['complaint_description'],
-            'incident_date' => $validated['incident_date'] ?? null,
-            'status' => 'submitted',
-            'anonymous' => false,
-        ]);
-
-        $this->storeEvidenceFile($request, $complaint);
+        $complaint = app(ComplaintService::class)->submit('complaint', $validated, array_filter([$request->file('attachment')]));
 
         return redirect()->route('supervision.complaint.success', $complaint->complaint_number)
             ->with('success', 'Pengaduan berhasil disimpan dengan nomor: ' . $complaint->complaint_number);
@@ -73,50 +49,14 @@ class SupervisionController extends Controller
      */
     public function submitSuggestion(Request $request)
     {
-        $validated = $request->validate([
-            'reporter_name' => 'nullable|string|max:255',
-            'reporter_email' => 'nullable|email|max:255',
-            'suggestion' => 'required|string|max:2000',
-        ], [
+        $validated = $request->validate(ComplaintService::rulesFor('suggestion'), [
             'suggestion.required' => 'Tuliskan saran Anda.',
         ]);
 
-        Complaint::create([
-            'complaint_type' => 'suggestion',
-            'title' => Str::limit(Str::squish($validated['suggestion']), 80),
-            'description' => $validated['suggestion'],
-            'reporter_name' => $validated['reporter_name'] ?? null,
-            'reporter_email' => $validated['reporter_email'] ?? null,
-            'status' => 'submitted',
-            'anonymous' => empty($validated['reporter_name']),
-        ]);
+        app(ComplaintService::class)->submit('suggestion', $validated);
 
         return redirect()->route('supervision.complaints.dashboard', ['tab' => 'saran'])
             ->with('suggestion_success', 'Terima kasih! Saran Anda sudah kami terima.');
-    }
-
-    /**
-     * Store the (optional) single evidence attachment as a JSON-encoded
-     * array of storage paths on the complaint's evidence_files column.
-     */
-    private function storeEvidenceFile(Request $request, Complaint $complaint): void
-    {
-        if (!$request->hasFile('attachment')) {
-            return;
-        }
-
-        $files = $request->file('attachment');
-        $files = is_array($files) ? $files : [$files];
-
-        $paths = [];
-        foreach ($files as $file) {
-            // Stored privately — evidence (especially whistleblowing) must not
-            // be reachable via a guessable public URL. Served only through
-            // Admin\ComplaintController::downloadEvidence() to admin staff.
-            $paths[] = $file->store('complaint-evidence', 'local');
-        }
-
-        $complaint->update(['evidence_files' => json_encode($paths)]);
     }
 
     /**
@@ -163,37 +103,9 @@ class SupervisionController extends Controller
      */
     public function submitWhistleblowing(Request $request)
     {
-        $validated = $request->validate([
-            'violation_category' => 'nullable|string|max:255',
-            'complaint_title' => 'required|string|max:255',
-            'complaint_description' => 'required|string|max:2000',
-            'incident_date' => 'nullable|date',
-            'anonymous' => 'nullable|boolean',
-            'reporter_name' => 'nullable|string|max:255',
-            'reporter_email' => 'nullable|email|max:255',
-            'reporter_phone' => 'nullable|string|max:20',
-            'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,pdf',
-        ]);
+        $validated = $request->validate(ComplaintService::rulesFor('whistleblowing'));
 
-        $isAnonymous = (bool) ($validated['anonymous'] ?? false);
-
-        $complaint = Complaint::create([
-            'complaint_type' => 'whistleblowing',
-            'category' => $validated['violation_category'] ?? null,
-            'title' => $validated['complaint_title'],
-            'subject' => $validated['complaint_title'],
-            'description' => $validated['complaint_description'],
-            'incident_date' => $validated['incident_date'] ?? null,
-            'reporter_name' => $isAnonymous ? 'Anonim' : ($validated['reporter_name'] ?? 'Anonim'),
-            'reporter_email' => $isAnonymous ? null : ($validated['reporter_email'] ?? null),
-            'reporter_phone' => $isAnonymous ? null : ($validated['reporter_phone'] ?? null),
-            'status' => 'submitted',
-            'anonymous' => $isAnonymous,
-            'is_whistleblowing' => true,
-            'is_confidential' => true,
-        ]);
-
-        $this->storeEvidenceFile($request, $complaint);
+        $complaint = app(ComplaintService::class)->submit('whistleblowing', $validated, array_filter([$request->file('attachment')]));
 
         return redirect()->route('supervision.whistleblowing.success', $complaint->complaint_number)
             ->with('success', 'Laporan whistleblowing berhasil disimpan dengan nomor: ' . $complaint->complaint_number);

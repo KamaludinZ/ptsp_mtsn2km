@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ComplaintNumber;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -143,33 +144,24 @@ class Complaint extends Model
                 $model->complaint_number = $model->generateComplaintNumber();
             }
         });
+
+        // Riwayat status: the report's first stage.
+        static::created(fn (Complaint $complaint) => ComplaintStatusLog::create([
+            'complaint_id' => $complaint->id,
+            'to_status' => $complaint->status ?: 'submitted',
+        ]));
     }
 
-    /**
-     * Generate complaint number based on type, e.g. PEM-202609-0001.
-     */
-    public function generateComplaintNumber()
+    /** Next report number for this type, e.g. PEM-202609-0001 (see ComplaintNumber). */
+    public function generateComplaintNumber(): string
     {
-        $prefix = match($this->complaint_type ?? $this->type) {
-            'complaint', 'pengaduan' => 'PEM',      // Pengaduan masyarakat
-            'suggestion', 'saran' => 'SRN',
-            'whistleblowing' => 'WSB',
-            default => 'PEM'
-        };
+        return ComplaintNumber::next($this->complaint_type ?? $this->type);
+    }
 
-        $yearMonth = now()->format('Ym');
-
-        // Count alone can collide with a soft-deleted row still holding a
-        // number (unique constraint applies regardless of deleted_at), so
-        // derive the next sequence from the highest existing number instead.
-        $lastNumber = static::withTrashed()
-            ->where('complaint_number', 'like', "{$prefix}-{$yearMonth}-%")
-            ->orderByRaw("CAST(RIGHT(complaint_number, 4) AS INTEGER) DESC")
-            ->value('complaint_number');
-
-        $sequence = $lastNumber ? ((int) substr($lastNumber, -4)) + 1 : 1;
-
-        return sprintf('%s-%s-%04d', $prefix, $yearMonth, $sequence);
+    /** Riwayat status, oldest first. */
+    public function statusLogs()
+    {
+        return $this->hasMany(ComplaintStatusLog::class)->orderBy('created_at')->orderBy('id');
     }
 
     /** Whistleblowing reports and reports whose reporter asked for confidentiality. */

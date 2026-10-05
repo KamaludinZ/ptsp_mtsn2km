@@ -13,6 +13,7 @@ use App\Support\ServiceSummary;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -166,5 +167,51 @@ class DispositionSettingsTest extends TestCase
             ->filterTable('recipient', 'waka_sarpras')
             ->assertCanSeeTableRecords([$sarpras])
             ->assertCanNotSeeTableRecords([$other]);
+    }
+
+    public function test_staff_read_disposition_settings_as_json(): void
+    {
+        $service = Service::firstOrFail();
+        $service->update(['approval_required' => true, 'approval_roles' => ['kepala_tu'], 'approval_users' => null, 'disposition_roles' => ['tata_usaha'], 'signature_recommendation' => 'tte']);
+        Sanctum::actingAs($this->user('staff1@mtsn2malang.sch.id'));
+
+        $this->getJson('/api/pengaturan-disposisi/' . $service->slug)
+            ->assertOk()
+            ->assertJson([
+                'slug' => $service->slug,
+                'mode' => 'tu',
+                'mode_label' => 'Kepala TU saja',
+                'aturan_bawaan' => false,
+                'penerima' => ['tata_usaha'],
+                'anjuran_tanda_tangan' => 'tte',
+            ]);
+
+        $this->getJson('/api/pengaturan-disposisi')->assertOk()->assertJsonCount(Service::count(), 'data');
+
+        Sanctum::actingAs($this->user('budi.santoso@email.com'));
+        $this->getJson('/api/pengaturan-disposisi')->assertForbidden();
+    }
+
+    public function test_admin_saves_disposition_settings_through_the_api(): void
+    {
+        $service = Service::firstOrFail();
+        Sanctum::actingAs($this->user('ptsp@mtsn2malang.sch.id'));
+
+        $this->putJson('/api/pengaturan-disposisi/' . $service->slug, ['mode' => 'kepsek', 'penerima' => ['waka_humas'], 'anjuran_tanda_tangan' => 'ttd'])
+            ->assertOk()
+            ->assertJsonPath('mode', 'kepsek')
+            ->assertJsonPath('penerima', ['waka_humas']);
+
+        $service->refresh();
+        $this->assertSame(['kepala_sekolah'], $service->approval_roles);
+        $this->assertSame('ttd', $service->signature_recommendation);
+        $this->assertDatabaseHas('activity_log', ['description' => 'Mengubah pengaturan disposisi']);
+
+        $this->putJson('/api/pengaturan-disposisi/' . $service->slug, ['mode' => 'semua', 'penerima' => ['kepala_dinas']])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['mode', 'penerima.0']);
+
+        Sanctum::actingAs($this->user('katu@mtsn2malang.sch.id'));
+        $this->putJson('/api/pengaturan-disposisi/' . $service->slug, ['mode' => 'none'])->assertForbidden();
     }
 }

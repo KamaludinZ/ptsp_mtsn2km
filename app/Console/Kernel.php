@@ -12,8 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Heartbeat read by Monitoring Sistem to tell whether the scheduler runs.
-        $schedule->call(fn () => \App\Services\SystemMonitorService::beat())->everyMinute()->name('scheduler-heartbeat');
+        // Schedules live in routes/console.php (Laravel 11+ does not load this kernel).
     }
 
     /**

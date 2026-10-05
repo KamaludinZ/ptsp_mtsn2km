@@ -38,15 +38,36 @@ class Ticket extends Model implements HasMedia
         'approved_at',
         'approval_notes',
         'signature_type',
+        'disposition_recipients',
         'survey_sent',
         'survey_sent_at',
         'ready_for_pickup',
         'pickup_notified_at'
     ];
 
+    /** Set while TicketService changes a ticket: it writes the history itself. */
+    public static bool $historyManaged = false;
+
     protected static function boot()
     {
         parent::boot();
+
+        // Safety net for the riwayat layanan: a status change made outside
+        // TicketService (console, imports, future code) still leaves a trace.
+        static::updated(function (Ticket $ticket) {
+            if (static::$historyManaged || ! $ticket->wasChanged('status')) {
+                return;
+            }
+
+            TicketLog::create([
+                'ticket_id' => $ticket->id,
+                'action' => 'status_changed',
+                'performed_by' => auth()->id(),
+                'from_status' => $ticket->getOriginal('status'),
+                'to_status' => $ticket->status,
+                'notes' => 'Status diubah di luar alur layanan.',
+            ]);
+        });
 
         static::creating(function ($model) {
             if (empty($model->ticket_number)) {
@@ -72,6 +93,7 @@ class Ticket extends Model implements HasMedia
         'ready_for_pickup' => 'boolean',
         'pickup_notified_at' => 'datetime',
         'approved_at' => 'datetime',
+        'disposition_recipients' => 'array',
     ];
 
     // Relationship with user who applied
@@ -152,6 +174,19 @@ class Ticket extends Model implements HasMedia
             ->get()
             ->filter(fn (Ticket $ticket) => $user->can('approve', $ticket))
             ->values();
+    }
+
+    /** Tickets disposed to one of these back-office units. */
+    public function scopeForwardedTo($query, array $units)
+    {
+        return $query->where(function ($q) use ($units) {
+            foreach ($units as $unit) {
+                $q->orWhereJsonContains('disposition_recipients', $unit);
+            }
+            if (! $units) {
+                $q->whereRaw('1 = 0');
+            }
+        });
     }
 
     /** Leadership approval (Modul 8) is still outstanding. */

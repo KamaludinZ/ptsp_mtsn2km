@@ -5,10 +5,24 @@ namespace App\Models;
 use App\Support\TicketLabels;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use LogicException;
 
+/**
+ * One step in a ticket's history (riwayat layanan). Audit evidence: entries
+ * are only ever added; the model and a database trigger refuse changes.
+ */
 class TicketLog extends Model
 {
     use HasFactory;
+
+    /** Milestones an applicant may see; other entries (notes, internal uploads) stay with staff. */
+    public const APPLICANT_VISIBLE = ['created', 'status_changed', 'assigned', 'approved', 'rejected', 'output_uploaded', 'picked_up', 'workflow_completed'];
+
+    protected static function booted(): void
+    {
+        static::updating(fn () => throw new LogicException('Riwayat layanan tidak dapat diubah.'));
+        static::deleting(fn () => throw new LogicException('Riwayat layanan tidak dapat dihapus.'));
+    }
 
     protected $fillable = [
         'ticket_id',
@@ -16,8 +30,20 @@ class TicketLog extends Model
         'performed_by',
         'from_status',
         'to_status',
-        'notes'
+        'notes',
+        'ticket_file_id',
+        'metadata',
+        'ip_address',
     ];
+
+    protected $casts = [
+        'metadata' => 'array',
+    ];
+
+    public function file()
+    {
+        return $this->belongsTo(TicketFile::class, 'ticket_file_id');
+    }
 
     // Relationship with ticket
     public function ticket()
@@ -52,10 +78,15 @@ class TicketLog extends Model
      */
     public function relatedDocuments(): array
     {
+        if ($this->ticket_file_id && $this->file) {
+            return [$this->file->file_name => route('documents.ticket-file', $this->file)];
+        }
+
         if (! $this->created_at || ! in_array($this->action, ['file_uploaded', 'output_uploaded'], true)) {
             return [];
         }
 
+        // Entries written before ticket_file_id existed: match by time.
         $window = [$this->created_at->copy()->subMinute(), $this->created_at->copy()->addMinute()];
 
         if ($this->action === 'output_uploaded') {
