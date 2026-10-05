@@ -36,6 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            // Per-route permission check that works for the API (sanctum) too: izin:backoffice.access|peran:admin
+            'izin' => \App\Http\Middleware\RequirePermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

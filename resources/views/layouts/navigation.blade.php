@@ -43,6 +43,7 @@
                     $authUser = Auth::user();
                     $dashboardLink = get_dashboard_route_for_user($authUser);
                 @endphp
+                <x-notification-bell :user="$authUser" />
                 <div class="site-user">
                     <button type="button" class="site-user-btn" data-panel-toggle="site-user-menu"
                             aria-expanded="false" aria-controls="site-user-menu" aria-label="Menu akun {{ $authUser->name }}">

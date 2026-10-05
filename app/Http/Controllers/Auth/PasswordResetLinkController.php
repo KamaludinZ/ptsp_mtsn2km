@@ -25,6 +25,7 @@ class PasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $request->merge(['email' => mb_strtolower(trim((string) $request->input('email')))]); // stored in lower case
         $request->validate([
             'email' => ['required', 'email'],
         ]);

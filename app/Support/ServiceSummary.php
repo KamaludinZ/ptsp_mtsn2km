@@ -37,13 +37,16 @@ class ServiceSummary
     /** Download links for the service's template berkas, empty when it has none. */
     public static function templates(?Service $service): HtmlString
     {
-        $templates = $service?->templates ?? collect();
+        $templates = $service?->activeTemplates ?? collect();
 
-        return new HtmlString($templates->map(fn (ServiceTemplate $template) => sprintf(
-            '<p style="margin:0 0 .5rem"><a href="%s" style="font-weight:600;text-decoration:underline">%s</a>%s</p>',
-            e($template->downloadUrl()),
-            e($template->nama),
-            $template->is_required ? ' <span style="font-size:.75rem;opacity:.8">(wajib dilengkapi)</span>' : '',
-        ))->implode(''));
+        return new HtmlString($templates->map(fn (ServiceTemplate $template) => $template->isAvailable()
+            ? sprintf(
+                '<p style="margin:0 0 .5rem"><a href="%s" style="font-weight:600;text-decoration:underline">%s</a>%s</p>',
+                e($template->downloadUrl()),
+                e($template->nama),
+                $template->is_required ? ' <span style="font-size:.75rem;opacity:.8">(wajib dilengkapi)</span>' : '',
+            )
+            : sprintf('<p style="margin:0 0 .5rem;opacity:.7">%s <span style="font-size:.75rem">(sedang tidak tersedia, hubungi petugas)</span></p>', e($template->nama))
+        )->implode(''));
     }
 }

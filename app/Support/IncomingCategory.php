@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Grup kategori layanan masuk: how the back office receives a request
- * once the leadership has disposed it. Read from the disposition
- * instruction stored in tickets.approval_notes ("Instruksi: … ."); a
- * request without a matching instruction (or without disposition) is a
- * plain "disposisi" to process.
+ * once the leadership has disposed it. The disposition instruction sets
+ * tickets.disposition_category; staff may choose another one
+ * (tickets.incoming_category), which takes precedence. A request without
+ * either is a plain "disposisi" to process.
  */
 class IncomingCategory
 {
@@ -35,6 +35,13 @@ class IncomingCategory
         'arahan' => 'info',
     ];
 
+    public const ICONS = [
+        'disposisi' => 'heroicon-m-arrow-right-circle',
+        'tembusan' => 'heroicon-m-eye',
+        'koordinasi' => 'heroicon-m-users',
+        'arahan' => 'heroicon-m-light-bulb',
+    ];
+
     /** Instruction (from Master Persuratan) => category; anything else is "disposisi". */
     public const INSTRUCTION_CATEGORIES = [
         'Untuk diketahui' => 'tembusan',
@@ -50,8 +57,24 @@ class IncomingCategory
 
     public static function of(Ticket $ticket): string
     {
-        foreach (self::INSTRUCTION_CATEGORIES as $instruction => $category) {
-            if (str_contains(mb_strtolower((string) $ticket->approval_notes), mb_strtolower('Instruksi: ' . $instruction . '.'))) {
+        if (array_key_exists((string) $ticket->incoming_category, self::CATEGORIES)) {
+            return $ticket->incoming_category;
+        }
+
+        return self::derived($ticket);
+    }
+
+    /** The category the disposition instruction implies (ignoring a staff choice). */
+    public static function derived(Ticket $ticket): string
+    {
+        return array_key_exists((string) $ticket->disposition_category, self::CATEGORIES) ? $ticket->disposition_category : 'disposisi';
+    }
+
+    /** Category for a disposition instruction (from Master Persuratan); anything else is "disposisi". */
+    public static function forInstruction(?string $instruction): string
+    {
+        foreach (self::INSTRUCTION_CATEGORIES as $known => $category) {
+            if (mb_strtolower(trim((string) $instruction)) === mb_strtolower($known)) {
                 return $category;
             }
         }
@@ -59,19 +82,46 @@ class IncomingCategory
         return 'disposisi';
     }
 
+    /**
+     * Riwayat kategori: the category given by the disposition, then every
+     * change made by staff, oldest first.
+     *
+     * @return array<int, array{from: ?string, to: string, at: ?\Illuminate\Support\Carbon, actor: string, reason: ?string, manual: bool}>
+     */
+    public static function history(Ticket $ticket): array
+    {
+        $changes = $ticket->logs()->where('action', 'category_changed')->with('performer:id,name')->oldest()->oldest('id')->get();
+        $first = $changes->first()?->metadata['from'] ?? self::of($ticket);
+
+        $history = [[
+            'from' => null,
+            'to' => $first,
+            'at' => $ticket->approved_at ?? $ticket->created_at,
+            'actor' => $ticket->approver?->name ?? 'Sistem',
+            'reason' => $ticket->approval_required ? 'Ditentukan dari instruksi disposisi pimpinan.' : 'Layanan tanpa disposisi: langsung diproses back office.',
+            'manual' => false,
+        ]];
+
+        foreach ($changes as $log) {
+            $history[] = [
+                'from' => $log->metadata['from'] ?? null,
+                'to' => $log->metadata['to'] ?? self::of($ticket),
+                'at' => $log->created_at,
+                'actor' => $log->performer?->name ?? 'Sistem',
+                'reason' => $log->metadata['reason'] ?? null,
+                'manual' => (bool) ($log->metadata['manual'] ?? false),
+            ];
+        }
+
+        return $history;
+    }
+
+    /** The effective category in SQL (indexed: tickets_effective_category_index). */
+    public const EFFECTIVE_SQL = "coalesce(incoming_category, disposition_category, 'disposisi')";
+
     /** Limit a ticket query to one category. */
     public static function scope(Builder $query, string $category): Builder
     {
-        $patterns = fn (string $only = null) => collect(self::INSTRUCTION_CATEGORIES)
-            ->filter(fn (string $c) => $only === null || $c === $only)
-            ->keys()
-            ->map(fn (string $instruction) => '%' . mb_strtolower('Instruksi: ' . $instruction . '.') . '%');
-
-        if ($category === 'disposisi') {
-            return $query->where(fn (Builder $q) => $q->whereNull('approval_notes')
-                ->orWhere(fn (Builder $q) => $patterns()->each(fn (string $p) => $q->whereRaw('lower(approval_notes) not like ?', [$p]))));
-        }
-
-        return $query->where(fn (Builder $q) => $patterns($category)->each(fn (string $p) => $q->orWhereRaw('lower(approval_notes) like ?', [$p])));
+        return $query->whereRaw(self::EFFECTIVE_SQL . ' = ?', [$category]);
     }
 }

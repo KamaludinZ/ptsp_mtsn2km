@@ -105,6 +105,14 @@ class RoleAccess
         return self::SYSTEM_ROLES[$role] ?? ucwords(str_replace('_', ' ', $role));
     }
 
+    /** A user's main role for display ("Back Office"), or their applicant type ("Umum"). */
+    public static function userRoleLabel(?\App\Models\User $user): string
+    {
+        $role = $user?->getRoleNames()->first(fn (string $name) => isset(self::SYSTEM_ROLES[$name]));
+
+        return $role ? self::SYSTEM_ROLES[$role] : (\App\Services\FrontDeskService::APPLICANT_TYPES[$user?->user_type] ?? 'Pengguna');
+    }
+
     public static function permissionLabel(string $permission): string
     {
         return self::PERMISSION_LABELS[$permission] ?? $permission;
@@ -123,7 +131,8 @@ class RoleAccess
 
     public static function sync(): void
     {
-        foreach (self::AREA_PERMISSIONS as $permission) {
+        // Every labelled permission exists, so any of them can be granted to a role.
+        foreach (array_unique([...self::AREA_PERMISSIONS, ...array_keys(self::PERMISSION_LABELS)]) as $permission) {
             Permission::findOrCreate($permission, 'web');
         }
 

@@ -394,8 +394,16 @@ class ServiceHistoryTest extends TestCase
 
     public function test_deleting_the_actor_keeps_their_history(): void
     {
-        $log = $this->logStep();
-        $actor = User::findOrFail($log->performed_by);
+        // An officer who is not also an applicant (applicants with requests cannot be hard-deleted).
+        $actor = User::factory()->create(['user_type' => 'pegawai'])->assignRole('back_office');
+        $log = TicketLog::create([
+            'ticket_id' => Ticket::firstOrFail()->id,
+            'action' => 'status_changed',
+            'performed_by' => $actor->id,
+            'from_status' => 'submitted',
+            'to_status' => 'verified',
+            'notes' => 'Berkas lengkap, lanjut proses.',
+        ]);
 
         $actor->forceDelete();
 

@@ -34,6 +34,9 @@
                         </td>
                         <td class="text-gray-950 dark:text-white" style="padding: 0.5rem 0.75rem;">
                             {{ DispositionHistory::signatureModel($entry['signature_model']) }}
+                            @if ($entry['acknowledged_by'])
+                                <div class="text-sm text-gray-600 dark:text-gray-400">oleh {{ $entry['acknowledged_by'] }}</div>
+                            @endif
                             @if ($entry['signature_file'])
                                 <x-filament::link :href="$entry['signature_file']" target="_blank" icon="heroicon-m-document-arrow-down" size="sm">Berkas TTD/TTE</x-filament::link>
                             @endif

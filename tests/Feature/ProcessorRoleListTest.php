@@ -45,13 +45,18 @@ class ProcessorRoleListTest extends TestCase
         $role = Role::findOrCreate('waka_sarpras', 'web');
         $waka = User::where('email', 'waka.kesiswaan@mtsn2malang.sch.id')->firstOrFail();
         $waka->assignRole($role);
-        Service::query()->firstOrFail()->update(['disposition_roles' => ['waka_sarpras', 'tata_usaha']]);
+        // Seeded services already have receiving units; count relative to them.
+        $receiving = fn (string $unit) => Service::whereJsonContains('disposition_roles', $unit)->count();
+        [$sarpras, $tu] = [$receiving('waka_sarpras'), $receiving('tata_usaha')];
+        Service::query()->where(fn ($q) => $q->whereNull('disposition_roles')
+            ->orWhere(fn ($q) => $q->whereJsonDoesntContain('disposition_roles', 'tata_usaha')->whereJsonDoesntContain('disposition_roles', 'waka_sarpras')))
+            ->firstOrFail()->update(['disposition_roles' => ['waka_sarpras', 'tata_usaha']]);
 
         $rows = collect(ProcessorRoles::overview())->keyBy('name');
 
         $this->assertSame(['Waka Kesiswaan'], $rows['waka_sarpras']['holders']->pluck('name')->all());
-        $this->assertSame(1, $rows['waka_sarpras']['services']);
-        $this->assertSame(1, $rows['tata_usaha']['services']);
+        $this->assertSame($sarpras + 1, $rows['waka_sarpras']['services']);
+        $this->assertSame($tu + 1, $rows['tata_usaha']['services']);
         // The units are system roles (RoleAccess::sync), so they always exist; this one has no holder yet.
         $this->assertNotNull($rows['waka_humas']['role']);
         $this->assertTrue($rows['waka_humas']['holders']->isEmpty());

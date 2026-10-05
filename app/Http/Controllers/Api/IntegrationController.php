@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\NotificationSetting;
 use App\Services\NotificationGateway;
+use App\Support\WhatsAppGateways;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * Pengaturan integrasi Email & WhatsApp (admin). Secrets are write-only:
@@ -27,9 +29,11 @@ class IntegrationController extends Controller
         ],
         'whatsapp' => [
             'aktif' => ['required', 'boolean'],
+            'provider' => ['nullable', 'in:custom,fonnte,wablas'],
             'api_url' => ['required_if:aktif,true', 'nullable', 'url'],
             'api_token' => ['nullable', 'string', 'max:500'],
-            'sender_id' => ['required_if:aktif,true', 'nullable', 'string', 'max:50'],
+            // Required for the custom gateway only; see update().
+            'sender_id' => ['nullable', 'string', 'max:50'],
         ],
     ];
 
@@ -46,7 +50,13 @@ class IntegrationController extends Controller
     {
         $this->authorizeAdmin($request, $channel);
 
-        $data = $request->validate(self::RULES[$channel]);
+        $rules = self::RULES[$channel];
+        if ($channel === 'whatsapp') {
+            $provider = $request->input('provider', NotificationSetting::for('whatsapp')->value('provider', 'custom'));
+            $rules['sender_id'][] = Rule::requiredIf(fn () => $request->boolean('aktif') && WhatsAppGateways::needsSender($provider));
+        }
+
+        $data = $request->validate($rules);
         $setting = NotificationSetting::store($channel, (bool) $data['aktif'], collect($data)->except('aktif')->filter(fn ($v) => $v !== null)->all(), $request->user()->id);
 
         activity('audit')->causedBy($request->user())->withProperties(['channel' => $channel, 'enabled' => $setting->is_enabled])->log('Mengubah pengaturan integrasi ' . $channel);
@@ -68,7 +78,9 @@ class IntegrationController extends Controller
         $enabled = (bool) $request->validate(['aktif' => ['required', 'boolean']])['aktif'];
         $setting = NotificationSetting::for($channel);
 
-        $missing = collect(self::REQUIRED[$channel])->reject(fn (string $key) => filled($setting->value($key)))->values();
+        $missing = collect(self::REQUIRED[$channel])
+            ->reject(fn (string $key) => $key === 'sender_id' && ! WhatsAppGateways::needsSender($setting->value('provider')))
+            ->reject(fn (string $key) => filled($setting->value($key)))->values();
         if ($enabled && $missing->isNotEmpty()) {
             return response()->json(['message' => 'Lengkapi pengaturan gateway terlebih dahulu: ' . $missing->join(', ') . '.'], 422);
         }

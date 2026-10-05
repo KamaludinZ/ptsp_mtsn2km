@@ -271,9 +271,7 @@
                 </div>
                 <div class="col-md-6 mb-3 mb-md-0">
                     <p class="text-muted mb-1" style="font-size: 0.875rem; color: var(--bs-secondary-text);">Status</p>
-                    <span class="status-badge {{ in_array($complaint->status, ['resolved', 'closed']) ? 'status-completed' : ($complaint->status === 'submitted' ? 'status-pending' : 'status-processing') }}">
-                        <i class="fas {{ in_array($complaint->status, ['resolved', 'closed']) ? 'fa-check-circle' : ($complaint->status === 'submitted' ? 'fa-clock' : 'fa-cog') }} me-1" aria-hidden="true"></i>{{ $complaint->statusLabel() }}
-                    </span>
+                    <x-status-badge :status="$complaint->status" type="complaint" />
                 </div>
                 <div class="col-md-6">
                     <p class="text-muted mb-1" style="font-size: 0.875rem; color: var(--bs-secondary-text);">Tanggal Pengajuan</p>

@@ -112,7 +112,7 @@ class SurveySummarySheet implements FromCollection, WithHeadings, WithTitle, Sho
             ['Periode Data', ''],
             ['Tanggal Mulai', $this->startDate ?? 'Semua'],
             ['Tanggal Akhir', $this->endDate ?? 'Semua'],
-            ['Tanggal Export', now()->format('d F Y H:i:s')],
+            ['Tanggal Export', \App\Support\Formats::date(now()) . ' ' . now()->format('H:i:s')],
         ]);
 
         return $data;

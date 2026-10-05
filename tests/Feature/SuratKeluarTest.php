@@ -6,13 +6,16 @@ use App\Exceptions\TicketActionException;
 use App\Exports\SuratKeluarExport;
 use App\Filament\Resources\SuratKeluarResource;
 use App\Filament\Resources\SuratKeluarResource\Pages\ListSuratKeluar;
+use App\Filament\Resources\SuratKeluarResource\Pages\ViewSuratKeluar;
 use App\Models\SuratKeluar;
 use App\Models\User;
 use App\Services\SuratKeluarService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 use Maatwebsite\Excel\Facades\Excel;
@@ -153,6 +156,98 @@ class SuratKeluarTest extends TestCase
 
         $letters = SuratKeluar::latest('id')->take(2)->get();
         $this->assertTrue($letters->every(fn (SuratKeluar $l) => $l->perihal === 'Undangan rapat' && str_contains($l->nomor_surat, '/KS.00/')));
+    }
+
+    public function test_new_letter_is_recorded_complete_from_the_request_form(): void
+    {
+        $staff = $this->user('staff1@mtsn2malang.sch.id');
+        $this->actingAs($staff);
+
+        Livewire::test(ListSuratKeluar::class)
+            ->callAction('reserve', [
+                'count' => 1,
+                'tanggal_surat' => now()->toDateString(),
+                'tujuan_surat' => 'Kepala Kankemenag Kota Malang',
+                'perihal' => 'Laporan kegiatan',
+                'jenis_surat' => 'Laporan',
+                'klasifikasi' => 'OT.00',
+                'lampiran' => '1 berkas',
+                'tembusan' => ['Kepala Madrasah', 'Arsip'],
+                'keterangan' => 'Dikirim via pos',
+            ])
+            ->assertHasNoActionErrors();
+
+        $letter = SuratKeluar::latest('id')->firstOrFail();
+        $this->assertFalse($letter->isDraft());
+        $this->assertSame('1 berkas', $letter->lampiran);
+        $this->assertSame("Kepala Madrasah\nArsip", $letter->tembusan);
+        $this->assertSame('Dikirim via pos', $letter->keterangan);
+        $this->assertSame($staff->id, $letter->pembuat_id);
+    }
+
+    public function test_letter_detail_page_shows_the_letter_and_its_attachments(): void
+    {
+        Storage::fake('local');
+        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $letter = app(SuratKeluarService::class)->reserve(1, now(), auth()->user(), [
+            'perihal' => 'Undangan rapat komite',
+            'tujuan_surat' => 'Ketua Komite Madrasah',
+            'lampiran' => '1 berkas',
+            'tembusan' => "Kepala Madrasah\nArsip",
+        ])->first();
+
+        $this->get(SuratKeluarResource::getUrl('view', ['record' => $letter]))
+            ->assertOk()
+            ->assertSee($letter->nomor_surat)
+            ->assertSee('Undangan rapat komite')
+            ->assertSee('Belum ada berkas diunggah.');
+
+        Livewire::test(ViewSuratKeluar::class, ['record' => $letter->getRouteKey()])
+            ->callAction('edit', [
+                'berkas_lampiran' => [UploadedFile::fake()->create('daftar-hadir.pdf', 50, 'application/pdf')],
+            ])
+            ->assertHasNoActionErrors();
+
+        $letter->refresh();
+        $this->assertCount(1, $letter->berkas_lampiran);
+        $path = $letter->berkas_lampiran[0];
+        Storage::disk('local')->assertExists($path);
+        $this->assertSame('daftar-hadir.pdf', $letter->attachmentName($path));
+
+        $this->get(SuratKeluarResource::getUrl('view', ['record' => $letter]))
+            ->assertSee('daftar-hadir.pdf')
+            ->assertSee(route('surat-keluar.lampiran', [$letter, 0]), false);
+        $this->get(route('surat-keluar.lampiran', [$letter, 0]))->assertOk()->assertHeader('content-disposition', 'inline; filename=daftar-hadir.pdf');
+        $this->get(route('surat-keluar.lampiran', [$letter, 0, 'unduh' => 1]))->assertDownload('daftar-hadir.pdf');
+        Livewire::test(ListSuratKeluar::class)->assertTableActionVisible('lampiran', $letter);
+        $this->get(route('surat-keluar.lampiran', [$letter, 1]))->assertNotFound();
+
+        $this->actingAs($this->user('loket1@mtsn2malang.sch.id'))
+            ->get(route('surat-keluar.lampiran', [$letter, 0]))
+            ->assertForbidden();
+    }
+
+    public function test_attachment_is_uploaded_while_recording_a_single_letter(): void
+    {
+        Storage::fake('local');
+        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+
+        Livewire::test(ListSuratKeluar::class)
+            ->callAction('reserve', [
+                'count' => 1,
+                'tanggal_surat' => now()->toDateString(),
+                'perihal' => 'Undangan rapat',
+                'tujuan_surat' => 'Orang tua/wali siswa',
+                'berkas_lampiran' => [UploadedFile::fake()->create('jadwal.pdf', 20, 'application/pdf')],
+            ])
+            ->assertHasNoActionErrors();
+
+        $letter = SuratKeluar::latest('id')->firstOrFail();
+        $this->assertCount(1, $letter->berkas_lampiran);
+        $this->assertSame('jadwal.pdf', $letter->attachmentName($letter->berkas_lampiran[0]));
+
+        $batch = app(SuratKeluarService::class)->reserve(2, now(), auth()->user(), ['berkas_lampiran' => ['surat-keluar/x.pdf']]);
+        $this->assertTrue($batch->every(fn (SuratKeluar $l) => $l->berkas_lampiran === null));
     }
 
     public function test_register_can_be_searched_and_filtered(): void

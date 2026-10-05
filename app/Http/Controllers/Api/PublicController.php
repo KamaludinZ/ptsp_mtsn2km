@@ -86,13 +86,40 @@ class PublicController extends Controller
         ])->setPublic()->setMaxAge(300);
     }
 
+    /**
+     * GET /api/publik/layanan/{slug}/template: the service's active template
+     * berkas, like the download links on the service page (any active
+     * service: templates are public).
+     */
+    public function serviceTemplates(string $slug): JsonResponse
+    {
+        $service = Service::where('slug', $slug)->where('is_active', true)->with('activeTemplates')->firstOrFail();
+        $templates = $service->activeTemplates;
+
+        return response()->json([
+            'layanan' => ['nama' => $service->name, 'slug' => $service->slug],
+            'data' => $templates->map(fn (ServiceTemplate $template) => [
+                'nama' => $template->nama,
+                'wajib' => (bool) $template->is_required,
+                'versi' => $template->versi,
+                'jenis' => strtolower(pathinfo($template->file_name ?: $template->file_path, PATHINFO_EXTENSION)) ?: null,
+                'ukuran' => $template->file_size,
+                'tersedia' => $available = $template->isAvailable(),
+                'unduh' => $available ? $template->downloadUrl() : null,
+            ])->values(),
+            'jumlah_wajib' => $templates->where('is_required', true)->count(),
+            'unduh_semua' => $templates->filter->isAvailable()->count() > 1 ? route('onlineportal.service.templates.zip', $service->slug) : null,
+            'pesan' => $templates->isEmpty() ? 'Layanan ini tidak memakai template berkas; cukup siapkan berkas persyaratan.' : null,
+        ])->setPublic()->setMaxAge(300);
+    }
+
     /** GET /api/publik/layanan/{slug}: the service standard, templates and how to apply. */
     public function service(string $slug): JsonResponse
     {
         $service = Service::where('slug', $slug)
             ->where('is_active', true)
             ->availableFor('umum')
-            ->with(['categories:id,name', 'templates'])
+            ->with(['categories:id,name', 'activeTemplates'])
             ->firstOrFail();
 
         return response()->json([
@@ -109,11 +136,14 @@ class PublicController extends Controller
             'penanganan_pengaduan' => $service->complaint_handling,
             'mode' => $service->mode,
             'disposisi' => ServiceDisposition::mode($service->disposition_mode),
-            'template_berkas' => $service->templates->map(fn (ServiceTemplate $template) => [
+            'template_berkas' => $service->activeTemplates->map(fn (ServiceTemplate $template) => [
                 'nama' => $template->nama,
+                'versi' => $template->versi,
                 'wajib' => $template->is_required,
-                'unduh' => $template->downloadUrl(),
+                'tersedia' => $available = $template->isAvailable(),
+                'unduh' => $available ? $template->downloadUrl() : null,
             ])->values(),
+            'perlu_template' => $service->activeTemplates->isNotEmpty(),
             'ajukan' => route('onlineportal.service.apply', $service->slug),
         ])->setPublic()->setMaxAge(300);
     }
@@ -127,12 +157,12 @@ class PublicController extends Controller
             'per_halaman' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
 
-        $page = Pengumuman::active()
+        $page = Pengumuman::active()->with('user:id,name')
             ->when($filters['q'] ?? null, function ($query, string $term) {
                 $like = '%' . addcslashes($term, '%_\\') . '%';
                 $query->where(fn ($q) => $q->where('title', 'ilike', $like)->orWhere('content', 'ilike', $like));
             })
-            ->when($filters['kategori'] ?? null, fn ($q, $category) => $q->where('category', $category))
+            ->when($filters['kategori'] ?? null, fn ($q, $category) => $q->where('category', Str::lower(trim($category))))
             ->orderByDesc('publish_date')->orderByDesc('id')
             ->paginate($filters['per_halaman'] ?? 10)
             ->withQueryString();
@@ -142,13 +172,20 @@ class PublicController extends Controller
                 'id' => $item->id,
                 'judul' => $item->title,
                 'kategori' => $item->category,
+                'kategori_label' => $item->category ? Str::headline($item->category) : null,
                 'tanggal' => $item->publish_date?->toDateString(),
-                'ringkasan' => Str::limit($item->content, 200),
+                'berakhir' => $item->end_date?->toDateString(),
+                'penulis' => $item->authorName(),
+                'ringkasan' => Str::limit(trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags((string) str($item->content)->sanitizeHtml())))), 200),
+                'ada_lampiran' => filled($item->attachment),
                 'detail' => route('api.publik.pengumuman.detail', $item),
+                'halaman' => route('pengumuman.show', $item),
             ]),
             'halaman' => $page->currentPage(),
             'total' => $page->total(),
             'halaman_terakhir' => $page->lastPage(),
+            // Categories in use on the site now, for the filter chips
+            'kategori' => collect(Pengumuman::categories(onlyPublished: true))->map(fn (string $c) => ['nilai' => $c, 'label' => Str::headline($c)])->all(),
         ])->setPublic()->setMaxAge(120);
     }
 
@@ -161,34 +198,55 @@ class PublicController extends Controller
             'id' => $item->id,
             'judul' => $item->title,
             'kategori' => $item->category,
+            'kategori_label' => $item->category ? Str::headline($item->category) : null,
             'tanggal' => $item->publish_date?->toDateString(),
             'berakhir' => $item->end_date?->toDateString(),
-            'isi' => $item->content,
+            'penulis' => $item->authorName(),
+            'dilihat' => (int) $item->view_count,
+            'isi' => (string) str($item->content)->sanitizeHtml(),
             'lampiran' => $item->attachment ? asset('storage/' . $item->attachment) : null,
             'tautan' => $item->url,
             'halaman' => route('pengumuman.show', $item),
         ])->setPublic()->setMaxAge(120);
     }
 
-    /** GET /api/publik/faq?q=: active questions; answers are sanitised HTML. */
+    /**
+     * GET /api/publik/faq?q=&kelompok=: active questions in display order,
+     * flat (data) and grouped by kelompok as on the site; answers are sanitised HTML.
+     */
     public function faq(Request $request): JsonResponse
     {
-        $term = $request->validate(['q' => ['nullable', 'string', 'max:100']])['q'] ?? null;
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'kelompok' => ['nullable', 'string', 'max:50'],
+        ]);
 
-        $faqs = Faq::where('is_active', true)
-            ->when($term, function ($query, string $term) {
+        $faqs = Faq::published()
+            ->when($filters['q'] ?? null, function ($query, string $term) {
                 $like = '%' . addcslashes($term, '%_\\') . '%';
                 $query->where(fn ($q) => $q->where('question', 'ilike', $like)->orWhere('answer', 'ilike', $like));
             })
-            ->orderBy('created_at', 'desc')
+            ->when(isset($filters['kelompok']), fn ($q) => $q->inCategory($filters['kelompok'] === 'umum' ? null : Str::lower($filters['kelompok'])))
             ->get();
 
+        $item = fn (Faq $faq) => [
+            'id' => $faq->id,
+            'kelompok' => $faq->categoryLabel(),
+            'pertanyaan' => $faq->question,
+            'jawaban' => $faq->safeAnswer(),
+        ];
+
         return response()->json([
-            'data' => $faqs->map(fn (Faq $faq) => [
-                'id' => $faq->id,
-                'pertanyaan' => $faq->question,
-                'jawaban' => $faq->safeAnswer(),
-            ])->values(),
+            'data' => $faqs->map($item)->values(),
+            'total' => $faqs->count(),
+            // Published order already runs group by group (Umum last)
+            'kelompok' => $faqs->groupBy(fn (Faq $faq) => $faq->category ?? 'umum')
+                ->map(fn ($group, string $key) => [
+                    'nilai' => $key,
+                    'label' => $group->first()->categoryLabel(),
+                    'jumlah' => $group->count(),
+                    'pertanyaan' => $group->map($item)->values(),
+                ])->values(),
         ])->setPublic()->setMaxAge(300);
     }
 
@@ -217,6 +275,7 @@ class PublicController extends Controller
         return response()->json([
             'pesan' => 'Selamat datang, ' . $visitor->name . '. Silakan menunggu di ruang tamu.',
             'masuk' => $visitor->check_in_time?->toIso8601String(),
+            'ringkasan' => collect($visitor->confirmationSummary())->map(fn ($nilai, $label) => ['label' => $label, 'nilai' => $nilai])->values(),
         ], 201);
     }
 

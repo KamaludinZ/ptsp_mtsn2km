@@ -6,6 +6,7 @@ use App\Models\Service;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Peran pemroses naskah: the back-office units that receive dispositions
@@ -42,9 +43,12 @@ class ProcessorRoles
         $roles = Role::query()
             ->where('guard_name', 'web')
             ->whereIn('name', array_keys(ServiceDisposition::RECIPIENTS))
-            ->with(['users' => fn ($q) => $q->select('users.id', 'users.name')->orderBy('name')])
             ->get()
             ->keyBy('name');
+
+        // Loaded per role, not eagerly: Spatie resolves the user model from the role's own guard,
+        // and an eager load would fall back to the request's default guard (sanctum in the API).
+        $holders = $roles->map(fn (Role $role) => $role->users()->select('users.id', 'users.name')->orderBy('name')->get());
 
         return collect(ServiceDisposition::RECIPIENTS)
             ->map(fn (string $label, string $name) => [
@@ -53,11 +57,37 @@ class ProcessorRoles
                 'description' => self::DESCRIPTIONS[$name] ?? '',
                 'icon' => self::ICONS[$name] ?? 'heroicon-o-user-group',
                 'role' => $roles->get($name),
-                'holders' => $roles->get($name)?->users ?? collect(),
+                'holders' => $holders->get($name) ?? collect(),
                 'services' => Service::whereJsonContains('disposition_roles', $name)->count(),
             ])
             ->values()
             ->all();
+    }
+
+    /** @return array<int, string> Active staff who can open the back office: the only valid holders. */
+    public static function eligibleStaff(): array
+    {
+        return User::permission('backoffice.access')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
+    }
+
+    /**
+     * Penugasan staf: make exactly these users the holders of one unit.
+     *
+     * @param  array<int, int>  $userIds  eligibleStaff() keys
+     */
+    public static function assign(string $unit, array $userIds): Role
+    {
+        abort_unless(array_key_exists($unit, ServiceDisposition::RECIPIENTS), 404);
+
+        $role = Role::findOrCreate($unit, 'web');
+        $role->users()->sync($userIds);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        return $role;
     }
 
     /** @return array<int, string> The processor roles this user holds. */

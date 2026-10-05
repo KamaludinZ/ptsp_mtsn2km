@@ -1,9 +1,10 @@
 <x-filament-panels::page>
-    <x-filament::tabs label="Kategori layanan masuk">
+    <x-filament::tabs label="Saring kategori layanan masuk">
         @foreach ($this->getTabs() as $key => $tab)
             <x-filament::tabs.item
                 :active="(string) $activeTab === (string) $key"
-                :badge="$tab['count'] ?: null"
+                :badge="$tab['count']"
+                :badge-color="(string) $activeTab === (string) $key ? 'primary' : $tab['color']"
                 wire:click="$set('activeTab', {{ $key === '' ? 'null' : \Illuminate\Support\Js::from($key) }})"
             >
                 {{ $tab['label'] }}

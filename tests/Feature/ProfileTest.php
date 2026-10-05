@@ -104,4 +104,89 @@ class ProfileTest extends TestCase
 
         Livewire::test(EditProfile::class)->assertActionHidden('deleteAccount');
     }
+
+    public function test_changing_the_password_needs_the_current_one(): void
+    {
+        $user = User::factory()->create(['user_type' => 'umum']);
+        $this->actingAs($user);
+        \Filament\Facades\Filament::setCurrentPanel(\Filament\Facades\Filament::getPanel('portal'));
+        $page = \App\Filament\Shared\Pages\EditProfile::class;
+
+        Livewire::test($page)
+            ->fillForm(['password' => 'BaruSekali123', 'passwordConfirmation' => 'BaruSekali123'])
+            ->call('save')
+            ->assertHasFormErrors(['current_password' => 'required']);
+
+        Livewire::test($page)
+            ->fillForm(['current_password' => 'salah', 'password' => 'BaruSekali123', 'passwordConfirmation' => 'BaruSekali123'])
+            ->call('save')
+            ->assertHasFormErrors(['current_password']);
+
+        Livewire::test($page)
+            ->fillForm(['current_password' => 'password', 'password' => 'pendek', 'passwordConfirmation' => 'pendek'])
+            ->call('save')
+            ->assertHasFormErrors(['password']);
+
+        Livewire::test($page)
+            ->fillForm(['current_password' => 'password', 'password' => 'BaruSekali123', 'passwordConfirmation' => 'BaruSekali123'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('BaruSekali123', $user->fresh()->password));
+        $this->assertDatabaseHas('activity_log', ['causer_id' => $user->id, 'description' => 'Mengganti kata sandi']);
+    }
+
+    public function test_reset_password_page_is_in_indonesian_with_the_same_rules(): void
+    {
+        $user = User::factory()->create();
+        $token = \Illuminate\Support\Facades\Password::createToken($user);
+
+        $this->get(route('password.reset', ['token' => $token, 'email' => $user->email]))->assertOk()
+            ->assertSee('Atur Ulang Password')
+            ->assertSee('Simpan Password Baru')
+            ->assertSee('autocomplete="new-password"', false)
+            ->assertSee('Minimal 8 karakter');
+
+        $this->post(route('password.store'), ['token' => $token, 'email' => $user->email, 'password' => 'abcdefgh', 'password_confirmation' => 'abcdefgh'])
+            ->assertSessionHasErrors('password');
+        $this->post(route('password.store'), ['token' => $token, 'email' => $user->email, 'password' => 'abcdefg1', 'password_confirmation' => 'abcdefg1'])
+            ->assertSessionHasNoErrors();
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('abcdefg1', $user->fresh()->password));
+
+        $this->get(route('password.request'))->assertOk()->assertSee('Lupa Password?');
+    }
+
+    public function test_display_preferences_are_saved_and_applied_in_the_panel(): void
+    {
+        \App\Support\RoleAccess::sync();
+        $user = User::factory()->create(['user_type' => 'pegawai'])->assignRole('back_office');
+        $this->actingAs($user);
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+        Livewire::test(EditProfile::class)
+            ->assertFormSet(['display_mode' => 'system', 'display_size' => 'normal'])
+            ->fillForm(['display_mode' => 'dark', 'display_size' => 'large'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $prefs = \App\Support\DisplayPreferences::for($user->fresh());
+        $this->assertSame(['dark', 'large'], [$prefs['mode'], $prefs['size']]);
+        $this->assertNotNull($prefs['updated_at']);
+
+        $this->get('/cp')->assertOk()
+            ->assertSee('<style>html{font-size:112.5%}</style>', false)
+            ->assertSee('localStorage.setItem("theme","dark")', false);
+
+        // Saving again without changes keeps the same timestamp (the panel's own theme switcher is not overridden).
+        Livewire::test(EditProfile::class)->fillForm(['name' => 'Nama Baru'])->call('save');
+        $this->assertSame($prefs['updated_at'], \App\Support\DisplayPreferences::for($user->fresh())['updated_at']);
+    }
+
+    public function test_default_preferences_add_nothing_to_the_page(): void
+    {
+        \App\Support\RoleAccess::sync();
+        $user = User::factory()->create(['user_type' => 'pegawai'])->assignRole('back_office');
+
+        $this->actingAs($user)->get('/cp')->assertOk()->assertDontSee('display-pref-at', false)->assertDontSee('html{font-size', false);
+    }
 }

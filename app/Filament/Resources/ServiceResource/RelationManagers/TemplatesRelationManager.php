@@ -28,21 +28,7 @@ class TemplatesRelationManager extends RelationManager
 
     public function form(Form $form): Form
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('nama')->label('Nama template')->required()->maxLength(255)
-                ->placeholder('mis. Formulir permohonan surat keterangan'),
-            Forms\Components\FileUpload::make('file_path')->label('Berkas template')
-                ->disk(ServiceTemplate::DISK)
-                ->directory('service-templates')
-                ->visibility('private')
-                ->storeFileNamesIn('file_name')
-                ->acceptedFileTypes(self::MIME_TYPES)
-                ->helperText('PDF, Word, atau Excel; maksimal 5 MB.')
-                ->maxSize(5120)
-                ->required(),
-            Forms\Components\Toggle::make('is_required')->label('Wajib dilengkapi pemohon'),
-            Forms\Components\TextInput::make('sort')->label('Urutan')->numeric()->integer()->minValue(0)->default(0),
-        ])->columns(1);
+        return $form->schema(\App\Filament\Resources\ServiceTemplateResource::fields(withService: false))->columns(1);
     }
 
     public function table(Table $table): Table
@@ -55,7 +41,9 @@ class TemplatesRelationManager extends RelationManager
                     ->url(fn (ServiceTemplate $record) => $record->downloadUrl())
                     ->openUrlInNewTab(),
                 Tables\Columns\TextColumn::make('file_name')->label('Berkas')->placeholder('–')->toggleable(),
+                Tables\Columns\TextColumn::make('versi')->label('Versi')->formatStateUsing(fn (int $state) => 'v' . $state)->badge()->color('gray'),
                 Tables\Columns\IconColumn::make('is_required')->label('Wajib')->boolean(),
+                Tables\Columns\ToggleColumn::make('is_active')->label('Aktif'),
                 Tables\Columns\TextColumn::make('sort')->label('Urutan')->alignEnd(),
             ])
             ->headerActions([

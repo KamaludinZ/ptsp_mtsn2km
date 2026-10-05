@@ -26,7 +26,7 @@
         <p class="label">Bertemu Dengan</p>
         <p>{{ $visitor->person_to_meet ?? '-' }}</p>
         <p class="label">Waktu Check-in</p>
-        <p>{{ $visitor->check_in_time?->format('d M Y H:i') }}</p>
+        <p>{{ $visitor->check_in_time ? \App\Support\Formats::date($visitor->check_in_time) . ' ' . $visitor->check_in_time->format('H:i') : '' }}</p>
         @if($visitor->visitor_card_number)
             <p class="label">Nomor Kartu</p>
             <p>{{ $visitor->visitor_card_number }}</p>

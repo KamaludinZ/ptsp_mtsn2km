@@ -57,6 +57,28 @@ class ComplaintService
         }
     }
 
+    /**
+     * Rahasiakan identitas: a handler protects a reporter who did not ask for it
+     * (e.g. the report turns out sensitive). One way only, so an identity once
+     * hidden is never exposed again by a later click; the reason stays in the log.
+     */
+    public function makeConfidential(Complaint $complaint, User $actor, string $reason): void
+    {
+        if ($complaint->isSecret()) {
+            throw new TicketActionException('Identitas pelapor sudah dirahasiakan.');
+        }
+
+        $complaint->update(['is_confidential' => true]);
+
+        ComplaintStatusLog::create([
+            'complaint_id' => $complaint->id,
+            'from_status' => $complaint->status,
+            'to_status' => $complaint->status,
+            'actor_id' => $actor->id,
+            'internal_note' => 'Identitas pelapor dirahasiakan: ' . trim($reason),
+        ]);
+    }
+
     /** Validation rules for a report sent from the public pages (complaint|suggestion|whistleblowing). */
     public static function rulesFor(string $type): array
     {

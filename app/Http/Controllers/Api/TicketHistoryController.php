@@ -71,6 +71,7 @@ class TicketHistoryController extends Controller
                 'model_tanda_tangan' => $entry['signature_model'],
                 'model_tanda_tangan_label' => $entry['signature_model'] ? DispositionHistory::signatureModel($entry['signature_model']) : null,
                 'berkas_tanda_tangan' => $entry['signature_file'],
+                'didisposisi_oleh' => $entry['acknowledged_by'],
                 'penerima' => $entry['recipients'],
                 'instruksi' => $entry['instruction'],
                 'catatan' => $entry['note'],

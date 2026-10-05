@@ -76,6 +76,29 @@ class NotificationIntegrationsTest extends TestCase
         $this->assertStringNotContainsString('smtp.example.test', $raw);
     }
 
+    public function test_admin_picks_a_whatsapp_gateway(): void
+    {
+        $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
+
+        Livewire::test(NotificationIntegrations::class)
+            ->fillForm($this->form(['whatsapp' => ['is_enabled' => true, 'sender_id' => null]]))
+            ->set('data.whatsapp.provider', 'fonnte')
+            ->assertFormSet(['whatsapp.api_url' => 'https://api.fonnte.com/send'])
+            ->assertFormFieldIsHidden('whatsapp.sender_id')
+            ->call('submit')
+            ->assertHasNoFormErrors();
+
+        $wa = NotificationSetting::for('whatsapp');
+        $this->assertSame('fonnte', $wa->value('provider'));
+        $this->assertSame('https://api.fonnte.com/send', $wa->value('api_url'));
+
+        // A custom gateway still needs the sender id.
+        Livewire::test(NotificationIntegrations::class)
+            ->fillForm($this->form(['whatsapp' => ['is_enabled' => true, 'provider' => 'custom', 'sender_id' => null]]))
+            ->call('submit')
+            ->assertHasFormErrors(['whatsapp.sender_id' => 'required']);
+    }
+
     public function test_blank_secret_keeps_the_saved_one(): void
     {
         $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
@@ -235,5 +258,45 @@ class NotificationIntegrationsTest extends TestCase
         NotificationSetting::store('whatsapp', false, []);
         $this->assertFalse((new WhatsAppService())->sendMessage('6281234567', 'Halo'));
         Http::assertSentCount(1);
+    }
+
+    public function test_fonnte_gateway_gets_its_own_request_shape_and_refusals_count_as_failures(): void
+    {
+        Http::swap(new HttpFactory());
+        Http::fake(['api.fonnte.com/*' => Http::sequence()
+            ->push(['status' => true, 'id' => ['1']])
+            ->push(['status' => false, 'reason' => 'invalid token'])]);
+        NotificationSetting::store('whatsapp', true, ['provider' => 'fonnte', 'api_url' => 'https://api.fonnte.com/send', 'api_token' => 'tok-fonnte']);
+
+        $this->assertTrue((new WhatsAppService())->sendMessage('6281234567', 'Halo'));
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.fonnte.com/send'
+            && $request->hasHeader('Authorization', 'tok-fonnte')
+            && $request['target'] === '6281234567' && $request['message'] === 'Halo');
+
+        $this->assertSame('Gateway menolak pesan: invalid token', app(NotificationGateway::class)->testWhatsApp('6281234567'));
+    }
+
+    public function test_wablas_gateway_needs_no_sender_id(): void
+    {
+        Http::swap(new HttpFactory());
+        Http::fake(['solo.wablas.com/*' => Http::response(['status' => true])]);
+        NotificationSetting::store('whatsapp', true, ['provider' => 'wablas', 'api_url' => 'https://solo.wablas.com/api/send-message', 'api_token' => 'tok-wablas']);
+
+        $this->assertNull(app(NotificationGateway::class)->testWhatsApp('6281234567'));
+        Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'tok-wablas') && $request['phone'] === '6281234567');
+    }
+
+    public function test_gateway_is_chosen_through_the_api(): void
+    {
+        Sanctum::actingAs($this->user('ptsp@mtsn2malang.sch.id'));
+
+        $this->putJson('/api/integrasi/whatsapp', ['aktif' => true, 'provider' => 'surel', 'api_url' => 'https://api.fonnte.com/send', 'api_token' => 't'])
+            ->assertJsonValidationErrors(['provider', 'sender_id']);
+
+        $this->putJson('/api/integrasi/whatsapp', ['aktif' => true, 'provider' => 'fonnte', 'api_url' => 'https://api.fonnte.com/send', 'api_token' => 't'])
+            ->assertOk()
+            ->assertJsonPath('konfigurasi.provider', 'fonnte');
+
+        $this->patchJson('/api/integrasi/whatsapp/aktif', ['aktif' => true])->assertOk()->assertJsonPath('aktif', true);
     }
 }

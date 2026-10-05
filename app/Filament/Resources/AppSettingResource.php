@@ -19,7 +19,7 @@ class AppSettingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationLabel = 'Pengaturan Aplikasi';
+    protected static ?string $navigationLabel = 'Pengaturan Lanjutan';
 
     protected static ?string $navigationGroup = 'Manajemen Sistem';
 

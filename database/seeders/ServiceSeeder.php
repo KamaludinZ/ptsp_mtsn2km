@@ -40,9 +40,9 @@ class ServiceSeeder extends Seeder
                 ],
             ];
 
-            $createdCategories = [];
+            // Categories are kept on re-seeding (ServiceCatalogSeeder links the services).
             foreach ($categories as $category) {
-                $createdCategories[$category['name']] = ServiceCategory::create($category);
+                ServiceCategory::firstOrCreate(['name' => $category['name']], $category);
             }
 
             // Skip creating components for now - will be created per service

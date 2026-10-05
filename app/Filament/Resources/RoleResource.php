@@ -97,10 +97,25 @@ class RoleResource extends Resource
                     ->badge()
                     ->state(fn (RoleModel $record) => RoleAccess::isSystemRole($record->name) ? 'Bawaan' : 'Kustom')
                     ->color(fn (string $state) => $state === 'Bawaan' ? 'gray' : 'info'),
+                Tables\Columns\TextColumn::make('areas')
+                    ->label('Akses')
+                    ->badge()
+                    ->state(fn (RoleModel $record) => collect(RoleAccess::AREA_PERMISSIONS)
+                        ->filter(fn (string $permission) => $record->hasPermissionTo($permission))
+                        ->map(fn (string $permission) => ['frontdesk.access' => 'Loket', 'backoffice.access' => 'Back Office', 'supervision.access' => 'Pengawasan'][$permission])
+                        ->values()->all() ?: ['Portal pemohon'])
+                    ->color(fn (string $state) => match ($state) {
+                        'Loket' => 'warning',
+                        'Back Office' => 'primary',
+                        'Pengawasan' => 'info',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('users_count')
                     ->label('Pengguna')
                     ->sortable()
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->color('primary')
+                    ->url(fn (RoleModel $record) => UserResource::getUrl('index', ['tableFilters[roles][values][0]' => $record->id])),
                 Tables\Columns\TextColumn::make('permissions_count')
                     ->label('Izin')
                     ->sortable()

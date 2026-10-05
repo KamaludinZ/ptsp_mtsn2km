@@ -32,6 +32,7 @@ class TicketTracking
             'ticket_number' => $ticket->ticket_number,
             'status' => $ticket->status,
             'status_label' => TicketLabels::status($ticket->status),
+            'status_color' => StatusBadge::for($ticket->status)['color'],
             'submitted_at' => $ticket->created_at?->toIso8601String(),
             'estimated_completion' => $ticket->estimated_completion_date?->toDateString(),
             'verified_owner' => $owner,

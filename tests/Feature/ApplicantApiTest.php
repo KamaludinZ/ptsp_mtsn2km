@@ -115,6 +115,25 @@ class ApplicantApiTest extends TestCase
         $this->assertStringNotContainsString('Catatan internal petugas', $this->getJson('/api/permohonan/' . $this->ticket->ticket_number)->getContent());
     }
 
+    public function test_applicant_sees_follow_up_messages_meant_for_them(): void
+    {
+        $officer = User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail();
+        app(TicketService::class)->addNote($this->ticket, 'Mohon unggah fotokopi KK.', $officer, 'request_documents', true);
+        app(TicketService::class)->addNote($this->ticket, 'Rahasia petugas.', $officer, 'internal');
+        Sanctum::actingAs($this->applicant);
+
+        $content = $this->getJson('/api/permohonan/' . $this->ticket->ticket_number)->assertOk()->getContent();
+        $this->assertStringContainsString('Mohon unggah fotokopi KK.', $content);
+        $this->assertStringNotContainsString('Rahasia petugas.', $content);
+
+        $this->actingAs($this->applicant);
+        Filament::setCurrentPanel(Filament::getPanel('portal'));
+        Livewire::test(PortalViewTicket::class, ['record' => $this->ticket->getRouteKey()])
+            ->assertSee('Pesan untuk pemohon')
+            ->assertSee('Mohon unggah fotokopi KK.')
+            ->assertDontSee('Rahasia petugas.');
+    }
+
     public function test_portal_lets_the_applicant_add_documents(): void
     {
         Storage::fake('local');

@@ -47,7 +47,8 @@ class DispositionActionTest extends TestCase
         $this->seed();
 
         $this->headmaster = User::where('email', 'kepsek@mtsn2malang.sch.id')->firstOrFail();
-        $this->ticket = Ticket::firstOrFail();
+        // A seeded ticket nobody has disposed yet (unordered first() is not stable on PostgreSQL).
+        $this->ticket = Ticket::whereNotIn('id', DispositionLog::select('ticket_id'))->orderBy('id')->firstOrFail();
         $this->ticket->service->update(['approval_required' => true, 'approval_roles' => null, 'approval_users' => null]);
         $this->ticket->update(['status' => 'verified', 'approval_required' => true, 'approval_status' => 'pending']);
     }
@@ -95,6 +96,40 @@ class DispositionActionTest extends TestCase
             ->assertSee('LEMBAR DISPOSISI')
             ->assertSee($this->ticket->ticket_number)
             ->assertSee('Waka Sarpras');
+    }
+
+    public function test_disposition_sheet_lists_master_instructions_and_ticks_the_chosen_one(): void
+    {
+        \App\Models\PersuratanMaster::create(['type' => 'instruksi_disposisi', 'nama' => 'Mohon segera dijadwalkan']);
+
+        $this->actingAs($this->headmaster)
+            ->get(route('tickets.disposition-sheet', $this->ticket))
+            ->assertOk()
+            ->assertSee('Mohon segera dijadwalkan')
+            ->assertDontSee('✓ </span>Mohon segera dijadwalkan', false);
+
+        app(TicketService::class)->dispose($this->ticket, $this->headmaster, 'acknowledged_by', ['tata_usaha'], 'Koordinasikan dengan komite');
+
+        $this->get(route('tickets.disposition-sheet', $this->ticket))
+            ->assertOk()
+            ->assertSee('Mohon segera dijadwalkan')
+            ->assertSee('<span class="box">✓</span>Koordinasikan dengan komite', false);
+    }
+
+    public function test_disposition_can_be_marked_on_behalf_of_a_leader(): void
+    {
+        app(TicketService::class)->dispose($this->ticket, $this->headmaster, 'acknowledged_by', ['tata_usaha'], 'Untuk diproses', 'Arahan lewat telepon', acknowledgedBy: '  Kepala Madrasah  Drs. Ahmad ');
+
+        $log = DispositionLog::where('ticket_id', $this->ticket->id)->firstOrFail();
+        $this->assertSame('Kepala Madrasah Drs. Ahmad', $log->acknowledged_by_name);
+        $this->assertStringContainsString('Telah didisposisi oleh Kepala Madrasah Drs. Ahmad.', $this->ticket->fresh()->approval_notes);
+        $this->assertSame('Kepala Madrasah Drs. Ahmad', collect(\App\Support\DispositionHistory::forTicket($this->ticket))->last()['acknowledged_by']);
+    }
+
+    public function test_on_behalf_name_is_ignored_for_signed_dispositions(): void
+    {
+        app(TicketService::class)->dispose($this->ticket, $this->headmaster, 'ttd_upload', acknowledgedBy: 'Seseorang');
+        $this->assertNull(DispositionLog::where('ticket_id', $this->ticket->id)->firstOrFail()->acknowledged_by_name);
     }
 
     public function test_front_desk_cannot_print_the_disposition_sheet(): void
@@ -453,6 +488,23 @@ class DispositionActionTest extends TestCase
 
         // Deciding twice is refused with the service's message.
         $this->postJson($url, ['keputusan' => 'tolak', 'catatan' => 'x'])->assertUnprocessable()->assertJsonPath('message', 'Tiket ini tidak sedang menunggu disposisi.');
+    }
+
+    public function test_disposition_on_behalf_of_a_leader_through_the_api(): void
+    {
+        $url = '/api/disposisi/' . $this->ticket->ticket_number;
+        Sanctum::actingAs($this->headmaster);
+
+        $this->postJson($url, ['keputusan' => 'disposisi', 'model_tanda_tangan' => 'acknowledged_by'])
+            ->assertUnprocessable()->assertJsonValidationErrors('didisposisi_oleh');
+
+        $this->postJson($url, ['keputusan' => 'disposisi', 'model_tanda_tangan' => 'acknowledged_by', 'didisposisi_oleh' => 'Kepala Madrasah', 'penerima' => ['tata_usaha']])
+            ->assertOk()
+            ->assertJsonPath('disposisi.acknowledged_by', 'Kepala Madrasah');
+
+        $this->getJson('/api/tiket/' . $this->ticket->ticket_number . '/disposisi')
+            ->assertOk()
+            ->assertJsonPath('disposisi.0.didisposisi_oleh', 'Kepala Madrasah');
     }
 
     public function test_leader_uploads_the_signed_sheet_later(): void

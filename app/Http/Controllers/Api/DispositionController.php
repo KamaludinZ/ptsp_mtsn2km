@@ -60,12 +60,13 @@ class DispositionController extends Controller
             'penerima' => ['nullable', 'array'],
             'penerima.*' => [Rule::in(array_keys(ServiceDisposition::RECIPIENTS))],
             'instruksi' => ['nullable', 'string', 'max:255'],
+            'didisposisi_oleh' => ['required_if:model_tanda_tangan,acknowledged_by', 'nullable', 'string', 'max:255'],
             'catatan' => ['required_if:keputusan,tolak', 'nullable', 'string', 'max:500'],
         ]);
 
         try {
             $data['keputusan'] === 'disposisi'
-                ? $this->tickets->dispose($ticket, $request->user(), $data['model_tanda_tangan'], $data['penerima'] ?? [], $data['instruksi'] ?? null, $data['catatan'] ?? null)
+                ? $this->tickets->dispose($ticket, $request->user(), $data['model_tanda_tangan'], $data['penerima'] ?? [], $data['instruksi'] ?? null, $data['catatan'] ?? null, acknowledgedBy: $data['didisposisi_oleh'] ?? null)
                 : $this->tickets->decide($ticket, false, $request->user(), null, $data['catatan']);
         } catch (TicketActionException $e) {
             return response()->json(['message' => $e->getMessage()], 422);

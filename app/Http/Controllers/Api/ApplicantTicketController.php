@@ -83,6 +83,30 @@ class ApplicantTicketController extends Controller
     }
 
     /** POST /api/permohonan (multipart): layanan, keterangan, prioritas, berkas[] */
+    /** GET /api/permohonan/layanan: the services this applicant can request online now. */
+    public function services(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'data' => Service::requestable($user->user_type, 'online')
+                ->with(['categories:id,name'])
+                ->withCount(['activeTemplates as jumlah_template'])
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Service $service) => [
+                    'slug' => $service->slug,
+                    'nama' => $service->name,
+                    'kategori' => $service->categories->pluck('name')->values(),
+                    'jalur' => $service->mode,
+                    'waktu_penyelesaian' => $service->processing_time,
+                    'biaya' => (float) $service->fee,
+                    'jumlah_template' => $service->jumlah_template,
+                    'template' => route('api.publik.layanan.template', $service->slug),
+                ]),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -97,9 +121,8 @@ class ApplicantTicketController extends Controller
         ]);
 
         $service = Service::query()
-            ->where('is_active', true)
             ->where('slug', $data['layanan'])
-            ->availableFor($user->user_type)
+            ->requestable($user->user_type, 'online')
             ->first();
 
         if (! $service) {

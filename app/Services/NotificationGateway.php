@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\NotificationSetting;
+use App\Support\WhatsAppGateways;
 use Illuminate\Mail\Mailer;
 use Illuminate\Mail\Message;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -58,22 +58,23 @@ class NotificationGateway
         $url = $wa->value('api_url', config('whatsapp.api_url'));
         $token = $wa->value('api_token', config('whatsapp.api_token'));
         $sender = $wa->value('sender_id', config('whatsapp.sender_id'));
+        $provider = $wa->value('provider', 'custom');
 
-        if (! $url || ! $token || ! $sender) {
-            return 'URL API, token, dan ID pengirim WhatsApp belum lengkap.';
+        if ($missing = WhatsAppGateways::missing($provider, $url, $token, $sender)) {
+            return $missing;
         }
 
         try {
-            $response = Http::timeout(15)->withToken($token)->post($url, [
-                'sender' => $sender,
-                'number' => $number,
-                'message' => 'Pesan uji dari ' . app_brand_name() . '. Pengaturan WhatsApp sudah benar.',
-            ]);
+            $response = WhatsAppGateways::send($provider, $url, $token, $sender, $number, 'Pesan uji dari ' . app_brand_name() . '. Pengaturan WhatsApp sudah benar.');
         } catch (Throwable $e) {
             return self::readable($e->getMessage());
         }
 
-        return $response->successful() ? null : 'Gateway menjawab HTTP ' . $response->status() . '.';
+        return match (true) {
+            WhatsAppGateways::accepted($response) => null,
+            $response->successful() => 'Gateway menolak pesan: ' . self::readable((string) ($response->json('reason') ?? $response->json('message') ?? 'tanpa keterangan')),
+            default => 'Gateway menjawab HTTP ' . $response->status() . '.',
+        };
     }
 
     /** Errors can echo credentials (e.g. SMTP AUTH); keep them short and generic. */

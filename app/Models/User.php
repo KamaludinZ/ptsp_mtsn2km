@@ -50,6 +50,8 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
+        'preferences' => 'array',
         'password' => 'hashed',
         'is_active' => 'boolean',
     ];
@@ -79,6 +81,13 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     public function isType($type)
     {
         return $this->user_type === $type;
+    }
+
+    /** Active staff a ticket can be assigned to (the panel's and the API's "Tugaskan petugas"). */
+    public function scopeAssignable($query)
+    {
+        return $query->where('is_active', true)
+            ->where(fn ($q) => $q->whereIn('user_type', ['guru', 'pegawai'])->orWhereHas('roles', fn ($r) => $r->whereIn('name', self::STAFF_ROLES)));
     }
 
     /**
@@ -187,5 +196,17 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
             ->logOnly(['name', 'email', 'user_type', 'is_active'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    /** Notifikasi in-app, newest first (App\Models\Notification: linked to their request). */
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable')->latest();
+    }
+
+    /** E-mail addresses are case-insensitive: always stored in lower case. */
+    public function setEmailAttribute(?string $value): void
+    {
+        $this->attributes['email'] = $value === null ? null : mb_strtolower(trim($value));
     }
 }

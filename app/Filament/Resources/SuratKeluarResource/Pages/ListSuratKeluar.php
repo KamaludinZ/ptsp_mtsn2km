@@ -14,6 +14,7 @@ use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
@@ -89,8 +90,12 @@ class ListSuratKeluar extends ListRecords
                             PersuratanFields::tujuan(),
                             TextInput::make('perihal')->label('Perihal')->maxLength(255),
                             PersuratanFields::jenis(),
-                            PersuratanFields::klasifikasi()->live(debounce: 500),
+                            PersuratanFields::klasifikasi()->live(),
+                            Textarea::make('lampiran')->label('Lampiran')->rows(2)->maxLength(1000),
+                            SuratKeluarResource::attachmentUpload()
+                                ->visible(fn (Get $get) => (int) $get('count') === 1),
                             PersuratanFields::tembusan(),
+                            Textarea::make('keterangan')->label('Keterangan')->rows(2)->maxLength(1000),
                         ]),
                     Placeholder::make('preview')
                         ->label('Nomor yang akan diberikan')

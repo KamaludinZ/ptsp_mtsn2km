@@ -32,3 +32,9 @@ Schedule::call(function () {
         Artisan::call('app:create-quarterly-survey-archives', ['--type' => $type, '--year' => $previous->year, '--quarter' => 'Q' . $previous->quarter]);
     }
 })->quarterlyOn(1, '01:00')->name('survey-quarterly-archive');
+
+// Notifikasi in-app: drop old notifications every night.
+Schedule::command('notifications:prune')->dailyAt('02:30')->name('notifications-prune');
+
+// Pengingat permohonan tertunda: every working day at 07:00.
+Schedule::command('tickets:remind-pending')->weekdays()->dailyAt('07:00')->name('tickets-remind-pending')->withoutOverlapping();

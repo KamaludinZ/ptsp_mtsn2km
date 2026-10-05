@@ -778,12 +778,36 @@
         @endforeach
     </div>
 
-    @if($services->count() === 0)
-    <div class="text-center py-5" data-aos="fade-up">
-        <i class="fas fa-inbox text-muted" style="font-size: 4rem;"></i>
-        <h4 class="mt-3 text-muted">Belum ada layanan tersedia</h4>
-        <p class="text-muted">Silakan cek kembali nanti</p>
+    {{-- Filter matched nothing (shown by filterServices()) --}}
+    <div class="text-center py-5 d-none" id="noResults" role="status" aria-live="polite">
+        <i class="fas fa-search text-muted" style="font-size: 3rem;" aria-hidden="true"></i>
+        <h2 class="h5 mt-3 text-muted">Tidak ada layanan yang cocok</h2>
+        <p class="text-muted mb-3">Coba kata kunci lain atau pilih kategori lain.</p>
+        <button type="button" class="ann-btn ann-btn--ghost" onclick="resetFilter()"><i class="fas fa-rotate-left me-1" aria-hidden="true"></i>Tampilkan semua layanan</button>
     </div>
+
+    @if ($loadError ?? false)
+        {{-- The catalog could not be loaded (e.g. the database is unreachable) --}}
+        <div class="text-center py-5" role="alert">
+            <i class="fas fa-triangle-exclamation text-warning" style="font-size: 3rem;" aria-hidden="true"></i>
+            <h2 class="h5 mt-3">Katalog layanan gagal dimuat</h2>
+            <p class="text-muted mb-3">Terjadi gangguan sementara. Silakan coba lagi beberapa saat lagi.</p>
+            <a href="{{ request()->fullUrl() }}" class="btn btn-primary"><i class="fas fa-rotate-right me-1" aria-hidden="true"></i>Coba lagi</a>
+        </div>
+    @elseif ($services->count() === 0)
+        <div class="text-center py-5" data-aos="fade-up">
+            <i class="fas fa-inbox text-muted" style="font-size: 4rem;" aria-hidden="true"></i>
+            <h2 class="h5 mt-3 text-muted">
+                {{ $user ? 'Belum ada layanan untuk peran Anda' : 'Belum ada layanan tersedia' }}
+            </h2>
+            <p class="text-muted">
+                @if ($user)
+                    Hubungi petugas PTSP bila Anda memerlukan layanan yang belum tercantum.
+                @else
+                    Silakan cek kembali nanti, atau <a href="{{ route('login') }}">masuk</a> untuk melihat layanan khusus sesuai peran Anda.
+                @endif
+            </p>
+        </div>
     @endif
 </div>
 @endsection
@@ -814,26 +838,25 @@ function setView(view) {
 }
 
 function filterServices() {
-    const search = document.getElementById('searchInput').value.toLowerCase();
+    const search = document.getElementById('searchInput').value.toLowerCase().trim();
     const category = document.getElementById('categoryFilter').value;
-    const items = document.querySelectorAll('.service-item');
     let count = 0;
 
-    items.forEach(item => {
-        const name = item.getAttribute('data-name');
+    // Each service has a card in the grid and in the list view; count the grid only.
+    document.querySelectorAll('.service-item').forEach(item => {
+        const name = item.getAttribute('data-name') || '';
         const cat = item.getAttribute('data-category');
-        const matchSearch = !search || name.includes(search);
-        const matchCategory = !category || cat === category;
+        const visible = (!search || name.includes(search)) && (!category || cat === category);
 
-        if (matchSearch && matchCategory) {
-            item.classList.remove('d-none');
+        item.classList.toggle('d-none', !visible);
+        if (visible && item.closest('#gridView')) {
             count++;
-        } else {
-            item.classList.add('d-none');
         }
     });
 
     document.getElementById('serviceCount').textContent = count;
+    const total = document.querySelectorAll('#gridView .service-item').length;
+    document.getElementById('noResults').classList.toggle('d-none', count > 0 || total === 0);
 }
 
 function resetFilter() {

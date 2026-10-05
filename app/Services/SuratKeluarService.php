@@ -6,6 +6,7 @@ use App\Exceptions\TicketActionException;
 use App\Models\SuratKeluar;
 use App\Models\SuratKeluarBatch;
 use App\Models\User;
+use App\Support\Persuratan;
 use App\Support\SuratKeluarNumber;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
@@ -51,8 +52,11 @@ class SuratKeluarService
                 'created_by' => $pembuat->id,
             ]);
 
+            // Uploaded files belong to one letter only, never to a whole batch.
+            $fields = ['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'lampiran', 'tembusan', 'keterangan', ...($count === 1 ? ['berkas_lampiran', 'berkas_lampiran_nama'] : [])];
+
             $letters = collect(range($last + 1, $last + $count))->map(fn (int $urut) => SuratKeluar::create([
-                ...array_intersect_key($data, array_flip(['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'lampiran', 'tembusan', 'keterangan'])),
+                ...array_intersect_key($data, array_flip($fields)),
                 'tahun' => $year,
                 'nomor_urut' => $urut,
                 'nomor_surat' => SuratKeluarNumber::format($urut, $tanggal, $data['klasifikasi'] ?? null),
@@ -62,6 +66,7 @@ class SuratKeluarService
             ]));
 
             DB::table('surat_sequences')->where('tahun', $year)->update(['last_number' => $last + $count, 'updated_at' => now()]);
+            $this->rememberManual($data);
 
             return $letters;
         });
@@ -83,13 +88,24 @@ class SuratKeluarService
         }
 
         $letter->fill([
-            ...array_intersect_key($data, array_flip(['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'lampiran', 'tembusan', 'keterangan'])),
+            ...array_intersect_key($data, array_flip(['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'lampiran', 'tembusan', 'keterangan', 'berkas_lampiran', 'berkas_lampiran_nama'])),
             'tanggal_surat' => $date,
         ]);
         $letter->nomor_surat = SuratKeluarNumber::format($letter->nomor_urut, $date, $letter->klasifikasi);
         $letter->save();
+        $this->rememberManual($data);
 
         return $letter;
+    }
+
+    /** Hand-typed letter values become inactive Master Persuratan choices for review. */
+    private function rememberManual(array $data): void
+    {
+        Persuratan::rememberManual([
+            'tujuan_naskah' => $data['tujuan_surat'] ?? null,
+            'jenis_surat' => $data['jenis_surat'] ?? null,
+            'tembusan' => $data['tembusan'] ?? null,
+        ]);
     }
 
     /** The number the next request would receive for $year. */

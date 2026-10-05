@@ -114,7 +114,7 @@
 
     <!-- Filter and Search Section - maintaining original functionality with enhanced UI -->
     @php
-        $categoryOptions = ['akademik' => 'Akademik', 'administrasi' => 'Administrasi', 'kegiatan' => 'Kegiatan', 'lainnya' => 'Lainnya'];
+        $categoryOptions = $categories ?? [];
         $activeFilters = array_filter([
             'search' => request('search') ? 'Cari: ' . request('search') : null,
             'category' => request('category') ? 'Kategori: ' . ($categoryOptions[request('category')] ?? request('category')) : null,
@@ -204,7 +204,7 @@
                                     <i class="fas fa-calendar mr-1"></i> {{ $pengumuman->publish_date->format('d M Y') }}
                                     <span class="mx-2">|</span>
                                     <span class="flex items-center">
-                                        <i class="fas fa-user mr-1"></i> {{ $pengumuman->author ?? 'Admin' }}
+                                        <i class="fas fa-user mr-1"></i> {{ $pengumuman->authorName() }}
                                         @if($pengumuman->attachment || $pengumuman->url)
                                             <span class="flex gap-1 ml-2">
                                                 @if($pengumuman->attachment)

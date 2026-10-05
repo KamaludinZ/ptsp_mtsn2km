@@ -83,7 +83,7 @@ class RegisterService extends Page implements HasForms
                     ->schema([
                         Select::make('service_id')
                             ->label('Layanan')
-                            ->options(fn (Get $get) => Service::where('is_active', true)
+                            ->options(fn (Get $get) => Service::requestable($get('applicant_type') ?: 'umum', 'offline')
                                 ->availableFor($get('applicant_type') ?: 'umum')
                                 ->orderBy('name')
                                 ->pluck('name', 'id'))
@@ -99,7 +99,7 @@ class RegisterService extends Page implements HasForms
                         Placeholder::make('service_templates')
                             ->label('Template berkas')
                             ->helperText('Cetakkan atau kirimkan template ini kepada pemohon bila belum dilengkapi.')
-                            ->visible(fn (Get $get) => (bool) Service::find($get('service_id'))?->templates->isNotEmpty())
+                            ->visible(fn (Get $get) => (bool) Service::find($get('service_id'))?->activeTemplates->isNotEmpty())
                             ->content(fn (Get $get) => ServiceSummary::templates(Service::find($get('service_id'))))
                             ->columnSpanFull(),
                         Textarea::make('description')->label('Keperluan / keterangan')->required()->maxLength(1000)->rows(4)->columnSpanFull(),

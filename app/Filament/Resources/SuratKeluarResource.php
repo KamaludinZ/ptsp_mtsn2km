@@ -7,14 +7,19 @@ use App\Filament\Resources\SuratKeluarResource\Pages;
 use App\Models\SuratKeluar;
 use App\Services\SuratKeluarService;
 use App\Support\SuratKeluarNumber;
+use App\Support\TicketDocuments;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\HtmlString;
 
 /**
  * Surat keluar: the outgoing-letter register. Numbers run 1-9999 and
@@ -68,12 +73,79 @@ class SuratKeluarResource extends Resource
                 PersuratanFields::jenis(),
                 PersuratanFields::klasifikasi(),
             ]),
-            Forms\Components\Textarea::make('lampiran')->label('Lampiran')->rows(2)->maxLength(1000),
+            Forms\Components\Textarea::make('lampiran')->label('Lampiran')->rows(2)->maxLength(1000)
+                ->helperText('Keterangan lampiran yang tertulis di surat, mis. "1 berkas".'),
+            static::attachmentUpload(),
             PersuratanFields::tembusan(),
             Forms\Components\Textarea::make('keterangan')->label('Keterangan')->rows(2)->maxLength(1000),
             Forms\Components\Placeholder::make('pembuat')->label('Pembuat')
                 ->content(fn (?SuratKeluar $record) => $record?->pembuat?->name ?? auth()->user()->name),
         ])->columns(1);
+    }
+
+    /** Uploaded attachments kept privately; their original names go to berkas_lampiran_nama. */
+    public static function attachmentUpload(): Forms\Components\FileUpload
+    {
+        return Forms\Components\FileUpload::make('berkas_lampiran')->label('Berkas lampiran')
+            ->multiple()
+            ->maxFiles(10)
+            ->disk('local')
+            ->directory('surat-keluar')
+            ->visibility('private')
+            ->storeFileNamesIn('berkas_lampiran_nama')
+            ->acceptedFileTypes(TicketDocuments::REQUIREMENT_MIME_TYPES)
+            ->maxSize(10240)
+            ->helperText('PDF, gambar, atau Word; maks. 10 berkas @ 10 MB.');
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist->schema([
+            Section::make('Surat')
+                ->icon('heroicon-o-envelope-open')
+                ->columns(['default' => 1, 'sm' => 2, 'lg' => 4])
+                ->schema([
+                    TextEntry::make('nomor_surat')->label('Nomor surat')->copyable()->weight('semibold'),
+                    TextEntry::make('tanggal_surat')->label('Tanggal surat')->date('d M Y'),
+                    TextEntry::make('jenis_surat')->label('Jenis')->badge()->color('gray')->placeholder('–'),
+                    TextEntry::make('klasifikasi')->label('Klasifikasi')->placeholder('–'),
+                    TextEntry::make('tujuan_surat')->label('Tujuan')->placeholder('Belum diisi')->columnSpanFull(),
+                    TextEntry::make('perihal')->label('Perihal')->placeholder('Belum diisi')->weight('semibold')->columnSpanFull(),
+                    TextEntry::make('tembusan')->label('Tembusan')->placeholder('–')
+                        ->formatStateUsing(fn (string $state) => new HtmlString(collect(preg_split('/\R/', $state))->filter()->map(fn ($line, $i) => ($i + 1) . '. ' . e($line))->implode('<br>')))
+                        ->columnSpan(['default' => 1, 'sm' => 2]),
+                    TextEntry::make('keterangan')->label('Keterangan')->placeholder('–')->columnSpan(['default' => 1, 'sm' => 2]),
+                ]),
+            Section::make('Lampiran')
+                ->icon('heroicon-o-paper-clip')
+                ->schema([
+                    TextEntry::make('lampiran')->label('Keterangan lampiran')->placeholder('–'),
+                    TextEntry::make('berkas')->label('Berkas')
+                        ->state(function (SuratKeluar $record) {
+                            $files = $record->berkas_lampiran ?? [];
+
+                            if (! $files) {
+                                return 'Belum ada berkas diunggah.';
+                            }
+
+                            return new HtmlString(collect($files)->map(fn (string $path, int $index) => sprintf(
+                                '<a href="%s" target="_blank" rel="noopener" style="color:rgb(var(--primary-600));text-decoration:underline">%s</a> · <a href="%s" style="color:rgb(var(--primary-600))">Unduh</a>',
+                                e(route('surat-keluar.lampiran', [$record, $index])),
+                                e($record->attachmentName($path)),
+                                e(route('surat-keluar.lampiran', [$record, $index, 'unduh' => 1])),
+                            ))->implode('<br>'));
+                        }),
+                ]),
+            Section::make('Pencatatan')
+                ->icon('heroicon-o-user')
+                ->columns(['default' => 1, 'sm' => 3])
+                ->collapsed()
+                ->schema([
+                    TextEntry::make('pembuat.name')->label('Pembuat')->placeholder('–'),
+                    TextEntry::make('created_at')->label('Dicatat')->dateTime('d M Y H:i'),
+                    TextEntry::make('updated_at')->label('Terakhir diubah')->dateTime('d M Y H:i'),
+                ]),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -122,6 +194,16 @@ class SuratKeluarResource extends Resource
                     ),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()->label('Detail'),
+                Tables\Actions\Action::make('lampiran')
+                    ->label(fn (SuratKeluar $record) => 'Lampiran (' . count($record->berkas_lampiran ?? []) . ')')
+                    ->icon('heroicon-m-paper-clip')
+                    ->color('gray')
+                    ->visible(fn (SuratKeluar $record) => filled($record->berkas_lampiran))
+                    ->url(fn (SuratKeluar $record) => count($record->berkas_lampiran) === 1
+                        ? route('surat-keluar.lampiran', [$record, 0])
+                        : static::getUrl('view', ['record' => $record]))
+                    ->openUrlInNewTab(fn (SuratKeluar $record) => count($record->berkas_lampiran) === 1),
                 Tables\Actions\EditAction::make()
                     ->label(fn (SuratKeluar $record) => $record->isDraft() ? 'Lengkapi' : 'Ubah')
                     ->modalHeading(fn (SuratKeluar $record) => 'Data surat ' . $record->nomor_surat)
@@ -136,6 +218,7 @@ class SuratKeluarResource extends Resource
     {
         return [
             'index' => Pages\ListSuratKeluar::route('/'),
+            'view' => Pages\ViewSuratKeluar::route('/{record}'),
         ];
     }
 }

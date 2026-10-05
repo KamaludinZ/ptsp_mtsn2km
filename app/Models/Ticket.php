@@ -36,6 +36,8 @@ class Ticket extends Model implements HasMedia
         'is_approved',
         'approved_by',
         'approved_at',
+        'incoming_category',
+        'disposition_category',
         'approval_notes',
         'signature_type',
         'disposition_recipients',
@@ -48,12 +50,22 @@ class Ticket extends Model implements HasMedia
     /** Set while TicketService changes a ticket: it writes the history itself. */
     public static bool $historyManaged = false;
 
+    /** Who TicketService is acting for (also in queues and the console): recorded as the status changer. */
+    public static ?int $actingUserId = null;
+
     protected static function boot()
     {
         parent::boot();
 
         // Safety net for the riwayat layanan: a status change made outside
         // TicketService (console, imports, future code) still leaves a trace.
+        // Who changed the status: read by the tickets_record_status trigger (riwayat status).
+        static::saving(function (Ticket $ticket) {
+            if ($ticket->isDirty('status') && ! $ticket->isDirty('updated_by') && ($actor = static::$actingUserId ?? auth()->id())) {
+                $ticket->updated_by = $actor;
+            }
+        });
+
         static::updated(function (Ticket $ticket) {
             if (static::$historyManaged || ! $ticket->wasChanged('status')) {
                 return;
@@ -147,6 +159,50 @@ class Ticket extends Model implements HasMedia
     }
 
     /** Open tickets past their service-standard target date. */
+    /** Riwayat status, oldest first (one row per status entered). */
+    public function statusHistories()
+    {
+        return $this->hasMany(TicketStatusHistory::class)->orderBy('id'); // insertion order = order of changes
+    }
+
+    /** In-app notifications about this request (for staff and the applicant). */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /** The status change that put the ticket in its current status. */
+    public function latestStatusHistory()
+    {
+        return $this->hasOne(TicketStatusHistory::class)->latestOfMany('id');
+    }
+
+    /** When the ticket entered its current status. */
+    public function statusSince(): \Illuminate\Support\Carbon
+    {
+        return $this->latestStatusHistory?->changed_at ?? $this->created_at ?? now();
+    }
+
+    /** Pencarian kata kunci (number, applicant, WhatsApp, service, officer, text); see TicketSearch. */
+    public function scopeSearch($query, ?string $term)
+    {
+        return \App\Support\TicketSearch::apply($query, $term);
+    }
+
+    /** Kategori layanan masuk: disposisi, tembusan, koordinasi or arahan. */
+    public function scopeIncomingCategory($query, string $category)
+    {
+        return \App\Support\IncomingCategory::scope($query, $category);
+    }
+
+    /** Submitted between two dates (inclusive, either may be null). */
+    public function scopeSubmittedBetween($query, $from = null, $until = null)
+    {
+        return $query
+            ->when($from, fn ($q) => $q->whereDate('created_at', '>=', $from))
+            ->when($until, fn ($q) => $q->whereDate('created_at', '<=', $until));
+    }
+
     public function scopeOverdue($query)
     {
         return $query->open()
@@ -312,6 +368,7 @@ class Ticket extends Model implements HasMedia
     const STATUS_SUBMITTED = 'submitted';
     const STATUS_VERIFIED = 'verified';
     const STATUS_IN_PROCESS = 'in_process';
+    /** @deprecated Never stored: approval is tracked in approval_status. */
     const STATUS_PENDING_APPROVAL = 'pending_approval';
     const STATUS_APPROVED = 'approved';
     const STATUS_REJECTED = 'rejected';
@@ -332,34 +389,10 @@ class Ticket extends Model implements HasMedia
     /**
      * Generate ticket number based on mode
      */
-    public function generateTicketNumber()
+    /** Same numbering as TicketService (configurable prefix, atomic per month). */
+    public function generateTicketNumber(): string
     {
-        $prefix = match($this->mode) {
-            'online' => 'N',    // N for online
-            'offline' => 'F',   // F for offline
-            'hybrid' => 'H',    // H for hybrid
-            default => 'N'
-        };
-        
-        $yearMonth = now()->format('Ym');
-        
-        // Get the next sequence number - now with the new format (F-202511-001)
-        $lastTicket = static::where('ticket_number', 'LIKE', "{$prefix}-{$yearMonth}-%")
-            ->orderByRaw("CAST(RIGHT(ticket_number, 3) AS INTEGER) DESC")
-            ->first();
-        
-        $sequence = 1;
-        if ($lastTicket) {
-            $lastSequence = substr($lastTicket->ticket_number, -3);
-            if (is_numeric($lastSequence)) {
-                $sequence = intval($lastSequence) + 1;
-            }
-        }
-        
-        // Format the sequence number to be 3 digits
-        $sequenceNumber = str_pad($sequence, 3, '0', STR_PAD_LEFT);
-        
-        return "{$prefix}-{$yearMonth}-{$sequenceNumber}";
+        return \App\Services\TicketService::nextTicketNumber();
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PengumumanView extends Model
 {
@@ -14,8 +15,7 @@ class PengumumanView extends Model
         'ip_address',
     ];
 
-
-    public function pengumuman()
+    public function pengumuman(): BelongsTo
     {
         return $this->belongsTo(Pengumuman::class);
     }

@@ -67,6 +67,15 @@ class PublicApiTest extends TestCase
             $this->getJson('/api/publik/pengumuman/' . $hidden->id)->assertNotFound();
         }
         $this->getJson('/api/publik/pengumuman?q=semester')->assertJsonPath('total', 1);
+        $this->getJson('/api/publik/pengumuman?kategori=Umum')->assertJsonPath('total', 1)
+            ->assertJsonPath('kategori', [['nilai' => 'umum', 'label' => 'Umum']])
+            ->assertJsonPath('data.0.kategori_label', 'Umum')
+            ->assertJsonPath('data.0.penulis', 'Admin')
+            ->assertJsonPath('data.0.ada_lampiran', false);
+
+        $live->update(['content' => '<p>Layanan&nbsp;tutup</p><script>alert(1)</script>', 'author' => 'Humas']);
+        $this->getJson('/api/publik/pengumuman')->assertJsonPath('data.0.ringkasan', 'Layanan tutup')->assertJsonPath('data.0.penulis', 'Humas');
+        $this->assertStringNotContainsString('<script', $this->getJson('/api/publik/pengumuman/' . $live->id)->json('isi'));
     }
 
     public function test_faq_lists_active_questions_with_safe_answers(): void
@@ -81,6 +90,28 @@ class PublicApiTest extends TestCase
 
         $this->getJson('/api/publik/faq?q=biaya')->assertJsonCount(1, 'data');
         $this->getJson('/api/publik/faq?q=mutasi')->assertJsonCount(0, 'data');
+    }
+
+    public function test_faq_is_grouped_like_the_site(): void
+    {
+        Faq::create(['question' => 'Lupa sandi?', 'answer' => 'Reset.', 'category' => 'akun', 'sort' => 2]);
+        Faq::create(['question' => 'Jam layanan?', 'answer' => 'Senin–Jumat.', 'sort' => 1]);
+        Faq::create(['question' => 'Daftar akun?', 'answer' => 'Lewat portal.', 'category' => 'akun', 'sort' => 1]);
+        Faq::create(['question' => 'Draf', 'answer' => 'x', 'category' => 'rahasia', 'is_active' => false]);
+
+        $this->getJson('/api/publik/faq')->assertOk()
+            ->assertJsonPath('total', 3)
+            ->assertJsonPath('kelompok.0.nilai', 'akun')
+            ->assertJsonPath('kelompok.0.label', 'Akun')
+            ->assertJsonPath('kelompok.0.jumlah', 2)
+            ->assertJsonPath('kelompok.0.pertanyaan.0.pertanyaan', 'Daftar akun?')
+            ->assertJsonPath('kelompok.1.nilai', 'umum')
+            ->assertJsonPath('kelompok.1.pertanyaan.0.pertanyaan', 'Jam layanan?')
+            ->assertJsonCount(2, 'kelompok');
+
+        $this->getJson('/api/publik/faq?kelompok=Akun')->assertJsonPath('total', 2);
+        $this->getJson('/api/publik/faq?kelompok=umum')->assertJsonPath('data.0.pertanyaan', 'Jam layanan?')->assertJsonPath('total', 1);
+        $this->getJson('/api/publik/faq?kelompok=rahasia')->assertJsonPath('total', 0)->assertJsonPath('kelompok', []);
     }
 
     public function test_tracking_shows_progress_to_anyone_and_details_only_to_the_applicant(): void

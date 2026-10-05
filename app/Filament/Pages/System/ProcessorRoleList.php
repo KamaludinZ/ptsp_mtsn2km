@@ -3,7 +3,6 @@
 namespace App\Filament\Pages\System;
 
 use App\Filament\Resources\RoleResource;
-use App\Models\User;
 use App\Support\ProcessorRoles;
 use App\Support\ServiceDisposition;
 use Filament\Actions\Action;
@@ -11,7 +10,6 @@ use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Daftar peran pemroses naskah: the six back-office units that receive
@@ -72,34 +70,20 @@ class ProcessorRoleList extends Page
                     ->multiple()
                     ->searchable()
                     ->preload()
-                    ->options(fn () => self::staffOptions())
+                    ->options(fn () => ProcessorRoles::eligibleStaff())
                     ->helperText('Hanya akun staf aktif dengan akses back office yang dapat dipilih.')
                     ->rules(['array'])
-                    ->nestedRecursiveRules(['integer', 'in:' . implode(',', array_keys(self::staffOptions()))])
+                    ->nestedRecursiveRules(['integer', 'in:' . implode(',', array_keys(ProcessorRoles::eligibleStaff()))])
                     ->validationMessages(['in' => 'Staf yang dipilih tidak memiliki akses back office.']),
             ])
             ->action(function (array $data, array $arguments) {
-                $name = $arguments['role'] ?? null;
-                abort_unless(array_key_exists((string) $name, ServiceDisposition::RECIPIENTS), 404);
-
-                $role = Role::findOrCreate($name, 'web');
-                $role->users()->sync($data['users'] ?? []);
-                app(PermissionRegistrar::class)->forgetCachedPermissions();
+                $name = (string) ($arguments['role'] ?? '');
+                ProcessorRoles::assign($name, $data['users'] ?? []);
 
                 Notification::make()->success()
                     ->title('Pemegang ' . ServiceDisposition::RECIPIENTS[$name] . ' disimpan')
                     ->body(count($data['users'] ?? []) . ' staf memegang peran ini.')
                     ->send();
             });
-    }
-
-    /** @return array<int, string> Active staff who can open the back office. */
-    private static function staffOptions(): array
-    {
-        return User::permission('backoffice.access')
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->pluck('name', 'id')
-            ->all();
     }
 }

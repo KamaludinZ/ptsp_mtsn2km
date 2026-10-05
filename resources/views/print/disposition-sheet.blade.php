@@ -3,6 +3,9 @@
     use App\Support\ServiceDisposition;
 
     $preset = $ticket->service?->disposition_roles ?? [];
+    // A reprint after the leader decided ticks the chosen instruction, even one typed by hand.
+    $chosenInstruction = \App\Models\DispositionLog::where('ticket_id', $ticket->id)->whereNotNull('instruction')->latest('id')->value('instruction');
+    $instructions = collect(Persuratan::options('instruksi_disposisi'))->push($chosenInstruction)->filter()->unique()->values();
     $leader = match ($ticket->service?->disposition_mode) {
         'tu' => 'Kepala Tata Usaha',
         default => 'Kepala Madrasah',
@@ -16,9 +19,6 @@
     <style>
         body { font-family: sans-serif; padding: 24px; color: #111827; font-size: 13px; }
         .sheet { max-width: 720px; margin: 0 auto; }
-        .head { text-align: center; border-bottom: 3px double #111827; padding-bottom: 8px; margin-bottom: 12px; }
-        .head h1 { font-size: 16px; margin: 0; text-transform: uppercase; }
-        .head p { margin: 2px 0 0; }
         h2 { font-size: 15px; text-align: center; letter-spacing: .1em; margin: 12px 0; }
         table { width: 100%; border-collapse: collapse; }
         td, th { border: 1px solid #111827; padding: 6px 8px; vertical-align: top; text-align: left; }
@@ -34,16 +34,13 @@
 </head>
 <body>
     <div class="sheet">
-        <div class="head">
-            <h1>{{ app_brand_name() }}</h1>
-            <p>Pelayanan Terpadu Satu Pintu</p>
-        </div>
+        @include('print.partials.letterhead')
         <h2>LEMBAR DISPOSISI</h2>
         <table>
             <tr><td class="label">Nomor tiket</td><td><strong>{{ $ticket->ticket_number }}</strong></td></tr>
             <tr><td class="label">Layanan</td><td>{{ $ticket->service?->name }}</td></tr>
             <tr><td class="label">Pemohon</td><td>{{ $ticket->user?->name }}</td></tr>
-            <tr><td class="label">Tanggal diterima</td><td>{{ $ticket->created_at->translatedFormat('j F Y') }}</td></tr>
+            <tr><td class="label">Tanggal diterima</td><td>{{ \App\Support\Formats::date($ticket->created_at) }}</td></tr>
             <tr><td class="label">Perihal</td><td>{{ \Illuminate\Support\Str::limit(strip_tags((string) $ticket->notes), 300) ?: '–' }}</td></tr>
             <tr>
                 <td class="label">Diteruskan kepada</td>
@@ -59,8 +56,8 @@
                 <td class="label">Instruksi</td>
                 <td>
                     <ul class="boxes">
-                        @foreach (Persuratan::options('instruksi_disposisi') as $instruction)
-                            <li><span class="box"></span>{{ $instruction }}</li>
+                        @foreach ($instructions as $instruction)
+                            <li><span class="box">{{ $instruction === $chosenInstruction ? '✓' : '' }}</span>{{ $instruction }}</li>
                         @endforeach
                     </ul>
                 </td>

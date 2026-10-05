@@ -2,36 +2,47 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Notifications\DatabaseNotification;
 
-class Notification extends Model
+/**
+ * Notifikasi in-app (Laravel's database channel) with a link to the request
+ * it is about. ticket_id is filled from the ticket number the notification
+ * carries (see App\Support\TicketNotification).
+ */
+class Notification extends DatabaseNotification
 {
-    protected $fillable = [
-        'type',
-        'notifiable_type',
-        'notifiable_id',
-        'data',
-        'read_at',
-    ];
-
-    protected $casts = [
-        'data' => 'array',
-        'read_at' => 'datetime',
-    ];
-
-    public function notifiable(): MorphTo
+    protected static function booted(): void
     {
-        return $this->morphTo();
+        static::creating(function (Notification $notification) {
+            if (! $notification->ticket_id && ($number = $notification->ticketNumber())) {
+                $notification->ticket_id = Ticket::where('ticket_number', $number)->value('id');
+            }
+        });
     }
 
-    public function scopeUnread($query)
+    public function ticket(): BelongsTo
     {
-        return $query->whereNull('read_at');
+        return $this->belongsTo(Ticket::class);
     }
 
-    public function scopeOfType($query, $type)
+    public function ticketNumber(): ?string
     {
-        return $query->where('type', $type);
+        return $this->data['viewData']['ticket_number'] ?? $this->data['ticket_number'] ?? null;
+    }
+
+    public function title(): string
+    {
+        return (string) ($this->data['title'] ?? '');
+    }
+
+    public function body(): ?string
+    {
+        return filled($this->data['body'] ?? null) ? strip_tags($this->data['body']) : null;
+    }
+
+    public function scopeForTicket($query, Ticket $ticket)
+    {
+        return $query->where('ticket_id', $ticket->id);
     }
 }

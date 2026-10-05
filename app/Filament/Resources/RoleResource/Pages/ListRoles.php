@@ -27,6 +27,20 @@ class ListRoles extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('matrix')
+                ->label('Peta izin')
+                ->icon('heroicon-m-table-cells')
+                ->color('gray')
+                ->modalHeading('Peta izin per peran')
+                ->modalDescription('Izin yang dimiliki setiap peran. Ubah izin lewat tombol Ubah pada peran.')
+                ->modalContent(fn () => view('filament.resources.role-resource.permission-matrix', [
+                    'roles' => \Spatie\Permission\Models\Role::where('guard_name', 'web')->with('permissions:id,name')->orderBy('name')->get(),
+                    'permissions' => \App\Support\RoleAccess::PERMISSION_LABELS,
+                ]))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Tutup')
+                ->modalWidth('7xl')
+                ->visible(fn () => $this->section === 'peran'),
             Actions\CreateAction::make()->visible(fn () => $this->section === 'peran'),
         ];
     }

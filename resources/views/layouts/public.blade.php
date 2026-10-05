@@ -325,6 +325,14 @@
 
     <!-- Main Content -->
     <main id="main-content" class="public-main" role="main">
+        @if (session('signed_out'))
+            <div class="container pt-3">
+                <div class="alert alert-success alert-dismissible fade show mb-0" role="status">
+                    <i class="fas fa-circle-check me-1" aria-hidden="true"></i>Anda telah keluar. Sampai jumpa lagi!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+                </div>
+            </div>
+        @endif
         @yield('content')
     </main>
 

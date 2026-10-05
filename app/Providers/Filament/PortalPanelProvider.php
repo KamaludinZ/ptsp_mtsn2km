@@ -49,10 +49,17 @@ class PortalPanelProvider extends PanelProvider
                     ->sort(50),
             ])
             ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label(fn () => auth()->user()?->name . ' · ' . \App\Support\RoleAccess::userRoleLabel(auth()->user()))
+                    ->icon('heroicon-o-user-circle'),
+                MenuItem::make()->label('Notifikasi')->url(fn () => \App\Filament\Portal\Pages\Notifications::getUrl())->icon('heroicon-o-bell'),
                 MenuItem::make()->label('Kembali ke Beranda')->url(fn () => route('home'))->icon('heroicon-o-home'),
+                'logout' => MenuItem::make()->label('Keluar')->icon('heroicon-o-arrow-left-on-rectangle')->color('danger'),
             ])
             ->maxContentWidth('7xl')
             ->spa()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('60s')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -65,7 +72,8 @@ class PortalPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                // Filament's Authenticate + wrong panel -> own panel instead of a 403.
+                \App\Http\Middleware\RedirectToOwnPanel::class,
                 CheckEmailVerification::class,
             ]);
     }

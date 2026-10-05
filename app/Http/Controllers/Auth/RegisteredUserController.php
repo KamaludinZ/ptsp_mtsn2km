@@ -35,6 +35,9 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // E-mail addresses are stored in lower case (and unique regardless of case).
+        $request->merge(['email' => mb_strtolower(trim((string) $request->input('email')))]);
+
         // Determine if this is a civitas registration
         $isCivitas = $request->has('is_civitas') && $request->is_civitas == '1';
 

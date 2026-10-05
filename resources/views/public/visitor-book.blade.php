@@ -376,7 +376,22 @@
 <!-- Main Content -->
 <div class="container py-5">
     <!-- Success/Error Messages -->
-    @if(session('success'))
+    @if(session('registered'))
+        <section class="card border-success shadow-sm mb-4" role="status" aria-labelledby="registered-heading">
+            <div class="card-body p-4">
+                <h2 id="registered-heading" class="h5 fw-bold text-success mb-1">
+                    <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                </h2>
+                <p class="text-muted small mb-3">Terima kasih. Silakan tunjukkan ringkasan ini kepada petugas loket bila diminta.</p>
+                <dl class="row mb-0">
+                    @foreach (session('registered') as $label => $value)
+                        <dt class="col-sm-4 col-lg-3 fw-semibold">{{ $label }}</dt>
+                        <dd class="col-sm-8 col-lg-9">{{ $value }}</dd>
+                    @endforeach
+                </dl>
+            </div>
+        </section>
+    @elseif(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -414,26 +429,32 @@
         <div class="tab-content">
             <!-- Visitor Form -->
             <div class="tab-pane fade show active" id="visitor-form" role="tabpanel">
-                <form action="{{ route('public.visitor.submit') }}" method="POST">
+                <form action="{{ route('public.visitor.submit') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+                    <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">
+                        <label>Situs web <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+                    </div>
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-user me-2 text-primary"></i>Nama Lengkap *
                             </label>
-                            <input type="text" name="name" class="form-control form-control-lg" required>
+                            <input type="text" name="name" class="form-control form-control-lg @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
+                            @error('name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-phone me-2 text-primary"></i>No. Telepon/HP *
                             </label>
-                            <input type="tel" name="phone" class="form-control form-control-lg" required>
+                            <input type="tel" name="phone" class="form-control form-control-lg @error('phone') is-invalid @enderror" value="{{ old('phone') }}" required>
+                            @error('phone')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-envelope me-2 text-primary"></i>Email
                             </label>
-                            <input type="email" name="email" class="form-control form-control-lg">
+                            <input type="email" name="email" class="form-control form-control-lg @error('email') is-invalid @enderror" value="{{ old('email') }}">
+                            @error('email')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">
@@ -459,13 +480,14 @@
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-building me-2 text-primary"></i>Instansi/Perusahaan
                             </label>
-                            <input type="text" name="institution" class="form-control form-control-lg">
+                            <input type="text" name="institution" class="form-control form-control-lg @error('institution') is-invalid @enderror" value="{{ old('institution') }}">
+                            @error('institution')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-bullseye me-2 text-primary"></i>Tujuan Kunjungan *
                             </label>
-                            <select name="purpose" id="visit_purpose" class="form-select form-select-lg" required>
+                            <select name="purpose" @error('purpose') aria-invalid="true" @enderror id="visit_purpose" class="form-select form-select-lg" required>
                                 <option value="">Pilih Tujuan</option>
                                 @foreach ($visitPurposes as $visitPurpose)
                                     <option value="{{ $visitPurpose }}" @selected(old('purpose') === $visitPurpose)>{{ $visitPurpose }}</option>
@@ -482,7 +504,21 @@
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-comment-dots me-2 text-primary"></i>Keperluan Lainnya
                             </label>
-                            <textarea name="notes" class="form-control" rows="3" placeholder="Jelaskan secara singkat keperluan Anda"></textarea>
+                            <textarea name="notes" class="form-control @error('notes') is-invalid @enderror" rows="3" placeholder="Jelaskan secara singkat keperluan Anda">{{ old('notes') }}</textarea>
+                            @error('notes')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" for="visitor_photo">
+                                <i class="fas fa-camera me-2 text-primary"></i>Foto (opsional)
+                            </label>
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <img id="visitor_photo_preview" alt="Pratinjau foto" class="rounded border" style="width:96px;height:96px;object-fit:cover;display:none">
+                                <div class="flex-grow-1">
+                                    <input type="file" name="photo" id="visitor_photo" class="form-control @error('photo') is-invalid @enderror" accept="image/jpeg,image/png,image/webp" capture="user">
+                                    <div class="form-text">JPG, PNG, atau WebP, maksimal 2 MB. Foto hanya terlihat oleh petugas.</div>
+                                    <div id="visitor_photo_error" class="invalid-feedback d-block" role="alert">@error('photo'){{ $message }}@enderror</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-12">
                             <div class="form-check">
@@ -506,24 +542,30 @@
             <div class="tab-pane fade" id="applicant-form" role="tabpanel">
                 <form action="{{ route('public.applicant.submit') }}" method="POST">
                     @csrf
+                    <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">
+                        <label>Situs web <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+                    </div>
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-user me-2 text-primary"></i>Nama Lengkap *
                             </label>
-                            <input type="text" name="name" class="form-control form-control-lg" required>
+                            <input type="text" name="name" class="form-control form-control-lg @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
+                            @error('name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-phone me-2 text-primary"></i>No. Telepon/HP *
                             </label>
-                            <input type="tel" name="phone" class="form-control form-control-lg" required>
+                            <input type="tel" name="phone" class="form-control form-control-lg @error('phone') is-invalid @enderror" value="{{ old('phone') }}" required>
+                            @error('phone')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-envelope me-2 text-primary"></i>Email
                             </label>
-                            <input type="email" name="email" class="form-control form-control-lg">
+                            <input type="email" name="email" class="form-control form-control-lg @error('email') is-invalid @enderror" value="{{ old('email') }}">
+                            @error('email')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">
@@ -545,7 +587,8 @@
                                     <label class="form-label fw-semibold">
                                         <i class="fas fa-building me-2 text-primary"></i>Instansi/Perusahaan
                                     </label>
-                                    <input type="text" name="institution" class="form-control form-control-lg">
+                                    <input type="text" name="institution" class="form-control form-control-lg @error('institution') is-invalid @enderror" value="{{ old('institution') }}">
+                            @error('institution')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">
@@ -573,7 +616,7 @@
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-clipboard-list me-2 text-primary"></i>Layanan yang Dituju *
                             </label>
-                            <select name="target_service" id="target_service" class="form-select form-select-lg" required>
+                            <select name="target_service" @error('target_service') aria-invalid="true" @enderror id="target_service" class="form-select form-select-lg" required>
                                 <option value="">Pilih Layanan</option>
                                 @foreach ($services as $serviceName)
                                     <option value="{{ $serviceName }}" @selected(old('target_service') === $serviceName)>{{ $serviceName }}</option>
@@ -591,7 +634,8 @@
                             <label class="form-label fw-semibold">
                                 <i class="fas fa-comment-dots me-2 text-primary"></i>Catatan Tambahan
                             </label>
-                            <textarea name="notes" class="form-control" rows="3" placeholder="Jelaskan secara singkat keperluan Anda"></textarea>
+                            <textarea name="notes" class="form-control @error('notes') is-invalid @enderror" rows="3" placeholder="Jelaskan secara singkat keperluan Anda">{{ old('notes') }}</textarea>
+                            @error('notes')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-12">
                             <div class="form-check">
@@ -703,6 +747,36 @@
             return part.charAt(0) + '*'.repeat(part.length - 2) + part.charAt(part.length - 1);
         }).join(' ');
     }
+
+    // Local preview of the guest's photo, checked before upload (nothing is sent until the form is submitted).
+    document.addEventListener('DOMContentLoaded', function() {
+        var input = document.getElementById('visitor_photo');
+        var preview = document.getElementById('visitor_photo_preview');
+        var error = document.getElementById('visitor_photo_error');
+        if (!input || !preview) return;
+
+        input.addEventListener('change', function() {
+            var file = input.files && input.files[0];
+            if (preview.dataset.url) URL.revokeObjectURL(preview.dataset.url);
+            preview.style.display = 'none';
+            input.classList.remove('is-invalid');
+            error.textContent = '';
+            if (!file) return;
+
+            var problem = !/^image\/(jpeg|png|webp)$/.test(file.type) ? 'Pilih berkas gambar JPG, PNG, atau WebP.'
+                : file.size > 2 * 1024 * 1024 ? 'Ukuran foto maksimal 2 MB.' : null;
+            if (problem) {
+                input.value = '';
+                input.classList.add('is-invalid');
+                error.textContent = problem;
+                return;
+            }
+
+            preview.dataset.url = URL.createObjectURL(file);
+            preview.src = preview.dataset.url;
+            preview.style.display = 'block';
+        });
+    });
 
     // Initialize tabs and save active tab to localStorage
     document.addEventListener('DOMContentLoaded', function() {

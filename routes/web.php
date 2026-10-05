@@ -28,6 +28,7 @@ Route::post('/visitor-book/submit-applicant', [PublicController::class, 'submitA
 // Service catalogue and ticket tracking. Applying happens in the portal.
 Route::get('/services', [OnlinePortalController::class, 'serviceCatalog'])->name('onlineportal.service.catalog');
 Route::get('/services/{slug}', [OnlinePortalController::class, 'serviceDetail'])->name('onlineportal.service.detail');
+Route::get('/services/{slug}/templates.zip', [OnlinePortalController::class, 'downloadTemplates'])->middleware('throttle:30,1')->name('onlineportal.service.templates.zip');
 Route::get('/services/{slug}/template/{template}', [OnlinePortalController::class, 'downloadTemplate'])->name('onlineportal.service.template');
 Route::get('/services/{slug}/apply', fn (string $slug) => redirect('/portal/ajukan?layanan=' . urlencode($slug)))->name('onlineportal.service.apply');
 Route::get('/tracking', [OnlinePortalController::class, 'trackTicketForm'])->name('onlineportal.track.ticket.form');
@@ -59,6 +60,7 @@ Route::prefix('survey')->name('survey.')->group(function () {
 });
 Route::redirect('/skm-survey', '/survey')->name('supervision.skm.survey');
 
+// Public (survey form looks up a ticket number; masked name only). Throttled against guessing numbers.
 Route::get('/api/check-ticket/{ticketNumber}', function($ticketNumber) {
     $ticket = \App\Models\Ticket::with(['user', 'service'])->where('ticket_number', $ticketNumber)->first();
     
@@ -111,6 +113,17 @@ Route::middleware('auth')->get('/buku-tamu/{visitor}/cetak', fn (\App\Models\Vis
     ->can('view', 'visitor')
     ->name('visitors.print');
 
+// Printable monthly report (Laporan Bulanan) with the madrasah letterhead
+Route::middleware('auth')->get('/laporan-bulanan/cetak', function (\Illuminate\Http\Request $request) {
+    abort_unless(\App\Filament\Pages\Reports\MonthlyReport::canAccess(), 403);
+
+    return view('print.monthly-report', ['report' => \App\Support\MonthlyReport::build(\App\Support\MonthlyReport::month($request->query('bulan')))]);
+})->name('reports.monthly.print');
+
+Route::middleware('auth')->get('/laporan-bulanan/unduh/{format}', \App\Http\Controllers\MonthlyReportExportController::class)
+    ->whereIn('format', ['pdf', 'xlsx'])
+    ->name('reports.monthly.download');
+
 // Printable receipt of a service request, for the applicant and staff
 Route::middleware('auth')->get('/tiket/{ticket}/tanda-terima', fn (\App\Models\Ticket $ticket) => view('print.ticket-receipt', ['ticket' => $ticket->load(['user', 'service'])]))
     ->can('view', 'ticket')
@@ -127,6 +140,18 @@ Route::middleware('auth')->get('/pengaduan/{complaint}/bukti/{index}', function 
 
     return \Illuminate\Support\Facades\Storage::disk('local')->response($path);
 })->can('view', 'complaint')->whereNumber('index')->name('complaints.evidence');
+
+// Outgoing-letter attachments: private files for the back office keeping the register
+Route::middleware('auth')->get('/surat-keluar/{suratKeluar}/lampiran/{index}', function (\App\Models\SuratKeluar $suratKeluar, int $index) {
+    abort_unless(\App\Filament\Resources\SuratKeluarResource::can('view', $suratKeluar), 403);
+    $path = $suratKeluar->berkas_lampiran[$index] ?? abort(404);
+
+    $disk = \Illuminate\Support\Facades\Storage::disk('local');
+
+    return request()->boolean('unduh')
+        ? $disk->download($path, $suratKeluar->attachmentName($path))
+        : $disk->response($path, $suratKeluar->attachmentName($path));
+})->whereNumber('index')->name('surat-keluar.lampiran');
 
 // Ticket documents: private files served only to the applicant and staff
 Route::middleware('auth')->prefix('documents')->name('documents.')->group(function () {

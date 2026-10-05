@@ -151,6 +151,10 @@ class TicketResource extends Resource
                                         : TicketLabels::logAction($state))
                                     ->weight('semibold')
                                     ->helperText(fn ($record) => $record->created_at?->format('d M Y H:i')),
+                                // Officers' messages to the applicant; other entries' notes stay internal.
+                                TextEntry::make('notes')
+                                    ->hiddenLabel()
+                                    ->visible(fn ($record) => $record->action === 'applicant_note' && filled($record->notes)),
                             ]),
                     ]),
             ]),

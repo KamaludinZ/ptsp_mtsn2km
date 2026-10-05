@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\TicketResource\Pages;
 
 use App\Filament\Resources\TicketResource;
-use App\Models\Ticket;
-use App\Support\ProcessorRoles;
+use App\Support\TicketSearch;
+use App\Support\TicketTabs;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,67 +18,39 @@ class ListTickets extends ListRecords
         return 'Permohonan online dan dari loket dalam satu daftar. Buka tiket untuk memproses.';
     }
 
+    /** One search box over number, applicant, WhatsApp, service, officer and request text. */
+    protected function applyGlobalSearchToTableQuery(Builder $query): Builder
+    {
+        return TicketSearch::apply($query, $this->getTableSearch());
+    }
+
     public function getTabs(): array
     {
         $user = auth()->user();
-        $count = fn (callable $scope) => $scope(Ticket::query())->count() ?: null;
+        $counts = TicketTabs::counts($user);
+        $icons = [
+            'antrian' => 'heroicon-m-inbox',
+            'saya' => 'heroicon-m-user',
+            'disposisi-unit' => 'heroicon-m-arrow-right-circle',
+            'terlambat' => 'heroicon-m-exclamation-triangle',
+            'persetujuan' => 'heroicon-m-clipboard-document-check',
+            'siap-diambil' => 'heroicon-m-hand-raised',
+        ];
 
-        $tabs = [];
-
-        if ($user->can('backoffice.access')) {
-            $queue = fn (Builder $query) => $query->whereIn('status', ['submitted', 'verified', 'in_process']);
-            $mine = fn (Builder $query) => $query->open()->where('assigned_to_id', $user->id);
-
-            $tabs['antrian'] = Tab::make('Antrian')
-                ->icon('heroicon-m-inbox')
-                ->badge($count($queue))
-                ->modifyQueryUsing(fn (Builder $query) => $queue($query)->reorder()->orderByRaw('estimated_completion_date asc nulls last')->orderBy('created_at'));
-            $tabs['saya'] = Tab::make('Tugas Saya')
-                ->icon('heroicon-m-user')
-                ->badge($count($mine))
-                ->modifyQueryUsing($mine);
-        }
-
-        // Back-office units see what leadership disposed to them.
-        if ($units = ProcessorRoles::unitsOf($user)) {
-            $forwarded = fn (Builder $query) => $query->forwardedTo($units)->open();
-            $tabs['disposisi-unit'] = Tab::make('Disposisi unit saya')
-                ->icon('heroicon-m-arrow-right-circle')
-                ->badge($count($forwarded))
-                ->badgeColor('info')
-                ->modifyQueryUsing($forwarded);
-        }
-
-        $overdue = fn (Builder $query) => $query->overdue();
-        $approval = fn (Builder $query) => $query->awaitingApproval();
-        $pickup = fn (Builder $query) => $query->where('status', 'completed')->where('ready_for_pickup', true);
-
-        $tabs['terlambat'] = Tab::make('Terlambat')
-            ->icon('heroicon-m-exclamation-triangle')
-            ->badge($count($overdue))
-            ->badgeColor('danger')
-            ->modifyQueryUsing($overdue);
-        $tabs['persetujuan'] = Tab::make('Menunggu Persetujuan')
-            ->icon('heroicon-m-clipboard-document-check')
-            ->badge($count($approval))
-            ->modifyQueryUsing($approval);
-        $tabs['siap-diambil'] = Tab::make('Siap Diambil')
-            ->icon('heroicon-m-hand-raised')
-            ->badge($count($pickup))
-            ->modifyQueryUsing($pickup);
-        $tabs['semua'] = Tab::make('Semua');
-
-        return $tabs;
+        return collect(TicketTabs::for($user))->mapWithKeys(fn (string $tab) => [$tab => Tab::make(TicketTabs::LABELS[$tab])
+            ->icon($icons[$tab] ?? null)
+            ->badge($tab === 'semua' ? null : ($counts[$tab] ?: null))
+            ->badgeColor(match ($tab) {
+                'terlambat' => 'danger',
+                'disposisi-unit' => 'info',
+                default => null,
+            })
+            ->modifyQueryUsing(fn (Builder $query) => TicketTabs::apply($query, $tab, $user, ordered: true)),
+        ])->all();
     }
 
     public function getDefaultActiveTab(): string | int | null
     {
-        $user = auth()->user();
-
-        return match (true) {
-            $user->can('backoffice.access') => 'antrian',
-            $user->hasRole('front_desk') => 'siap-diambil',
-            default => 'semua',
-        };
+        return TicketTabs::default(auth()->user());
     }
 }

@@ -47,7 +47,12 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label(fn () => auth()->user()?->name . ' · ' . \App\Support\RoleAccess::userRoleLabel(auth()->user()))
+                    ->icon('heroicon-o-user-circle'),
+                MenuItem::make()->label('Notifikasi')->url(fn () => \App\Filament\Pages\Notifications::getUrl())->icon('heroicon-o-bell'),
                 MenuItem::make()->label('Kembali ke Beranda')->url(fn () => route('home'))->icon('heroicon-o-home'),
+                'logout' => MenuItem::make()->label('Keluar')->icon('heroicon-o-arrow-left-on-rectangle')->color('danger'),
             ])
             ->navigationGroups([
                 NavigationGroup::make('Pimpinan'),
@@ -61,6 +66,9 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Manajemen Pengumuman')->collapsed(),
                 NavigationGroup::make('Manajemen Sistem')->collapsed(),
             ])
+            ->unsavedChangesAlerts() // warn before leaving a form with unsaved changes
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('60s')
             ->sidebarCollapsibleOnDesktop()
             ->maxContentWidth('screen-2xl')
             ->spa()
@@ -76,7 +84,8 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                // Filament's Authenticate + wrong panel -> own panel instead of a 403.
+                \App\Http\Middleware\RedirectToOwnPanel::class,
             ]);
     }
 }

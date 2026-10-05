@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Forms\PersuratanFields;
 use App\Filament\Resources\PersuratanMasterResource;
 use App\Filament\Resources\PersuratanMasterResource\Pages\ListPersuratanMasters;
 use App\Filament\Resources\SuratKeluarResource\Pages\ListSuratKeluar;
@@ -138,6 +139,42 @@ class PersuratanMasterTest extends TestCase
             ->mountAction('reserve')
             ->assertSee('Kepala MAN 1 Kota Malang')
             ->assertDontSee('Instansi Lama');
+    }
+
+    public function test_classification_picker_shows_code_and_name_and_accepts_a_typed_code(): void
+    {
+        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        PersuratanMaster::create(['type' => 'klasifikasi', 'kode' => 'SR.01', 'nama' => 'Sarana Prasarana']);
+        PersuratanMaster::create(['type' => 'klasifikasi', 'kode' => 'LM.00', 'nama' => 'Klasifikasi Lama', 'is_active' => false]);
+
+        $options = Persuratan::klasifikasiOptions();
+        $this->assertSame('SR.01 — Sarana Prasarana', $options['SR.01']);
+        $this->assertArrayNotHasKey('LM.00', $options);
+
+        $field = PersuratanFields::klasifikasi();
+        $this->assertSame(['SR.01' => 'SR.01 — Sarana Prasarana'], $field->getSearchResults('sarana'));
+        $this->assertSame(['ZZ.09' => 'Pakai kode "ZZ.09"'], $field->getSearchResults('zz.09'));
+        $this->assertSame([], $field->getSearchResults('tidak ada'));
+    }
+
+    public function test_hand_typed_values_are_kept_as_inactive_choices(): void
+    {
+        $staff = $this->user('staff1@mtsn2malang.sch.id');
+        PersuratanMaster::create(['type' => 'tujuan_naskah', 'nama' => 'Instansi Lama', 'is_active' => false]);
+
+        $letter = app(\App\Services\SuratKeluarService::class)->reserve(1, now(), $staff, [
+            'tujuan_surat' => 'Kepala  MAN 3 Malang',
+            'tembusan' => "Kepala Madrasah\nKomite Madrasah",
+            'jenis_surat' => 'Surat Dinas',
+        ])->first();
+        app(\App\Services\SuratKeluarService::class)->describe($letter, ['tujuan_surat' => 'instansi lama', 'perihal' => 'Uji']);
+
+        $this->assertDatabaseHas('persuratan_masters', ['type' => 'tujuan_naskah', 'nama' => 'Kepala MAN 3 Malang', 'is_active' => false]);
+        $this->assertDatabaseHas('persuratan_masters', ['type' => 'tembusan', 'nama' => 'Komite Madrasah', 'is_active' => false]);
+        $this->assertSame(1, PersuratanMaster::where('type', 'tembusan')->where('nama', 'Kepala Madrasah')->count());
+        $this->assertSame(1, PersuratanMaster::where('type', 'jenis_surat')->where('nama', 'Surat Dinas')->count());
+        $this->assertSame(1, PersuratanMaster::where('type', 'tujuan_naskah')->whereRaw('lower(nama) = ?', ['instansi lama'])->count());
+        $this->assertNotContains('Kepala MAN 3 Malang', Persuratan::options('tujuan_naskah'));
     }
 
     public function test_near_duplicates_and_malformed_codes_are_refused(): void

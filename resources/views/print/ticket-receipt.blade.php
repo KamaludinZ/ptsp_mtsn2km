@@ -18,17 +18,18 @@
 </head>
 <body>
     <div class="receipt">
+        @include('print.partials.letterhead')
         <h1>Tanda Terima Permohonan Layanan</h1>
-        <p class="org">{{ app_brand_name() }}</p>
+        <p class="org">Pelayanan Terpadu Satu Pintu</p>
         <div>Nomor tiket</div>
         <div class="number">{{ $ticket->ticket_number }}</div>
         <dl>
             <dt>Pemohon</dt><dd>{{ $ticket->user?->name }}</dd>
             <dt>Layanan</dt><dd>{{ $ticket->service?->name }}</dd>
-            <dt>Tanggal</dt><dd>{{ $ticket->created_at->translatedFormat('j F Y, H:i') }}</dd>
+            <dt>Tanggal</dt><dd>{{ \App\Support\Formats::date($ticket->created_at) }}, {{ $ticket->created_at->format('H:i') }}</dd>
             <dt>Perkiraan selesai</dt>
             <dd>
-                {{ $ticket->estimated_completion_date?->translatedFormat('j F Y') ?? 'Sesuai standar pelayanan' }}
+                {{ $ticket->estimated_completion_date ? \App\Support\Formats::date($ticket->estimated_completion_date) : 'Sesuai standar pelayanan' }}
                 @if ($ticket->service?->processing_time)
                     ({{ $ticket->service->processing_time }})
                 @endif

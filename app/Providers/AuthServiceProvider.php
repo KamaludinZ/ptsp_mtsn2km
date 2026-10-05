@@ -24,6 +24,8 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+        // Pengaturan Aplikasi (screen and /api/pengaturan): active administrators only.
+        // Roles live on the "web" guard; API requests come in on "sanctum".
+        \Illuminate\Support\Facades\Gate::define('kelola-pengaturan', fn (\App\Models\User $user) => $user->is_active !== false && $user->hasRole('admin', 'web'));
     }
 }

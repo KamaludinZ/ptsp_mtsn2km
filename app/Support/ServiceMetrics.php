@@ -267,10 +267,11 @@ class ServiceMetrics
     }
 
     /** Complaint (Dumas) and whistleblowing follow-up. */
-    public static function complaints(?CarbonInterface $from = null): array
+    public static function complaints(?CarbonInterface $from = null, ?CarbonInterface $to = null): array
     {
         $counts = Complaint::query()
             ->when($from, fn ($q) => $q->where('created_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', $to))
             ->select('complaint_type', 'status', DB::raw('count(*) as total'))
             ->groupBy('complaint_type', 'status')
             ->get();

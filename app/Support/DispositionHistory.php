@@ -16,7 +16,7 @@ use App\Models\TicketLog;
 class DispositionHistory
 {
     /**
-     * @return array<int, array{id: int, at: \Illuminate\Support\Carbon, actor: string, role: ?string, action: string, signature_model: ?string, signature_file: ?string, recipients: array<int, string>, instruction: ?string, note: ?string}>
+     * @return array<int, array{id: int, at: \Illuminate\Support\Carbon, actor: string, role: ?string, action: string, signature_model: ?string, signature_file: ?string, recipients: array<int, string>, instruction: ?string, note: ?string, acknowledged_by: ?string}>
      */
     public static function forTicket(Ticket $ticket): array
     {
@@ -50,6 +50,7 @@ class DispositionHistory
                     'recipients' => $disposition->recipients ?? [],
                     'instruction' => $disposition->instruction,
                     'note' => $disposition->note,
+                    'acknowledged_by' => $disposition->acknowledged_by_name,
                 ];
             })
             ->all();

@@ -66,12 +66,7 @@ class ComplaintResource extends Resource
 
     public static function statusColor(?string $status): string
     {
-        return match ($status) {
-            'submitted' => 'warning',
-            'in_review', 'in_progress' => 'info',
-            'resolved', 'closed' => 'success',
-            default => 'gray',
-        };
+        return \App\Support\StatusBadge::for($status, 'complaint')['color'];
     }
 
     public static function table(Table $table): Table

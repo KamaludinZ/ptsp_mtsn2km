@@ -28,6 +28,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(Request $request): void
     {
+        // Preferensi tampilan (text size, theme mode) in both panels, before Filament's theme script.
+        \Filament\Support\Facades\FilamentView::registerRenderHook(
+            \Filament\View\PanelsRenderHook::STYLES_AFTER,
+            fn () => new \Illuminate\Support\HtmlString(\App\Support\DisplayPreferences::headHtml(auth()->user())),
+        );
+
+        // E-mail "atur ulang kata sandi" in Indonesian (website and API use the same link).
+        \Illuminate\Auth\Notifications\ResetPassword::toMailUsing(function ($user, string $token) {
+            $url = url(route('password.reset', ['token' => $token, 'email' => $user->getEmailForPasswordReset()], false));
+            $minutes = config('auth.passwords.' . config('auth.defaults.passwords') . '.expire', 60);
+
+            return (new \Illuminate\Notifications\Messages\MailMessage)
+                ->subject('Atur ulang kata sandi - ' . app_brand_name())
+                ->greeting('Halo, ' . $user->name . '!')
+                ->line('Kami menerima permintaan untuk mengatur ulang kata sandi akun Anda.')
+                ->action('Atur ulang kata sandi', $url)
+                ->line("Tautan ini berlaku selama {$minutes} menit.")
+                ->line('Jika Anda tidak meminta ini, abaikan email ini; kata sandi Anda tidak berubah.')
+                ->salutation('Salam, ' . app_brand_name());
+        });
+
         // Both panels: Filament remembers the sidebar as open, which on a phone
         // covers the page on the first visit. Start phones with it closed.
         \Filament\Support\Facades\FilamentView::registerRenderHook(
@@ -45,6 +66,13 @@ class AppServiceProvider extends ServiceProvider
         );
 
         // Log akses for Monitoring Sistem: who signed in and out, from where.
+        // Terakhir masuk, kept on the user (no model events / activity log for this bookkeeping).
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($e) {
+            if ($e->user instanceof \App\Models\User) {
+                \App\Models\User::whereKey($e->user->getKey())->toBase()->update(['last_login_at' => now()]);
+            }
+        });
+
         foreach ([\Illuminate\Auth\Events\Login::class => 'Masuk', \Illuminate\Auth\Events\Logout::class => 'Keluar'] as $event => $label) {
             \Illuminate\Support\Facades\Event::listen($event, function ($e) use ($label) {
                 if ($e->user) {

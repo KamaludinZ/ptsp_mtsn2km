@@ -35,6 +35,31 @@ class NotificationTemplateTest extends TestCase
         return User::where('email', 'ptsp@mtsn2malang.sch.id')->firstOrFail();
     }
 
+    public function test_admin_switches_channels_and_triggers_from_one_panel(): void
+    {
+        $this->actingAs($this->admin());
+        \App\Models\NotificationSetting::store('whatsapp', true, ['api_url' => 'https://wa.example.test'], null);
+
+        Livewire::test(ListNotificationTemplates::class)
+            ->mountAction('toggles')
+            ->assertActionDataSet(['whatsapp.is_enabled' => true])
+            // setActionData merges lists by index, so clear the pre-filled triggers first.
+            ->setActionData(['email' => ['events' => null]])
+            ->setActionData([
+                'email' => ['is_enabled' => true, 'events' => ['ticket_created', 'ticket_completed']],
+                'whatsapp' => ['is_enabled' => false],
+            ])
+            ->callMountedAction()
+            ->assertHasNoActionErrors()
+            ->assertNotified('Kanal & pemicu notifikasi disimpan.');
+
+        $this->assertTrue(\App\Models\NotificationSetting::for('email')->is_enabled);
+        $this->assertFalse(\App\Models\NotificationSetting::for('whatsapp')->is_enabled);
+        $this->assertEqualsCanonicalizing(['ticket_created', 'ticket_completed'], NotificationTemplate::where('channel', 'email')->where('is_active', true)->pluck('key')->all());
+        // The switched-off channel keeps its triggers for when it is switched on again.
+        $this->assertSame(count(NotificationTemplates::EVENTS), NotificationTemplate::where('channel', 'whatsapp')->where('is_active', true)->count());
+    }
+
     public function test_every_event_has_an_email_and_a_whatsapp_template(): void
     {
         foreach (array_keys(NotificationTemplates::EVENTS) as $key) {

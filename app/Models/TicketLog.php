@@ -16,7 +16,7 @@ class TicketLog extends Model
     use HasFactory;
 
     /** Milestones an applicant may see; other entries (notes, internal uploads) stay with staff. */
-    public const APPLICANT_VISIBLE = ['created', 'status_changed', 'assigned', 'approved', 'rejected', 'output_uploaded', 'picked_up', 'workflow_completed'];
+    public const APPLICANT_VISIBLE = ['created', 'status_changed', 'assigned', 'approved', 'rejected', 'output_uploaded', 'picked_up', 'workflow_completed', 'applicant_note'];
 
     protected static function booted(): void
     {

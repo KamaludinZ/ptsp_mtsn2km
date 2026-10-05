@@ -52,6 +52,21 @@ class ViewComplaint extends ViewRecord
                     self::attempt(fn () => app(ComplaintService::class)->followUp($this->getRecord(), $data, auth()->user()), 'Tindak lanjut disimpan.');
                     $this->record = $this->getRecord()->fresh(['assignee', 'service']);
                 }),
+            Actions\Action::make('makeConfidential')
+                ->label('Rahasiakan identitas')
+                ->icon('heroicon-m-lock-closed')
+                ->color('danger')
+                ->visible(fn () => ! $this->getRecord()->isSecret() && auth()->user()->can('update', $this->getRecord()))
+                ->modalHeading('Rahasiakan identitas pelapor?')
+                ->modalDescription('Identitas pelapor hanya terlihat oleh penangan dan tidak dapat dibuka kembali. Pemblokiran alamat IP penyalahguna dilakukan di halaman Keamanan.')
+                ->modalSubmitActionLabel('Rahasiakan')
+                ->form([
+                    Textarea::make('reason')->label('Alasan')->required()->maxLength(500)->rows(3),
+                ])
+                ->action(function (array $data) {
+                    self::attempt(fn () => app(ComplaintService::class)->makeConfidential($this->getRecord(), auth()->user(), $data['reason']), 'Identitas pelapor dirahasiakan.');
+                    $this->record = $this->getRecord()->fresh(['assignee', 'service']);
+                }),
             Actions\DeleteAction::make(),
         ];
     }

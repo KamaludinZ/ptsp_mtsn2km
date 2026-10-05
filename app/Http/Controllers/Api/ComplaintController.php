@@ -87,6 +87,26 @@ class ComplaintController extends Controller
         ]);
     }
 
+    /**
+     * POST /api/pengaduan/{complaint}/rahasiakan {alasan}: hide the reporter's identity
+     * from everyone but the handlers (one way). Abusive senders are blocked by IP on
+     * the Keamanan page; reports never store the sender's IP, to keep whistleblowers safe.
+     */
+    public function makeConfidential(Request $request, Complaint $complaint, ComplaintService $complaints): JsonResponse
+    {
+        $this->authorize('update', $complaint);
+
+        $data = $request->validate(['alasan' => ['required', 'string', 'max:500']]);
+
+        try {
+            $complaints->makeConfidential($complaint, $request->user(), $data['alasan']);
+        } catch (TicketActionException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(self::summary($complaint->refresh()) + ['rahasia' => $complaint->isSecret()]);
+    }
+
     public static function summary(Complaint $complaint): array
     {
         return [

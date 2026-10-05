@@ -49,9 +49,8 @@ class ApplyService extends Page implements HasForms
     public function mount(): void
     {
         $this->service = Service::query()
-            ->where('is_active', true)
             ->where('slug', $this->serviceSlug)
-            ->availableFor(auth()->user()->user_type)
+            ->requestable(auth()->user()->user_type, 'online')
             ->first();
 
         if (! $this->service) {
@@ -88,7 +87,7 @@ class ApplyService extends Page implements HasForms
                 Section::make('Template berkas')
                     ->icon('heroicon-o-document-arrow-down')
                     ->description('Unduh, lengkapi, lalu unggah bersama berkas persyaratan di bawah.')
-                    ->visible(fn () => (bool) $this->service?->templates->isNotEmpty())
+                    ->visible(fn () => (bool) $this->service?->activeTemplates->isNotEmpty())
                     ->schema([
                         Placeholder::make('templates')->hiddenLabel()->content(fn () => ServiceSummary::templates($this->service)),
                     ]),

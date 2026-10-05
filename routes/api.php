@@ -22,14 +22,34 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('layanan')->group(fu
     Route::get('/ringkasan-hari-ini', [\App\Http\Controllers\Api\ServiceSummaryController::class, 'today'])->name('api.layanan.ringkasan-hari-ini');
     Route::get('/tren', [\App\Http\Controllers\Api\ServiceSummaryController::class, 'trend'])->name('api.layanan.tren');
     Route::get('/laporan-bulanan', [\App\Http\Controllers\Api\ServiceSummaryController::class, 'month'])->name('api.layanan.laporan-bulanan');
+    Route::get('/laporan-bulanan/ekspor/{format}', \App\Http\Controllers\MonthlyReportExportController::class)->whereIn('format', ['pdf', 'xlsx'])->name('api.layanan.laporan-bulanan.ekspor');
+    Route::get('/laporan-bulanan/rekap-layanan', [\App\Http\Controllers\Api\ServiceSummaryController::class, 'serviceRecap'])->name('api.layanan.rekap-layanan');
+    Route::get('/rekap-tahunan', [\App\Http\Controllers\Api\ServiceSummaryController::class, 'yearRecap'])->name('api.layanan.rekap-tahunan');
     Route::get('/kondisi', [\App\Http\Controllers\Api\ServiceSummaryController::class, 'condition'])->name('api.layanan.kondisi');
 });
 
+Route::middleware(['auth:sanctum', 'throttle:api', 'izin:backoffice.access'])->get('/layanan-masuk', [\App\Http\Controllers\Api\IncomingServiceController::class, 'index'])->name('api.layanan-masuk.index');
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket', [\App\Http\Controllers\Api\StaffTicketController::class, 'index'])->name('api.tiket.index');
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/pilihan-filter', [\App\Http\Controllers\Api\StaffTicketController::class, 'filterOptions'])->name('api.tiket.pilihan-filter');
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_number}/riwayat-kategori', [\App\Http\Controllers\Api\StaffTicketController::class, 'categoryHistory'])->name('api.tiket.riwayat-kategori');
+Route::middleware(['auth:sanctum', 'throttle:api'])->put('/tiket/{ticket:ticket_number}/kategori', [\App\Http\Controllers\Api\StaffTicketController::class, 'updateCategory'])->name('api.tiket.kategori');
+Route::middleware(['auth:sanctum', 'throttle:api'])->patch('/tiket/{ticket:ticket_number}/status', [\App\Http\Controllers\Api\StaffTicketController::class, 'updateStatus'])->name('api.tiket.status');
+Route::middleware(['auth:sanctum', 'throttle:api'])->put('/tiket/{ticket:ticket_number}/petugas', [\App\Http\Controllers\Api\StaffTicketController::class, 'assign'])->name('api.tiket.petugas');
+Route::middleware(['auth:sanctum', 'throttle:api'])->post('/tiket/{ticket:ticket_number}/hasil', [\App\Http\Controllers\Api\StaffTicketController::class, 'uploadOutput'])->name('api.tiket.hasil');
+Route::middleware(['auth:sanctum', 'throttle:api'])->post('/tiket/{ticket:ticket_number}/serah-terima', [\App\Http\Controllers\Api\StaffTicketController::class, 'handOver'])->name('api.tiket.serah-terima');
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_number}/catatan', [\App\Http\Controllers\Api\StaffTicketController::class, 'notes'])->name('api.tiket.catatan');
+Route::middleware(['auth:sanctum', 'throttle:api'])->post('/tiket/{ticket:ticket_number}/catatan', [\App\Http\Controllers\Api\StaffTicketController::class, 'addNote'])->name('api.tiket.catatan.tambah');
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_number}', [\App\Http\Controllers\Api\StaffTicketController::class, 'show'])->name('api.tiket.show');
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_number}/riwayat', [\App\Http\Controllers\Api\TicketHistoryController::class, 'show'])->name('api.tiket.riwayat');
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_number}/disposisi', [\App\Http\Controllers\Api\TicketHistoryController::class, 'dispositions'])->name('api.tiket.disposisi');
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_number}/berkas', [\App\Http\Controllers\Api\TicketHistoryController::class, 'documents'])->name('api.tiket.berkas');
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/riwayat', [\App\Http\Controllers\Api\TicketHistoryController::class, 'index'])->name('api.riwayat');
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/riwayat/ekspor', [\App\Http\Controllers\Api\TicketHistoryController::class, 'export'])->name('api.riwayat.ekspor');
+
+Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('unit-kerja')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\UnitStaffController::class, 'index'])->name('api.unit-kerja.index');
+    Route::put('/{unit}', [\App\Http\Controllers\Api\UnitStaffController::class, 'update'])->name('api.unit-kerja.update');
+});
 
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('pengaturan-disposisi')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\ServiceDispositionController::class, 'index'])->name('api.pengaturan-disposisi.index');
@@ -61,8 +81,10 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('persuratan/master')
 // Public data: no sign-in, rate limited.
 Route::middleware('throttle:60,1')->prefix('publik')->name('api.publik.')->group(function () {
     Route::get('/profil', [\App\Http\Controllers\Api\PublicController::class, 'profile'])->name('profil');
+    Route::get('/slider', [\App\Http\Controllers\Api\HeroSliderController::class, 'index'])->name('slider');
     Route::get('/layanan', [\App\Http\Controllers\Api\PublicController::class, 'services'])->name('layanan');
     Route::get('/layanan/{slug}', [\App\Http\Controllers\Api\PublicController::class, 'service'])->name('layanan.detail');
+    Route::get('/layanan/{slug}/template', [\App\Http\Controllers\Api\PublicController::class, 'serviceTemplates'])->name('layanan.template');
     Route::get('/pengumuman', [\App\Http\Controllers\Api\PublicController::class, 'announcements'])->name('pengumuman');
     Route::get('/pengumuman/{pengumuman}', [\App\Http\Controllers\Api\PublicController::class, 'announcement'])->whereNumber('pengumuman')->name('pengumuman.detail');
     Route::get('/faq', [\App\Http\Controllers\Api\PublicController::class, 'faq'])->name('faq');
@@ -78,6 +100,7 @@ Route::middleware('throttle:60,1')->prefix('publik')->name('api.publik.')->group
 // Portal pemohon: the signed-in applicant's own requests.
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('permohonan')->name('api.permohonan.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\ApplicantTicketController::class, 'index'])->name('index');
+    Route::get('/layanan', [\App\Http\Controllers\Api\ApplicantTicketController::class, 'services'])->name('layanan');
     Route::post('/', [\App\Http\Controllers\Api\ApplicantTicketController::class, 'store'])->middleware('throttle:public-forms')->name('store');
     Route::get('/{ticket:ticket_number}', [\App\Http\Controllers\Api\ApplicantTicketController::class, 'show'])->name('show');
     Route::post('/{ticket:ticket_number}/berkas', [\App\Http\Controllers\Api\ApplicantTicketController::class, 'upload'])->middleware('throttle:public-forms')->name('berkas');
@@ -96,7 +119,12 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('buku-tamu')->name('
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('pengaduan')->name('api.pengaduan.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\ComplaintController::class, 'index'])->name('index');
     Route::patch('/{complaint}', [\App\Http\Controllers\Api\ComplaintController::class, 'update'])->name('update');
+    Route::post('/{complaint}/rahasiakan', [\App\Http\Controllers\Api\ComplaintController::class, 'makeConfidential'])->name('rahasiakan');
 });
+
+// Pengingat survei: completed requests not rated yet (supervisors)
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/survei/belum-mengisi', [\App\Http\Controllers\Api\SurveyReminderController::class, 'index'])->name('api.survei.belum-mengisi');
+Route::middleware(['auth:sanctum', 'throttle:api'])->post('/survei/pengingat', [\App\Http\Controllers\Api\SurveyReminderController::class, 'send'])->name('api.survei.pengingat');
 
 // Survei SKM & SPAK administration
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('survei/edisi')->name('api.survei.edisi.')->group(function () {
@@ -115,6 +143,16 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('survei')->name('api
     Route::post('/pertanyaan', [\App\Http\Controllers\Api\SurveyContentController::class, 'questionStore'])->name('pertanyaan.store');
     Route::put('/pertanyaan/{question}', [\App\Http\Controllers\Api\SurveyContentController::class, 'questionUpdate'])->name('pertanyaan.update');
     Route::delete('/pertanyaan/{question}', [\App\Http\Controllers\Api\SurveyContentController::class, 'questionDestroy'])->name('pertanyaan.destroy');
+});
+
+// Pendaftaran walk-in di loket (front desk)
+Route::middleware(['auth:sanctum', 'throttle:api'])->post('/loket/permohonan', [\App\Http\Controllers\Api\WalkInController::class, 'store'])->name('api.loket.permohonan');
+
+// Riwayat pengiriman notifikasi (admin): filter, detail, kirim ulang yang gagal
+Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('riwayat-notifikasi')->name('api.riwayat-notifikasi.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\NotificationDeliveryController::class, 'index'])->name('index');
+    Route::get('/{delivery}', [\App\Http\Controllers\Api\NotificationDeliveryController::class, 'show'])->whereNumber('delivery')->name('show');
+    Route::post('/{delivery}/kirim-ulang', [\App\Http\Controllers\Api\NotificationDeliveryController::class, 'resend'])->whereNumber('delivery')->name('kirim-ulang');
 });
 
 // Pengaturan integrasi Email & WhatsApp (admin)
@@ -145,4 +183,100 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'role:admin,sanctum'])->prefi
     Route::get('/pembaruan/{update}', [\App\Http\Controllers\Api\MonitoringController::class, 'showUpdate'])->whereNumber('update')->name('pembaruan.detail');
     Route::post('/pembaruan/unggah', [\App\Http\Controllers\Api\MonitoringController::class, 'uploadUpdate'])->name('pembaruan.unggah');
     Route::post('/pembaruan/{update}/terapkan', [\App\Http\Controllers\Api\MonitoringController::class, 'applyUpdate'])->name('pembaruan.terapkan');
+});
+
+// Katalog Layanan for staff: list and detail.
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/layanan-ptsp', [\App\Http\Controllers\Api\ServiceCatalogController::class, 'index'])->name('api.layanan-ptsp.index');
+Route::middleware(['auth:sanctum', 'throttle:api'])->post('/layanan-ptsp', [\App\Http\Controllers\Api\ServiceCatalogController::class, 'store'])->name('api.layanan-ptsp.store');
+Route::middleware(['auth:sanctum', 'throttle:api'])->patch('/layanan-ptsp/{service}/aktif', [\App\Http\Controllers\Api\ServiceCatalogController::class, 'setActive'])->whereNumber('service')->name('api.layanan-ptsp.aktif');
+Route::middleware(['auth:sanctum', 'throttle:api'])->patch('/layanan-ptsp/{service}', [\App\Http\Controllers\Api\ServiceCatalogController::class, 'update'])->whereNumber('service')->name('api.layanan-ptsp.update');
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/layanan-ptsp/{service}', [\App\Http\Controllers\Api\ServiceCatalogController::class, 'show'])->whereNumber('service')->name('api.layanan-ptsp.show');
+
+// Template berkas layanan (admin): upload, replace the file, delete.
+Route::middleware(['auth:sanctum', 'throttle:api', 'izin:peran:admin'])->prefix('layanan-ptsp/{service}/template')->name('api.layanan-ptsp.template.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\ServiceTemplateController::class, 'index'])->name('index');
+    Route::post('/', [\App\Http\Controllers\Api\ServiceTemplateController::class, 'store'])->name('store');
+    Route::get('/{template}', [\App\Http\Controllers\Api\ServiceTemplateController::class, 'show'])->name('show');
+    Route::patch('/{template}', [\App\Http\Controllers\Api\ServiceTemplateController::class, 'update'])->name('update');
+    Route::post('/{template}/berkas', [\App\Http\Controllers\Api\ServiceTemplateController::class, 'replaceFile'])->name('berkas');
+    Route::delete('/{template}', [\App\Http\Controllers\Api\ServiceTemplateController::class, 'destroy'])->name('destroy');
+});
+
+// Notifikasi in-app of the signed-in user.
+Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('notifikasi')->name('api.notifikasi.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\NotificationController::class, 'index'])->name('index');
+    Route::get('/jumlah', [\App\Http\Controllers\Api\NotificationController::class, 'count'])->name('jumlah');
+    Route::post('/dibaca', [\App\Http\Controllers\Api\NotificationController::class, 'markMany'])->name('dibaca');
+    Route::patch('/{id}/dibaca', [\App\Http\Controllers\Api\NotificationController::class, 'markOne'])->whereUuid('id')->name('dibaca.satu');
+});
+
+// Masuk dan keluar (Sanctum token).
+Route::prefix('auth')->name('api.auth.')->group(function () {
+    Route::post('/masuk', [\App\Http\Controllers\Api\AuthController::class, 'login'])->middleware('throttle:20,1')->name('masuk');
+    Route::post('/lupa-kata-sandi', [\App\Http\Controllers\Api\AuthController::class, 'forgotPassword'])->middleware('throttle:6,1')->name('lupa-kata-sandi');
+    Route::post('/reset-kata-sandi', [\App\Http\Controllers\Api\AuthController::class, 'resetPassword'])->middleware('throttle:6,1')->name('reset-kata-sandi');
+    Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
+        Route::get('/saya', [\App\Http\Controllers\Api\AuthController::class, 'me'])->name('saya');
+        Route::post('/keluar', [\App\Http\Controllers\Api\AuthController::class, 'logout'])->name('keluar');
+        Route::post('/keluar-semua', [\App\Http\Controllers\Api\AuthController::class, 'logoutEverywhere'])->name('keluar-semua');
+        Route::put('/kata-sandi', [\App\Http\Controllers\Api\AuthController::class, 'changePassword'])->name('kata-sandi');
+    });
+});
+
+// Pengumuman (admin): every status, with filters; tayangkan/draf/akhiri as actions.
+Route::middleware(['auth:sanctum', 'throttle:api', 'izin:peran:admin'])->prefix('pengumuman')->name('api.pengumuman.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\PengumumanController::class, 'index'])->name('index');
+    Route::post('/', [\App\Http\Controllers\Api\PengumumanController::class, 'store'])->name('store');
+    Route::get('/{pengumuman}', [\App\Http\Controllers\Api\PengumumanController::class, 'show'])->whereNumber('pengumuman')->name('show');
+    Route::patch('/{pengumuman}', [\App\Http\Controllers\Api\PengumumanController::class, 'update'])->whereNumber('pengumuman')->name('update');
+    Route::delete('/{pengumuman}', [\App\Http\Controllers\Api\PengumumanController::class, 'destroy'])->whereNumber('pengumuman')->name('destroy');
+    Route::post('/{pengumuman}/{action}', [\App\Http\Controllers\Api\PengumumanController::class, 'transition'])->whereNumber('pengumuman')->whereIn('action', ['tayangkan', 'draf', 'akhiri'])->name('aksi');
+});
+
+// FAQ (admin): CRUD plus ordering (whole list or one step up/down).
+Route::middleware(['auth:sanctum', 'throttle:api', 'izin:peran:admin'])->prefix('faq')->name('api.faq.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\FaqController::class, 'index'])->name('index');
+    Route::post('/', [\App\Http\Controllers\Api\FaqController::class, 'store'])->name('store');
+    Route::put('/urutan', [\App\Http\Controllers\Api\FaqController::class, 'reorder'])->name('urutan');
+    Route::get('/{faq}', [\App\Http\Controllers\Api\FaqController::class, 'show'])->whereNumber('faq')->name('show');
+    Route::patch('/{faq}', [\App\Http\Controllers\Api\FaqController::class, 'update'])->whereNumber('faq')->name('update');
+    Route::delete('/{faq}', [\App\Http\Controllers\Api\FaqController::class, 'destroy'])->whereNumber('faq')->name('destroy');
+    Route::post('/{faq}/{direction}', [\App\Http\Controllers\Api\FaqController::class, 'move'])->whereNumber('faq')->whereIn('direction', ['naik', 'turun'])->name('pindah');
+});
+
+// Preferensi tampilan of the signed-in user (any account).
+Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('preferensi-tampilan')->name('api.preferensi-tampilan.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\DisplayPreferenceController::class, 'show'])->name('show');
+    Route::patch('/', [\App\Http\Controllers\Api\DisplayPreferenceController::class, 'update'])->name('update');
+});
+
+// Pengaturan Aplikasi (admin): the Pengaturan screen's settings.
+Route::middleware(['auth:sanctum', 'throttle:api', 'izin:peran:admin'])->prefix('pengaturan')->name('api.pengaturan.')->group(function () {
+    Route::get('/profil', [\App\Http\Controllers\Api\SettingsController::class, 'profile'])->name('profil');
+    Route::patch('/profil', [\App\Http\Controllers\Api\SettingsController::class, 'updateProfile'])->name('profil.update');
+    Route::post('/profil/logo', [\App\Http\Controllers\Api\SettingsController::class, 'uploadLogo'])->name('profil.logo');
+    Route::delete('/profil/logo', [\App\Http\Controllers\Api\SettingsController::class, 'deleteLogo'])->name('profil.logo.hapus');
+    Route::get('/umum', [\App\Http\Controllers\Api\SettingsController::class, 'general'])->name('umum');
+    Route::patch('/umum', [\App\Http\Controllers\Api\SettingsController::class, 'updateGeneral'])->name('umum.update');
+});
+
+// Pengguna (admin).
+Route::middleware(['auth:sanctum', 'throttle:api', 'izin:peran:admin'])->prefix('pengguna')->name('api.pengguna.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\UserController::class, 'index'])->name('index');
+    Route::post('/', [\App\Http\Controllers\Api\UserController::class, 'store'])->name('store');
+    Route::get('/{user}', [\App\Http\Controllers\Api\UserController::class, 'show'])->whereNumber('user')->name('show');
+    Route::patch('/{user}', [\App\Http\Controllers\Api\UserController::class, 'update'])->whereNumber('user')->name('update');
+    Route::patch('/{user}/aktif', [\App\Http\Controllers\Api\UserController::class, 'setActive'])->whereNumber('user')->name('aktif');
+    Route::post('/{user}/kirim-reset-kata-sandi', [\App\Http\Controllers\Api\UserController::class, 'sendPasswordReset'])->whereNumber('user')->name('reset-kata-sandi');
+    Route::delete('/{user}', [\App\Http\Controllers\Api\UserController::class, 'destroy'])->whereNumber('user')->name('destroy');
+});
+
+// Peran dan izin (admin).
+Route::middleware(['auth:sanctum', 'throttle:api', 'izin:peran:admin'])->prefix('peran')->name('api.peran.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\RoleController::class, 'index'])->name('index');
+    Route::get('/izin', [\App\Http\Controllers\Api\RoleController::class, 'permissions'])->name('izin');
+    Route::post('/', [\App\Http\Controllers\Api\RoleController::class, 'store'])->name('store');
+    Route::get('/{role}', [\App\Http\Controllers\Api\RoleController::class, 'show'])->whereNumber('role')->name('show');
+    Route::patch('/{role}', [\App\Http\Controllers\Api\RoleController::class, 'update'])->whereNumber('role')->name('update');
+    Route::delete('/{role}', [\App\Http\Controllers\Api\RoleController::class, 'destroy'])->whereNumber('role')->name('destroy');
 });

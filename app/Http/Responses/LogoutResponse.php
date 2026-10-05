@@ -10,6 +10,6 @@ class LogoutResponse implements Responsable
 {
     public function toResponse($request): RedirectResponse
     {
-        return redirect()->route('home');
+        return redirect()->route('home')->with('signed_out', true);
     }
 }

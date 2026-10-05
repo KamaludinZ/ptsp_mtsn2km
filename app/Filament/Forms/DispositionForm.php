@@ -12,6 +12,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -52,6 +53,14 @@ class DispositionForm
                 ->helperText(ServiceDisposition::recommendationHint($service))
                 ->required()
                 ->live(),
+            TextInput::make('acknowledged_by')
+                ->label('Telah didisposisi oleh')
+                ->placeholder('mis. Kepala Madrasah — Drs. H. Ahmad')
+                ->helperText('Pimpinan yang mendisposisi bila dicatat atas namanya. Keterangan tambahan tulis di Catatan.')
+                ->default(fn () => auth()->user()?->name)
+                ->maxLength(255)
+                ->required(fn (Get $get) => $get('signature_model') === 'acknowledged_by')
+                ->visible(fn (Get $get) => $get('signature_model') === 'acknowledged_by'),
             Placeholder::make('sheet')
                 ->hiddenLabel()
                 ->content(new HtmlString(sprintf(
@@ -85,6 +94,7 @@ class DispositionForm
             $data['notes'] ?? null,
             $data['signature_file'] ?? null,
             $data['signature_file_name'] ?? null,
+            $data['acknowledged_by'] ?? null,
         );
     }
 }

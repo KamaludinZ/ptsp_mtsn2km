@@ -309,7 +309,7 @@
                             </div>
                             <div class="col-md-6">
                                 <p class="mb-1"><strong>Status:</strong></p>
-                                <p class="mb-0"><span class="status-badge" id="statusBadge">-</span></p>
+                                <p class="mb-0"><x-status-badge id="statusBadge" status="" /></p>
                             </div>
                         </div>
 
@@ -457,22 +457,10 @@
                     
                     // Update status badge
                     const statusBadge = document.getElementById('statusBadge');
-                    const statusLabels = {
-                        submitted: 'Diajukan', verified: 'Diverifikasi', in_process: 'Sedang Diproses',
-                        approved: 'Disetujui', rejected: 'Ditolak', completed: 'Selesai', cancelled: 'Dibatalkan',
-                    };
-                    statusBadge.textContent = statusLabels[data.status] || data.status;
-                    statusBadge.className = 'status-badge';
-                    
-                    // Add status class based on status value
-                    if (data.status === 'completed') {
-                        statusBadge.classList.add('status-completed');
-                    } else if (['verified', 'in_process', 'approved'].includes(data.status)) {
-                        statusBadge.classList.add('status-processing');
-                    } else {
-                        statusBadge.classList.add('status-pending');
-                    }
-                    
+                    statusBadge.querySelector('[data-status-label]').textContent = data.status_label || data.status;
+                    statusBadge.dataset.status = data.status;
+                    statusBadge.className = 'status-pill status-pill--md status-pill--' + (data.status_color || 'gray');
+
                     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 
                     // Populate process table

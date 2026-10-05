@@ -473,8 +473,15 @@
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('login') }}" id="loginForm">
+                        <form method="POST" action="{{ route('login') }}" id="loginForm" novalidate>
                             @csrf
+
+                            @if (session('login_locked_until'))
+                                <div class="alert alert-warning" role="alert" id="lockoutNotice" data-until="{{ session('login_locked_until') }}">
+                                    <i class="fas fa-lock me-1" aria-hidden="true"></i>
+                                    Terlalu banyak percobaan. Coba lagi dalam <strong id="lockoutCountdown">…</strong>.
+                                </div>
+                            @endif
 
                             <div class="form-group">
                                 <label for="email" class="form-label">
@@ -486,10 +493,13 @@
                                        class="form-control @error('email') is-invalid @enderror"
                                        value="{{ old('email') }}"
                                        placeholder="contoh@email.com"
+                                       autocomplete="username"
+                                       inputmode="email"
+                                       @error('email') aria-invalid="true" aria-describedby="email-error" @enderror
                                        required
                                        autofocus>
                                 @error('email')
-                                    <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
+                                    <div class="text-danger mt-1" id="email-error" role="alert" style="font-size: 14px;">{{ $message }}</div>
                                 @enderror
                             </div>
 
@@ -497,19 +507,32 @@
                                 <label for="password" class="form-label">
                                     Password <span class="text-danger">*</span>
                                 </label>
-                                <input type="password"
-                                       id="password"
-                                       name="password"
-                                       class="form-control @error('password') is-invalid @enderror"
-                                       placeholder="Masukkan password Anda"
-                                       required>
+                                <div class="position-relative">
+                                    <input type="password"
+                                           id="password"
+                                           name="password"
+                                           class="form-control @error('password') is-invalid @enderror"
+                                           placeholder="Masukkan password Anda"
+                                           autocomplete="current-password"
+                                           style="padding-right: 3rem;"
+                                           aria-describedby="capsLockWarning @error('password') password-error @enderror"
+                                           @error('password') aria-invalid="true" @enderror
+                                           required>
+                                    <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-secondary"
+                                            id="togglePassword" aria-label="Tampilkan password" aria-pressed="false" aria-controls="password">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="text-warning mt-1 d-none" id="capsLockWarning" style="font-size: 14px;">
+                                    <i class="fas fa-arrow-up me-1" aria-hidden="true"></i>Caps Lock aktif.
+                                </div>
                                 @error('password')
-                                    <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
+                                    <div class="text-danger mt-1" id="password-error" role="alert" style="font-size: 14px;">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">
+                                <label class="form-label" for="captcha">
                                     Kode Verifikasi <span class="text-danger">*</span>
                                 </label>
                                 <div class="captcha-container">
@@ -517,8 +540,8 @@
                                     <button type="button"
                                             class="captcha-refresh"
                                             onclick="refreshCaptcha()"
-                                            title="Refresh Captcha">
-                                        <i class="fas fa-sync-alt"></i>
+                                            title="Ganti kode verifikasi" aria-label="Ganti kode verifikasi">
+                                        <i class="fas fa-sync-alt" aria-hidden="true"></i>
                                     </button>
                                 </div>
                                 <input type="text"
@@ -528,9 +551,12 @@
                                        placeholder="Masukkan 6 angka di atas"
                                        maxlength="6"
                                        pattern="[0-9]{6}"
+                                       inputmode="numeric"
+                                       autocomplete="off"
+                                       @error('captcha') aria-invalid="true" aria-describedby="captcha-error" @enderror
                                        required>
                                 @error('captcha')
-                                    <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
+                                    <div class="text-danger mt-1" id="captcha-error" role="alert" style="font-size: 14px;">{{ $message }}</div>
                                 @enderror
                             </div>
 
@@ -552,8 +578,8 @@
                             </div>
 
                             <div class="mt-4">
-                                <button type="submit" class="btn btn-primary d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Masuk
+                                <button type="submit" id="loginButton" class="btn btn-primary d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-sign-in-alt me-2" aria-hidden="true"></i><span>Masuk</span>
                                 </button>
                             </div>
                         </form>
@@ -651,6 +677,58 @@ resetSessionTimer();
 // Reset timer on any user activity
 ['mousedown', 'keypress', 'scroll', 'touchstart'].forEach(event => {
     document.addEventListener(event, resetSessionTimer, true);
+});
+
+// Show/hide password, Caps Lock hint, no double submit, lockout countdown.
+document.addEventListener('DOMContentLoaded', function () {
+    const password = document.getElementById('password');
+    const toggle = document.getElementById('togglePassword');
+    toggle?.addEventListener('click', function () {
+        const show = password.type === 'password';
+        password.type = show ? 'text' : 'password';
+        toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+        toggle.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+        toggle.querySelector('i').className = show ? 'fas fa-eye-slash' : 'fas fa-eye';
+    });
+
+    const caps = document.getElementById('capsLockWarning');
+    ['keydown', 'keyup'].forEach(type => password?.addEventListener(type, e => {
+        caps.classList.toggle('d-none', !(e.getModifierState && e.getModifierState('CapsLock')));
+    }));
+
+    const form = document.getElementById('loginForm');
+    const button = document.getElementById('loginButton');
+    form?.addEventListener('submit', function (e) {
+        if (!form.checkValidity()) {
+            e.preventDefault();
+            form.reportValidity();
+            return;
+        }
+        if (button.disabled) {
+            e.preventDefault();
+            return;
+        }
+        button.disabled = true;
+        button.querySelector('span').textContent = 'Memproses…';
+    });
+
+    const notice = document.getElementById('lockoutNotice');
+    if (notice) {
+        const until = parseInt(notice.dataset.until, 10) * 1000;
+        const countdown = document.getElementById('lockoutCountdown');
+        const tick = function () {
+            const left = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+            countdown.textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+            button.disabled = left > 0;
+            if (left === 0) {
+                notice.classList.replace('alert-warning', 'alert-success');
+                notice.textContent = 'Silakan coba masuk lagi.';
+                clearInterval(timer);
+            }
+        };
+        const timer = setInterval(tick, 1000);
+        tick();
+    }
 });
 
 // Refresh captcha using AJAX

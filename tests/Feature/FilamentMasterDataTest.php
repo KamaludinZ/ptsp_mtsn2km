@@ -67,6 +67,7 @@ class FilamentMasterDataTest extends TestCase
                 'email' => 'petugas.baru@example.test',
                 'user_type' => 'pegawai',
                 'password' => 'RahasiaKuat123!',
+                'password_confirmation' => 'RahasiaKuat123!',
                 'is_active' => true,
                 'roles' => [Role::findByName('front_desk')->id],
             ])

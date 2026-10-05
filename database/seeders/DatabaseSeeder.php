@@ -13,9 +13,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            RolePermissionSeeder::class,      // system roles and their default permissions
             UserSeeder::class,
             ServiceSeeder::class,
             SchoolServicesSeeder::class,
+            ServiceCatalogSeeder::class,     // categories, disposition rules, requirement rows
             SurveySeeder::class,              // Create default survey
             SurveyUnsurSeeder::class,         // Create survey unsurs
             SurveyQuestionSeeder::class,      // Create survey questions
@@ -36,6 +38,7 @@ class DatabaseSeeder extends Seeder
                 ComplaintSeeder::class,
                 PengumumanSeeder::class,
                 SuratKeluarSeeder::class,
+                NotificationSeeder::class,
             ]);
         }
     }

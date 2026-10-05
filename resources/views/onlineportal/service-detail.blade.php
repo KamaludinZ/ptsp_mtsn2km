@@ -97,34 +97,73 @@
             </div>
         </section>
 
-        @if ($service->templates->isNotEmpty())
+        @if ($service->activeTemplates->isNotEmpty())
+            @php
+                $available = $service->activeTemplates->filter(fn ($template) => $template->fileInfo());
+                $icon = fn ($template) => match (strtolower(pathinfo($template->file_name ?: $template->file_path, PATHINFO_EXTENSION))) {
+                    'pdf' => 'fa-file-pdf text-danger',
+                    'doc', 'docx' => 'fa-file-word text-primary',
+                    'xls', 'xlsx' => 'fa-file-excel text-success',
+                    default => 'fa-file text-secondary',
+                };
+            @endphp
             <!-- Template berkas: diunduh, dilengkapi, lalu diunggah saat mengajukan -->
             <section class="card border-0 shadow-sm mb-4" aria-labelledby="templates-heading">
                 <div class="card-body p-4">
-                    <h2 id="templates-heading" class="h5 fw-bold mb-1">
-                        <i class="fas fa-file-download me-2" style="color: var(--bs-primary);" aria-hidden="true"></i>Template Berkas
-                    </h2>
-                    <p class="text-muted small mb-3">Unduh dan lengkapi template berikut, lalu unggah bersama berkas persyaratan saat mengajukan permohonan.</p>
+                    <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
+                        <div>
+                            <h2 id="templates-heading" class="h5 fw-bold mb-1">
+                                <i class="fas fa-file-download me-2" style="color: var(--bs-primary);" aria-hidden="true"></i>Template Berkas
+                            </h2>
+                            <p class="text-muted small mb-0">{{ $service->activeTemplates->count() }} template untuk layanan ini{{ $service->activeTemplates->where('is_required', true)->count() ? ', ' . $service->activeTemplates->where('is_required', true)->count() . ' wajib dilengkapi' : '' }}.</p>
+                        </div>
+                        @if ($available->count() > 1)
+                            <a href="{{ route('onlineportal.service.templates.zip', $service->slug) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-file-archive me-1" aria-hidden="true"></i>Unduh semua (.zip)
+                            </a>
+                        @endif
+                    </div>
+
+                    <ol class="list-unstyled d-flex flex-wrap gap-3 small text-muted my-3" aria-label="Cara memakai template">
+                        <li><span class="badge rounded-pill bg-primary me-1">1</span>Unduh template</li>
+                        <li><span class="badge rounded-pill bg-primary me-1">2</span>Lengkapi dan tanda tangani bila perlu</li>
+                        <li><span class="badge rounded-pill bg-primary me-1">3</span>Unggah saat <a href="{{ route('onlineportal.service.apply', $service->slug) }}">mengajukan permohonan</a></li>
+                    </ol>
+
                     <ul class="list-group list-group-flush">
-                        @foreach ($service->templates as $template)
+                        @foreach ($service->activeTemplates as $template)
+                            @php
+                                $info = $template->fileInfo();
+                            @endphp
                             <li class="list-group-item px-0 d-flex flex-wrap align-items-center justify-content-between gap-2">
-                                <span>
-                                    <span class="fw-semibold">{{ $template->nama }}</span>
-                                    @if ($template->is_required)
-                                        <span class="badge bg-warning text-dark ms-1">Wajib</span>
-                                    @endif
-                                    @if ($info = $template->fileInfo())
-                                        <span class="d-block small text-muted">{{ $info }}</span>
-                                    @endif
+                                <span class="d-flex align-items-start gap-2">
+                                    <i class="fas {{ $icon($template) }} fa-lg mt-1" aria-hidden="true"></i>
+                                    <span>
+                                        <span class="fw-semibold">{{ $template->nama }}</span>
+                                        @if ($template->is_required)
+                                            <span class="badge bg-warning text-dark ms-1">Wajib</span>
+                                        @endif
+                                        <span class="d-block small text-muted">{{ $info ?? 'Berkas sedang tidak tersedia. Silakan hubungi petugas PTSP.' }}</span>
+                                    </span>
                                 </span>
-                                <a href="{{ $template->downloadUrl() }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-download me-1" aria-hidden="true"></i>Unduh
-                                </a>
+                                @if ($info)
+                                    <a href="{{ $template->downloadUrl() }}" class="btn btn-sm btn-outline-primary" aria-label="Unduh {{ $template->nama }}">
+                                        <i class="fas fa-download me-1" aria-hidden="true"></i>Unduh
+                                    </a>
+                                @else
+                                    <span class="badge bg-secondary">Tidak tersedia</span>
+                                @endif
                             </li>
                         @endforeach
                     </ul>
                 </div>
             </section>
+        @endif
+
+        @if ($service->activeTemplates->isEmpty())
+            <p class="small text-muted mb-4">
+                <i class="fas fa-info-circle me-1" aria-hidden="true"></i>Layanan ini tidak memakai template berkas; cukup siapkan berkas persyaratan di bawah saat mengajukan.
+            </p>
         @endif
 
         <!-- 14 komponen standar pelayanan -->

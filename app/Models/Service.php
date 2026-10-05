@@ -50,14 +50,20 @@ class Service extends Model
         parent::boot();
 
         static::creating(function ($model) {
+            $model->created_by ??= auth()->id();
+
             if (empty($model->slug)) {
-                $model->slug = Str::slug($model->name) . '-' . time();
+                $model->slug = static::uniqueSlug($model->name);
             }
         });
 
+        // A permanently deleted service takes its template files along
+        // (the database cascade alone would leave the files behind).
+        static::forceDeleting(fn (Service $service) => $service->templates()->get()->each->delete());
+
         static::updating(function ($model) {
             if ($model->isDirty('name') && empty($model->slug)) {
-                $model->slug = Str::slug($model->name) . '-' . time();
+                $model->slug = static::uniqueSlug($model->name, $model->id);
             }
         });
     }
@@ -112,14 +118,57 @@ class Service extends Model
 
     // Relationship with tickets
     /** Template berkas the applicant can download. */
+    /** Template berkas, in display order. */
     public function templates()
     {
         return $this->hasMany(ServiceTemplate::class)->orderBy('sort')->orderBy('id');
     }
 
+    /** Template berkas offered to applicants (active ones only), in display order. */
+    public function activeTemplates()
+    {
+        return $this->templates()->active();
+    }
+
+    /** Templates the applicant must fill in and upload. */
+    public function requiredTemplates()
+    {
+        return $this->activeTemplates()->required();
+    }
+
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    /**
+     * Services a request can be opened for right now: active, and online
+     * only when served online (online/hybrid) and open to the applicant's
+     * type. At the counter the officer judges eligibility, so any active
+     * service may be registered there.
+     */
+    public function scopeRequestable($query, ?string $userType, string $channel = 'online')
+    {
+        return $query->where('is_active', true)
+            ->when($channel === 'online', fn ($q) => $q->whereIn('mode', ['online', 'hybrid'])->availableFor($userType));
+    }
+
+    /** Can $applicant request this service on $channel (read fresh from the database)? */
+    public function acceptsRequests(?User $applicant, string $channel = 'online'): bool
+    {
+        return static::query()->whereKey($this->getKey())->requestable($applicant?->user_type, $channel)->exists();
+    }
+
+    /** "legalisir-ijazah", or "legalisir-ijazah-2" when taken (soft-deleted services included). */
+    public static function uniqueSlug(string $name, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($name) ?: 'layanan';
+        $slug = $base;
+        for ($i = 2; static::withTrashed()->where('slug', $slug)->when($ignoreId, fn ($q) => $q->whereKeyNot($ignoreId))->exists(); $i++) {
+            $slug = "{$base}-{$i}";
+        }
+
+        return $slug;
     }
 
     // Relationship with service categories

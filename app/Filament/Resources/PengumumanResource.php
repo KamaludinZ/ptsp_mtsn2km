@@ -28,76 +28,86 @@ class PengumumanResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(['default' => 1, 'xl' => 5])
             ->schema([
-                Forms\Components\Section::make('Informasi Pengumuman')
+                Forms\Components\Group::make()->columnSpan(['xl' => 3])->schema([
+                    Forms\Components\Section::make('Isi pengumuman')
+                        ->schema([
+                            Forms\Components\TextInput::make('title')
+                                ->label('Judul')
+                                ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true),
+                            Forms\Components\TextInput::make('category')
+                                ->label('Kategori')
+                                ->datalist(fn () => Pengumuman::categories())
+                                ->placeholder('mis. akademik, umum, kegiatan')
+                                ->maxLength(50)
+                                ->dehydrateStateUsing(fn (?string $state) => filled($state) ? \Illuminate\Support\Str::lower(trim($state)) : null)
+                                ->live(onBlur: true),
+                            Forms\Components\RichEditor::make('content')
+                                ->label('Isi')
+                                ->required()
+                                ->disableToolbarButtons(['attachFiles'])
+                                ->live(debounce: 1000),
+                            Forms\Components\TextInput::make('author')
+                                ->label('Penulis')
+                                ->default(fn () => auth()->user()?->name)
+                                ->maxLength(255),
+                        ]),
+                    Forms\Components\Section::make('Jadwal tayang')
+                        ->description('Pengumuman tampil di situs dari tanggal tayang sampai tanggal berakhir (kosongkan bila tanpa batas).')
+                        ->columns(['default' => 1, 'sm' => 3])
+                        ->schema([
+                            Forms\Components\DatePicker::make('publish_date')
+                                ->label('Tanggal tayang')
+                                ->default(today())
+                                ->native(false)
+                                ->displayFormat('d M Y')
+                                ->required()
+                                ->live(),
+                            Forms\Components\DatePicker::make('end_date')
+                                ->label('Tanggal berakhir')
+                                ->native(false)
+                                ->displayFormat('d M Y')
+                                ->afterOrEqual('publish_date')
+                                ->validationMessages(['after_or_equal' => 'Tanggal berakhir tidak boleh sebelum tanggal tayang.'])
+                                ->live(),
+                            Forms\Components\Toggle::make('is_active')
+                                ->label('Tayangkan')
+                                ->helperText('Matikan untuk menyimpan sebagai draf.')
+                                ->default(true)
+                                ->inline(false)
+                                ->live(),
+                        ]),
+                    Forms\Components\Section::make('Lampiran & tautan')
+                        ->collapsible()
+                        ->columns(['default' => 1, 'sm' => 2])
+                        ->schema([
+                            Forms\Components\FileUpload::make('attachment')
+                                ->label('Berkas lampiran')
+                                ->directory('pengumuman-attachments')
+                                ->preserveFilenames()
+                                ->maxSize(10240)
+                                ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'])
+                                ->helperText('PDF, Word, atau gambar; maksimal 10 MB.'),
+                            Forms\Components\TextInput::make('url')
+                                ->label('Tautan luar')
+                                ->url()
+                                ->placeholder('https://…')
+                                ->maxLength(255)
+                                ->live(onBlur: true),
+                        ]),
+                ]),
+                Forms\Components\Section::make('Pratinjau')
+                    ->description('Seperti yang dilihat pengunjung situs.')
+                    ->icon('heroicon-o-eye')
+                    ->columnSpan(['xl' => 2])
                     ->schema([
-                        Forms\Components\TextInput::make('title')
-                            ->label('Judul')
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-                        Forms\Components\Textarea::make('summary')
-                            ->label('Ringkasan')
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-                        Forms\Components\RichEditor::make('content')
-                            ->label('Isi Pengumuman')
-                            ->required()
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make('author')
-                            ->label('Penulis')
-                            ->maxLength(255),
-                    ])
-                    ->columns(2),
-
-                Forms\Components\Section::make('Tanggal dan Status')
-                    ->schema([
-                        Forms\Components\DatePicker::make('publish_date')
-                            ->label('Tanggal Publikasi')
-                            ->default(now())
-                            ->required(),
-                        Forms\Components\DatePicker::make('end_date')
-                            ->label('Tanggal Berakhir'),
-                        Forms\Components\Toggle::make('is_active')
-                            ->label('Aktif')
-                            ->default(true),
-                        Forms\Components\Select::make('priority')
-                            ->label('Prioritas')
-                            ->options([
-                                'low' => 'Rendah',
-                                'normal' => 'Normal',
-                                'high' => 'Tinggi',
-                                'urgent' => 'Darurat',
-                            ])
-                            ->default('normal'),
-                    ])
-                    ->columns(2),
-
-                Forms\Components\Section::make('Target Audience')
-                    ->schema([
-                        Forms\Components\CheckboxList::make('user_types')
-                            ->label('Tipe Pengguna')
-                            ->options([
-                                'guru' => 'Guru',
-                                'pegawai' => 'Pegawai',
-                                'siswa' => 'Siswa',
-                                'walimurid' => 'Wali Murid',
-                                'alumni' => 'Alumni',
-                                'instansi' => 'Instansi',
-                                'umum' => 'Umum',
-                            ])
-                            ->columns(3)
-                            ->columnSpanFull(),
-                    ]),
-
-                Forms\Components\Section::make('File Lampiran')
-                    ->schema([
-                        Forms\Components\FileUpload::make('attachment')
-                            ->label('File Lampiran')
-                            ->directory('pengumuman-attachments')
-                            ->preserveFilenames()
-                            ->maxSize(10240) // 10MB
-                            ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']),
+                        Forms\Components\ViewField::make('preview')
+                            ->hiddenLabel()
+                            ->dehydrated(false)
+                            ->view('filament.forms.pengumuman-preview'),
                     ]),
             ]);
     }
@@ -105,85 +115,128 @@ class PengumumanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('publish_date', 'desc')
+            ->searchPlaceholder('Cari judul atau isi pengumuman…')
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->label('Judul')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('publish_date')
-                    ->label('Tanggal Publikasi')
-                    ->date('d/m/Y')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('end_date')
-                    ->label('Tanggal Berakhir')
-                    ->date('d/m/Y')
+                    ->weight('semibold')
+                    ->wrap()
+                    ->searchable(query: fn (Builder $query, string $search) => $query->where(fn (Builder $q) => $q
+                        ->where('title', 'ilike', "%{$search}%")->orWhere('content', 'ilike', "%{$search}%")))
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Aktif')
-                    ->boolean(),
-                Tables\Columns\TextColumn::make('priority')
-                    ->label('Prioritas')
+                    ->description(fn (Pengumuman $record) => $record->category ? \Illuminate\Support\Str::headline($record->category) : null),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'low' => 'info',
-                        'normal' => 'gray',
-                        'high' => 'warning',
-                        'urgent' => 'danger',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'low' => 'Rendah',
-                        'normal' => 'Normal',
-                        'high' => 'Tinggi',
-                        'urgent' => 'Darurat',
-                        default => ucfirst($state),
-                    }),
+                    ->state(fn (Pengumuman $record) => \App\Support\ContentStatus::of($record))
+                    ->formatStateUsing(fn (string $state) => \App\Support\ContentStatus::LABELS[$state])
+                    ->color(fn (string $state) => \App\Support\ContentStatus::COLORS[$state]),
+                Tables\Columns\TextColumn::make('publish_date')
+                    ->label('Tayang')
+                    ->date('d M Y')
+                    ->sortable()
+                    ->description(fn (Pengumuman $record) => $record->end_date ? 's.d. ' . $record->end_date->translatedFormat('d M Y') : 'tanpa batas'),
+                Tables\Columns\TextColumn::make('view_count')
+                    ->label('Dilihat')
+                    ->numeric()
+                    ->alignEnd()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('author')
                     ->label('Penulis')
+                    ->placeholder('–')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d/m/Y H:i')
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diubah')
+                    ->since()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\Filter::make('is_active')
-                    ->label('Aktif')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true)),
-                Tables\Filters\SelectFilter::make('priority')
-                    ->label('Prioritas')
-                    ->options([
-                        'low' => 'Rendah',
-                        'normal' => 'Normal',
-                        'high' => 'Tinggi',
-                        'urgent' => 'Darurat',
-                    ]),
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options(\App\Support\ContentStatus::LABELS)
+                    ->query(fn (Builder $query, array $data) => filled($data['value'] ?? null) ? \App\Support\ContentStatus::scope($query, $data['value']) : $query),
+                Tables\Filters\SelectFilter::make('category')
+                    ->label('Kategori')
+                    ->options(fn () => collect(Pengumuman::categories())->mapWithKeys(fn (string $category) => [$category => \Illuminate\Support\Str::headline($category)])->all()),
                 Tables\Filters\Filter::make('publish_date')
-                    ->form([Forms\Components\DatePicker::make('publish_date')->label('Tanggal Publikasi')])
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        $data['publish_date'],
-                        fn (Builder $query, $date): Builder => $query->whereDate('publish_date', $date)
-                    )),
-                Tables\Filters\Filter::make('created_at')
-                    ->form([Forms\Components\DatePicker::make('created_at')->label('Tanggal Dibuat')])
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        $data['created_at'],
-                        fn (Builder $query, $date): Builder => $query->whereDate('created_at', $date)
-                    )),
+                    ->label('Tanggal tayang')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')->label('Tayang dari'),
+                        Forms\Components\DatePicker::make('until')->label('Tayang sampai'),
+                    ])
+                    ->columns(2)
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['from'] ?? null, fn (Builder $q, $date) => $q->whereDate('publish_date', '>=', $date))
+                        ->when($data['until'] ?? null, fn (Builder $q, $date) => $q->whereDate('publish_date', '<=', $date)))
+                    ->indicateUsing(fn (array $data) => collect([
+                        ($data['from'] ?? null) ? 'Tayang dari ' . \Illuminate\Support\Carbon::parse($data['from'])->translatedFormat('j M Y') : null,
+                        ($data['until'] ?? null) ? 'sampai ' . \Illuminate\Support\Carbon::parse($data['until'])->translatedFormat('j M Y') : null,
+                    ])->filter()->join(' ') ?: null),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\Action::make('publish')
+                        ->label('Tayangkan sekarang')
+                        ->icon('heroicon-m-signal')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalDescription('Pengumuman langsung tampil di situs mulai hari ini.')
+                        ->visible(fn (Pengumuman $record) => \App\Support\ContentStatus::of($record) !== 'tayang')
+                        ->action(function (Pengumuman $record, Tables\Actions\Action $action) {
+                            \App\Support\ContentStatus::publish($record);
+                            $action->success();
+                        })
+                        ->successNotificationTitle('Pengumuman ditayangkan'),
+                    Tables\Actions\Action::make('draft')
+                        ->label('Jadikan draf')
+                        ->icon('heroicon-m-eye-slash')
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->modalDescription('Pengumuman disembunyikan dari situs; isinya tetap tersimpan.')
+                        ->visible(fn (Pengumuman $record) => $record->is_active)
+                        ->action(function (Pengumuman $record, Tables\Actions\Action $action) {
+                            $record->update(['is_active' => false]);
+                            $action->success();
+                        })
+                        ->successNotificationTitle('Pengumuman dijadikan draf'),
+                    Tables\Actions\Action::make('end')
+                        ->label('Akhiri sekarang')
+                        ->icon('heroicon-m-stop-circle')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalDescription('Tanggal berakhir diisi kemarin, sehingga pengumuman tidak lagi tampil (tetap tersimpan sebagai arsip).')
+                        ->visible(fn (Pengumuman $record) => \App\Support\ContentStatus::of($record) === 'tayang')
+                        ->action(function (Pengumuman $record, Tables\Actions\Action $action) {
+                            \App\Support\ContentStatus::end($record);
+                            $action->success();
+                        })
+                        ->successNotificationTitle('Pengumuman diakhiri'),
+                    Tables\Actions\DeleteAction::make()
+                        ->modalDescription('Pengumuman dan berkas lampirannya dihapus permanen.'),
+                ])->label('Aksi')->icon('heroicon-m-ellipsis-vertical'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('publish')->label('Tayangkan')->icon('heroicon-m-signal')->color('success')
+                        ->requiresConfirmation()
+                        ->action(fn (\Illuminate\Support\Collection $records) => $records->each(fn (Pengumuman $r) => \App\Support\ContentStatus::publish($r)))
+                        ->deselectRecordsAfterCompletion(),
+                    Tables\Actions\BulkAction::make('draft')->label('Jadikan draf')->icon('heroicon-m-eye-slash')
+                        ->requiresConfirmation()
+                        ->action(fn (\Illuminate\Support\Collection $records) => $records->each->update(['is_active' => false]))
+                        ->deselectRecordsAfterCompletion(),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('publish_date', 'desc');
+            ->emptyStateIcon('heroicon-o-megaphone')
+            ->emptyStateHeading('Tidak ada pengumuman')
+            ->emptyStateDescription('Tidak ada pengumuman pada tab, pencarian, atau saringan ini.');
     }
 
     public static function getRelations(): array

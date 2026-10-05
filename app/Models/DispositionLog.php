@@ -16,7 +16,7 @@ class DispositionLog extends Model
 {
     public const UPDATED_AT = null;
 
-    protected $fillable = ['ticket_id', 'ticket_log_id', 'actor_id', 'role', 'action', 'signature_model', 'signature_file_id', 'recipients', 'instruction', 'note'];
+    protected $fillable = ['ticket_id', 'ticket_log_id', 'actor_id', 'role', 'action', 'signature_model', 'signature_file_id', 'recipients', 'instruction', 'note', 'acknowledged_by_name'];
 
     protected $casts = [
         'action' => DispositionAction::class,

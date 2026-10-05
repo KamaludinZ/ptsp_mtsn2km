@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\PersuratanMaster;
+use Illuminate\Support\Str;
 
 /**
  * Routine choices for letters (persuratan). Offered as suggestions; officers
@@ -54,5 +55,45 @@ class Persuratan
     public static function options(string $type): array
     {
         return PersuratanMaster::ofType($type)->get()->map(fn (PersuratanMaster $m) => $m->value)->unique()->values()->all();
+    }
+
+    /**
+     * Active classifications as code => "code — name", for the classification picker.
+     *
+     * @return array<string, string>
+     */
+    public static function klasifikasiOptions(): array
+    {
+        return PersuratanMaster::ofType('klasifikasi')->whereNotNull('kode')->get()
+            ->mapWithKeys(fn (PersuratanMaster $m) => [$m->kode => $m->kode . ' — ' . $m->nama])
+            ->all();
+    }
+
+    /** Lists that collect hand-typed values (classifications need a code and name, so they are kept by hand). */
+    public const REMEMBERED = ['tujuan_naskah', 'jenis_surat', 'tembusan', 'instruksi_disposisi'];
+
+    /**
+     * Keep values typed by hand as inactive choices in Master Persuratan, so
+     * Tata Usaha can review them and switch on the routine ones. A value
+     * already in the list (even one switched off on purpose) is left alone.
+     *
+     * @param  array<string, mixed>  $values  type => value (a string, or lines/array for tembusan)
+     */
+    public static function rememberManual(array $values): void
+    {
+        foreach (array_intersect_key($values, array_flip(self::REMEMBERED)) as $type => $value) {
+            $names = collect(is_array($value) ? $value : preg_split('/\R/', (string) $value))
+                ->map(fn ($name) => Str::squish((string) $name))
+                ->filter(fn (string $name) => mb_strlen($name) >= 3 && mb_strlen($name) <= 255)
+                ->unique(fn (string $name) => mb_strtolower($name));
+
+            foreach ($names as $name) {
+                $known = PersuratanMaster::where('type', $type)->whereRaw('lower(trim(nama)) = ?', [mb_strtolower($name)])->exists();
+
+                if (! $known) {
+                    PersuratanMaster::create(['type' => $type, 'nama' => $name, 'is_active' => false, 'sort' => 9999]);
+                }
+            }
+        }
     }
 }

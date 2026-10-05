@@ -85,6 +85,25 @@ class Visitor extends Model
     }
 
     /**
+     * What a guest sees right after registering (web confirmation card and the
+     * public API). Shown on a public, often shared screen, so the name follows
+     * the guest's own "samarkan" choice and the phone number is masked.
+     *
+     * @return array<string, string|null>
+     */
+    public function confirmationSummary(): array
+    {
+        return [
+            'Nama' => $this->publicName(),
+            'No. Telepon/HP' => $this->maskedPhone(),
+            'Instansi' => $this->institution ?: '–',
+            'Tujuan' => $this->purpose,
+            'Waktu check-in' => $this->check_in_time?->translatedFormat('l, j F Y H:i'),
+            'Daftar tamu publik' => $this->is_obscured ? 'Nama disamarkan' : 'Nama ditampilkan',
+        ];
+    }
+
+    /**
      * Phone number for public listings: only the last three digits.
      */
     public function maskedPhone(): string

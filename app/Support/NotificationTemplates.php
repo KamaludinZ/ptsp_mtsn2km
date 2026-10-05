@@ -14,6 +14,7 @@ class NotificationTemplates
         'disposition_assigned' => 'Disposisi untuk petugas',
         'ticket_completed' => 'Permohonan selesai',
         'ticket_rejected' => 'Permohonan ditolak',
+        'survey_reminder' => 'Pengingat survei kepuasan',
     ];
 
     public const PLACEHOLDERS = [
@@ -49,6 +50,10 @@ class NotificationTemplates
             'ticket_rejected' => [
                 'subject' => 'Permohonan {nomor_tiket} tidak dapat diproses',
                 'body' => "Yth. {nama},\nMohon maaf, permohonan {nomor_tiket} ({layanan}) tidak dapat diproses.\nAlasan: {catatan}\n\n{instansi}",
+            ],
+            'survey_reminder' => [
+                'subject' => 'Bagaimana layanan {layanan} kami?',
+                'body' => "Yth. {nama},\nPermohonan {nomor_tiket} ({layanan}) telah selesai. Mohon luangkan 2 menit untuk menilai layanan kami melalui {tautan}.\nPenilaian Anda membantu kami memperbaiki pelayanan.\n\n{instansi}",
             ],
         ];
     }

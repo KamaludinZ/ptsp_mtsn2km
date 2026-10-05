@@ -215,7 +215,8 @@ class ApplicationTest extends TestCase
         $this->post('/complaints/track', [
             'complaint_number' => $complaint->complaint_number,
             'reporter_email' => 'budi@example.com',
-        ])->assertOk()->assertSee($complaint->complaint_number);
+        ])->assertOk()->assertSee($complaint->complaint_number)
+            ->assertSee('status-pill status-pill--md status-pill--warning', false)->assertSee('Diterima');
 
         $this->post('/complaints/track', [
             'complaint_number' => $complaint->complaint_number,
@@ -420,7 +421,9 @@ class ApplicationTest extends TestCase
         $ticket = Ticket::factory()->create(['status' => 'submitted']);
 
         foreach (['/cp', '/cp/tiket', "/cp/tiket/{$ticket->id}", '/cp/kinerja', '/cp/pengaduan', '/cp/visitors'] as $uri) {
-            $this->actingAs($applicant)->get($uri)->assertForbidden();
+            // Staff areas are never shown: a 403, or (for the panel) a redirect to the portal.
+            $response = $this->actingAs($applicant)->get($uri);
+            $this->assertTrue($response->status() === 403 || $response->headers->get('location') === url('/portal'), $uri);
         }
 
         // Nor someone else's ticket in the portal

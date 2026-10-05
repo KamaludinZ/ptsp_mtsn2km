@@ -171,6 +171,8 @@
                 <h2 class="error-title">@yield('title')</h2>
                 <p class="error-message">@yield('message')</p>
 
+                @yield('actions')
+
                 @if(!isset($hide_back_button) || $hide_back_button !== true)
                 <a href="{{ app('router')->has('home') ? route('home') : url('/') }}" class="btn-back">
                     <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Beranda

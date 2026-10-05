@@ -30,14 +30,59 @@ class EditProfile extends BaseEditProfile
                 ->tel()
                 ->maxLength(20)
                 ->helperText('Dipakai untuk mengirim kabar tentang permohonan Anda.'),
-            $this->getPasswordFormComponent()->label('Kata sandi baru'),
-            $this->getPasswordConfirmationFormComponent()->label('Ulangi kata sandi baru'),
+            \Filament\Forms\Components\Section::make('Preferensi tampilan')
+                ->description('Berlaku di panel ini untuk akun Anda, di perangkat mana pun.')
+                ->columns(2)
+                ->schema([
+                    \Filament\Forms\Components\Radio::make('display_mode')
+                        ->label('Mode tampilan')
+                        ->options(\App\Support\DisplayPreferences::MODES)
+                        ->default('system'),
+                    \Filament\Forms\Components\Radio::make('display_size')
+                        ->label('Ukuran huruf')
+                        ->options(\App\Support\DisplayPreferences::SIZES)
+                        ->default('normal'),
+                ]),
+            \Filament\Forms\Components\Section::make('Ganti kata sandi')
+                ->description('Kosongkan bila kata sandi tidak diubah.')
+                ->schema([
+                    TextInput::make('current_password')
+                        ->label('Kata sandi saat ini')
+                        ->password()
+                        ->revealable()
+                        ->autocomplete('current-password')
+                        ->currentPassword()
+                        ->required(fn (\Filament\Forms\Get $get) => filled($get('password')))
+                        ->validationMessages(['current_password' => 'Kata sandi saat ini tidak cocok.'])
+                        ->dehydrated(false),
+                    $this->getPasswordFormComponent()
+                        ->label('Kata sandi baru')
+                        ->revealable()
+                        ->rule(\Illuminate\Validation\Rules\Password::min(8)->letters()->numbers())
+                        ->helperText('Minimal 8 karakter, berisi huruf dan angka.'),
+                    $this->getPasswordConfirmationFormComponent()->label('Ulangi kata sandi baru')->revealable(),
+                ]),
         ]);
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $preferences = \App\Support\DisplayPreferences::for($this->getUser());
+
+        return $data + ['display_mode' => $preferences['mode'], 'display_size' => $preferences['size']];
     }
 
     /** A changed e-mail address has to be verified again (applicants cannot work unverified). */
     protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
     {
+        $current = \App\Support\DisplayPreferences::for($record);
+        $mode = $data['display_mode'] ?? $current['mode'];
+        $size = $data['display_size'] ?? $current['size'];
+        unset($data['display_mode'], $data['display_size']);
+        if ($mode !== $current['mode'] || $size !== $current['size']) {
+            \App\Support\DisplayPreferences::save($record, $mode, $size);
+        }
+
         $record->fill($data);
 
         if ($record->isDirty('email')) {
@@ -45,6 +90,10 @@ class EditProfile extends BaseEditProfile
         }
 
         $record->save();
+
+        if ($record->wasChanged('password')) {
+            activity('audit')->causedBy($record)->performedOn($record)->log('Mengganti kata sandi');
+        }
 
         if ($record->wasChanged('email') && $record instanceof \Illuminate\Contracts\Auth\MustVerifyEmail) {
             $record->sendEmailVerificationNotification();

@@ -77,13 +77,29 @@ class IncomingServices extends Page implements HasTable
     /** @return array<string, array{label: string, count: int}> */
     public function getTabs(): array
     {
-        $tabs = ['' => ['label' => 'Semua', 'count' => static::incomingQuery()->count()]];
+        // Counts follow the active filters (unit, service), so a tab's number matches its rows.
+        $tabs = ['' => ['label' => 'Semua', 'count' => $this->filteredIncomingQuery()->count(), 'color' => 'gray']];
 
         foreach (IncomingCategory::CATEGORIES as $category => $label) {
-            $tabs[$category] = ['label' => $label, 'count' => IncomingCategory::scope(static::incomingQuery(), $category)->count()];
+            $tabs[$category] = [
+                'label' => $label,
+                'count' => IncomingCategory::scope($this->filteredIncomingQuery(), $category)->count(),
+                'color' => IncomingCategory::COLORS[$category],
+            ];
         }
 
         return $tabs;
+    }
+
+    /** Incoming requests limited by the table filters, without the category tab. */
+    private function filteredIncomingQuery(): Builder
+    {
+        $filters = $this->tableFilters ?? [];
+        $units = ProcessorRoles::unitsOf(auth()->user());
+
+        return static::incomingQuery()
+            ->when($units && ($filters['mine']['isActive'] ?? filled($units)), fn (Builder $q) => ProcessorRoles::scopeTicketsFor($q, $units))
+            ->when($filters['service_id']['value'] ?? null, fn (Builder $q, $service) => $q->where('service_id', $service));
     }
 
     public function updatedActiveTab(): void
@@ -109,17 +125,25 @@ class IncomingServices extends Page implements HasTable
                     ->state(fn (Ticket $record) => IncomingCategory::of($record))
                     ->formatStateUsing(fn (string $state) => IncomingCategory::label($state))
                     ->color(fn (string $state) => IncomingCategory::COLORS[$state] ?? 'gray')
-                    ->visible(fn () => blank($this->activeTab)),
+                    ->icon(fn (string $state) => IncomingCategory::ICONS[$state] ?? null)
+                    ->tooltip(fn (string $state) => IncomingCategory::DESCRIPTIONS[$state] ?? null),
                 Tables\Columns\TextColumn::make('service.name')->label('Layanan')->wrap()->searchable(),
-                Tables\Columns\TextColumn::make('user.name')->label('Pemohon')->searchable()->placeholder('–'),
+                Tables\Columns\TextColumn::make('disposition_recipients')->label('Unit tujuan')
+                    ->state(fn (Ticket $record) => $record->disposition_recipients ? ServiceDisposition::recipients($record->disposition_recipients) : null)
+                    ->placeholder('Back office')
+                    ->wrap()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('user.name')->label('Pemohon')->searchable()->placeholder('–')
+                    ->visibleFrom('md')->toggleable(),
                 Tables\Columns\TextColumn::make('approval_notes')->label('Instruksi pimpinan')->wrap()->limit(120)
                     ->description(fn (Ticket $record) => $record->approver ? 'oleh ' . $record->approver->name : null)
-                    ->placeholder('Tanpa disposisi'),
+                    ->placeholder('Tanpa disposisi')
+                    ->visibleFrom('lg')->toggleable(),
                 Tables\Columns\TextColumn::make('status')->label('Status')->badge()
                     ->formatStateUsing(fn (?string $state) => TicketLabels::status($state))
                     ->color(fn (?string $state) => TicketLabels::statusColor($state)),
                 Tables\Columns\TextColumn::make('approved_at')->label('Masuk')->dateTime('d M Y H:i')->sortable()
-                    ->placeholder('–'),
+                    ->placeholder('–')->visibleFrom('sm'),
             ])
             ->filters([
                 Tables\Filters\Filter::make('mine')->label('Hanya untuk unit saya')->toggle()

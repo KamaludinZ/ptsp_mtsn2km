@@ -28,6 +28,8 @@ class TicketLabels
         'assigned' => 'Ditugaskan',
         'status_changed' => 'Status diubah',
         'note_added' => 'Catatan',
+        'applicant_note' => 'Pesan untuk pemohon',
+        'category_changed' => 'Kategori layanan masuk diubah',
         'file_uploaded' => 'Berkas diunggah',
         'output_uploaded' => 'Hasil layanan diunggah',
         'workflow_step_completed' => 'Langkah workflow selesai',

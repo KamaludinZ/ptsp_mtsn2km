@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Filament\Resources\TicketResource;
 use App\Mail\TemplateNotificationMail;
 use App\Models\NotificationSetting;
+use App\Models\NotificationDelivery;
 use App\Models\NotificationTemplate;
 use App\Models\Ticket;
 use App\Models\User;
@@ -26,10 +27,13 @@ class NotificationDispatcher
      * @param  array<string, string>  $extra  more placeholder values (e.g. catatan)
      * @return array<int, string> channels the message went out on
      */
+    /** Silences every notification, e.g. while demo data is seeded. */
+    public static bool $muted = false;
+
     public function send(string $event, Ticket $ticket, ?User $recipient = null, array $extra = []): array
     {
         $recipient ??= $ticket->user;
-        if (! $recipient) {
+        if (static::$muted || ! $recipient) {
             return [];
         }
 
@@ -49,21 +53,49 @@ class NotificationDispatcher
             $subject = $template->subject ? NotificationTemplates::render($template->subject, $values) : null;
             $body = NotificationTemplates::render($template->body, $values);
 
-            try {
-                $delivered = $template->channel === 'email'
-                    ? $this->email($to, $subject ?? NotificationTemplates::EVENTS[$event] ?? $event, $body, $event)
-                    : app(WhatsAppService::class)->sendMessage($to, $body);
-            } catch (Throwable $e) {
-                Log::warning("Notification {$event} via {$template->channel} failed: " . $e->getMessage(), ['ticket' => $ticket->ticket_number]);
-                $delivered = false;
-            }
+            $delivery = new NotificationDelivery([
+                'event' => $event,
+                'channel' => $template->channel,
+                'ticket_id' => $ticket->id,
+                'user_id' => $recipient->id,
+                'recipient' => $to,
+                'subject' => $template->channel === 'email' ? ($subject ?? NotificationTemplates::EVENTS[$event] ?? $event) : null,
+                'body' => $body,
+            ]);
 
-            if ($delivered) {
+            if ($this->deliver($delivery)) {
                 $channels[] = $template->channel;
             }
         }
 
         return $channels;
+    }
+
+    /**
+     * Send one stored message and record the outcome in the riwayat
+     * notifikasi (also used to resend a failed one).
+     */
+    public function deliver(NotificationDelivery $delivery): bool
+    {
+        $error = null;
+        try {
+            $delivered = $delivery->channel === 'email'
+                ? $this->email($delivery->recipient, (string) $delivery->subject, $delivery->body, $delivery->event)
+                : (bool) app(WhatsAppService::class)->sendMessage($delivery->recipient, $delivery->body);
+            $error = $delivered ? null : 'Layanan WhatsApp menolak pesan.';
+        } catch (Throwable $e) {
+            Log::warning("Notification {$delivery->event} via {$delivery->channel} failed: " . $e->getMessage(), ['ticket' => $delivery->ticket_id]);
+            $delivered = false;
+            $error = mb_strimwidth($e->getMessage(), 0, 500, '…');
+        }
+
+        $delivery->fill([
+            'status' => $delivered ? 'sent' : 'failed',
+            'error' => $error,
+            'attempts' => $delivery->exists ? $delivery->attempts + 1 : 1,
+        ])->save();
+
+        return $delivered;
     }
 
     /** Placeholder values for a ticket and its recipient. */

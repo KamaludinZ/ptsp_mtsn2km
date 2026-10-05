@@ -30,10 +30,11 @@ class NewPasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $request->merge(['email' => mb_strtolower(trim((string) $request->input('email')))]); // stored in lower case
         $request->validate([
             'token' => ['required'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::min(8)->letters()->numbers()],
         ]);
 
         // Here we will attempt to reset the user's password. If it is successful we

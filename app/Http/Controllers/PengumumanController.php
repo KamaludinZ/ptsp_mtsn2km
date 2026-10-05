@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pengumuman;
-use App\Models\PengumumanView;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class PengumumanController extends Controller
 {
@@ -14,12 +12,8 @@ class PengumumanController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pengumuman::where('is_active', true)
-                    ->where('publish_date', '<=', now())
-                    ->where(function($query) {
-                        $query->whereNull('end_date')
-                              ->orWhere('end_date', '>=', now());
-                    });
+        // Shown through the whole last day (dates compared as dates, not times).
+        $query = Pengumuman::active()->with('user:id,name');
 
         // Handle search
         if ($request->filled('search')) {
@@ -69,54 +63,24 @@ class PengumumanController extends Controller
                     ->paginate(10)
                     ->appends($request->query());
 
-        return view('pengumuman.index', compact('pengumumen'));
+        // Categories that announcements on the site actually use.
+        $categories = collect(Pengumuman::categories(onlyPublished: true))
+            ->mapWithKeys(fn (string $category) => [$category => \Illuminate\Support\Str::headline($category)])->all();
+
+        return view('pengumuman.index', compact('pengumumen', 'categories'));
     }
 
-    /**
-     * Display the specified resource for admin.
-     */
+    /** One announcement on the public site. */
     public function show(Pengumuman $pengumuman)
     {
-        // For public users - only show active announcements
-        if (!Auth::check() ||
-            !Auth::user()->hasRole('admin')) {
-            // Check if the announcement is active and within the valid date range
-            if (!$pengumuman->is_active ||
-                $pengumuman->publish_date > now() ||
-                ($pengumuman->end_date && $pengumuman->end_date < now())) {
-                abort(404);
-            }
-        }
+        // Live announcements for everyone; administrators may preview the others
+        abort_unless(\Illuminate\Support\Facades\Gate::allows('view', $pengumuman), 404);
 
-        // Get the client IP address
-        $ipAddress = request()->ip();
-
-        // Check if this IP has already viewed this announcement
-        $existingView = PengumumanView::where('pengumuman_id', $pengumuman->id)
-                                    ->where('ip_address', $ipAddress)
-                                    ->first();
-
-        // If this is a new unique view, increment the count and record it
-        if (!$existingView) {
-            $pengumuman->increment('view_count');
-
-            // Record the view to prevent duplicate counting from the same IP
-            PengumumanView::create([
-                'pengumuman_id' => $pengumuman->id,
-                'ip_address' => $ipAddress,
-            ]);
+        // Counted once per IP address; an administrator's preview doesn't count
+        if ($pengumuman->status() === 'tayang') {
+            $pengumuman->recordView(request()->ip());
         }
 
         return view('pengumuman.show', compact('pengumuman'));
-    }
-
-    /**
-     * Authorize admin access for CRUD operations
-     */
-    private function authorizeAdmin()
-    {
-        if (!Auth::check() || !Auth::user()->hasRole('admin')) {
-            abort(403, 'Akses ditolak. Hanya admin yang dapat mengakses fitur ini.');
-        }
     }
 }

@@ -5,7 +5,7 @@
     <title>Laporan {{ $data['label'] }}</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #111827; }
-        .head { text-align: center; border-bottom: 2px solid #111827; padding-bottom: 6px; margin-bottom: 12px; }
+        .head { text-align: center; margin-bottom: 12px; }
         .head h1 { font-size: 14px; margin: 0; text-transform: uppercase; }
         .head p { margin: 2px 0 0; }
         h2 { font-size: 12px; margin: 14px 0 6px; }
@@ -19,11 +19,11 @@
     </style>
 </head>
 <body>
+    @include('print.partials.letterhead', ['pdf' => true])
     <div class="head">
-        <h1>{{ app_brand_name() }}</h1>
-        <p>Laporan {{ $data['title'] }}</p>
+        <h1>Laporan {{ $data['title'] }}</h1>
         <p class="muted">
-            Periode {{ $data['from']->translatedFormat('j F Y') }} – {{ $data['to']->translatedFormat('j F Y') }}{{ $data['edition'] ? ' · Edisi ' . $data['edition'] : '' }}
+            Periode {{ \App\Support\Formats::date($data['from']) }} – {{ \App\Support\Formats::date($data['to']) }}{{ $data['edition'] ? ' · Edisi ' . $data['edition'] : '' }}
         </p>
     </div>
 
@@ -77,6 +77,6 @@
         </tbody>
     </table>
 
-    <p class="muted" style="margin-top:14px">Metode Permenpan RB No. 14 Tahun 2017. Dicetak {{ now()->translatedFormat('j F Y H:i') }}.</p>
+    <p class="muted" style="margin-top:14px">Metode Permenpan RB No. 14 Tahun 2017. Dicetak {{ \App\Support\Formats::date(now()) }} {{ now()->format('H:i') }}.</p>
 </body>
 </html>

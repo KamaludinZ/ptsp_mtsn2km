@@ -133,4 +133,63 @@ class NotificationDispatchTest extends TestCase
 
         Mail::assertNothingSent();
     }
+
+    public function test_every_attempt_is_recorded_with_its_status(): void
+    {
+        $this->enable('email');
+        $this->enable('whatsapp');
+        Http::swap(new HttpFactory());
+        Http::fake(['wa.test/*' => Http::response(['error' => 'nomor tidak terdaftar'], 500)]);
+
+        app(NotificationDispatcher::class)->send('ticket_created', $this->ticket);
+
+        $email = \App\Models\NotificationDelivery::where('channel', 'email')->sole();
+        $this->assertSame(['ticket_created', 'sent', 'siti@example.test', $this->ticket->id, $this->applicant->id, 1],
+            [$email->event, $email->status, $email->recipient, $email->ticket_id, $email->user_id, $email->attempts]);
+        $this->assertStringContainsString($this->ticket->ticket_number, $email->body);
+
+        $whatsapp = \App\Models\NotificationDelivery::where('channel', 'whatsapp')->sole();
+        $this->assertSame(['failed', '6281299990000'], [$whatsapp->status, $whatsapp->recipient]);
+        $this->assertNotNull($whatsapp->error);
+    }
+
+    public function test_admin_reviews_and_resends_failed_notifications(): void
+    {
+        $this->enable('whatsapp');
+        Http::swap(new HttpFactory());
+        Http::fake(['wa.test/*' => Http::sequence()->push(['error' => 'down'], 500)->push(['ok' => true], 200)]);
+        app(NotificationDispatcher::class)->send('ticket_created', $this->ticket);
+        $failed = \App\Models\NotificationDelivery::sole();
+        $this->assertSame('failed', $failed->status);
+
+        $this->actingAs(User::where('email', 'ptsp@mtsn2malang.sch.id')->firstOrFail());
+        $page = \App\Filament\Resources\NotificationDeliveryResource\Pages\ListNotificationDeliveries::class;
+
+        $this->get(\App\Filament\Resources\NotificationDeliveryResource::getUrl())->assertOk()
+            ->assertSee('Riwayat Notifikasi')->assertSee('0 terkirim, 1 gagal');
+        $this->assertSame('1', \App\Filament\Resources\NotificationDeliveryResource::getNavigationBadge());
+
+        \Livewire\Livewire::test($page)
+            ->set('activeTab', 'gagal')
+            ->assertCanSeeTableRecords([$failed])
+            ->assertTableActionVisible('resend', $failed)
+            ->callTableAction('resend', $failed)
+            ->assertNotified('Notifikasi terkirim');
+
+        $failed->refresh();
+        $this->assertSame(['sent', 2, null], [$failed->status, $failed->attempts, $failed->error]);
+
+        \Livewire\Livewire::test($page)
+            ->filterTable('channel', 'email')
+            ->assertCanNotSeeTableRecords([$failed])
+            ->resetTableFilters()
+            ->assertTableActionHidden('resend', $failed);
+    }
+
+    public function test_notification_history_is_admin_only(): void
+    {
+        $this->actingAs(User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail());
+
+        $this->get(\App\Filament\Resources\NotificationDeliveryResource::getUrl())->assertForbidden();
+    }
 }

@@ -15,7 +15,7 @@ class ListPersuratanMasters extends ListRecords
 
     public function getSubheading(): ?string
     {
-        return 'Pilihan rutin pada form surat keluar dan disposisi. Petugas tetap dapat mengetik isian sendiri.';
+        return 'Pilihan rutin pada form surat keluar dan disposisi. Isian yang diketik petugas tercatat di sini sebagai pilihan nonaktif; aktifkan bila ingin dijadikan pilihan rutin.';
     }
 
     public function getTabs(): array

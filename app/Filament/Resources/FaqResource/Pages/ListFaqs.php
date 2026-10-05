@@ -10,10 +10,15 @@ class ListFaqs extends ListRecords
 {
     protected static string $resource = FaqResource::class;
 
+    public function getSubheading(): ?string
+    {
+        return 'Pertanyaan yang sering diajukan, tampil di halaman FAQ dan beranda. Seret baris untuk mengubah urutan.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->label('Tambah FAQ')->icon('heroicon-m-plus'),
         ];
     }
 }

@@ -33,6 +33,21 @@
                     @if ($log->notes)
                         <p class="text-sm text-gray-700 dark:text-gray-300" style="margin-top: 0.25rem; white-space: pre-line;">{{ $log->notes }}</p>
                     @endif
+                    @if (in_array($log->action, ['note_added', 'applicant_note'], true))
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.375rem;">
+                            @if ($type = $log->metadata['follow_up_type'] ?? null)
+                                <x-filament::badge color="gray" size="sm">{{ \App\Services\TicketService::FOLLOW_UP_TYPES[$type] ?? $type }}</x-filament::badge>
+                            @endif
+                            <x-filament::badge :color="$log->action === 'applicant_note' ? 'info' : 'gray'" size="sm" :icon="$log->action === 'applicant_note' ? 'heroicon-m-eye' : 'heroicon-m-lock-closed'">
+                                {{ $log->action === 'applicant_note' ? 'Terlihat oleh pemohon' : 'Internal' }}
+                            </x-filament::badge>
+                            @if ($next = $log->metadata['next_follow_up_at'] ?? null)
+                                <x-filament::badge color="warning" size="sm" icon="heroicon-m-calendar">
+                                    Tindak lanjut berikutnya {{ \Illuminate\Support\Carbon::parse($next)->translatedFormat('j M Y') }}
+                                </x-filament::badge>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </li>
         @endforeach

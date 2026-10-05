@@ -22,6 +22,8 @@ class SuratKeluar extends Model
         'lampiran',
         'tembusan',
         'keterangan',
+        'berkas_lampiran',
+        'berkas_lampiran_nama',
         'pembuat_id',
         'batch_id',
     ];
@@ -30,6 +32,8 @@ class SuratKeluar extends Model
         'tanggal_surat' => 'date',
         'tahun' => 'integer',
         'nomor_urut' => 'integer',
+        'berkas_lampiran' => 'array',
+        'berkas_lampiran_nama' => 'array',
     ];
 
     public function pembuat(): BelongsTo
@@ -46,5 +50,11 @@ class SuratKeluar extends Model
     public function isDraft(): bool
     {
         return blank($this->perihal) || blank($this->tujuan_surat);
+    }
+
+    /** Original name of an uploaded attachment, falling back to its stored name. */
+    public function attachmentName(string $path): string
+    {
+        return $this->berkas_lampiran_nama[$path] ?? basename($path);
     }
 }

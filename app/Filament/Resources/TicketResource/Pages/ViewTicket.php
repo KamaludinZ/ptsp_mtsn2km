@@ -9,13 +9,19 @@ use App\Filament\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Services\TicketService;
+use App\Support\IncomingCategory;
 use App\Support\TicketDocuments;
 use App\Support\TicketLabels;
 use Filament\Actions;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Get;
 use Filament\Resources\Pages\ViewRecord;
 
 /**
@@ -83,6 +89,7 @@ class ViewTicket extends ViewRecord
                 $this->priorityAction(),
                 $this->completeStepAction(),
                 $this->noteAction(),
+                $this->categoryAction(),
                 $this->uploadFileAction(),
             ])
                 ->label('Proses tiket')
@@ -108,11 +115,7 @@ class ViewTicket extends ViewRecord
             ->form([
                 Select::make('staff_id')
                     ->label('Petugas')
-                    ->options(fn () => User::query()
-                        ->where('is_active', true)
-                        ->where(fn ($q) => $q->whereIn('user_type', ['guru', 'pegawai'])->orWhereHas('roles', fn ($r) => $r->whereIn('name', User::STAFF_ROLES)))
-                        ->orderBy('name')
-                        ->pluck('name', 'id'))
+                    ->options(fn () => User::assignable()->orderBy('name')->pluck('name', 'id'))
                     ->default(fn () => $this->getRecord()->assigned_to_id)
                     ->searchable()
                     ->required(),
@@ -129,17 +132,38 @@ class ViewTicket extends ViewRecord
         return Actions\Action::make('changeStatus')
             ->label('Ubah status')
             ->icon('heroicon-m-arrow-path')
+            ->modalHeading('Ubah status permohonan')
+            ->modalDescription(fn () => 'Status saat ini: ' . TicketLabels::status($this->getRecord()->status) . '. Perubahan tercatat di riwayat status dan pemohon diberi tahu.')
+            ->modalSubmitActionLabel('Simpan status')
+            ->disabled(fn () => ! $this->service()->nextStatuses($this->getRecord(), auth()->user()))
+            ->tooltip(fn () => $this->service()->nextStatuses($this->getRecord(), auth()->user()) ? null : 'Permohonan sudah ditutup.')
             ->form([
-                Select::make('status')
+                ToggleButtons::make('status')
                     ->label('Status baru')
-                    ->options(TicketService::OFFICER_STATUSES)
-                    ->default(fn () => array_key_exists($this->getRecord()->status, TicketService::OFFICER_STATUSES) ? $this->getRecord()->status : null)
-                    ->helperText('Disposisi diberikan pimpinan melalui menu Disposisi Masuk.')
-                    ->required(),
-                Textarea::make('notes')->label('Catatan')->required()->maxLength(1000)->rows(3),
+                    ->options(fn () => $this->service()->nextStatuses($this->getRecord(), auth()->user()))
+                    ->colors(fn () => collect($this->service()->nextStatuses($this->getRecord(), auth()->user()))->mapWithKeys(fn ($label, $status) => [$status => TicketLabels::statusColor($status)])->all())
+                    ->icons([
+                        'submitted' => 'heroicon-m-arrow-uturn-left',
+                        'verified' => 'heroicon-m-check',
+                        'in_process' => 'heroicon-m-cog-6-tooth',
+                        'completed' => 'heroicon-m-check-circle',
+                        'rejected' => 'heroicon-m-x-circle',
+                        'cancelled' => 'heroicon-m-no-symbol',
+                    ])
+                    ->inline()
+                    ->required()
+                    ->live()
+                    ->helperText(fn (Get $get) => TicketService::STATUS_HINTS[$get('status')] ?? ($this->getRecord()->needsApproval() ? 'Menunggu disposisi pimpinan: status Selesai belum tersedia.' : 'Pilih status berikutnya.')),
+                Textarea::make('notes')
+                    ->label(fn (Get $get) => $get('status') === 'rejected' ? 'Alasan penolakan' : 'Catatan')
+                    ->placeholder(fn (Get $get) => $get('status') === 'rejected' ? 'Jelaskan kepada pemohon mengapa permohonan ditolak.' : 'Contoh: Berkas sudah lengkap, diteruskan ke TU.')
+                    ->required()
+                    ->minLength(fn (Get $get) => $get('status') === 'rejected' ? 10 : 3)
+                    ->maxLength(1000)
+                    ->rows(3),
             ])
             ->action(function (array $data) {
-                self::attempt(fn () => $this->service()->changeStatus($this->getRecord(), $data['status'], $data['notes'], auth()->user()), 'Status tiket diperbarui.');
+                self::attempt(fn () => $this->service()->changeStatus($this->getRecord(), $data['status'], $data['notes'], auth()->user()), 'Status menjadi ' . TicketLabels::status($data['status']) . '.');
                 $this->refreshTicket();
             });
     }
@@ -163,13 +187,83 @@ class ViewTicket extends ViewRecord
     private function noteAction(): Actions\Action
     {
         return Actions\Action::make('note')
-            ->label('Tambah catatan')
+            ->label('Catatan tindak lanjut')
             ->icon('heroicon-m-pencil-square')
+            ->modalHeading('Catatan tindak lanjut')
+            ->modalDescription('Catat apa yang sudah dilakukan untuk permohonan ini. Catatan tersimpan di riwayat layanan dan tidak dapat diubah.')
+            ->modalSubmitActionLabel('Simpan catatan')
             ->form([
-                Textarea::make('note')->label('Catatan')->required()->maxLength(1000)->rows(4),
+                Select::make('type')
+                    ->label('Jenis tindak lanjut')
+                    ->options(TicketService::FOLLOW_UP_TYPES)
+                    ->default('internal')
+                    ->required()
+                    ->native(false)
+                    ->live()
+                    ->afterStateUpdated(fn (?string $state, callable $set) => $set('to_applicant', in_array($state, ['contact_applicant', 'request_documents'], true))),
+                Textarea::make('note')
+                    ->label('Catatan')
+                    ->required()
+                    ->minLength(5)
+                    ->maxLength(1000)
+                    ->rows(4)
+                    ->placeholder('Contoh: Pemohon dihubungi lewat WhatsApp, diminta melengkapi fotokopi KK.'),
+                Toggle::make('to_applicant')
+                    ->label('Tampilkan ke pemohon')
+                    ->helperText(fn (Get $get) => $get('to_applicant')
+                        ? 'Pemohon dapat membaca catatan ini di portal dan halaman lacak tiket. Jangan tulis informasi internal.'
+                        : 'Hanya petugas yang dapat membaca catatan ini.')
+                    ->live(),
+                DatePicker::make('next_follow_up_at')
+                    ->label('Tindak lanjut berikutnya')
+                    ->helperText('Opsional: tanggal rencana tindak lanjut berikutnya.')
+                    ->native(false)
+                    ->displayFormat('d M Y')
+                    ->minDate(today()),
             ])
             ->action(function (array $data) {
-                self::attempt(fn () => $this->service()->addNote($this->getRecord(), $data['note'], auth()->user()), 'Catatan ditambahkan.');
+                self::attempt(fn () => $this->service()->addNote(
+                    $this->getRecord(),
+                    $data['note'],
+                    auth()->user(),
+                    $data['type'] ?? null,
+                    (bool) ($data['to_applicant'] ?? false),
+                    $data['next_follow_up_at'] ?? null,
+                ), ($data['to_applicant'] ?? false) ? 'Catatan disimpan dan ditampilkan ke pemohon.' : 'Catatan internal disimpan.');
+                $this->refreshTicket();
+            });
+    }
+
+    /** Pilih kategori layanan masuk (disposisi, tembusan, koordinasi, arahan). */
+    private function categoryAction(): Actions\Action
+    {
+        return Actions\Action::make('category')
+            ->label('Kategori layanan masuk')
+            ->icon('heroicon-m-tag')
+            ->modalHeading('Pilih kategori layanan masuk')
+            ->modalDescription(fn () => 'Menurut instruksi pimpinan: ' . IncomingCategory::label(IncomingCategory::derived($this->getRecord()))
+                . '. Pilih kategori lain bila permohonan perlu dikelompokkan berbeda di menu Layanan Masuk.')
+            ->modalSubmitActionLabel('Simpan kategori')
+            ->visible(fn () => TicketService::canChooseCategory($this->getRecord()))
+            ->fillForm(fn () => ['category' => $this->getRecord()->incoming_category ?? 'auto'])
+            ->form([
+                Radio::make('category')
+                    ->label('Kategori')
+                    ->options(['auto' => 'Ikuti instruksi pimpinan (' . IncomingCategory::label(IncomingCategory::derived($this->getRecord())) . ')'] + IncomingCategory::CATEGORIES)
+                    ->descriptions(['auto' => 'Kategori ditentukan otomatis dari instruksi disposisi.'] + IncomingCategory::DESCRIPTIONS)
+                    ->required(),
+                Textarea::make('reason')
+                    ->label('Alasan')
+                    ->placeholder('Contoh: cukup sebagai tembusan untuk arsip TU.')
+                    ->required()
+                    ->minLength(5)
+                    ->maxLength(500)
+                    ->rows(2),
+            ])
+            ->action(function (array $data) {
+                $category = $data['category'] === 'auto' ? null : $data['category'];
+                self::attempt(fn () => $this->service()->setIncomingCategory($this->getRecord(), $category, auth()->user(), $data['reason']),
+                    'Kategori menjadi ' . IncomingCategory::label($category ?? IncomingCategory::derived($this->getRecord())) . '.');
                 $this->refreshTicket();
             });
     }

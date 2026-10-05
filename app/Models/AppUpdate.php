@@ -52,10 +52,6 @@ class AppUpdate extends Model
 
     public function statusColor(): string
     {
-        return match ($this->status) {
-            'applied' => 'success',
-            'failed' => 'danger',
-            default => 'warning',
-        };
+        return \App\Support\StatusBadge::for($this->status, 'update')['color'];
     }
 }

@@ -88,4 +88,75 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
         $response->assertRedirect('/');
     }
+
+    public function test_login_form_is_accessible_and_guards_against_double_submit(): void
+    {
+        $this->get('/login')->assertOk()
+            ->assertSee('autocomplete="username"', false)
+            ->assertSee('autocomplete="current-password"', false)
+            ->assertSee('id="togglePassword"', false)
+            ->assertSee('Tampilkan password')
+            ->assertSee('Caps Lock aktif.')
+            ->assertSee('for="captcha"', false)
+            ->assertSee('inputmode="numeric"', false);
+    }
+
+    public function test_errors_are_announced_next_to_their_field(): void
+    {
+        $user = User::factory()->create();
+
+        $this->withSession(['captcha_value' => 'ABCDE'])->post('/login', ['email' => $user->email, 'password' => 'salah', 'captcha' => 'ABCDE']);
+        $this->get('/login')->assertSee('aria-invalid="true" aria-describedby="email-error"', false)->assertSee('id="email-error" role="alert"', false);
+    }
+
+    public function test_deactivated_accounts_cannot_sign_in(): void
+    {
+        $user = User::factory()->create(['is_active' => false]);
+
+        $this->withSession(['captcha_value' => 'ABCDE'])->post('/login', ['email' => $user->email, 'password' => 'password', 'captcha' => 'ABCDE'])
+            ->assertSessionHasErrors(['email' => 'Akun Anda dinonaktifkan. Silakan hubungi petugas PTSP.']);
+
+        $this->assertGuest();
+    }
+
+    public function test_wrong_captchas_count_toward_the_lockout_with_a_countdown(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (range(1, 5) as $i) {
+            $this->withSession(['captcha_value' => 'ABCDE'])->post('/login', ['email' => $user->email, 'password' => 'password', 'captcha' => 'SALAH']);
+        }
+        $this->withSession(['captcha_value' => 'ABCDE'])->post('/login', ['email' => $user->email, 'password' => 'password', 'captcha' => 'ABCDE'])
+            ->assertSessionHasErrors('email')
+            ->assertSessionHas('login_locked_until');
+        $this->assertGuest();
+
+        $this->get('/login')->assertSee('id="lockoutNotice"', false)->assertSee('Terlalu banyak percobaan. Coba lagi dalam');
+    }
+
+    public function test_panel_user_menu_shows_role_notifications_and_logout(): void
+    {
+        \App\Support\RoleAccess::sync();
+        $officer = User::factory()->create(['name' => 'Rina', 'user_type' => 'pegawai'])->assignRole('back_office');
+
+        $this->actingAs($officer)->get('/cp')->assertOk()
+            ->assertSee('Rina · Back Office')
+            ->assertSee(\App\Filament\Pages\Notifications::getUrl(), false)
+            ->assertSee('Keluar');
+        $this->assertSame('Umum', \App\Support\RoleAccess::userRoleLabel(User::factory()->create(['user_type' => 'umum'])));
+    }
+
+    public function test_signing_out_from_the_panel_or_site_confirms_on_the_home_page(): void
+    {
+        \App\Support\RoleAccess::sync();
+        $user = User::factory()->create(['user_type' => 'pegawai'])->assignRole('back_office');
+
+        $this->actingAs($user)->post(route('filament.admin.auth.logout'))->assertRedirect(route('home'));
+        $this->assertGuest();
+        $this->get(route('home'))->assertSee('Anda telah keluar.');
+
+        $this->actingAs($user)->post('/logout')->assertRedirect('/');
+        $this->get('/')->assertSee('Anda telah keluar.');
+        $this->get('/')->assertDontSee('Anda telah keluar.'); // only once
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Filament\Pages\System;
 
 use App\Models\NotificationSetting;
 use App\Services\NotificationGateway;
+use App\Support\WhatsAppGateways;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -13,6 +14,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 
@@ -67,6 +69,7 @@ class NotificationIntegrations extends Page implements HasForms
             ],
             'whatsapp' => [
                 'is_enabled' => $whatsapp->is_enabled,
+                'provider' => $whatsapp->value('provider', 'custom'),
                 'api_url' => $whatsapp->value('api_url', config('whatsapp.api_url')),
                 'sender_id' => $whatsapp->value('sender_id', config('whatsapp.sender_id')),
             ],
@@ -105,10 +108,25 @@ class NotificationIntegrations extends Page implements HasForms
                     ->columns(2)
                     ->schema([
                         Toggle::make('is_enabled')->label('Aktifkan notifikasi WhatsApp')->live()->columnSpanFull(),
+                        Select::make('provider')->label('Gateway')
+                            ->options(WhatsAppGateways::PROVIDERS)
+                            ->default('custom')
+                            ->required()
+                            ->native(false)
+                            ->live()
+                            ->helperText(fn (Get $get) => WhatsAppGateways::DESCRIPTIONS[$get('provider') ?: 'custom'] ?? null)
+                            ->afterStateUpdated(function (?string $state, Set $set) {
+                                if ($url = WhatsAppGateways::DEFAULT_URLS[$state] ?? null) {
+                                    $set('api_url', $url);
+                                }
+                            })
+                            ->columnSpanFull(),
                         TextInput::make('api_url')->label('URL API gateway')->url()->required(fn (Get $get) => $get('is_enabled'))->columnSpanFull(),
                         TextInput::make('api_token')->label('Token API')->password()->revealable()->autocomplete('new-password')
                             ->helperText($secretHint($whatsapp, 'api_token')),
-                        TextInput::make('sender_id')->label('Nomor / ID pengirim')->required(fn (Get $get) => $get('is_enabled'))->maxLength(50),
+                        TextInput::make('sender_id')->label('Nomor / ID pengirim')->maxLength(50)
+                            ->required(fn (Get $get) => $get('is_enabled') && WhatsAppGateways::needsSender($get('provider')))
+                            ->visible(fn (Get $get) => WhatsAppGateways::needsSender($get('provider'))),
                     ]),
             ]);
     }

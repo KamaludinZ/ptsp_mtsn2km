@@ -17,12 +17,43 @@ use App\Services\WhatsAppService;
 
 class PublicController extends Controller
 {
+    /** Indonesian messages for the public guest-book forms. */
+    private const GUEST_MESSAGES = [
+        'required' => ':Attribute wajib diisi.',
+        'email' => ':Attribute harus berupa alamat email yang valid.',
+        'max' => ':Attribute maksimal :max karakter.',
+        'in' => ':Attribute yang dipilih tidak tersedia.',
+        'image' => ':Attribute harus berupa gambar.',
+        'mimes' => ':Attribute harus berformat :values.',
+        'photo.max' => 'Ukuran foto maksimal 2 MB.',
+        'purpose_other.required_if' => 'Tuliskan tujuan kunjungan Anda.',
+        'target_service_other.required_if' => 'Tuliskan layanan yang Anda tuju.',
+    ];
+
+    private const GUEST_ATTRIBUTES = [
+        'name' => 'nama lengkap',
+        'phone' => 'nomor telepon/HP',
+        'email' => 'email',
+        'institution' => 'instansi/perusahaan',
+        'institution_category' => 'jenis instansi',
+        'applicant_type' => 'jenis pemohon',
+        'purpose' => 'tujuan kunjungan',
+        'purpose_other' => 'tujuan kunjungan lainnya',
+        'target_service' => 'layanan yang dituju',
+        'target_service_other' => 'layanan lainnya',
+        'notes' => 'keperluan',
+        'photo' => 'foto',
+    ];
+
     /**
      * Display home page (landing page)
      */
     public function home()
     {
-        return view('welcome', ['stats' => $this->publicStats()]);
+        return view('welcome', [
+            'stats' => $this->publicStats(),
+            'slides' => \App\Models\HeroSlider::active()->get(),
+        ]);
     }
 
     /**
@@ -82,14 +113,14 @@ class PublicController extends Controller
      */
     public function about()
     {
-        $faqs = Faq::where('is_active', true)->orderBy('created_at', 'desc')->limit(5)->get();
+        $faqs = Faq::published()->limit(5)->get();
         return view('public.about', compact('faqs'));
     }
 
     /** Pertanyaan umum (FAQ), searchable. */
     public function faq()
     {
-        $faqs = Faq::where('is_active', true)->orderBy('created_at', 'desc')->get();
+        $faqs = Faq::published()->get();
 
         return view('public.faq', compact('faqs'));
     }
@@ -107,13 +138,17 @@ class PublicController extends Controller
      */
     public function submitVisitor(Request $request)
     {
-        $validated = $request->validate(FrontDeskService::selfRegistrationRules(), [
-            'purpose_other.required_if' => 'Tuliskan tujuan kunjungan Anda.',
-        ]);
+        if (self::isBot($request)) {
+            return redirect()->route('public.visitor.book')->with('success', 'Tamu berhasil didaftarkan!');
+        }
 
-        app(FrontDeskService::class)->selfRegister($validated);
+        $validated = $request->validate(FrontDeskService::selfRegistrationRules(), self::GUEST_MESSAGES, self::GUEST_ATTRIBUTES);
 
-        return redirect()->route('public.visitor.book')->with('success', 'Tamu berhasil didaftarkan!');
+        $visitor = app(FrontDeskService::class)->selfRegister($validated);
+
+        return redirect()->route('public.visitor.book')
+            ->with('success', 'Tamu berhasil didaftarkan!')
+            ->with('registered', $visitor->confirmationSummary());
     }
 
     /**
@@ -121,6 +156,10 @@ class PublicController extends Controller
      */
     public function submitApplicant(Request $request)
     {
+        if (self::isBot($request)) {
+            return redirect()->route('public.visitor.book')->with('success', 'Pemohon layanan berhasil didaftarkan!');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
@@ -136,15 +175,13 @@ class PublicController extends Controller
             'target_service_other' => 'required_if:target_service,Lainnya|nullable|string|max:500',
             'notes' => 'nullable|string|max:1000',
             'obscure_name' => 'nullable',
-        ], [
-            'target_service_other.required_if' => 'Tuliskan layanan yang Anda tuju.',
-        ]);
+        ], self::GUEST_MESSAGES, self::GUEST_ATTRIBUTES);
 
         if ($validated['target_service'] === 'Lainnya') {
             $validated['target_service'] = $validated['target_service_other'];
         }
 
-        Visitor::create([
+        $visitor = Visitor::create([
             'name' => $validated['name'],
             'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
@@ -162,6 +199,17 @@ class PublicController extends Controller
         $message = "Halo {$validated['name']}! Permohonan layanan Anda ({$validated['target_service']}) telah kami terima. Kami akan segera memprosesnya.";
         $whatsappService->sendMessage($validated['phone'], $message);
 
-        return redirect()->route('public.visitor.book')->with('success', 'Pemohon layanan berhasil didaftarkan!');
+        return redirect()->route('public.visitor.book')
+            ->with('success', 'Pemohon layanan berhasil didaftarkan!')
+            ->with('registered', $visitor->confirmationSummary());
+    }
+
+    /**
+     * Honeypot: the "website" field is hidden from people, so only bots fill
+     * it in. They get the usual success page and nothing is stored.
+     */
+    private static function isBot(Request $request): bool
+    {
+        return filled($request->input('website'));
     }
 }

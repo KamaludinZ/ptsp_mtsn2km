@@ -73,7 +73,7 @@
                     <div class="flex flex-wrap justify-between items-center mb-4 text-sm text-base-content/70">
                         <div class="flex items-center">
                             <i class="fas fa-user mr-2"></i>
-                            <span>{{ $pengumuman->author ?? 'Admin' }}</span>
+                            <span>{{ $pengumuman->authorName() }}</span>
                         </div>
                         <div class="flex items-center gap-4 flex-wrap">
                             <span class="flex items-center gap-2">

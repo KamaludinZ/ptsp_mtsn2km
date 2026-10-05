@@ -70,12 +70,21 @@ class FrontDeskService
             'purpose_other' => 'required_if:purpose,' . VisitorMaster::OTHER . '|nullable|string|max:500',
             'notes' => 'nullable|string|max:1000',
             'obscure_name' => 'nullable', // checkbox "on" from the web form, true/false from the API
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];
     }
 
-    /** A guest registering themselves: no officer, checked in now. */
+    /**
+     * A guest registering themselves: no officer, checked in now.
+     *
+     * @param  array<string, mixed>  $data  selfRegistrationRules() fields; an uploaded `photo` is stored with the staff-taken photos
+     */
     public function selfRegister(array $data): Visitor
     {
+        $photo = ($data['photo'] ?? null) instanceof \Illuminate\Http\UploadedFile
+            ? $data['photo']->store('visitor-photos', 'public')
+            : null;
+
         return Visitor::create([
             'name' => $data['name'],
             'phone' => $data['phone'],
@@ -85,6 +94,7 @@ class FrontDeskService
             'purpose' => $data['purpose'] === VisitorMaster::OTHER ? $data['purpose_other'] : $data['purpose'],
             'notes' => $data['notes'] ?? null,
             'is_obscured' => filter_var($data['obscure_name'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'photo_path' => $photo,
             'check_in_time' => now(),
             'status' => 'active',
         ]);

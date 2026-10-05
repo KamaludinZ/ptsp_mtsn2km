@@ -107,10 +107,10 @@ class FilamentPanelsTest extends TestCase
     {
         $applicant = $this->user();
 
-        $this->actingAs($applicant)->get('/cp')->assertForbidden();
+        $this->actingAs($applicant)->get('/cp')->assertRedirect('/portal'); // own panel, not a 403
         $this->actingAs($applicant)->get('/portal')->assertOk();
 
-        $this->actingAs($this->user('back_office'))->get('/portal')->assertForbidden();
+        $this->actingAs($this->user('back_office'))->get('/portal')->assertRedirect('/cp');
     }
 
     public function test_guests_are_sent_to_the_site_login(): void

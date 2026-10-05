@@ -21,17 +21,23 @@ class OnlinePortalController extends Controller
         $user = Auth::user();
         $userType = $user ? $user->user_type : 'umum';
 
-        // Get categories
-        $categories = ServiceCategory::orderBy('name')->get();
+        try {
+            $categories = ServiceCategory::orderBy('name')->get();
 
-        // Get services allowed for this user type (user_types_allowed is a jsonb array)
-        $services = Service::where('is_active', true)
-            ->availableFor($userType)
-            ->with(['categories'])
-            ->orderBy('name')
-            ->get();
+            // Services allowed for this user type (user_types_allowed is a jsonb array)
+            $services = Service::where('is_active', true)
+                ->availableFor($userType)
+                ->with(['categories'])
+                ->orderBy('name')
+                ->get();
+            $loadError = false;
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Show a friendly "gagal dimuat, coba lagi" instead of an error page.
+            report($e);
+            [$categories, $services, $loadError] = [collect(), collect(), true];
+        }
 
-        return view('onlineportal.service-catalog', compact('categories', 'services', 'user'));
+        return response()->view('onlineportal.service-catalog', compact('categories', 'services', 'user', 'loadError'), $loadError ? 503 : 200);
     }
 
     /**
@@ -43,20 +49,46 @@ class OnlinePortalController extends Controller
         $userType = $user ? $user->user_type : 'umum';
 
         $service = Service::where('slug', $slug)
-            ->with(['categories', 'components', 'templates'])
+            ->with(['categories', 'components', 'activeTemplates'])
             ->availableFor($userType)
             ->firstOrFail();
 
         return view('onlineportal.service-detail', compact('service', 'user'));
     }
 
-    /** A template berkas of an active service: public, like the service page itself. */
+    /** A template berkas of an active service: public, like the service page itself (inactive ones for staff only). */
     public function downloadTemplate(string $slug, ServiceTemplate $template)
     {
         $service = Service::where('slug', $slug)->where('is_active', true)->firstOrFail();
-        abort_unless($template->service_id === $service->id && Storage::disk(ServiceTemplate::DISK)->exists($template->file_path), 404);
+        abort_unless($template->service_id === $service->id && ($template->is_active || (bool) auth()->user()?->isStaff()) && Storage::disk(ServiceTemplate::DISK)->exists($template->file_path), 404);
 
         return Storage::disk(ServiceTemplate::DISK)->download($template->file_path, $template->file_name ?: basename($template->file_path));
+    }
+
+    /** Every available template of an active service in one ZIP. */
+    public function downloadTemplates(string $slug)
+    {
+        $service = Service::where('slug', $slug)->where('is_active', true)->with('activeTemplates')->firstOrFail();
+        $templates = $service->activeTemplates->filter(fn (ServiceTemplate $template) => $template->isAvailable());
+        abort_if($templates->isEmpty(), 404);
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'tpl');
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $used = [];
+        foreach ($templates as $template) {
+            $name = $template->file_name ?: basename($template->file_path);
+            $base = pathinfo($name, PATHINFO_FILENAME);
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
+            for ($i = 2; isset($used[mb_strtolower($name)]); $i++) {
+                $name = "{$base} ({$i})" . ($extension ? ".{$extension}" : '');
+            }
+            $used[mb_strtolower($name)] = true;
+            $zip->addFromString($name, Storage::disk(ServiceTemplate::DISK)->get($template->file_path));
+        }
+        $zip->close();
+
+        return response()->download($zipPath, 'template-' . \Illuminate\Support\Str::slug($service->name) . '.zip', ['Content-Type' => 'application/zip'])->deleteFileAfterSend();
     }
 
     /**

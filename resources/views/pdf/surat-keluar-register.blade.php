@@ -5,7 +5,7 @@
     <title>Register Surat Keluar</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 9px; color: #111827; }
-        .head { text-align: center; border-bottom: 2px solid #111827; padding-bottom: 6px; margin-bottom: 10px; }
+        .head { text-align: center; margin-bottom: 10px; }
         .head h1 { font-size: 13px; margin: 0; text-transform: uppercase; }
         .head p { margin: 2px 0 0; font-size: 10px; }
         table { width: 100%; border-collapse: collapse; }
@@ -15,10 +15,10 @@
     </style>
 </head>
 <body>
+    @include('print.partials.letterhead', ['pdf' => true])
     <div class="head">
-        <h1>{{ app_brand_name() }}</h1>
-        <p>Buku Register Surat Keluar{{ $years ? ' Tahun ' . $years : '' }}</p>
-        <p class="muted">Dicetak {{ now()->translatedFormat('j F Y H:i') }} oleh {{ auth()->user()?->name }}</p>
+        <h1>Buku Register Surat Keluar{{ $years ? ' Tahun ' . $years : '' }}</h1>
+        <p class="muted">Dicetak {{ \App\Support\Formats::date(now()) }} {{ now()->format('H:i') }} oleh {{ auth()->user()?->name }}</p>
     </div>
     <table>
         <thead>
