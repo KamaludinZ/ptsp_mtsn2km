@@ -6,3 +6,18 @@
 # docs/internal/
 # *.snap
 # fixtures/
+
+# Local agent tooling (not part of the application)
+.claude/
+.codex/
+
+# Vendor assets published by Filament/plugins (minified build output)
+public/js/filament/
+public/css/filament/
+public/js/awcodes/
+public/css/awcodes/
+
+# Lockfiles and placeholder files
+composer.lock
+package-lock.json
+**/.gitignore
