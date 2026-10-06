@@ -103,7 +103,8 @@ class TinyEditorTest extends TestCase
         $this->actingAs(User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail())
             ->post(route('editor.upload'), ['file' => UploadedFile::fake()->image('foto.png')], ['Accept' => 'application/json'])
             ->assertOk()
-            ->assertJsonStructure(['location']);
+            ->assertJsonStructure(['location'])
+            ->assertJsonPath('location', fn (string $url) => str_starts_with($url, '/storage/editor-uploads/'));
         $this->post(route('editor.upload'), ['file' => UploadedFile::fake()->create('a.pdf', 5, 'application/pdf')], ['Accept' => 'application/json'])
             ->assertUnprocessable();
 

@@ -37,6 +37,15 @@ RUN npm run build
 ############################################
 FROM php:${PHP_VERSION}-fpm-alpine AS runtime
 
+# Version shown on Monitoring Sistem. Coolify passes SOURCE_COMMIT to every
+# build; set APP_VERSION (e.g. a release tag) to override it.
+ARG SOURCE_COMMIT=""
+ARG APP_VERSION=""
+
+LABEL org.opencontainers.image.title="PTSP MTsN 2 Kota Malang" \
+      org.opencontainers.image.description="Pelayanan Terpadu Satu Pintu (Laravel 12, Filament 3, PostgreSQL)" \
+      org.opencontainers.image.source="https://github.com/KamaludinZ/ptsp_mtsn2km"
+
 # Extensions: pgsql (database), intl (Filament), gd/exif (images, PDF),
 # zip (Excel export), bcmath, pcntl (queue/scheduler signals), opcache.
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
@@ -53,7 +62,8 @@ ENV APP_ENV=production \
     TZ=Asia/Jakarta \
     PHP_OPCACHE_VALIDATE_TIMESTAMPS=0 \
     PHP_FPM_MAX_CHILDREN=10 \
-    TRUSTED_PROXIES=*
+    TRUSTED_PROXIES=* \
+    APP_VERSION=${APP_VERSION:-$SOURCE_COMMIT}
 
 WORKDIR /var/www/html
 
@@ -71,6 +81,7 @@ COPY --chown=www-data:www-data --from=assets /app/public/build ./public/build
 # baked into the image, configuration comes from the environment.
 RUN rm -f .env bootstrap/cache/*.php \
     && php artisan package:discover --ansi \
+    && php artisan filament:assets --ansi \
     && mkdir -p storage/app/public storage/app/private storage/framework/cache/data \
         storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \

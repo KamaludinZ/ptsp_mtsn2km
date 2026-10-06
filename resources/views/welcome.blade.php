@@ -27,7 +27,16 @@
             <div class="carousel-inner">
                 @foreach ($slides as $slide)
                     <div @class(['carousel-item', 'active' => $loop->first])>
-                        <div class="hero-slide" style="background-image:url('{{ $slide->imageUrl() }}');color:{{ $slide->text_color }}">
+                        <div class="hero-slide" style="color:{{ $slide->text_color }}">
+                            <picture class="hero-slide__media">
+                                @if ($slide->mobileImageUrl())
+                                    <source media="(max-width: 767.98px)" srcset="{{ $slide->mobileImageUrl() }}"
+                                            width="{{ \App\Models\HeroSlider::MOBILE_WIDTH }}" height="{{ \App\Models\HeroSlider::MOBILE_HEIGHT }}">
+                                @endif
+                                <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title ?: 'Sorotan ' . app_brand_name() }}"
+                                     width="{{ \App\Models\HeroSlider::WIDTH }}" height="{{ \App\Models\HeroSlider::HEIGHT }}" decoding="async"
+                                     @if ($loop->first) fetchpriority="high" @else loading="lazy" @endif>
+                            </picture>
                             <div class="hero-slide__overlay" style="background:{{ $slide->overlay_color }}"></div>
                             <div class="hero-slide__content container">
                                 @if ($slide->title)
@@ -55,12 +64,6 @@
                 </button>
             @endif
         </section>
-        <style>
-            .hero-slide { position: relative; min-height: min(80vh, 640px); background-size: cover; background-position: center; display: flex; align-items: center; }
-            .hero-slide__overlay { position: absolute; inset: 0; }
-            .hero-slide__content { position: relative; z-index: 1; padding: 4rem 1rem; text-align: center; max-width: 900px; }
-            @media (prefers-reduced-motion: reduce) { #hero-slider .carousel-item { transition: none; } }
-        </style>
         @else
         <!-- Hero Section -->
         <section id="hero-section" aria-labelledby="hero-heading">

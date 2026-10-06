@@ -768,7 +768,7 @@
   "summary": "CSS utama frontend publik: import Tailwind base/components/utilities, custom CSS minimal untuk komponen dasar."
  },
  "resources/css/public-layout.css": {
-  "summary": "CSS layout halaman publik PTSP: navbar, hero section, footer, card layanan, responsive breakpoints. Digunakan di semua halaman publik via layout.blade.php."
+  "summary": "CSS layout situs publik: variabel tema terang/gelap, header, navigasi, footer, komponen umum, serta gaya .rich-text untuk konten TinyMCE (daftar berpoin/bernomor dan bersarang, perataan, tebal/miring/garis bawah/coret, link, heading, kutipan, tabel, gambar)."
  },
  "resources/css/home.css": {
   "summary": "CSS khusus halaman beranda: animasi counter statistik, hero slider, section layanan unggulan, cards pengumuman terbaru."
@@ -1137,7 +1137,7 @@
   "summary": "Halaman daftar FAQ dengan subjudul dan tombol tambah pertanyaan."
  },
  "app/Filament/Resources/FaqResource.php": {
-  "summary": "Resource Filament FAQ (tabel faqs): form pertanyaan/jawaban/kelompok/status tayang, tabel dengan urutan dan filter."
+  "summary": "Resource Filament FAQ (tabel faqs): form pertanyaan unik, jawaban dengan TinyEditor profil ringkas, kelompok dan status tayang; tabel dengan urutan dan filter."
  },
  "app/Filament/Resources/HeroSliderResource/Pages/CreateHeroSlider.php": {
   "summary": "Halaman tambah slide hero beranda; kembali ke daftar setelah simpan."
@@ -1173,7 +1173,7 @@
   "summary": "Halaman daftar pengumuman dengan subjudul, tombol tambah, dan tab status (tayang, draf, berakhir)."
  },
  "app/Filament/Resources/PengumumanResource.php": {
-  "summary": "Resource Filament Pengumuman (tabel pengumumen): form judul, isi rich text, kategori, lampiran, tanggal tayang/berakhir, status; tabel dengan filter, jumlah tampilan unik, dan aksi."
+  "summary": "Resource Filament Pengumuman (tabel pengumumen): form judul, isi dengan TinyEditor lengkap dan pratinjau langsung, kategori, lampiran, tanggal tayang/berakhir, status; tabel dengan filter, jumlah tampilan unik dan aksi status."
  },
  "app/Filament/Resources/PersuratanMasterResource/Pages/ListPersuratanMasters.php": {
   "summary": "Halaman daftar Master Persuratan: tab per daftar (tujuan naskah, jenis surat, tembusan, klasifikasi, instruksi disposisi) dengan jumlah, subjudul tentang isian manual yang tercatat nonaktif, tombol Tambah pilihan sesuai tab aktif."
@@ -1194,7 +1194,7 @@
   "summary": "Halaman daftar layanan dengan subjudul, tombol tambah, dan tab (aktif/nonaktif/semua)."
  },
  "app/Filament/Resources/ServiceResource/Pages/ViewService.php": {
-  "summary": "Halaman detail layanan: persyaratan, alur workflow, hasil, template berkas dan pengaturan disposisi seperti dilihat pemohon dan staf."
+  "summary": "Halaman detail layanan di panel: ringkasan, persyaratan (rich text dengan prose dan daftar persyaratan), alur workflow, hasil, template berkas dan pengaturan disposisi seperti dilihat pemohon dan staf; rich text dirender aman lewat RichText."
  },
  "app/Filament/Resources/ServiceResource/RelationManagers/TemplatesRelationManager.php": {
   "summary": "Relation manager Template Berkas di halaman layanan: form bersama ServiceTemplateResource::fields, tabel nama, berkas, versi (vN), wajib, toggle aktif, urutan; konstanta MIME_TYPES berkas template."
@@ -1401,7 +1401,7 @@
   "summary": "Model riwayat disposisi pimpinan (disposition_logs): aksi, peran, model tanda tangan, berkas tanda tangan, penerima, instruksi, catatan, acknowledged_by_name (telah didisposisi oleh); immutable (update/delete ditolak, juga trigger DB)."
  },
  "app/Models/Faq.php": {
-  "summary": "Model FAQ (tabel faqs): scopePublished urut kelompok lalu urutan, scopeInCategory, daftar kategori, nextSort, label 'Umum', safeAnswer membersihkan HTML jawaban dari skrip dan URL tidak aman."
+  "summary": "Model FAQ (tabel faqs): scopePublished urut kelompok lalu urutan, scopeInCategory, daftar kategori, nextSort, label 'Umum', safeAnswer() merender jawaban rich text yang disanitasi lewat RichText."
  },
  "app/Models/HeroSlider.php": {
   "summary": "Model slide hero beranda (hero_sliders): gambar di disk public, judul, subjudul, deskripsi, dua tombol, warna teks/lapisan, aktif, sort_order; scopeActive berurutan, imageUrl, gambar lama dihapus saat diganti atau slide dihapus."
@@ -1554,7 +1554,7 @@
   "summary": "Pengaturan disposisi per layanan: MODES (kepsek_tu, kepsek, tu, none), RECIPIENTS unit back office, model dan tipe tanda tangan, instruksi bawaan; modeFor, usesDefault, recommendationHint, apply() menyimpan mode, penerima dan anjuran tanda tangan."
  },
  "app/Support/ServiceSummary.php": {
-  "summary": "Standar pelayanan untuk form permohonan (persyaratan, waktu, biaya, produk) dan templates() tautan unduh template aktif beserta label wajib dan petunjuk pengisian."
+  "summary": "Standar pelayanan untuk form permohonan (persyaratan dan produk sebagai rich text aman, waktu, biaya, disposisi) dan templates() tautan unduh template aktif dengan label wajib dan petunjuk pengisian."
  },
  "app/Support/SettingsStore.php": {
   "summary": "Penyimpan Pengaturan Aplikasi untuk halaman Pengaturan dan API /api/pengaturan: normalisasi nilai, hanya menyimpan perubahan nyata, values(), hapus logo unggahan."
@@ -1782,7 +1782,7 @@
   "summary": "Layout halaman galat (403, 404, 419, 429, 500, 503) dengan aset lokal, tema dan tautan kembali ke beranda."
  },
  "resources/views/filament/forms/pengumuman-preview.blade.php": {
-  "summary": "Pratinjau langsung pengumuman di form panel: judul, kategori, status tayang (ContentStatus) dan isi."
+  "summary": "Pratinjau langsung pengumuman di form panel: judul, kategori, status tayang (ContentStatus) dan isi rich text yang dirender aman."
  },
  "resources/views/filament/infolists/category-history.blade.php": {
   "summary": "Infolist riwayat kategori layanan masuk tiket (IncomingCategory::history) dengan badge kategori."
@@ -1869,10 +1869,10 @@
   "summary": "Layout situs publik: tema terang/gelap dari pengaturan, aset Vite, navbar, footer dengan statistik pengunjung dan kontak, tautan FAQ, tombol mengambang."
  },
  "resources/views/onlineportal/service-catalog.blade.php": {
-  "summary": "Halaman publik Katalog Layanan: hero, filter kategori dan pencarian, kartu layanan dengan tautan detail dan ajukan, status kosong/gagal muat."
+  "summary": "Halaman publik Katalog Layanan (/services): filter kategori dan pencarian, kartu layanan dengan deskripsi ringkas, persyaratan, alur, produk dan penanganan pengaduan dirender sebagai rich text (daftar dan perataan), modal detail, tautan ajukan."
  },
  "resources/views/onlineportal/service-detail.blade.php": {
-  "summary": "Halaman publik detail layanan: 14 komponen standar pelayanan, daftar template berkas aktif dengan petunjuk pengisian, info berkas, unduh satu per satu atau ZIP, tombol ajukan dan tautan survei/pengaduan."
+  "summary": "Halaman publik detail layanan: deskripsi dan 14 komponen standar pelayanan dirender sebagai rich text aman (daftar, perataan), template berkas aktif dengan petunjuk dan unduh tunggal/ZIP, tombol ajukan, tautan survei dan pengaduan."
  },
  "resources/views/onlineportal/track-ticket-form.blade.php": {
   "summary": "Halaman publik Lacak Tiket: form nomor tiket (dan email untuk detail), hasil progres, badge status dan tahapan tanpa membocorkan catatan internal."
@@ -1884,10 +1884,10 @@
   "summary": "Template PDF laporan survei (IKM/IPAK) dengan kop instansi, nilai per pertanyaan dan demografi responden."
  },
  "resources/views/pengumuman/index.blade.php": {
-  "summary": "Halaman publik arsip pengumuman: kartu pengumuman tayang dengan pencarian/kategori dan paginasi."
+  "summary": "Halaman publik arsip pengumuman: kartu pengumuman tayang dengan cuplikan teks polos dari isi rich text, pencarian/kategori, paginasi."
  },
  "resources/views/pengumuman/show.blade.php": {
-  "summary": "Halaman publik detail pengumuman: judul, isi, lampiran dan jumlah tampilan."
+  "summary": "Halaman publik detail pengumuman: judul, isi rich text yang disanitasi (daftar, perataan, gambar), lampiran dan jumlah tampilan."
  },
  "resources/views/print/disposition-sheet.blade.php": {
   "summary": "Lembar disposisi cetak (route tickets.disposition-sheet): kop instansi, data permohonan, kotak unit penerima, daftar instruksi dari Master Persuratan dengan instruksi terpilih tercentang (termasuk ketikan manual), catatan, anjuran tanda tangan dan kolom tanda tangan pimpinan."
@@ -2190,6 +2190,42 @@
   "summary": "Migration menambah service_templates.petunjuk (maks 500 karakter): petunjuk singkat cara mengisi template yang ditampilkan kepada pemohon."
  },
  "routes/web.php": {
-  "summary": "Route web: halaman publik (beranda, katalog, detail layanan, unduh template tunggal/ZIP, lacak tiket, buku tamu dengan honeypot dan rate limit, pengaduan, survei, pengumuman, FAQ, kontak), dokumen cetak (tanda terima, lembar disposisi, kartu tamu), unduhan laporan bulanan, bukti pengaduan, lampiran surat keluar (lihat/unduh, dijaga SuratKeluarPolicy), dokumen tiket privat, serta redirect alamat lama."
+  "summary": "Route web: halaman publik (beranda, katalog, detail layanan, template, lacak, buku tamu, pengaduan, survei, pengumuman, FAQ, kontak), dokumen cetak, unduhan laporan, bukti pengaduan, lampiran surat keluar (SuratKeluarPolicy), unggah gambar editor TinyMCE untuk staf (editor.upload), dokumen tiket privat dan redirect alamat lama."
+ },
+ "app/Filament/Forms/Components/TinyEditor.php": {
+  "summary": "Field Filament TinyEditor (TinyMCE Cloud) untuk semua isian rich text panel: profil 'full' (heading, warna, perataan, daftar, tabel, link, gambar, kode, layar penuh) atau 'simple' (teks, daftar, link); height(); isi lama teks polos/JSON dibuka sebagai HTML (RichText::toHtml) dan disanitasi saat simpan; scriptUrl() dari TINYMCE_API_KEY; getEditorConfig() untuk JS beserta URL unggah gambar."
+ },
+ "app/Filament/Resources/ServiceResource.php": {
+  "summary": "Resource Filament layanan PTSP: tab umum (nama, kode, kategori, jalur, biaya, waktu, aktif, produk digital, deskripsi TinyEditor), tab Persyaratan & Alur (persyaratan, alur, produk, penanganan pengaduan dengan TinyEditor), pemohon yang dapat mengajukan, pengaturan disposisi, relation manager template berkas dan alur."
+ },
+ "app/Http/Controllers/EditorUploadController.php": {
+  "summary": "Controller unggah gambar dari TinyMCE (route editor.upload, POST /editor/unggah-gambar): hanya staf, hanya gambar JPG/PNG/GIF/WebP sesuai batas ukuran config tinymce, disimpan di disk public editor-uploads/Y/m, mengembalikan JSON location."
+ },
+ "app/Http/Middleware/SecurityHeaders.php": {
+  "summary": "Middleware header keamanan: nosniff, XSS protection, HSTS saat HTTPS, Content-Security-Policy per lingkungan (Vite dev server, font Bunny, Google Maps, dan domain TinyMCE Cloud *.tiny.cloud untuk skrip/gaya/font/gambar/koneksi), Referrer-Policy dan Permissions-Policy."
+ },
+ "app/Providers/AppServiceProvider.php": {
+  "summary": "Service provider aplikasi: mendaftarkan aset JS ptsp-tiny-editor (TinyMCE) untuk panel Filament, render hook preferensi tampilan, rate limiter (termasuk public-forms), share pengaturan aplikasi ke view dan konfigurasi runtime integrasi."
+ },
+ "app/Support/RichText.php": {
+  "summary": "Helper rich text TinyMCE: sanitize() membersihkan HTML (elemen aman, link http/https/mailto/tel, tanpa skrip/iframe) dan menyaring atribut style hanya ke properti aman (text-align, padding-left, warna, dekorasi, list-style-type, ukuran/perataan gambar dan tabel); render() untuk halaman; plain() teks ringkas; toHtml() mengubah teks lama '1. a 2. b' atau JSON menjadi daftar HTML."
+ },
+ "composer.json": {
+  "summary": "Dependensi Composer aplikasi Laravel 12 + Filament 3: Sanctum, Spatie permission/activitylog/medialibrary, DomPDF, Maatwebsite Excel, Symfony HtmlSanitizer dan lainnya, beserta skrip post-autoload filament:upgrade; editor rich text memakai TinyMCE Cloud (paket TipTap sudah dihapus)."
+ },
+ "config/tinymce.php": {
+  "summary": "Konfigurasi TinyMCE Cloud: api_key dari TINYMCE_API_KEY, versi, bahasa (id), dan aturan unggah gambar editor (disk public, folder editor-uploads, batas ukuran KB)."
+ },
+ "public/js/app/ptsp-tiny-editor.js": {
+  "summary": "Salinan aset ter-publish dari resources/js/tiny-editor.js (komponen Alpine TinyMCE) yang dimuat panel Filament."
+ },
+ "resources/js/tiny-editor.js": {
+  "summary": "Komponen Alpine ptspTinyEditor: memuat TinyMCE Cloud sekali per halaman, inisialisasi hanya pada textarea yang masih terpasang dengan id unik (tahan re-render Livewire), sinkronisasi dua arah dengan state Livewire, mode gelap, unggah gambar ke route editor dengan CSRF, dan pembersihan editor saat komponen dilepas."
+ },
+ "resources/views/filament/forms/components/tiny-editor.blade.php": {
+  "summary": "View field TinyEditor: pembungkus field Filament, pesan bila TINYMCE_API_KEY kosong, kontainer wire:ignore dengan x-data ptspTinyEditor yang meng-entangle state Livewire dan textarea target."
+ },
+ "tests/Feature/TinyEditorTest.php": {
+  "summary": "Feature test TinyEditorTest: sanitasi dan konversi teks lama ke daftar, form layanan memakai TinyMCE dan menyimpan HTML bersih, FAQ dan pengumuman tampil aman, unggah gambar khusus staf, CSP mengizinkan TinyMCE Cloud, perataan dan daftar tampil di halaman publik layanan tanpa CSS berbahaya."
  }
 }

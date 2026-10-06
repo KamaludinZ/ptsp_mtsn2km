@@ -62,8 +62,19 @@ body {
     overflow-x: hidden;
 }
 
+/*
+ * One height for the static hero and the hero slider, so swapping between
+ * them never moves the page: about 600px on phones, 550px on tablets and
+ * 481px from laptops up (never below the static hero's own content height).
+ * Slide images are made for it: 16:5 for computers, 2:3 for phones.
+ */
+:root {
+    --hero-height: clamp(481px, calc(650px - 13vw), 600px);
+}
+
 /* Hero Section */
 #hero-section {
+    min-height: var(--hero-height);
     background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
     display: flex;
     flex-direction: column;
@@ -1035,4 +1046,90 @@ footer .text-sm:hover {
 [data-theme="dark"] .guide-intro,
 [data-theme="dark"] .guide-step-text {
     color: var(--bs-gray-400, #9ca3af);
+}
+
+/* Hero slider (Konten > Hero Slider Beranda): same box as #hero-section */
+
+/* Bootstrap's carousel behaviour, restated: daisyUI (Tailwind) also styles
+   .carousel/.carousel-item (inline-flex, scroll snapping), which shrank the
+   slider to its content width and showed hidden slides. */
+#hero-slider {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    scroll-snap-type: none;
+}
+#hero-slider .carousel-inner {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+}
+#hero-slider .carousel-item {
+    display: none;
+    width: 100%;
+    flex: none;
+    scroll-snap-align: none;
+}
+#hero-slider .carousel-item.active,
+#hero-slider .carousel-item-next,
+#hero-slider .carousel-item-prev {
+    display: block;
+}
+#hero-slider .hero-slide {
+    position: relative;
+    height: var(--hero-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #14532d;
+}
+#hero-slider .hero-slide__media,
+#hero-slider .hero-slide__media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+#hero-slider .hero-slide__media img {
+    object-fit: cover;
+    object-position: center;
+}
+#hero-slider .hero-slide__overlay {
+    position: absolute;
+    inset: 0;
+}
+#hero-slider .hero-slide__content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 900px;
+    padding: clamp(2.5rem, 2rem + 2vw, 3.5rem) 1.25rem;
+    text-align: center;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, .45);
+}
+#hero-slider .hero-title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+#hero-slider .hero-subtitle,
+#hero-slider .hero-description,
+#hero-slider .hero-buttons {
+    opacity: 1;
+    animation: none;
+}
+#hero-slider .hero-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+@media (max-width: 767.98px) {
+    #hero-slider .hero-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    #hero-slider .carousel-item { transition: none; }
 }

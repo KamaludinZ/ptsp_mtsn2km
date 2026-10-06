@@ -1,0 +1,10 @@
+# Publish the app on the host for a VPS without Coolify, e.g. behind your own
+# nginx/Caddy (TLS) or for a first test:
+#   docker compose -f docker-compose.yml -f docker-compose.ports.yml up -d --build
+# Bound to 127.0.0.1 by default so only the local reverse proxy can reach it;
+# set APP_BIND=0.0.0.0 to expose it directly (then use SESSION_SECURE_COOKIE=false
+# if you test over plain http://).
+services:
+  app:
+    ports:
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:8080"

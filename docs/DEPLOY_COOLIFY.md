@@ -6,7 +6,8 @@ dikelola [Coolify](https://coolify.io). Semua yang dibutuhkan sudah ada di repo:
 | Berkas | Fungsi |
 | --- | --- |
 | `Dockerfile` | Membangun image produksi: dependensi PHP, build aset Vite, PHP 8.3 + nginx |
-| `docker-compose.yml` | Aplikasi + database PostgreSQL 16 dengan volume permanen (dipakai Coolify) |
+| `docker-compose.yml` | Aplikasi + database PostgreSQL 16 dengan volume permanen (dipakai Coolify), plus layanan backup opsional (profil `backup`) |
+| `docker-compose.ports.yml`, `.env.docker.example` | Untuk VPS tanpa Coolify: membuka port aplikasi dan contoh variabel (lihat bagian *VPS tanpa Coolify*) |
 | `docker/entrypoint.sh` | Saat container start: cek konfigurasi, tunggu database, migrasi, isi data awal, siapkan cache |
 | `docker/nginx.conf`, `docker/php.ini`, `docker/php-fpm.conf`, `docker/supervisord.conf` | Konfigurasi server di dalam container |
 | `.github/workflows/docker.yml` | Uji otomatis di GitHub: build image, jalankan bersama PostgreSQL, cek halaman |
@@ -72,6 +73,7 @@ Buka tab **Environment Variables**. Variabel wajib:
 | `APP_KEY` | `base64:...` dari langkah 1.4 | Wajib. Container menolak start jika kosong. |
 | `APP_URL` | `https://ptsp.mtsn2malang.sch.id` | Samakan dengan domain. |
 | `ADMIN_PASSWORD` | Password kuat | Dipakai sekali saat deploy pertama untuk akun admin `ptsp@mtsn2malang.sch.id`. Jika kosong, password acak dicetak di log deploy. |
+| `TINYMCE_API_KEY` | Kunci dari tiny.cloud | Editor teks (Layanan, Pengumuman, FAQ). Daftarkan domain di tiny.cloud → *Approved Domains*. |
 
 `SERVICE_USER_POSTGRES` dan `SERVICE_PASSWORD_POSTGRES` **dibuat otomatis oleh Coolify**.
 Tidak perlu diisi.
@@ -89,6 +91,12 @@ Variabel opsional:
 | `SEED_ON_FIRST_DEPLOY` | `true` | Isi data awal jika tabel users masih kosong |
 | `LOG_LEVEL` | `warning` | Isi `debug` sementara saat mencari masalah |
 | `POSTGRES_DB` | `ptsp` | Nama database |
+| `SESSION_SECURE_COOKIE` | `true` | Biarkan `true` di balik HTTPS Coolify. Isi `false` hanya untuk uji lewat `http://`. |
+| `PHP_FPM_MAX_CHILDREN` | `10` | Jumlah proses PHP. Kira-kira (RAM container − 200 MB) / 60 MB. |
+| `APP_VERSION` | commit sumber | Versi yang tampil di Monitoring Sistem. Coolify mengisi `SOURCE_COMMIT` otomatis bila *Include Source Commit in Build* aktif. |
+
+Email dan WhatsApp sebaiknya diatur di panel (**Manajemen Sistem → Integrasi Notifikasi**, lengkap
+dengan pilihan gateway dan **Uji kirim**). Variabel `MAIL_*`/`WHATSAPP_*` hanya cadangan.
 
 ## 4. Deploy
 
@@ -140,6 +148,26 @@ docker run --rm -v <nama-volume-storage>:/data -v "$PWD":/backup alpine \
 
 Nama volume lengkap bisa dilihat dengan `docker volume ls | grep storage`.
 
+## VPS tanpa Coolify (Docker Compose biasa)
+
+```bash
+git clone https://github.com/KamaludinZ/ptsp_mtsn2km.git && cd ptsp_mtsn2km
+cp .env.docker.example .env        # isi APP_KEY, APP_URL, SERVICE_PASSWORD_POSTGRES, TINYMCE_API_KEY
+docker compose -f docker-compose.yml -f docker-compose.ports.yml up -d --build
+docker compose --profile backup up -d   # backup harian ke volume ptsp-backups (opsional)
+```
+
+Aplikasi terbuka di `127.0.0.1:8080`. Pasang reverse proxy dengan TLS di depannya, misalnya Caddy:
+
+```
+ptsp.mtsn2malang.sch.id {
+    reverse_proxy 127.0.0.1:8080
+}
+```
+
+Update: `git pull && docker compose -f docker-compose.yml -f docker-compose.ports.yml up -d --build`.
+Backup ada di volume `ptsp-backups` (`docker run --rm -v <proyek>_ptsp-backups:/b alpine ls /b`).
+
 ## 7. Pindah data dari server lama (opsional)
 
 Jika sebelumnya aplikasi berjalan di server lain, misalnya cPanel:
@@ -188,6 +216,9 @@ Pilih cara ini jika ingin fitur backup terjadwal Coolify ke S3.
 | Tampilan tanpa CSS atau tautan `http://` | Pastikan `APP_URL` memakai `https://` dan sama persis dengan domain. |
 | Error 419 (page expired) saat login | Buka situs lewat domain yang sama dengan `APP_URL`, lalu hapus cookie browser. |
 | Unggah berkas gagal (413) | Batas unggah 20 MB per berkas. Kompres dokumen yang lebih besar. |
+| Editor teks tidak muncul / *This domain is not registered* | Isi `TINYMCE_API_KEY` dan daftarkan domain di tiny.cloud → *Approved Domains*. |
+| Login gagal terus tanpa pesan (uji via `http://`) | Cookie aman butuh HTTPS: pakai domain HTTPS, atau isi `SESSION_SECURE_COOKIE=false` sementara. |
+| Monitoring: versi "tidak diketahui" | Isi `APP_VERSION`, atau aktifkan *Include Source Commit in Build* di Coolify. |
 | Lupa password admin | Terminal service `app`: `php artisan tinker`, lalu `App\Models\User::where('email','ptsp@mtsn2malang.sch.id')->first()->update(['password'=>bcrypt('PasswordBaru123!')]);` |
 
 ## Perintah berguna (tab Terminal service `app`)

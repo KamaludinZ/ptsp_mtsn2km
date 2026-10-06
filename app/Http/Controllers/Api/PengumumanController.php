@@ -196,7 +196,7 @@ class PengumumanController extends Controller
             'tanggal_berakhir' => $item->end_date?->toDateString(),
             'penulis' => $item->authorName(),
             'dilihat' => (int) $item->view_count,
-            'lampiran' => $item->attachment ? Storage::disk('public')->url($item->attachment) : null,
+            'lampiran' => $item->attachment ? asset('storage/' . $item->attachment) : null,
             'tautan' => $item->url,
             'halaman_publik' => $status === 'tayang' ? route('pengumuman.show', $item) : null,
             'diperbarui' => $item->updated_at?->toIso8601String(),

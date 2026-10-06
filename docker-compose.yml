@@ -1,17 +1,33 @@
-# Coolify deployment (Build Pack: Docker Compose). Also works with plain
-# `docker compose up -d --build` when the variables below are exported.
-# Full guide: docs/DEPLOY_COOLIFY.md
+# PTSP MTsN 2 Kota Malang — production stack (app + PostgreSQL).
 #
-# Coolify fills SERVICE_USER_POSTGRES / SERVICE_PASSWORD_POSTGRES itself and
-# routes the domain to port 8080 via SERVICE_FQDN_APP_8080. Variables written
-# as ${NAME} (no default) must be filled in Coolify's Environment Variables.
+# Coolify (Build Pack: Docker Compose): Coolify fills SERVICE_USER_POSTGRES /
+# SERVICE_PASSWORD_POSTGRES itself and routes the domain to port 8080 via
+# SERVICE_FQDN_APP_8080. Fill the other variables in its Environment tab.
+#
+# Plain Docker (VPS): copy .env.docker.example to .env, fill it, then
+#   docker compose -f docker-compose.yml -f docker-compose.ports.yml up -d --build
+#   docker compose --profile backup up -d   # optional daily backups
+#
+# Variables written as ${NAME} without a default are required.
+# Full guide: docs/DEPLOY_COOLIFY.md (Coolify) and docs/DEPLOYMENT.md (hosting).
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
 
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        SOURCE_COMMIT: ${SOURCE_COMMIT:-}
+        APP_VERSION: ${APP_VERSION:-}
     restart: unless-stopped
+    stop_grace_period: 30s
+    logging: *logging
     environment:
       - SERVICE_FQDN_APP_8080
       - APP_NAME=${APP_NAME:-PTSP MTsN 2 Kota Malang}
@@ -23,22 +39,29 @@ services:
       - LOG_CHANNEL=stderr
       - LOG_LEVEL=${LOG_LEVEL:-warning}
       - DB_CONNECTION=pgsql
-      - DB_HOST=postgres
-      - DB_PORT=5432
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=${DB_PORT:-5432}
       - DB_DATABASE=${POSTGRES_DB:-ptsp}
       - DB_USERNAME=${SERVICE_USER_POSTGRES}
       - DB_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - DB_SSLMODE=${DB_SSLMODE:-prefer}
       - CACHE_DRIVER=database
       - SESSION_DRIVER=database
       - SESSION_LIFETIME=${SESSION_LIFETIME:-120}
       - SESSION_ENCRYPT=true
-      - SESSION_SECURE_COOKIE=true
+      # true behind HTTPS (Coolify). Set false only to test over plain http://.
+      - SESSION_SECURE_COOKIE=${SESSION_SECURE_COOKIE:-true}
       - QUEUE_CONNECTION=sync
       - FILESYSTEM_DISK=local
-      - TRUSTED_PROXIES=*
+      - TRUSTED_PROXIES=${TRUSTED_PROXIES:-*}
       - AUTO_MIGRATE=${AUTO_MIGRATE:-true}
       - SEED_ON_FIRST_DEPLOY=${SEED_ON_FIRST_DEPLOY:-true}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - PHP_FPM_MAX_CHILDREN=${PHP_FPM_MAX_CHILDREN:-10}
+      # Rich text editor (TinyMCE Cloud): approve APP_URL's domain in the Tiny account
+      - TINYMCE_API_KEY=${TINYMCE_API_KEY:-}
+      # Email/WhatsApp are normally set in the panel (Integrasi Notifikasi);
+      # these are only the fallback until something is saved there.
       - MAIL_MAILER=${MAIL_MAILER:-log}
       - MAIL_HOST=${MAIL_HOST:-}
       - MAIL_PORT=${MAIL_PORT:-587}
@@ -51,7 +74,7 @@ services:
       - WHATSAPP_API_TOKEN=${WHATSAPP_API_TOKEN:-}
       - WHATSAPP_SENDER_ID=${WHATSAPP_SENDER_ID:-}
     volumes:
-      # Uploaded documents, service outputs, logs (must survive redeploys)
+      # Uploaded documents, service outputs, images and logs (must survive redeploys)
       - ptsp-storage:/var/www/html/storage
     depends_on:
       postgres:
@@ -66,11 +89,15 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    stop_grace_period: 60s
+    logging: *logging
+    shm_size: 128mb
     environment:
       - POSTGRES_USER=${SERVICE_USER_POSTGRES}
       - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
       - POSTGRES_DB=${POSTGRES_DB:-ptsp}
       - TZ=Asia/Jakarta
+      - PGTZ=Asia/Jakarta
     volumes:
       - ptsp-postgres:/var/lib/postgresql/data
     healthcheck:
@@ -79,6 +106,45 @@ services:
       timeout: 5s
       retries: 10
 
+  # Optional daily backup (database dump + uploaded files) into the
+  # ptsp-backups volume, keeping BACKUP_KEEP_DAYS days. Start it with
+  # `docker compose --profile backup up -d`. On Coolify prefer its own
+  # scheduled database backups (to S3) and keep this off.
+  backup:
+    image: postgres:16-alpine
+    profiles: ["backup"]
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      - PGHOST=postgres
+      - PGUSER=${SERVICE_USER_POSTGRES}
+      - PGPASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - PGDATABASE=${POSTGRES_DB:-ptsp}
+      - BACKUP_KEEP_DAYS=${BACKUP_KEEP_DAYS:-14}
+      - BACKUP_INTERVAL_SECONDS=${BACKUP_INTERVAL_SECONDS:-86400}
+      - TZ=Asia/Jakarta
+    volumes:
+      - ptsp-backups:/backups
+      - ptsp-storage:/storage:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        while true; do
+          stamp=$$(date +%Y%m%d-%H%M)
+          echo "[backup] $$stamp: database"
+          pg_dump --format=custom --no-owner --file=/backups/ptsp-db-$$stamp.dump
+          echo "[backup] $$stamp: storage"
+          tar -czf /backups/ptsp-storage-$$stamp.tar.gz -C /storage app
+          find /backups -type f -mtime +$${BACKUP_KEEP_DAYS} -delete
+          echo "[backup] selesai, berikutnya dalam $${BACKUP_INTERVAL_SECONDS} detik"
+          sleep $${BACKUP_INTERVAL_SECONDS}
+        done
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   ptsp-storage:
   ptsp-postgres:
+  ptsp-backups:

@@ -17,6 +17,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Public-disk files (slides, editor images, visitor photos, logos) as
+        // root-relative URLs (/storage/…): always the page's own host and port,
+        // whatever APP_URL says, so img-src/connect-src 'self' in the CSP holds.
+        config(['filesystems.disks.public.url' => '/storage']);
+
         $this->app->bind(
             \Filament\Http\Responses\Auth\Contracts\LogoutResponse::class,
             \App\Http\Responses\LogoutResponse::class,

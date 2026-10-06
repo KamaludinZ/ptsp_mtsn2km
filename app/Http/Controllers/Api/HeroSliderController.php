@@ -18,7 +18,7 @@ class HeroSliderController extends Controller
                 'judul' => $slide->title,
                 'subjudul' => $slide->subtitle,
                 'deskripsi' => $slide->description,
-                'gambar' => $slide->imageUrl(),
+                'gambar' => $slide->image ? url($slide->imageUrl()) : null,
                 'tombol' => collect([[$slide->button1_text, $slide->button1_url], [$slide->button2_text, $slide->button2_url]])
                     ->filter(fn (array $button) => filled($button[0]) && filled($button[1]))
                     ->map(fn (array $button) => ['teks' => $button[0], 'tautan' => str_starts_with($button[1], '/') ? url($button[1]) : $button[1]])

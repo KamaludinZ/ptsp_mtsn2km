@@ -14,6 +14,9 @@ GRANT ALL PRIVILEGES ON DATABASE ptspmtsn2 TO ptspmtsn2;
 -- Connect to the newly created database
 \c ptspmtsn2
 
+-- Pencarian teks (indeks trigram) butuh extension ini; dibuat oleh superuser
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- Grant all privileges on schema to the user
 GRANT ALL ON SCHEMA public TO ptspmtsn2;
 

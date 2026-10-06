@@ -47,6 +47,11 @@ class SystemMonitorService
             return $version;
         }
 
+        // Release ZIPs (scripts/build-release.sh) carry their version in RELEASE.
+        if (is_file($release = base_path('RELEASE')) && ($version = trim((string) file_get_contents($release))) !== '') {
+            return $version;
+        }
+
         return Cache::remember('monitor:version', 600, function () {
             $git = base_path('.git');
             if (! is_dir($git)) {
@@ -171,6 +176,12 @@ class SystemMonitorService
         }
         if (config('queue.default') === 'sync' && $production) {
             $add('info', 'Antrean berjalan sinkron', 'Notifikasi dikirim saat permintaan berlangsung; pertimbangkan antrean database agar halaman tidak menunggu gateway.');
+        }
+        if (! is_dir(public_path('storage'))) {
+            $add('danger', 'Tautan public/storage belum ada', 'Gambar slider, gambar editor, foto tamu dan logo tidak tampil (HTTP 403). Jalankan php artisan storage:link.');
+        }
+        if (blank(config('tinymce.api_key'))) {
+            $add('warning', 'Editor teks belum aktif', 'Isi TINYMCE_API_KEY agar editor Layanan, Pengumuman dan FAQ bisa dipakai.');
         }
         if (! $this->scheduler()['ok']) {
             $add('warning', 'Scheduler tidak terdeteksi', 'Tugas berkala (arsip survei triwulan, detak monitoring) tidak berjalan.');

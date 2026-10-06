@@ -33,6 +33,36 @@ class HeroSliderResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
+    /** Overlay presets (darkening layer over the slide image). */
+    public const OVERLAYS = [
+        'rgba(0,0,0,0)' => 'Tanpa lapisan',
+        'rgba(0,0,0,0.25)' => 'Gelap tipis (25%)',
+        'rgba(0,0,0,0.4)' => 'Gelap sedang (40%)',
+        'rgba(0,0,0,0.6)' => 'Gelap pekat (60%)',
+        'rgba(20,83,45,0.55)' => 'Hijau madrasah (55%)',
+        'rgba(255,255,255,0.35)' => 'Terang (35%)',
+    ];
+
+    /** Image upload cropped to $ratio and scaled to $width×$height before it is sent. */
+    private static function slideImage(string $field, string $label, string $ratio, int $width, int $height): Forms\Components\FileUpload
+    {
+        return Forms\Components\FileUpload::make($field)->label($label)
+            ->image()
+            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+            ->disk(HeroSlider::DISK)
+            ->directory('hero-slides')
+            ->visibility('public')
+            ->imageEditor()
+            ->imageEditorAspectRatios([$ratio])
+            ->imageCropAspectRatio($ratio)
+            ->imageResizeMode('cover')
+            ->imageResizeTargetWidth((string) $width)
+            ->imageResizeTargetHeight((string) $height)
+            ->imageResizeUpscale(false)
+            ->imagePreviewHeight('180')
+            ->maxSize(5120);
+    }
+
     public static function can(string $action, ?Model $record = null): bool
     {
         return (bool) auth()->user()?->hasRole('admin');
@@ -47,15 +77,14 @@ class HeroSliderResource extends Resource
 
         return $form->schema([
             Forms\Components\Section::make('Isi slide')->columns(2)->schema([
-                Forms\Components\FileUpload::make('image')->label('Gambar latar')
-                    ->image()
-                    ->disk(HeroSlider::DISK)
-                    ->directory('hero-slides')
-                    ->visibility('public')
-                    ->imageEditor()
-                    ->maxSize(3072)
-                    ->helperText('Disarankan lanskap 1920×800 piksel, maksimal 3 MB.')
+                // Cropped and scaled in the browser before upload, so every slide has
+                // the hero's shape and a light file (see HeroSlider::ASPECT_RATIO).
+                static::slideImage('image', 'Gambar (komputer)', HeroSlider::ASPECT_RATIO, HeroSlider::WIDTH, HeroSlider::HEIGHT)
+                    ->helperText('Dipotong 16:5 dan diperkecil ke 1920×600 piksel. Taruh teks/objek penting di tengah; tinggi slider sama dengan hero beranda.')
                     ->required()
+                    ->columnSpanFull(),
+                static::slideImage('image_mobile', 'Gambar HP (opsional)', HeroSlider::MOBILE_ASPECT_RATIO, HeroSlider::MOBILE_WIDTH, HeroSlider::MOBILE_HEIGHT)
+                    ->helperText('Potret 2:3 (1080×1620) untuk layar HP. Jika kosong, HP menampilkan bagian tengah gambar komputer.')
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('title')->label('Judul')->maxLength(120)->columnSpanFull(),
                 Forms\Components\TextInput::make('subtitle')->label('Subjudul')->maxLength(160),
@@ -68,8 +97,18 @@ class HeroSliderResource extends Resource
                 $url('button2_url')->requiredWith('button2_text'),
             ]),
             Forms\Components\Section::make('Tampilan')->columns(3)->collapsible()->schema([
-                Forms\Components\ColorPicker::make('text_color')->label('Warna teks')->default('#ffffff'),
-                Forms\Components\ColorPicker::make('overlay_color')->label('Lapisan gelap')->rgba()->default('rgba(0,0,0,0.4)')
+                // Native colour input and presets: no lazily loaded Alpine component,
+                // which can fail to register after SPA navigation in the panel.
+                Forms\Components\TextInput::make('text_color')->label('Warna teks')
+                    ->type('color')
+                    ->default('#ffffff')
+                    ->regex('/^#[0-9a-fA-F]{6}$/')
+                    ->required(),
+                Forms\Components\Select::make('overlay_color')->label('Lapisan gelap')
+                    ->options(self::OVERLAYS)
+                    ->default('rgba(0,0,0,0.4)')
+                    ->native(false)
+                    ->required()
                     ->helperText('Menjaga teks tetap terbaca di atas gambar.'),
                 Forms\Components\Toggle::make('is_active')->label('Tampilkan di beranda')->default(true)->inline(false),
             ]),

@@ -57,7 +57,12 @@ class HeroSliderTest extends TestCase
         $this->get('/')->assertOk()
             ->assertSee('id="hero-slider"', false)
             ->assertDontSee('id="hero-section"', false)
-            ->assertSeeInOrder(['Pertama', 'Daftar', 'Kedua']);
+            ->assertSeeInOrder(['Pertama', 'Daftar', 'Kedua'])
+            // Same-origin path whatever APP_URL is (img-src 'self' in the CSP)
+            ->assertSee('src="/storage/hero-slides/a.jpg"', false)
+            ->assertSee('alt="Pertama"', false)
+            ->assertSee('fetchpriority="high"', false)
+            ->assertSee('loading="lazy"', false);
     }
 
     public function test_admin_adds_a_slide_with_an_image(): void
@@ -68,6 +73,8 @@ class HeroSliderTest extends TestCase
             ->fillForm([
                 'image' => UploadedFile::fake()->image('banner.jpg', 1920, 800),
                 'title' => 'Selamat datang',
+                'text_color' => '#fefefe',
+                'overlay_color' => 'rgba(20,83,45,0.55)',
                 'button1_text' => 'Ajukan',
                 'button1_url' => 'javascript:alert(1)',
             ])
@@ -79,6 +86,8 @@ class HeroSliderTest extends TestCase
 
         $slide = HeroSlider::where('title', 'Selamat datang')->firstOrFail();
         $this->assertTrue($slide->is_active);
+        $this->assertSame(['#fefefe', 'rgba(20,83,45,0.55)'], [$slide->text_color, $slide->overlay_color]);
+        $this->assertStringStartsWith('/storage/hero-slides/', \Illuminate\Support\Facades\Storage::disk('public')->url($slide->image));
         Storage::disk('public')->assertExists($slide->image);
     }
 
@@ -103,5 +112,23 @@ class HeroSliderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.judul', 'PPDB')
             ->assertJsonPath('data.0.tombol', [['teks' => 'Daftar', 'tautan' => url('/layanan')]]);
+    }
+
+    public function test_phones_get_the_portrait_image_and_replaced_images_are_removed(): void
+    {
+        Storage::disk('public')->put('hero-slides/hp.jpg', 'potret');
+        $slide = $this->slide(['title' => 'Dengan gambar HP', 'image_mobile' => 'hero-slides/hp.jpg']);
+
+        $this->get('/')->assertOk()
+            ->assertSee('<source media="(max-width: 767.98px)" srcset="/storage/hero-slides/hp.jpg"', false)
+            ->assertSee('src="/storage/hero-slides/a.jpg"', false);
+
+        Storage::disk('public')->put('hero-slides/hp2.jpg', 'potret baru');
+        $slide->update(['image_mobile' => 'hero-slides/hp2.jpg']);
+        Storage::disk('public')->assertMissing('hero-slides/hp.jpg');
+
+        $slide->delete();
+        Storage::disk('public')->assertMissing('hero-slides/hp2.jpg');
+        Storage::disk('public')->assertMissing('hero-slides/a.jpg');
     }
 }

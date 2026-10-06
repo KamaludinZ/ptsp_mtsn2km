@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * Images inserted or pasted into a TinyMCE field: staff only, images only,
@@ -28,6 +27,8 @@ class EditorUploadController extends Controller
         $disk = config('tinymce.uploads.disk', 'public');
         $path = $request->file('file')->store(config('tinymce.uploads.directory', 'editor-uploads') . '/' . now()->format('Y/m'), $disk);
 
-        return response()->json(['location' => Storage::disk($disk)->url($path)]);
+        // Root-relative: the URL is stored inside the content, so it must keep
+        // working on any domain or port the site is opened from.
+        return response()->json(['location' => '/storage/' . ltrim($path, '/')]);
     }
 }

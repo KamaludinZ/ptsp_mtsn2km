@@ -15,3 +15,5 @@ yarn-error.log
 /bootstrap/cache/*
 !.gitignore
 /.phpunit.result.cache
+/dist
+/RELEASE

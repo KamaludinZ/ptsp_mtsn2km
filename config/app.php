@@ -19,6 +19,16 @@ return [
     'name' => env('APP_NAME', 'PTSP MTsN 2 Kota Malang'),
 
     /*
+    | Running version, shown on Monitoring Sistem and used to compare with the
+    | latest GitHub release. Docker images set it at build time (APP_VERSION,
+    | or Coolify's SOURCE_COMMIT); without it `git describe` is used.
+    */
+    'version' => env('APP_VERSION'),
+
+    // GitHub repository (owner/name) checked for new releases.
+    'update_repository' => env('APP_UPDATE_REPOSITORY', 'KamaludinZ/ptsp_mtsn2km'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
