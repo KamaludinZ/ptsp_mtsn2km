@@ -28,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(Request $request): void
     {
+        // TinyMCE rich text fields (App\Filament\Forms\Components\TinyEditor) in the panels.
+        \Filament\Support\Facades\FilamentAsset::register([
+            \Filament\Support\Assets\Js::make('ptsp-tiny-editor', resource_path('js/tiny-editor.js')),
+        ]);
+
         // Preferensi tampilan (text size, theme mode) in both panels, before Filament's theme script.
         \Filament\Support\Facades\FilamentView::registerRenderHook(
             \Filament\View\PanelsRenderHook::STYLES_AFTER,

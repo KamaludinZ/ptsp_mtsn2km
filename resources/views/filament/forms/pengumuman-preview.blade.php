@@ -31,7 +31,7 @@
         <h3 class="text-lg font-semibold text-gray-950 dark:text-white" style="margin: .25rem 0 .5rem;">{{ $title }}</h3>
         <div class="prose prose-sm dark:prose-invert text-gray-700 dark:text-gray-200" style="max-width: none;">
             @if (filled(strip_tags($content)))
-                {!! str($content)->sanitizeHtml() !!}
+                {{ \App\Support\RichText::render($content) }}
             @else
                 <p class="text-gray-400">Isi pengumuman akan tampil di sini.</p>
             @endif

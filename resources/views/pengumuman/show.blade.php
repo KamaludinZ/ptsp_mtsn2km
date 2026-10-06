@@ -101,8 +101,8 @@
 
                     <div class="divider"></div>
 
-                    <div class="prose max-w-none mt-4">
-                        {!! nl2br(e($pengumuman->content)) !!}
+                    <div class="prose rich-text max-w-none mt-4">
+                        {{ \App\Support\RichText::render($pengumuman->content) }}
                     </div>
                 </div>
             </article>

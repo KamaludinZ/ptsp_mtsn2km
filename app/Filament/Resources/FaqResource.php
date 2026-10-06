@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Forms\Components\TinyEditor;
 use App\Filament\Resources\FaqResource\Pages;
 use App\Filament\Resources\FaqResource\RelationManagers;
 use App\Models\Faq;
@@ -34,10 +35,11 @@ class FaqResource extends Resource
                     ->unique(ignoreRecord: true)
                     ->validationMessages(['unique' => 'Pertanyaan ini sudah ada di FAQ.'])
                     ->columnSpanFull(),
-                Forms\Components\RichEditor::make('answer')
+                TinyEditor::make('answer')
                     ->label('Jawaban')
+                    ->simple()
+                    ->height(260)
                     ->required()
-                    ->disableToolbarButtons(['attachFiles'])
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('category')
                     ->label('Kelompok')

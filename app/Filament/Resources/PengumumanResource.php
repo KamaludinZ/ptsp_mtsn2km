@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Forms\Components\TinyEditor;
 use App\Filament\Resources\PengumumanResource\Pages;
 use App\Models\Pengumuman;
 use Filament\Forms;
@@ -45,10 +46,9 @@ class PengumumanResource extends Resource
                                 ->maxLength(50)
                                 ->dehydrateStateUsing(fn (?string $state) => filled($state) ? \Illuminate\Support\Str::lower(trim($state)) : null)
                                 ->live(onBlur: true),
-                            Forms\Components\RichEditor::make('content')
+                            TinyEditor::make('content')
                                 ->label('Isi')
                                 ->required()
-                                ->disableToolbarButtons(['attachFiles'])
                                 ->live(debounce: 1000),
                             Forms\Components\TextInput::make('author')
                                 ->label('Penulis')

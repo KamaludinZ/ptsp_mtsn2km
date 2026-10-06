@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
 class Faq extends Model
 {
@@ -48,15 +46,6 @@ class Faq extends Model
      */
     public function safeAnswer(): string
     {
-        static $sanitizer;
-
-        $sanitizer ??= new HtmlSanitizer(
-            (new HtmlSanitizerConfig())
-                ->allowSafeElements()
-                ->allowLinkSchemes(['https', 'http', 'mailto', 'tel'])
-                ->allowRelativeLinks()
-        );
-
-        return $sanitizer->sanitize((string) $this->answer);
+        return (string) \App\Support\RichText::render($this->answer);
     }
 }

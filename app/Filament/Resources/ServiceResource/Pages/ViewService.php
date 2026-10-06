@@ -47,7 +47,7 @@ class ViewService extends ViewRecord
 
     public function infolist(Infolist $infolist): Infolist
     {
-        $html = fn (?string $state) => filled(strip_tags((string) $state)) ? str($state)->sanitizeHtml()->toHtmlString() : null;
+        $html = fn (?string $state) => filled(\App\Support\RichText::plain($state)) ? \App\Support\RichText::render($state) : null;
 
         return $infolist->schema([
             Section::make('Ringkasan')
@@ -68,13 +68,13 @@ class ViewService extends ViewRecord
                         ->state(fn (Service $record) => blank($record->user_types_allowed) ? 'Semua pemohon'
                             : collect($record->user_types_allowed)->map(fn (string $type) => FrontDeskService::APPLICANT_TYPES[$type] ?? $type)->join(', '))
                         ->columnSpan(['lg' => 2]),
-                    TextEntry::make('description')->label('Deskripsi')->formatStateUsing($html)->placeholder('–')->columnSpanFull(),
+                    TextEntry::make('description')->label('Deskripsi')->formatStateUsing($html)->prose()->placeholder('–')->columnSpanFull(),
                 ]),
             Grid::make(['default' => 1, 'lg' => 2])->schema([
                 Section::make('Persyaratan')
                     ->icon('heroicon-o-clipboard-document-check')
                     ->schema([
-                        TextEntry::make('requirements')->hiddenLabel()->formatStateUsing($html)->placeholder('Belum ada persyaratan tertulis.'),
+                        TextEntry::make('requirements')->hiddenLabel()->formatStateUsing($html)->prose()->placeholder('Belum ada persyaratan tertulis.'),
                         RepeatableEntry::make('requirements_list')
                             ->label('Berkas persyaratan')
                             ->state(fn (Service $record) => $record->requirements()->get()->map(fn ($r) => [
@@ -91,7 +91,7 @@ class ViewService extends ViewRecord
                 Section::make('Alur layanan')
                     ->icon('heroicon-o-arrow-path-rounded-square')
                     ->schema([
-                        TextEntry::make('mechanism')->hiddenLabel()->formatStateUsing($html)->placeholder('Belum ada alur tertulis.'),
+                        TextEntry::make('mechanism')->hiddenLabel()->formatStateUsing($html)->prose()->placeholder('Belum ada alur tertulis.'),
                         RepeatableEntry::make('workflow_steps')
                             ->label('Langkah workflow')
                             ->state(fn (Service $record) => $record->workflow?->steps->map(fn ($step) => [
@@ -114,8 +114,8 @@ class ViewService extends ViewRecord
                     ->schema([
                         TextEntry::make('is_digital_product')->label('Bentuk hasil')
                             ->formatStateUsing(fn (bool $state) => $state ? 'Berkas digital (diunduh pemohon)' : 'Diambil di loket'),
-                        TextEntry::make('product')->label('Produk layanan')->formatStateUsing($html)->placeholder('–'),
-                        TextEntry::make('complaint_handling')->label('Penanganan pengaduan')->formatStateUsing($html)->placeholder('–'),
+                        TextEntry::make('product')->label('Produk layanan')->formatStateUsing($html)->prose()->placeholder('–'),
+                        TextEntry::make('complaint_handling')->label('Penanganan pengaduan')->formatStateUsing($html)->prose()->placeholder('–'),
                     ]),
                 Section::make('Template berkas & disposisi')
                     ->icon('heroicon-o-document-duplicate')

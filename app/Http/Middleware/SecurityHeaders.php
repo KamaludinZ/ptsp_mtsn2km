@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\File;
 
 class SecurityHeaders
 {
+    /** TinyMCE Cloud (rich text editor): scripts, skins, fonts, images and its usage pings. */
+    private string $tiny = 'https://cdn.tiny.cloud https://*.tiny.cloud https://sp.tinymce.com';
+
     /**
      * Handle an incoming request.
      *
@@ -41,11 +44,11 @@ class SecurityHeaders
             // Development: Allow Vite dev server + Filament resources
             $response->headers->set('Content-Security-Policy',
                 "default-src 'self'; " .
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' {$viteUrl} ws:" . str_replace(['http:', 'https:'], '', $viteUrl) . "; " .
-                "style-src 'self' 'unsafe-inline' {$viteUrl} https://fonts.bunny.net; " .
-                "font-src 'self' data: {$viteUrl} https://fonts.bunny.net https://fonts.gstatic.com; " .
-                "img-src 'self' data: blob: https://ui-avatars.com; " .
-                "connect-src 'self' {$viteUrl} ws:" . str_replace(['http:', 'https:'], '', $viteUrl) . "; " .
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' {$this->tiny} {$viteUrl} ws:" . str_replace(['http:', 'https:'], '', $viteUrl) . "; " .
+                "style-src 'self' 'unsafe-inline' {$viteUrl} {$this->tiny} https://fonts.bunny.net; " .
+                "font-src 'self' data: {$viteUrl} {$this->tiny} https://fonts.bunny.net https://fonts.gstatic.com; " .
+                "img-src 'self' data: blob: https://ui-avatars.com {$this->tiny}; " .
+                "connect-src 'self' {$this->tiny} {$viteUrl} ws:" . str_replace(['http:', 'https:'], '', $viteUrl) . "; " .
                 "worker-src 'self' blob:; " .
                 "child-src 'self' blob:; " .
                 // Google Maps embed on the contact page
@@ -58,11 +61,11 @@ class SecurityHeaders
             // Production or Vite not running: Allow Filament resources
             $response->headers->set('Content-Security-Policy',
                 "default-src 'self'; " .
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " .
-                "style-src 'self' 'unsafe-inline' https://fonts.bunny.net; " .
-                "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com; " .
-                "img-src 'self' data: blob: https://ui-avatars.com; " .
-                "connect-src 'self'; " .
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' {$this->tiny}; " .
+                "style-src 'self' 'unsafe-inline' {$this->tiny} https://fonts.bunny.net; " .
+                "font-src 'self' data: {$this->tiny} https://fonts.bunny.net https://fonts.gstatic.com; " .
+                "img-src 'self' data: blob: https://ui-avatars.com {$this->tiny}; " .
+                "connect-src 'self' {$this->tiny}; " .
                 "worker-src 'self' blob:; " .
                 "child-src 'self' blob:; " .
                 // Google Maps embed on the contact page

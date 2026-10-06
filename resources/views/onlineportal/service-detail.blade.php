@@ -65,7 +65,7 @@
                 </div>
                 <h1 id="service-title" class="h2 fw-bold mb-3">{{ $service->name }}</h1>
                 @if ($service->description)
-                    <p class="lead mb-4" style="max-width: 60ch;">{{ $service->description }}</p>
+                    <div class="lead rich-text mb-4" style="max-width: 60ch;">{{ \App\Support\RichText::render($service->description) }}</div>
                 @endif
 
                 <div class="d-flex flex-wrap align-items-center gap-3">
@@ -196,7 +196,7 @@
                                         @endforeach
                                     </ul>
                                 @elseif (filled($content))
-                                    <p class="mb-0" style="white-space: pre-line;">{{ $content }}</p>
+                                    <div class="rich-text mb-0">{{ \App\Support\RichText::render($content) }}</div>
                                 @else
                                     <p class="text-muted fst-italic mb-0">Belum diisi.</p>
                                 @endif

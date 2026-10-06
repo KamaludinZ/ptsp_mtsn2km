@@ -14,7 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use FilamentTiptapEditor\TiptapEditor;
+use App\Filament\Forms\Components\TinyEditor;
 
 class ServiceResource extends Resource
 {
@@ -93,18 +93,18 @@ class ServiceResource extends Resource
                                 Forms\Components\Toggle::make('is_digital_product')
                                     ->label('Hasil layanan berupa berkas digital')
                                     ->helperText('Jika tidak, hasil diambil di loket.'),
-                                TiptapEditor::make('description')
+                                TinyEditor::make('description')->height(260)
                                     ->label('Deskripsi')
                                     ->columnSpanFull(),
                             ]),
                         Forms\Components\Tabs\Tab::make('Persyaratan & Alur')
                             ->icon('heroicon-m-clipboard-document-list')
                             ->schema([
-                                TiptapEditor::make('requirements')->label('Persyaratan')
+                                TinyEditor::make('requirements')->label('Persyaratan')
                                     ->helperText('Berkas/dokumen yang harus disiapkan pemohon.'),
-                                TiptapEditor::make('mechanism')->label('Alur / mekanisme'),
-                                TiptapEditor::make('product')->label('Produk / hasil layanan'),
-                                TiptapEditor::make('complaint_handling')->label('Penanganan pengaduan'),
+                                TinyEditor::make('mechanism')->label('Alur / mekanisme'),
+                                TinyEditor::make('product')->label('Produk / hasil layanan'),
+                                TinyEditor::make('complaint_handling')->label('Penanganan pengaduan'),
                             ]),
                         Forms\Components\Tabs\Tab::make('Pemohon')
                             ->icon('heroicon-m-users')

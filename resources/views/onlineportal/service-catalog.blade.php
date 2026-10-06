@@ -483,7 +483,7 @@
                 <!-- Card Body -->
                 <div class="card-body p-4">
                     <p class="text-muted mb-3" style="min-height: 60px;">
-                        {{ Str::limit($service->description, 100) }}
+                        {{ \App\Support\RichText::plain($service->description, 100) }}
                     </p>
 
                     <!-- Service Meta -->
@@ -534,7 +534,7 @@
                                                     @endforeach
                                                 </ul>
                                             @else
-                                                <p class="text-muted">{{ $service->requirements }}</p>
+                                                <div class="text-muted rich-text">{{ \App\Support\RichText::render($service->requirements) }}</div>
                                             @endif
                                         @else
                                             <p class="text-muted">-</p>
@@ -546,7 +546,7 @@
                                         <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
                                             <i class="fas fa-cogs me-2"></i> Sistem & Prosedur
                                         </h6>
-                                        <p class="text-muted">{{ $service->mechanism ?? '-' }}</p>
+                                        <div class="text-muted rich-text">{{ filled($service->mechanism) ? \App\Support\RichText::render($service->mechanism) : '-' }}</div>
                                     </div>
 
                                     <!-- Produk Layanan -->
@@ -554,7 +554,7 @@
                                         <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
                                             <i class="fas fa-file-alt me-2"></i> Produk Layanan
                                         </h6>
-                                        <p class="text-muted">{{ $service->product ?? '-' }}</p>
+                                        <div class="text-muted rich-text">{{ filled($service->product) ? \App\Support\RichText::render($service->product) : '-' }}</div>
                                     </div>
 
                                     <!-- Pengaduan -->
@@ -562,7 +562,7 @@
                                         <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
                                             <i class="fas fa-headset me-2"></i> Pengaduan
                                         </h6>
-                                        <p class="text-muted mb-2">{{ $service->complaint_handling ?? 'Hubungi kami melalui halaman pengaduan' }}</p>
+                                        <div class="text-muted rich-text mb-2">{{ filled($service->complaint_handling) ? \App\Support\RichText::render($service->complaint_handling) : 'Hubungi kami melalui halaman pengaduan' }}</div>
                                         <a href="{{ route('supervision.complaints.dashboard') }}" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-comment-dots me-1"></i> Ajukan Pengaduan
                                         </a>
@@ -642,7 +642,7 @@
                                         <span class="badge badge-mode badge-hybrid">Hybrid</span>
                                     @endif
                                 </div>
-                                <p class="text-muted mb-2">{{ Str::limit($service->description, 150) }}</p>
+                                <p class="text-muted mb-2">{{ \App\Support\RichText::plain($service->description, 150) }}</p>
                                 <div class="d-flex gap-3">
                                     <small class="text-muted">
                                         <i class="fas fa-hashtag me-1"></i> {{ $service->code }}
@@ -701,7 +701,7 @@
                                         @endforeach
                                     </ul>
                                 @else
-                                    <p class="text-muted">{{ $service->requirements }}</p>
+                                    <div class="text-muted rich-text">{{ \App\Support\RichText::render($service->requirements) }}</div>
                                 @endif
                             @else
                                 <p class="text-muted">-</p>
@@ -711,7 +711,7 @@
                             <h6 class="fw-bold mb-3 mt-4" style="color: var(--bs-primary);">
                                 <i class="fas fa-cogs me-2"></i> Sistem & Prosedur
                             </h6>
-                            <p class="text-muted">{{ $service->mechanism ?? '-' }}</p>
+                            <div class="text-muted rich-text">{{ filled($service->mechanism) ? \App\Support\RichText::render($service->mechanism) : '-' }}</div>
                         </div>
                         <div class="col-md-6">
                             <!-- Informasi Biaya -->
@@ -722,13 +722,13 @@
                             <h6 class="fw-bold mb-3 mt-4" style="color: var(--bs-primary);">
                                 <i class="fas fa-file-alt me-2"></i> Produk Layanan
                             </h6>
-                            <p class="text-muted">{{ $service->product ?? '-' }}</p>
+                            <div class="text-muted rich-text">{{ filled($service->product) ? \App\Support\RichText::render($service->product) : '-' }}</div>
 
                             <!-- Pengaduan -->
                             <h6 class="fw-bold mb-3 mt-4" style="color: var(--bs-primary);">
                                 <i class="fas fa-headset me-2"></i> Pengaduan
                             </h6>
-                            <p class="text-muted mb-2">{{ $service->complaint_handling ?? 'Hubungi kami melalui halaman pengaduan' }}</p>
+                            <div class="text-muted rich-text mb-2">{{ filled($service->complaint_handling) ? \App\Support\RichText::render($service->complaint_handling) : 'Hubungi kami melalui halaman pengaduan' }}</div>
                             <a href="{{ route('supervision.complaints.dashboard') }}" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-comment-dots me-1"></i> Ajukan Pengaduan
                             </a>

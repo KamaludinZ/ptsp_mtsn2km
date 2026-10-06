@@ -1158,13 +1158,13 @@
   "summary": "Resource Riwayat Notifikasi (admin, tabel notification_deliveries): setiap pesan email/WhatsApp untuk tiket, status terkirim/gagal dan alasan, filter kanal/status, isi pesan, aksi Kirim ulang untuk yang gagal via NotificationDispatcher::deliver, badge jumlah gagal."
  },
  "app/Filament/Resources/NotificationTemplateResource/Pages/EditNotificationTemplate.php": {
-  "summary": "Halaman ubah template notifikasi: mencatat updated_by sebelum simpan dan kembali ke daftar."
+  "summary": "Halaman ubah template notifikasi: aksi header Uji kirim (NotificationTemplateResource::testSendAction), mencatat updated_by saat simpan dan kembali ke daftar."
  },
  "app/Filament/Resources/NotificationTemplateResource/Pages/ListNotificationTemplates.php": {
   "summary": "Halaman daftar Template Notifikasi dengan aksi header 'Atur kanal & pemicu': satu modal untuk menyalakan/mematikan kanal email/WhatsApp (NotificationSetting) dan memilih pemicu aktif per kanal (NotificationTemplate.is_active, template dibuat dari default bila belum ada)."
  },
  "app/Filament/Resources/NotificationTemplateResource.php": {
-  "summary": "Resource Template Notifikasi (admin, tabel notification_templates): isi pesan per pemicu (NotificationTemplates::EVENTS) dan kanal, subjek email, toggle kirim, panel placeholder yang bisa disisipkan (insertScript), pratinjau langsung; template hanya diubah, tidak dibuat/dihapus."
+  "summary": "Resource Template Notifikasi (admin): isi per pemicu dan kanal, subjek email, toggle kirim, placeholder yang bisa disisipkan, pratinjau dengan data SAMPLE; testSendAction() 'Uji kirim' mengirim template tersimpan dengan data contoh bertanda [UJI] ke email/nomor WhatsApp yang diisi lewat NotificationGateway::testTemplate, juga saat kanal/template nonaktif."
  },
  "app/Filament/Resources/PengumumanResource/Pages/CreatePengumuman.php": {
   "summary": "Halaman buat pengumuman: mengisi pembuat (user) sebelum simpan dan kembali ke daftar."
@@ -1203,7 +1203,7 @@
   "summary": "Halaman kelola semua template berkas layanan dalam satu tempat dengan ringkasan jumlah layanan bertemplate dan tombol tambah."
  },
  "app/Filament/Resources/ServiceTemplateResource.php": {
-  "summary": "Resource Template Berkas Layanan (admin, tabel service_templates): fields() dipakai bersama relation manager (layanan, nama unik per layanan, unggah berkas privat, info versi, toggle aktif, wajib, urutan); tabel dikelompokkan per layanan dengan kolom versi, toggle aktif, filter status, aksi unduh/ubah/hapus."
+  "summary": "Resource Template Berkas Layanan (admin, service_templates): fields() dipakai bersama relation manager (layanan, nama unik, petunjuk pengisian, unggah berkas privat, info versi, toggle aktif, wajib, urutan); tabel per layanan dengan petunjuk singkat, versi, toggle aktif, filter status, aksi unduh/ubah/hapus."
  },
  "app/Filament/Resources/SuratKeluarResource/Pages/ListSuratKeluar.php": {
   "summary": "Halaman buku register surat keluar: aksi Minta Nomor Surat (jumlah 1-50, tanggal, data surat opsional termasuk lampiran, tembusan, keterangan, unggah berkas bila satu nomor, pratinjau rentang nomor) via SuratKeluarService::reserve; aksi unduh Excel dan cetak PDF register."
@@ -1212,7 +1212,7 @@
   "summary": "Halaman detail surat keluar dengan judul nomor surat dan aksi Lengkapi/Ubah yang menyimpan lewat SuratKeluarService::describe."
  },
  "app/Filament/Resources/SuratKeluarResource.php": {
-  "summary": "Resource Surat Keluar (tabel surat_keluar): nomor 1-9999 per tahun, tidak bisa dihapus; form tanggal, tujuan, perihal, jenis, klasifikasi, lampiran, berkas lampiran privat (attachmentUpload), tembusan, keterangan, pembuat; infolist detail dengan tautan lihat/unduh lampiran (route surat-keluar.lampiran); tabel dengan filter tahun/jenis/klasifikasi/pembuat/tanggal/kelengkapan dan aksi Detail, Lampiran, Ubah."
+  "summary": "Resource Surat Keluar (surat_keluar, akses lewat SuratKeluarPolicy): nomor 1-9999 per tahun tanpa hapus; form tanggal, tujuan, perihal, jenis, klasifikasi, lampiran, berkas lampiran privat (attachmentUpload), tembusan, keterangan, pembuat; infolist detail dengan tautan lihat/unduh lampiran; tabel dengan filter tahun/jenis/klasifikasi/pembuat/tanggal/kelengkapan."
  },
  "app/Filament/Resources/TicketResource/Pages/ListTickets.php": {
   "summary": "Halaman daftar tiket staf: satu kotak pencarian untuk nomor, pemohon, WhatsApp, layanan, petugas dan isi permohonan; tab status (TicketTabs) dengan tab default sesuai peran."
@@ -1305,7 +1305,7 @@
   "summary": "API Master Persuratan: GET /api/persuratan/pilihan?jenis= pilihan aktif untuk form surat/disposisi, GET /api/persuratan/master daftar kelola dengan filter, POST/PUT/DELETE /api/persuratan/master/{id} (surat yang sudah memakai nilai tetap menyimpan teksnya)."
  },
  "app/Http/Controllers/Api/PublicController.php": {
-  "summary": "API publik tanpa login untuk situs, kios dan aplikasi: profil madrasah, katalog layanan dan detail/template aktif, pengumuman, FAQ terkelompok dengan jawaban disanitasi, lacak permohonan, buku tamu (signGuestBook mengembalikan ringkasan konfirmasi tersamarkan), pilihan tujuan, kirim dan lacak pengaduan/saran/WBS."
+  "summary": "API publik tanpa login: profil, katalog dan detail layanan dengan template aktif (nama, petunjuk, versi, wajib, unduh), pengumuman, FAQ terkelompok dengan jawaban disanitasi, lacak permohonan, buku tamu dengan ringkasan konfirmasi tersamarkan, pilihan tujuan, kirim dan lacak pengaduan/saran/WBS."
  },
  "app/Http/Controllers/Api/RoleController.php": {
   "summary": "API peran dan izin (admin): GET /api/peran, GET /api/peran/izin per area, GET/POST/PATCH/DELETE /api/peran/{role}; peran sistem mempertahankan nama dan izin areanya, peran kustom hanya bisa dihapus bila tidak dipegang."
@@ -1320,7 +1320,7 @@
   "summary": "API angka layanan untuk perangkat staf (mis. layar loket), dihitung sama dengan widget dashboard: ringkasan hari ini, tren, laporan bulanan dibanding bulan lalu, rekap per jenis layanan, rekap tahunan, dan kondisi alur kerja."
  },
  "app/Http/Controllers/Api/ServiceTemplateController.php": {
-  "summary": "API template berkas layanan (admin): GET /api/layanan-ptsp/{service}/template, GET/PATCH (nama, wajib, urutan, aktif)/DELETE per template, POST unggah template baru, POST .../{id}/berkas ganti berkas; keluaran memuat versi dan aktif."
+  "summary": "API template berkas layanan (admin): daftar, unggah (nama, petunjuk, wajib, urutan), ubah (nama, petunjuk yang bisa dikosongkan, wajib, urutan, aktif), ganti berkas, hapus; keluaran memuat petunjuk, versi dan aktif."
  },
  "app/Http/Controllers/Api/SettingsController.php": {
   "summary": "API Pengaturan Aplikasi (admin, gate kelola-pengaturan): GET/PATCH /api/pengaturan/profil, POST/DELETE /api/pengaturan/profil/logo, GET/PATCH /api/pengaturan/umum; disimpan lewat SettingsStore yang sama dengan halaman Pengaturan."
@@ -1329,7 +1329,7 @@
   "summary": "API Kelola Permohonan untuk staf: GET /api/tiket dengan tab, pencarian dan filter; pilihan filter; detail tiket; PATCH status; PUT petugas (penugasan via User::assignable dan TicketService::assign); POST hasil (unggah produk layanan, menyelesaikan tiket); POST serah-terima di loket; catatan tindak lanjut; ubah dan riwayat kategori layanan masuk."
  },
  "app/Http/Controllers/Api/SuratKeluarController.php": {
-  "summary": "API surat keluar untuk Tata Usaha: GET /api/surat-keluar register terfilter, GET /api/surat-keluar/ekspor xlsx/pdf, POST /api/surat-keluar/nomor ambil nomor berurutan, PUT /api/surat-keluar/{id} melengkapi data surat (tembusan per baris)."
+  "summary": "API surat keluar dengan otorisasi SuratKeluarPolicy: GET /api/surat-keluar register terfilter, GET /api/surat-keluar/ekspor xlsx/pdf, POST /api/surat-keluar/nomor ambil nomor berurutan, PUT /api/surat-keluar/{id} melengkapi data surat."
  },
  "app/Http/Controllers/Api/SurveyContentController.php": {
   "summary": "API admin isi survei: CRUD /api/survei/unsur (hapus hanya unsur tanpa pertanyaan) dan /api/survei/pertanyaan per bagian identitas/skm/spak (pertanyaan yang sudah dijawab dinonaktifkan, bukan dihapus)."
@@ -1431,7 +1431,7 @@
   "summary": "Model pilihan Master Persuratan (persuratan_masters): tipe tujuan_naskah/jenis_surat/tembusan/klasifikasi/instruksi_disposisi, kode, nama, aktif, urutan; scopeOfType untuk pilihan aktif, accessor value (kode untuk klasifikasi)."
  },
  "app/Models/ServiceTemplate.php": {
-  "summary": "Model template berkas layanan (service_templates): berkas privat dengan mime/ukuran otomatis, versi naik saat berkas diganti, is_active (scopeActive untuk pemohon), wajib, urutan; downloadUrl publik, isAvailable, fileInfo, berkas lama dihapus saat diganti."
+  "summary": "Model template berkas layanan (service_templates): berkas privat dengan mime/ukuran otomatis, versi naik saat berkas diganti, is_active (scopeActive untuk pemohon), petunjuk pengisian, wajib, urutan; downloadUrl, isAvailable, fileInfo."
  },
  "app/Models/SuratKeluar.php": {
   "summary": "Model surat keluar (surat_keluar): tahun, nomor urut, nomor surat, tanggal, tujuan, perihal, jenis, klasifikasi, lampiran, berkas_lampiran (json) dan nama aslinya, tembusan, keterangan, pembuat, batch; isDraft dan attachmentName."
@@ -1485,10 +1485,10 @@
   "summary": "Pengirim notifikasi berbasis template: send() mengisi placeholder dari tiket dan penerima lalu mengirim ke setiap kanal yang aktif dan templatenya aktif; deliver() mengirim satu pesan tersimpan dan mencatat hasil di notification_deliveries (juga untuk kirim ulang); values() placeholder."
  },
  "app/Services/NotificationGateway.php": {
-  "summary": "Gateway notifikasi sesuai pengaturan Integrasi Notifikasi (fallback .env): mailer() SMTP, testEmail(), testWhatsApp() memakai WhatsAppGateways (custom/Fonnte/Wablas) dan melaporkan penolakan gateway, readable() memendekkan pesan galat agar tidak membocorkan kredensial."
+  "summary": "Gateway notifikasi sesuai Integrasi Notifikasi (fallback .env): mailer() SMTP, testEmail() dan testWhatsApp() (pesan kustom opsional, gateway custom/Fonnte/Wablas, penolakan gateway dilaporkan), testTemplate() mengirim template yang dirender dengan data contoh bertanda [UJI], readable() menyamarkan galat."
  },
  "app/Services/ServiceTemplateStorage.php": {
-  "summary": "Unggah dan penyimpanan berkas template layanan: memeriksa isi berkas (hanya PDF, Word, Excel, batas ukuran), menyimpan privat di service-templates/{service}/acak.ext, replace() mengganti berkas, cleanName() nama aman untuk header unduhan."
+  "summary": "Unggah dan penyimpanan berkas template layanan: cek isi berkas (PDF/Word/Excel, batas ukuran), simpan privat di service-templates/{service}/acak.ext beserta nama, wajib, urutan dan petunjuk; replace() ganti berkas, cleanName() nama aman."
  },
  "app/Services/SuratKeluarService.php": {
   "summary": "Penomoran surat keluar: reserve() mengambil 1-50 nomor berurutan per tahun (1-9999, baris surat_sequences dikunci) beserta batch dan data surat (berkas lampiran hanya untuk satu nomor); describe() melengkapi/mengoreksi surat dan menyusun ulang nomor; rememberManual() mencatat isian manual ke Master Persuratan; nextNumber()."
@@ -1554,7 +1554,7 @@
   "summary": "Pengaturan disposisi per layanan: MODES (kepsek_tu, kepsek, tu, none), RECIPIENTS unit back office, model dan tipe tanda tangan, instruksi bawaan; modeFor, usesDefault, recommendationHint, apply() menyimpan mode, penerima dan anjuran tanda tangan."
  },
  "app/Support/ServiceSummary.php": {
-  "summary": "Standar pelayanan untuk form permohonan (persyaratan, waktu, biaya, produk) dan templates() tautan unduh template berkas aktif layanan."
+  "summary": "Standar pelayanan untuk form permohonan (persyaratan, waktu, biaya, produk) dan templates() tautan unduh template aktif beserta label wajib dan petunjuk pengisian."
  },
  "app/Support/SettingsStore.php": {
   "summary": "Penyimpan Pengaturan Aplikasi untuk halaman Pengaturan dan API /api/pengaturan: normalisasi nilai, hanya menyimpan perubahan nyata, values(), hapus logo unggahan."
@@ -1872,7 +1872,7 @@
   "summary": "Halaman publik Katalog Layanan: hero, filter kategori dan pencarian, kartu layanan dengan tautan detail dan ajukan, status kosong/gagal muat."
  },
  "resources/views/onlineportal/service-detail.blade.php": {
-  "summary": "Halaman publik detail layanan: 14 komponen standar pelayanan (Permen PANRB 15/2014), daftar template berkas aktif (activeTemplates) dengan unduh satu per satu atau ZIP, tombol ajukan dan tautan survei/pengaduan."
+  "summary": "Halaman publik detail layanan: 14 komponen standar pelayanan, daftar template berkas aktif dengan petunjuk pengisian, info berkas, unduh satu per satu atau ZIP, tombol ajukan dan tautan survei/pengaduan."
  },
  "resources/views/onlineportal/track-ticket-form.blade.php": {
   "summary": "Halaman publik Lacak Tiket: form nomor tiket (dan email untuk detail), hasil progres, badge status dan tahapan tanpa membocorkan catatan internal."
@@ -2028,7 +2028,7 @@
   "summary": "Feature test NotificationTableTest: tabel notifikasi in-app: indeks, ticket_id dan pemangkasan notifikasi lama."
  },
  "tests/Feature/NotificationTemplateTest.php": {
-  "summary": "Feature test NotificationTemplateTest: manajemen template notifikasi (admin): setiap pemicu punya template email dan WhatsApp, panel 'Atur kanal & pemicu', daftar/filter, ubah dengan pratinjau dan placeholder, revisi, seeder tidak menimpa, API."
+  "summary": "Feature test NotificationTemplateTest: template email dan WhatsApp per pemicu, panel 'Atur kanal & pemicu', uji kirim template dengan data contoh [UJI] (validasi nomor, request Fonnte, aksi di halaman ubah), daftar/filter, editor dengan pratinjau dan placeholder, revisi, seeder, API."
  },
  "tests/Feature/PendingTicketReminderTest.php": {
   "summary": "Feature test PendingTicketReminderTest: scheduler pengingat permohonan tertunda: tiket lewat target, menunggu disposisi, satu pengingat per permohonan."
@@ -2088,13 +2088,13 @@
   "summary": "Feature test ServiceSchemaTest: skema tabel layanan: slug unik, kunci pembuat aman, CHECK nilai."
  },
  "tests/Feature/ServiceTemplateApiTest.php": {
-  "summary": "Feature test ServiceTemplateApiTest: API template berkas admin: unggah dengan pemeriksaan isi, ubah, ganti berkas, hapus, versi dan aktif."
+  "summary": "Feature test ServiceTemplateApiTest: API template berkas admin (unggah dengan cek isi, ubah, ganti berkas, hapus) dan daftar publik template aktif dengan petunjuk, versi, jenis, ukuran."
  },
  "tests/Feature/ServiceTemplateTest.php": {
   "summary": "Feature test ServiceTemplateTest: template berkas layanan: daftar di halaman layanan, unduh publik, ZIP, kelola di panel, pengajuan menampilkan template."
  },
  "tests/Feature/ServiceTemplateVersionTest.php": {
-  "summary": "Feature test ServiceTemplateVersionTest: versi dan status template berkas: versi naik saat berkas diganti, template nonaktif disembunyikan dari halaman/unduhan/ZIP/API publik tetapi bisa diunduh staf, toggle aktif di daftar."
+  "summary": "Feature test ServiceTemplateVersionTest: versi naik saat berkas diganti, template nonaktif disembunyikan dari pemohon tapi bisa diunduh staf, toggle aktif, petunjuk tampil di halaman layanan, ringkasan form dan API serta bisa diubah/dikosongkan lewat API admin."
  },
  "tests/Feature/SettingsApiTest.php": {
   "summary": "Feature test SettingsApiTest: API /api/pengaturan: profil instansi, unggah dan hapus logo, pengaturan umum."
@@ -2121,7 +2121,7 @@
   "summary": "Feature test StatusBadgeTest: label status berwarna StatusBadge dan komponen x-status-badge."
  },
  "tests/Feature/SuratKeluarTest.php": {
-  "summary": "Feature test SuratKeluarTest: buku register surat keluar: akses back office, nomor berurutan per tahun dan batas 9999, minta nomor dengan data lengkap (lampiran, keterangan, unggah berkas), melengkapi surat, halaman detail dengan lihat/unduh lampiran privat, pencarian/filter, ekspor Excel/PDF, API."
+  "summary": "Feature test SuratKeluarTest: akses back office dan SuratKeluarPolicy (semua unit pemroses aktif, tanpa hapus, loket dan akun nonaktif ditolak), penomoran tahunan sampai 9999, minta nomor dengan data lengkap dan berkas, melengkapi surat, detail dengan lampiran privat, pencarian/filter, ekspor, API."
  },
  "tests/Feature/SurveyApiTest.php": {
   "summary": "Feature test SurveyApiTest: API survei publik: struktur edisi aktif dan kirim jawaban tiga langkah, CRUD edisi admin, laporan."
@@ -2182,5 +2182,14 @@
  },
  "tests/Feature/WalkInApiTest.php": {
   "summary": "Feature test WalkInApiTest: API pendaftaran walk-in di loket: mendaftarkan permohonan offline dengan berkas, validasi dan pembatasan untuk loket."
+ },
+ "app/Policies/SuratKeluarPolicy.php": {
+  "summary": "Policy buku surat keluar (SuratKeluar): pemroses naskah aktif dengan izin backoffice.access (Tata Usaha, Waka, penjamin mutu) boleh melihat register, mengambil nomor (create) dan melengkapi surat termasuk lampiran (update); delete/deleteAny selalu ditolak agar celah nomor tetap bisa dijelaskan. Dipakai SuratKeluarResource, API /api/surat-keluar dan route lampiran."
+ },
+ "database/migrations/2026_10_07_120000_add_petunjuk_to_service_templates.php": {
+  "summary": "Migration menambah service_templates.petunjuk (maks 500 karakter): petunjuk singkat cara mengisi template yang ditampilkan kepada pemohon."
+ },
+ "routes/web.php": {
+  "summary": "Route web: halaman publik (beranda, katalog, detail layanan, unduh template tunggal/ZIP, lacak tiket, buku tamu dengan honeypot dan rate limit, pengaduan, survei, pengumuman, FAQ, kontak), dokumen cetak (tanda terima, lembar disposisi, kartu tamu), unduhan laporan bulanan, bukti pengaduan, lampiran surat keluar (lihat/unduh, dijaga SuratKeluarPolicy), dokumen tiket privat, serta redirect alamat lama."
  }
 }

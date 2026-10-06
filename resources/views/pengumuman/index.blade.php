@@ -198,7 +198,7 @@
                                     {{ $pengumuman->title }}
                                 </a>
                             </h2>
-                            <p class="text-base-content/70">{{ Str::limit(strip_tags($pengumuman->content), 150) }}</p>
+                            <p class="text-base-content/70">{{ \App\Support\RichText::plain($pengumuman->content, 150) }}</p>
                             <div class="card-actions justify-between items-center mt-4">
                                 <div class="text-sm text-base-content/70 flex items-center">
                                     <i class="fas fa-calendar mr-1"></i> {{ $pengumuman->publish_date->format('d M Y') }}

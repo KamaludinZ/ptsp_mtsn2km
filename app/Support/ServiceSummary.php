@@ -27,10 +27,11 @@ class ServiceSummary
             },
         ], fn ($value) => filled($value));
 
+        // Persyaratan and produk are rich text (TinyMCE); the rest is plain.
         return new HtmlString(collect($rows)->map(fn ($value, $label) => sprintf(
-            '<p style="margin:0 0 .5rem"><strong>%s</strong><br>%s</p>',
+            '<div style="margin:0 0 .5rem"><strong>%s</strong><div class="rich-text">%s</div></div>',
             e($label),
-            nl2br(e(preg_replace('/\s+(?=\d+\.\s)/', "\n", trim($value)))),
+            in_array($label, ['Persyaratan', 'Produk layanan'], true) ? RichText::render($value) : e($value),
         ))->implode(''));
     }
 
