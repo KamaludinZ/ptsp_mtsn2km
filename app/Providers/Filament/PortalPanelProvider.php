@@ -53,6 +53,9 @@ class PortalPanelProvider extends PanelProvider
                     ->label(fn () => auth()->user()?->name . ' · ' . \App\Support\RoleAccess::userRoleLabel(auth()->user()))
                     ->icon('heroicon-o-user-circle'),
                 MenuItem::make()->label('Notifikasi')->url(fn () => \App\Filament\Portal\Pages\Notifications::getUrl())->icon('heroicon-o-bell'),
+                // Ganti akun sementara: back to the administrator's own account.
+                MenuItem::make()->label('Kembali ke akun admin')->icon('heroicon-o-arrow-uturn-left')->color('warning')
+                    ->postAction(fn () => route('ganti-akun.selesai'))->visible(fn () => \App\Support\Impersonation::active()),
                 MenuItem::make()->label('Kembali ke Beranda')->url(fn () => route('home'))->icon('heroicon-o-home'),
                 'logout' => MenuItem::make()->label('Keluar')->icon('heroicon-o-arrow-left-on-rectangle')->color('danger'),
             ])
@@ -75,6 +78,8 @@ class PortalPanelProvider extends PanelProvider
                 // Filament's Authenticate + wrong panel -> own panel instead of a 403.
                 \App\Http\Middleware\RedirectToOwnPanel::class,
                 CheckEmailVerification::class,
-            ]);
+            ])
+            // Ganti akun sementara: end sessions that expired or lost their administrator.
+            ->authMiddleware([\App\Http\Middleware\GuardImpersonation::class], isPersistent: true);
     }
 }

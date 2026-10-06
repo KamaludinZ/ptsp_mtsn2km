@@ -24,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         $middleware->append(\App\Http\Middleware\CheckBlockedIP::class);
         $middleware->append(\App\Http\Middleware\LogSuspiciousActivity::class);
-        $middleware->web(append: [\App\Http\Middleware\TrackSiteVisit::class]);
+        $middleware->web(append: [\App\Http\Middleware\TrackSiteVisit::class, \App\Http\Middleware\GuardImpersonation::class]);
 
         // Middleware aliases
         $middleware->alias([

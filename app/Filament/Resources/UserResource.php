@@ -224,6 +224,7 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                \App\Filament\Actions\ImpersonateAction::table(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

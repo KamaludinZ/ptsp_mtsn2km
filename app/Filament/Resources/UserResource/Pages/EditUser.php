@@ -13,6 +13,7 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            \App\Filament\Actions\ImpersonateAction::page(),
             // Nobody deletes their own account here.
             Actions\DeleteAction::make()->hidden(fn () => $this->getRecord()->is(auth()->user())),
         ];

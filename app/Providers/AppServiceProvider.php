@@ -44,6 +44,31 @@ class AppServiceProvider extends ServiceProvider
             fn () => new \Illuminate\Support\HtmlString(\App\Support\DisplayPreferences::headHtml(auth()->user())),
         );
 
+        // Ganti akun sementara: anything recorded while an admin uses another account says who really did it.
+        \Spatie\Activitylog\Models\Activity::creating(function (\Spatie\Activitylog\Models\Activity $activity) {
+            if ($activity->log_name !== 'impersonation' && ($session = \App\Support\Impersonation::current())) {
+                $activity->properties = collect($activity->properties)->put('impersonated_by', [
+                    'admin_id' => $session['admin']?->getKey(),
+                    'admin' => $session['admin_name'],
+                    'sesi_id' => $session['log_id'],
+                ]);
+            }
+        });
+
+        // Ganti akun sementara: signing out of a borrowed account closes its log.
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Logout::class, function () {
+            if (\App\Support\Impersonation::active()) {
+                \App\Support\Impersonation::closeLog(\App\Support\Impersonation::current()['log_id'], 'keluar');
+                session()->forget(\App\Support\Impersonation::SESSION_KEY);
+            }
+        });
+
+        // Ganti akun sementara: a banner on every page of both panels while an admin uses another account.
+        \Filament\Support\Facades\FilamentView::registerRenderHook(
+            \Filament\View\PanelsRenderHook::BODY_START,
+            fn () => view('components.impersonation-banner'),
+        );
+
         // E-mail "atur ulang kata sandi" in Indonesian (website and API use the same link).
         \Illuminate\Auth\Notifications\ResetPassword::toMailUsing(function ($user, string $token) {
             $url = url(route('password.reset', ['token' => $token, 'email' => $user->getEmailForPasswordReset()], false));

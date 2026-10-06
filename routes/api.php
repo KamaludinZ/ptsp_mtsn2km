@@ -250,6 +250,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('peran-aktif')->name
     Route::put('/', [\App\Http\Controllers\Api\ActiveRoleController::class, 'update'])->name('update');
 });
 
+// Ganti akun sementara: the session log, for administrators (active role).
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/ganti-akun/log', [\App\Http\Controllers\Api\ImpersonationLogController::class, 'index'])->name('api.ganti-akun.log');
+
 // Preferensi tampilan of the signed-in user (any account).
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('preferensi-tampilan')->name('api.preferensi-tampilan.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\DisplayPreferenceController::class, 'show'])->name('show');

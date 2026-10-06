@@ -29,6 +29,7 @@
     @stack('styles')
 </head>
 <body class="font-normal">
+    <x-impersonation-banner />
     <!-- MARKER: layouts.public -->
     <!-- Page Loading Overlay -->
     <div id="page-loading-overlay">

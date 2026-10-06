@@ -155,6 +155,14 @@ Route::middleware('auth')->get('/surat-keluar/{suratKeluar}/lampiran/{index}', f
 // Ganti peran cepat from the /cp header: switch the active role, back to the same page (staff only)
 Route::middleware(['auth', 'throttle:30,1'])->post('/peran-aktif/ganti', \App\Http\Controllers\ActiveRoleSwitchController::class)->name('peran-aktif.ganti');
 
+// Ganti akun sementara: an administrator starts using another account (with a reason, logged)
+Route::middleware(['auth', 'throttle:10,1'])->post('/ganti-akun/{user}', [\App\Http\Controllers\ImpersonationController::class, 'start'])
+    ->whereNumber('user')->name('ganti-akun.mulai');
+
+// Ganti akun sementara: back to the administrator's own account
+Route::middleware(['auth', 'throttle:30,1'])->post('/ganti-akun/selesai', [\App\Http\Controllers\ImpersonationController::class, 'end'])
+    ->name('ganti-akun.selesai');
+
 // Images inserted into TinyMCE rich text fields (staff only)
 Route::middleware(['auth', 'throttle:30,1'])->post('/editor/unggah-gambar', \App\Http\Controllers\EditorUploadController::class)->name('editor.upload');
 
