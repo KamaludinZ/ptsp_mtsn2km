@@ -96,6 +96,16 @@ class HeroSliderResource extends Resource
                 Forms\Components\TextInput::make('button2_text')->label('Tombol kedua')->maxLength(40),
                 $url('button2_url')->requiredWith('button2_text'),
             ]),
+            Forms\Components\Section::make('Efek')->columns(3)->collapsible()->schema([
+                Forms\Components\Select::make('image_fit')->label('Ukuran gambar')
+                    ->options(HeroSlider::IMAGE_FITS)->default('contain')->native(false)->required()
+                    ->helperText('Utuh cocok untuk poster/bagan; Penuh cocok untuk foto. Di HP tanpa gambar HP, slide selalu memakai Penuh.'),
+                Forms\Components\Select::make('zoom_effect')->label('Efek zoom')
+                    ->options(HeroSlider::ZOOM_EFFECTS)->default('in')->native(false)->required()
+                    ->helperText('Bergerak pelan selama slide tampil; mati otomatis bila pengguna memilih kurangi gerakan.'),
+                Forms\Components\Select::make('text_backdrop')->label('Latar judul & deskripsi')
+                    ->options(HeroSlider::TEXT_BACKDROPS)->default('glass')->native(false)->required(),
+            ]),
             Forms\Components\Section::make('Tampilan')->columns(3)->collapsible()->schema([
                 // Native colour input and presets: no lazily loaded Alpine component,
                 // which can fail to register after SPA navigation in the panel.

@@ -31,12 +31,34 @@ class HeroSlider extends Model
 
     public const MOBILE_HEIGHT = 1620;
 
+    /** contain: the whole image over a blurred copy of itself; cover: fill the hero, edges may be cut. */
+    public const IMAGE_FITS = [
+        'contain' => 'Utuh — seluruh gambar terlihat, sisi diisi latar buram',
+        'cover' => 'Penuh — memenuhi hero, tepi gambar bisa terpotong',
+    ];
+
+    public const ZOOM_EFFECTS = [
+        'in' => 'Zoom in perlahan',
+        'out' => 'Zoom out perlahan',
+        'none' => 'Tanpa efek',
+    ];
+
+    public const TEXT_BACKDROPS = [
+        'glass' => 'Kaca buram',
+        'dark' => 'Panel gelap',
+        'gradient' => 'Gradasi lembut',
+        'none' => 'Tanpa latar',
+    ];
+
     protected $fillable = [
         'title',
         'subtitle',
         'description',
         'image',
         'image_mobile',
+        'image_fit',
+        'zoom_effect',
+        'text_backdrop',
         'is_active',
         'sort_order',
         'button1_text',
@@ -47,7 +69,15 @@ class HeroSlider extends Model
         'overlay_color',
     ];
 
-    protected $attributes = ['is_active' => true, 'sort_order' => 0, 'text_color' => '#ffffff', 'overlay_color' => 'rgba(0,0,0,0.4)'];
+    protected $attributes = [
+        'is_active' => true,
+        'sort_order' => 0,
+        'text_color' => '#ffffff',
+        'overlay_color' => 'rgba(0,0,0,0.4)',
+        'image_fit' => 'contain',
+        'zoom_effect' => 'in',
+        'text_backdrop' => 'glass',
+    ];
 
     protected $casts = [
         'is_active' => 'boolean',
@@ -79,6 +109,17 @@ class HeroSlider extends Model
     public function imageUrl(): ?string
     {
         return $this->image ? '/storage/' . ltrim($this->image, '/') : null;
+    }
+
+    /** CSS classes of the slide for its fit, zoom and text backdrop (unknown values fall back to the defaults). */
+    public function displayClasses(): string
+    {
+        $fit = array_key_exists($this->image_fit, self::IMAGE_FITS) ? $this->image_fit : 'contain';
+        $zoom = array_key_exists($this->zoom_effect, self::ZOOM_EFFECTS) ? $this->zoom_effect : 'in';
+        $backdrop = array_key_exists($this->text_backdrop, self::TEXT_BACKDROPS) ? $this->text_backdrop : 'glass';
+
+        return "hero-slide--fit-{$fit} hero-slide--zoom-{$zoom} hero-slide--text-{$backdrop}"
+            . ($this->image_mobile ? ' hero-slide--has-mobile' : '');
     }
 
     /** Portrait image for phones, if one was uploaded. */

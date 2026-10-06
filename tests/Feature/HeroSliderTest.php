@@ -75,6 +75,9 @@ class HeroSliderTest extends TestCase
                 'title' => 'Selamat datang',
                 'text_color' => '#fefefe',
                 'overlay_color' => 'rgba(20,83,45,0.55)',
+                'image_fit' => 'cover',
+                'zoom_effect' => 'out',
+                'text_backdrop' => 'dark',
                 'button1_text' => 'Ajukan',
                 'button1_url' => 'javascript:alert(1)',
             ])
@@ -87,6 +90,7 @@ class HeroSliderTest extends TestCase
         $slide = HeroSlider::where('title', 'Selamat datang')->firstOrFail();
         $this->assertTrue($slide->is_active);
         $this->assertSame(['#fefefe', 'rgba(20,83,45,0.55)'], [$slide->text_color, $slide->overlay_color]);
+        $this->assertSame(['cover', 'out', 'dark'], [$slide->image_fit, $slide->zoom_effect, $slide->text_backdrop]);
         $this->assertStringStartsWith('/storage/hero-slides/', \Illuminate\Support\Facades\Storage::disk('public')->url($slide->image));
         Storage::disk('public')->assertExists($slide->image);
     }
@@ -130,5 +134,20 @@ class HeroSliderTest extends TestCase
         $slide->delete();
         Storage::disk('public')->assertMissing('hero-slides/hp2.jpg');
         Storage::disk('public')->assertMissing('hero-slides/a.jpg');
+    }
+
+    public function test_slides_carry_their_fit_zoom_and_text_backdrop(): void
+    {
+        $whole = $this->slide(['title' => 'Utuh', 'sort_order' => 1]);
+        $this->slide(['title' => 'Penuh', 'sort_order' => 2, 'image_fit' => 'cover', 'zoom_effect' => 'none', 'text_backdrop' => 'gradient']);
+
+        $this->assertSame('hero-slide--fit-contain hero-slide--zoom-in hero-slide--text-glass', $whole->displayClasses());
+        $this->assertSame('hero-slide--fit-contain hero-slide--zoom-in hero-slide--text-glass', (new \App\Models\HeroSlider(['image_fit' => 'x', 'zoom_effect' => 'y', 'text_backdrop' => 'z']))->displayClasses());
+
+        $this->get('/')->assertOk()
+            ->assertSee('hero-slide hero-slide--fit-contain hero-slide--zoom-in hero-slide--text-glass', false)
+            ->assertSee('hero-slide hero-slide--fit-cover hero-slide--zoom-none hero-slide--text-gradient', false)
+            ->assertSee('class="hero-slide__blur" aria-hidden="true"', false)
+            ->assertSee('class="hero-slide__panel"', false);
     }
 }

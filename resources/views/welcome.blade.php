@@ -27,30 +27,45 @@
             <div class="carousel-inner">
                 @foreach ($slides as $slide)
                     <div @class(['carousel-item', 'active' => $loop->first])>
-                        <div class="hero-slide" style="color:{{ $slide->text_color }}">
+                        @php
+                            $sources = function () use ($slide) {
+                                return $slide->mobileImageUrl()
+                                    ? '<source media="(max-width: 767.98px)" srcset="' . e($slide->mobileImageUrl()) . '" width="' . \App\Models\HeroSlider::MOBILE_WIDTH . '" height="' . \App\Models\HeroSlider::MOBILE_HEIGHT . '">'
+                                    : '';
+                            };
+                        @endphp
+                        <div class="hero-slide {{ $slide->displayClasses() }}" style="color:{{ $slide->text_color }}">
+                            @if ($slide->image_fit !== 'cover')
+                                {{-- Blurred copy filling the hero around a whole ("utuh") image --}}
+                                <picture class="hero-slide__blur" aria-hidden="true">
+                                    {!! $sources() !!}
+                                    <img src="{{ $slide->imageUrl() }}" alt="" decoding="async" @unless ($loop->first) loading="lazy" @endunless>
+                                </picture>
+                            @endif
                             <picture class="hero-slide__media">
-                                @if ($slide->mobileImageUrl())
-                                    <source media="(max-width: 767.98px)" srcset="{{ $slide->mobileImageUrl() }}"
-                                            width="{{ \App\Models\HeroSlider::MOBILE_WIDTH }}" height="{{ \App\Models\HeroSlider::MOBILE_HEIGHT }}">
-                                @endif
+                                {!! $sources() !!}
                                 <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title ?: 'Sorotan ' . app_brand_name() }}"
                                      width="{{ \App\Models\HeroSlider::WIDTH }}" height="{{ \App\Models\HeroSlider::HEIGHT }}" decoding="async"
                                      @if ($loop->first) fetchpriority="high" @else loading="lazy" @endif>
                             </picture>
                             <div class="hero-slide__overlay" style="background:{{ $slide->overlay_color }}"></div>
-                            <div class="hero-slide__content container">
-                                @if ($slide->title)
-                                    @if ($loop->first)<h1 class="hero-title" style="color:inherit">{{ $slide->title }}</h1>@else<h2 class="hero-title" style="color:inherit">{{ $slide->title }}</h2>@endif
-                                @endif
-                                @if ($slide->subtitle)<div class="hero-subtitle" style="color:inherit">{{ $slide->subtitle }}</div>@endif
-                                @if ($slide->description)<p class="hero-description" style="color:inherit">{{ $slide->description }}</p>@endif
-                                @if ($slide->button1_text || $slide->button2_text)
-                                    <div class="hero-buttons">
-                                        @if ($slide->button1_text)<a href="{{ $slide->button1_url }}" class="hero-btn-primary">{{ $slide->button1_text }}</a>@endif
-                                        @if ($slide->button2_text)<a href="{{ $slide->button2_url }}" class="hero-btn-secondary">{{ $slide->button2_text }}</a>@endif
+                            @if ($slide->title || $slide->subtitle || $slide->description || $slide->button1_text || $slide->button2_text)
+                                <div class="hero-slide__content">
+                                    <div class="hero-slide__panel">
+                                        @if ($slide->title)
+                                            @if ($loop->first)<h1 class="hero-title" style="color:inherit">{{ $slide->title }}</h1>@else<h2 class="hero-title" style="color:inherit">{{ $slide->title }}</h2>@endif
+                                        @endif
+                                        @if ($slide->subtitle)<div class="hero-subtitle" style="color:inherit">{{ $slide->subtitle }}</div>@endif
+                                        @if ($slide->description)<p class="hero-description" style="color:inherit">{{ $slide->description }}</p>@endif
+                                        @if ($slide->button1_text || $slide->button2_text)
+                                            <div class="hero-buttons">
+                                                @if ($slide->button1_text)<a href="{{ $slide->button1_url }}" class="hero-btn-primary">{{ $slide->button1_text }}</a>@endif
+                                                @if ($slide->button2_text)<a href="{{ $slide->button2_url }}" class="hero-btn-secondary">{{ $slide->button2_text }}</a>@endif
+                                            </div>
+                                        @endif
                                     </div>
-                                @endif
-                            </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 @endforeach

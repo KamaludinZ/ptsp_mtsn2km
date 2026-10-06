@@ -15,7 +15,7 @@
   "summary": "GitHub Actions CI workflow untuk Laravel: menjalankan tes PHPUnit dengan PostgreSQL 16, composer audit keamanan dependensi, dan memastikan semua tes lulus setiap push atau pull request."
  },
  "Dockerfile": {
-  "summary": "Dockerfile multi-stage untuk aplikasi PTSP MTsN 2 Kota Malang: PHP 8.2-FPM + Nginx + Supervisor dalam satu container, menginstal ekstensi pgsql, menjalankan composer install dan npm build, menyalin entrypoint.sh untuk migrasi otomatis saat deploy."
+  "summary": "Image produksi multi-stage: dependensi Composer tanpa dev, build aset Vite (Node 22), runtime PHP 8.3-FPM Alpine dengan ekstensi pgsql/intl/gd/zip/bcmath/pcntl/opcache, nginx dan supervisord (php-fpm, nginx, scheduler); package:discover dan filament:assets saat build, APP_VERSION dari build arg atau SOURCE_COMMIT Coolify, label OCI, port 8080 dan healthcheck /up."
  },
  "README.md": {
   "summary": "Dokumentasi utama proyek PTSP MTsN 2 Kota Malang: deskripsi modul (portal publik, pengaduan, survei, buku tamu, panel staf /cp, portal pemohon /portal), teknologi (Laravel 12, Filament 3, PostgreSQL), cara menjalankan lokal, tes, dan panduan deploy Docker/Coolify."
@@ -24,7 +24,7 @@
   "summary": "Entry point CLI Laravel artisan untuk menjalankan perintah Artisan dari terminal, seperti migrasi, seeder, cache, dan perintah kustom aplikasi PTSP."
  },
  "config/app.php": {
-  "summary": "Konfigurasi utama aplikasi Laravel PTSP: APP_NAME=PTSP MTsN 2 Kota Malang, timezone=Asia/Jakarta, locale=id, didefinisikan environment (local/production) dan debug mode, serta daftar service providers dan facades."
+  "summary": "Konfigurasi aplikasi Laravel: nama, version (APP_VERSION untuk Monitoring), update_repository (repo GitHub yang dicek untuk rilis baru), lingkungan, debug, URL, zona waktu, locale, kunci enkripsi dan maintenance."
  },
  "config/assets.php": {
   "summary": "Konfigurasi manajemen aset: mode (vite/compiled), check_vite_server, daftar file CSS dan JS yang dikompilasi untuk mode non-Vite (production). Digunakan oleh AssetHelper untuk memuat aset yang benar sesuai environment."
@@ -63,7 +63,7 @@
   "summary": "Konfigurasi WhatsApp API: base URL, API key, dan nomor pengirim untuk layanan notifikasi WhatsApp yang digunakan oleh WhatsAppService saat pemohon mendaftar layanan walk-in."
  },
  "docker-compose.yml": {
-  "summary": "Docker Compose untuk menjalankan aplikasi PTSP dan PostgreSQL 16 bersama-sama: service app (build dari Dockerfile, port 80) dan service db (postgres:16, volume persistent ptsp_db_data), environment dari .env."
+  "summary": "Stack produksi Docker Compose (dipakai Coolify): service app (env aplikasi, PostgreSQL, sesi aman yang bisa diatur, TINYMCE_API_KEY, fallback email/WhatsApp, volume storage, healthcheck), postgres 16 (volume, healthcheck), dan service backup opsional (profil backup: pg_dump harian dan arsip storage dengan masa simpan); rotasi log dan graceful stop."
  },
  "docker/db-check.php": {
   "summary": "Script PHP untuk memeriksa koneksi database PostgreSQL sebelum aplikasi dimulai di container Docker, digunakan oleh entrypoint.sh sebagai health check."
@@ -96,7 +96,7 @@
   "summary": "Konfigurasi Tailwind CSS: content path mencakup resources/views dan app/, extend theme dengan warna dan font kustom. Digunakan bersama Filament untuk panel /cp dan /portal."
  },
  "scripts/build-production.sh": {
-  "summary": "Shell script build produksi untuk Linux/macOS: composer install --no-dev, npm ci && npm run build, php artisan optimize, php artisan migrate --force."
+  "summary": "Skrip build di server produksi: composer install tanpa dev, npm ci dan build, filament:assets, lalu scripts/post-deploy.sh (opsi --seed untuk instalasi pertama)."
  },
  "scripts/build-production.bat": {
   "summary": "Batch script build produksi untuk Windows/Laragon: composer install --no-dev, npm ci && npm run build, php artisan optimize, php artisan migrate --force."
@@ -108,7 +108,7 @@
   "summary": "Batch script setup development untuk Windows/Laragon: composer install, copy .env.example, php artisan key:generate, php artisan migrate --seed, npm install."
  },
  "database/setup_postgres.sql": {
-  "summary": "Script SQL untuk setup awal PostgreSQL: membuat database ptsp_mtsn2km dan ptsp_testing, user ptsp_user dengan password, dan grant privileges. Dijalankan sekali sebelum migrasi pertama."
+  "summary": "Skrip SQL penyiapan PostgreSQL untuk hosting: membuat user dan database aplikasi, extension pg_trgm, serta hak akses schema, tabel, sequence dan fungsi."
  },
  "app/Models/Survey.php": {
   "summary": "Model survei di tabel surveys: type (skm/spak/other), is_active, start_date/end_date. Relasi ke SurveyQuestion via survey_type (bukan foreign key langsung) dan ke SurveyResponse."
@@ -771,7 +771,7 @@
   "summary": "CSS layout situs publik: variabel tema terang/gelap, header, navigasi, footer, komponen umum, serta gaya .rich-text untuk konten TinyMCE (daftar berpoin/bernomor dan bersarang, perataan, tebal/miring/garis bawah/coret, link, heading, kutipan, tabel, gambar)."
  },
  "resources/css/home.css": {
-  "summary": "CSS khusus halaman beranda: animasi counter statistik, hero slider, section layanan unggulan, cards pengumuman terbaru."
+  "summary": "CSS beranda: variabel --hero-height bersama untuk hero statis dan hero slider (sekitar 600px HP sampai 481px desktop), hero statis, aturan carousel Bootstrap ditegaskan ulang untuk #hero-slider di atas daisyUI, slide dengan gambar object-fit cover, lapisan, konten tengah dan judul terbungkus, serta bagian-bagian beranda lainnya."
  },
  "resources/css/about.css": {
   "summary": "CSS halaman tentang (/about): section visi-misi, FAQ accordion, profil tim, timeline sejarah madrasah."
@@ -1023,10 +1023,10 @@
   "summary": "Skema database lengkap PTSP: diagram tabel (users, tickets, services, complaints, visitors, surveys, dll), kolom penting, foreign keys, index, dan relasi antar tabel."
  },
  "docs/DEPLOYMENT.md": {
-  "summary": "Panduan deploy ke server biasa/cPanel: setup .env dari .env.production.example, jalankan build-production.sh, konfigurasi web server (Nginx/Apache), setup cron untuk scheduler, permission storage."
+  "summary": "Panduan deploy hosting tanpa Docker (cPanel/VPS): syarat (PHP, PostgreSQL wajib), database dan pg_trgm, pasang via paket rilis atau git, konfigurasi .env, post-deploy, cron scheduler, web root public_html dan symlink storage, update (termasuk unggah paket di aplikasi), backup, checklist dan troubleshooting."
  },
  "docs/DEPLOY_COOLIFY.md": {
-  "summary": "Panduan deploy ke Docker/Coolify: konfigurasi docker-compose.yml, variabel environment yang diperlukan, volume persistent untuk PostgreSQL, migrasi otomatis via entrypoint.sh, SSL/domain setup di Coolify."
+  "summary": "Panduan deploy Coolify/Docker: cara kerja container, persiapan dan APP_KEY, membuat resource Docker Compose, variabel lingkungan (termasuk TINYMCE_API_KEY, SESSION_SECURE_COOKIE, PHP_FPM_MAX_CHILDREN, APP_VERSION), deploy, update, backup, VPS tanpa Coolify, migrasi data, opsi database Coolify, troubleshooting dan perintah berguna."
  },
  ".ngodingpakeaiignore": {
   "summary": "Daftar path tambahan yang dikecualikan dari sync NgodingPakeAI (sintaks .gitignore): folder tooling agen lokal .claude/ dan .codex/, aset vendor Filament/awcodes hasil build di public/js dan public/css, lockfile composer/npm, serta berkas placeholder .gitignore."
@@ -1149,7 +1149,7 @@
   "summary": "Halaman daftar slide hero beranda dengan penjelasan urutan (seret untuk mengurutkan, tanpa slide aktif beranda memakai hero bawaan) dan tombol Tambah slide."
  },
  "app/Filament/Resources/HeroSliderResource.php": {
-  "summary": "Resource Filament Hero Slider Beranda (admin, tabel hero_sliders): form gambar latar (disk public hero-slides), judul/subjudul/deskripsi, dua tombol dengan validasi tautan (/ atau https://), warna teks/lapisan, aktif; tabel bisa diurutkan (sort_order) dengan toggle tampil."
+  "summary": "Resource Hero Slider Beranda (admin): gambar komputer dipotong 16:5 dan diperkecil 1920×600 di browser sebelum unggah, gambar HP opsional 2:3 (1080×1620), judul/subjudul/deskripsi, dua tombol dengan validasi tautan, warna teks (input warna bawaan) dan preset lapisan gelap (OVERLAYS), toggle tampil; tabel bisa diurutkan."
  },
  "app/Filament/Resources/NotificationDeliveryResource/Pages/ListNotificationDeliveries.php": {
   "summary": "Halaman daftar Riwayat Notifikasi dengan ringkasan terkirim/gagal dan tab per status."
@@ -1278,7 +1278,7 @@
   "summary": "API FAQ untuk admin konten: GET /api/faq (urutan tampil), GET/POST/PATCH/DELETE /api/faq/{id}, PUT /api/faq/urutan untuk menyusun ulang, POST /api/faq/{id}/naik|turun; daftar publik di /api/publik/faq."
  },
  "app/Http/Controllers/Api/HeroSliderController.php": {
-  "summary": "API publik GET /api/publik/slider: slide hero beranda yang aktif berurutan dengan judul, gambar, tombol (tautan relatif dijadikan absolut), warna; dapat di-cache 5 menit."
+  "summary": "API publik GET /api/publik/slider: slide aktif berurutan dengan judul, URL gambar absolut dari host request, tombol (tautan relatif dijadikan absolut), warna teks dan lapisan; cache 5 menit."
  },
  "app/Http/Controllers/Api/IncomingServiceController.php": {
   "summary": "API layanan masuk berkategori untuk back office: GET /api/layanan-masuk dengan filter kategori, unit saya, layanan, pencarian dan jumlah per kategori."
@@ -1299,7 +1299,7 @@
   "summary": "API template notifikasi (admin): GET /api/template-notifikasi dengan filter, GET/PUT /api/template-notifikasi/{id} subjek dan isi, PATCH /api/template-notifikasi/{id}/aktif saklar pemicu."
  },
  "app/Http/Controllers/Api/PengumumanController.php": {
-  "summary": "API pengumuman untuk admin konten: GET /api/pengumuman dengan filter status, kategori, pencarian, tanggal dan urutan; GET/POST (multipart lampiran)/PATCH/DELETE /api/pengumuman/{id}; POST /api/pengumuman/{id}/{aksi} untuk tayangkan, draf atau akhiri; daftar publik di /api/publik/pengumuman."
+  "summary": "API pengumuman untuk admin konten: daftar dengan filter status/kategori/pencarian/tanggal/urutan, detail, buat (lampiran multipart), ubah sebagian, hapus beserta lampiran, aksi tayangkan/draf/akhiri; URL lampiran dari host request."
  },
  "app/Http/Controllers/Api/PersuratanController.php": {
   "summary": "API Master Persuratan: GET /api/persuratan/pilihan?jenis= pilihan aktif untuk form surat/disposisi, GET /api/persuratan/master daftar kelola dengan filter, POST/PUT/DELETE /api/persuratan/master/{id} (surat yang sudah memakai nilai tetap menyimpan teksnya)."
@@ -1404,7 +1404,7 @@
   "summary": "Model FAQ (tabel faqs): scopePublished urut kelompok lalu urutan, scopeInCategory, daftar kategori, nextSort, label 'Umum', safeAnswer() merender jawaban rich text yang disanitasi lewat RichText."
  },
  "app/Models/HeroSlider.php": {
-  "summary": "Model slide hero beranda (hero_sliders): gambar di disk public, judul, subjudul, deskripsi, dua tombol, warna teks/lapisan, aktif, sort_order; scopeActive berurutan, imageUrl, gambar lama dihapus saat diganti atau slide dihapus."
+  "summary": "Model slide hero beranda (hero_sliders): gambar komputer (16:5, 1920×600) dan gambar HP opsional image_mobile (2:3, 1080×1620) di disk public, konstanta rasio/ukuran, teks, tombol, warna, aktif, urutan; scopeActive, imageUrl/mobileImageUrl relatif /storage, berkas lama dihapus saat diganti atau dihapus."
  },
  "app/Models/Notification.php": {
   "summary": "Model notifikasi in-app (kanal database Laravel) dengan ticket_id diisi dari nomor tiket di data notifikasi; relasi ticket, judul, isi, scopeForTicket."
@@ -1497,7 +1497,7 @@
   "summary": "Validasi dan penyimpanan survei SKM & SPAK untuk form web bertahap dan API: identityRules, ratingRules (jawaban harus salah satu opsi), only() menyaring pertanyaan aktif, save() menyimpan untuk edisi aktif dengan skor 1..n sesuai Permenpan RB 14/2017."
  },
  "app/Services/SystemMonitorService.php": {
-  "summary": "Monitoring Sistem: kesehatan aplikasi (versi, database, antrean, scheduler, storage, waktu respons, sesi aktif), server (CPU, memori, disk, uptime, kontainer), temuan konfigurasi berisiko, ringkasan keamanan, overall status, record() snapshot ke system_metrics."
+  "summary": "Monitoring Sistem: versi (APP_VERSION, berkas RELEASE paket rilis, atau git describe), kesehatan aplikasi dan server, temuan konfigurasi berisiko termasuk tautan public/storage yang hilang dan TINYMCE_API_KEY kosong, ringkasan keamanan, snapshot metrik."
  },
  "app/Services/UpdateService.php": {
   "summary": "Pembaruan aplikasi: cek rilis terbaru di GitHub (cache 10 menit), isNewer, riwayat pembaruan termasuk redeploy, storePackage untuk ZIP unggahan, apply() dengan mode maintenance, backup, salin, migrate dan restore otomatis bila gagal."
@@ -1998,7 +1998,7 @@
   "summary": "Feature test FollowUpReminderTest: kartu pengingat tindak lanjut: terlambat, hari ini dan segera untuk permohonan petugas, catatan baru mengganti atau mengakhiri rencana, kartu tampil di halaman Notifikasi."
  },
  "tests/Feature/HeroSliderTest.php": {
-  "summary": "Feature test HeroSliderTest: hero slider beranda: tanpa slide aktif beranda tetap hero statis, slide aktif tampil berurutan, admin menambah slide dengan gambar dan validasi tautan, menyembunyikan slide, staf lain ditolak, API publik /api/publik/slider."
+  "summary": "Feature test HeroSliderTest: beranda tetap hero statis tanpa slide aktif, slide aktif berurutan dengan img relatif /storage, alt, prioritas dan lazy-load, gambar HP lewat source picture, berkas lama dihapus saat diganti/dihapus, admin menambah slide dengan warna dan lapisan, menyembunyikan slide, staf lain ditolak, API publik."
  },
  "tests/Feature/IncomingServicesTest.php": {
   "summary": "Feature test IncomingServicesTest: Layanan Masuk berkategori: permohonan yang didisposisi dikelompokkan per kategori disposisi/tembusan/koordinasi/arahan, kategori dari instruksi, ubah kategori dengan alasan dan riwayatnya, filter unit saya, API /api/layanan-masuk."
@@ -2199,13 +2199,13 @@
   "summary": "Resource Filament layanan PTSP: tab umum (nama, kode, kategori, jalur, biaya, waktu, aktif, produk digital, deskripsi TinyEditor), tab Persyaratan & Alur (persyaratan, alur, produk, penanganan pengaduan dengan TinyEditor), pemohon yang dapat mengajukan, pengaturan disposisi, relation manager template berkas dan alur."
  },
  "app/Http/Controllers/EditorUploadController.php": {
-  "summary": "Controller unggah gambar dari TinyMCE (route editor.upload, POST /editor/unggah-gambar): hanya staf, hanya gambar JPG/PNG/GIF/WebP sesuai batas ukuran config tinymce, disimpan di disk public editor-uploads/Y/m, mengembalikan JSON location."
+  "summary": "Controller unggah gambar TinyMCE (editor.upload): hanya staf, hanya gambar JPG/PNG/GIF/WebP dalam batas ukuran, disimpan di disk public editor-uploads/Y/m, mengembalikan URL relatif /storage/... agar tetap berfungsi di domain atau port mana pun."
  },
  "app/Http/Middleware/SecurityHeaders.php": {
   "summary": "Middleware header keamanan: nosniff, XSS protection, HSTS saat HTTPS, Content-Security-Policy per lingkungan (Vite dev server, font Bunny, Google Maps, dan domain TinyMCE Cloud *.tiny.cloud untuk skrip/gaya/font/gambar/koneksi), Referrer-Policy dan Permissions-Policy."
  },
  "app/Providers/AppServiceProvider.php": {
-  "summary": "Service provider aplikasi: mendaftarkan aset JS ptsp-tiny-editor (TinyMCE) untuk panel Filament, render hook preferensi tampilan, rate limiter (termasuk public-forms), share pengaturan aplikasi ke view dan konfigurasi runtime integrasi."
+  "summary": "Service provider aplikasi: URL disk public dibuat relatif (/storage) agar gambar lolos CSP di host/port mana pun, aset JS editor TinyMCE untuk panel, render hook preferensi tampilan, email reset kata sandi berbahasa Indonesia, rate limiter, header keamanan, dan berbagi pengaturan ke view."
  },
  "app/Support/RichText.php": {
   "summary": "Helper rich text TinyMCE: sanitize() membersihkan HTML (elemen aman, link http/https/mailto/tel, tanpa skrip/iframe) dan menyaring atribut style hanya ke properti aman (text-align, padding-left, warna, dekorasi, list-style-type, ukuran/perataan gambar dan tabel); render() untuk halaman; plain() teks ringkas; toHtml() mengubah teks lama '1. a 2. b' atau JSON menjadi daftar HTML."
@@ -2226,6 +2226,24 @@
   "summary": "View field TinyEditor: pembungkus field Filament, pesan bila TINYMCE_API_KEY kosong, kontainer wire:ignore dengan x-data ptspTinyEditor yang meng-entangle state Livewire dan textarea target."
  },
  "tests/Feature/TinyEditorTest.php": {
-  "summary": "Feature test TinyEditorTest: sanitasi dan konversi teks lama ke daftar, form layanan memakai TinyMCE dan menyimpan HTML bersih, FAQ dan pengumuman tampil aman, unggah gambar khusus staf, CSP mengizinkan TinyMCE Cloud, perataan dan daftar tampil di halaman publik layanan tanpa CSS berbahaya."
+  "summary": "Feature test TinyEditorTest: sanitasi dan konversi teks lama ke daftar, form layanan memakai TinyMCE dan menyimpan HTML bersih, FAQ dan pengumuman aman, unggah gambar staf dengan URL relatif /storage/editor-uploads, CSP mengizinkan TinyMCE, perataan dan daftar tampil di halaman publik."
+ },
+ "database/migrations/2026_10_07_130000_add_image_mobile_to_hero_sliders.php": {
+  "summary": "Migration menambah hero_sliders.image_mobile: gambar potret opsional untuk layar HP."
+ },
+ "docker-compose.ports.yml": {
+  "summary": "Override compose untuk VPS tanpa Coolify: membuka port aplikasi (APP_BIND default 127.0.0.1, APP_PORT default 8080) agar bisa dipasangi reverse proxy TLS."
+ },
+ "resources/views/welcome.blade.php": {
+  "summary": "Beranda publik: hero slider Bootstrap bila ada slide aktif (picture dengan gambar HP opsional, img beralt, prioritas slide pertama, lazy-load lainnya, lapisan warna, judul/subjudul/deskripsi/tombol) atau hero statis dengan jam dan tombol layanan/lacak, lalu bagian tentang, statistik layanan dan lainnya."
+ },
+ "scripts/build-release.sh": {
+  "summary": "Skrip pembuat paket rilis ZIP untuk hosting tanpa Composer/Node: git archive HEAD, composer tanpa dev, build Vite, package:discover dan filament:assets, buang test/node_modules/berkas Docker, tulis berkas RELEASE berisi versi, hasilkan dist/ptsp-<versi>.zip beserta checksum SHA-256; dapat diunggah juga lewat Monitoring Sistem."
+ },
+ "scripts/post-deploy.sh": {
+  "summary": "Skrip pasca-deploy hosting: cek .env dan APP_KEY, mode maintenance, siapkan folder storage, bersihkan cache, migrate, opsional db:seed (--seed), storage:link, optimize dan filament:optimize, lalu aktif kembali."
+ },
+ "tests/Unit/AppVersionTest.php": {
+  "summary": "Unit test versi aplikasi dan temuan monitoring: APP_VERSION diutamakan, berkas RELEASE paket rilis dipakai bila tanpa konfigurasi, Monitoring menandai TINYMCE_API_KEY yang kosong."
  }
 }
