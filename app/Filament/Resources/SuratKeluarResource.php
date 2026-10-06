@@ -17,7 +17,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
 
@@ -44,13 +43,6 @@ class SuratKeluarResource extends Resource
     protected static ?string $recordTitleAttribute = 'nomor_surat';
 
     protected static ?int $navigationSort = 1;
-
-    /** Numbers are never deleted: a gap in the register must stay explainable. */
-    public static function can(string $action, ?Model $record = null): bool
-    {
-        return in_array($action, ['viewAny', 'view', 'create', 'update'], true)
-            && (bool) auth()->user()?->can('backoffice.access');
-    }
 
     public static function getEloquentQuery(): Builder
     {

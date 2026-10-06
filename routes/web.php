@@ -143,7 +143,6 @@ Route::middleware('auth')->get('/pengaduan/{complaint}/bukti/{index}', function 
 
 // Outgoing-letter attachments: private files for the back office keeping the register
 Route::middleware('auth')->get('/surat-keluar/{suratKeluar}/lampiran/{index}', function (\App\Models\SuratKeluar $suratKeluar, int $index) {
-    abort_unless(\App\Filament\Resources\SuratKeluarResource::can('view', $suratKeluar), 403);
     $path = $suratKeluar->berkas_lampiran[$index] ?? abort(404);
 
     $disk = \Illuminate\Support\Facades\Storage::disk('local');
@@ -151,7 +150,7 @@ Route::middleware('auth')->get('/surat-keluar/{suratKeluar}/lampiran/{index}', f
     return request()->boolean('unduh')
         ? $disk->download($path, $suratKeluar->attachmentName($path))
         : $disk->response($path, $suratKeluar->attachmentName($path));
-})->whereNumber('index')->name('surat-keluar.lampiran');
+})->can('view', 'suratKeluar')->whereNumber('index')->name('surat-keluar.lampiran');
 
 // Ticket documents: private files served only to the applicant and staff
 Route::middleware('auth')->prefix('documents')->name('documents.')->group(function () {

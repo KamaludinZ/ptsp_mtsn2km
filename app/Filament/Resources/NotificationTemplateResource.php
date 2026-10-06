@@ -5,10 +5,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\NotificationTemplateResource\Pages;
 use App\Models\NotificationSetting;
 use App\Models\NotificationTemplate;
+use App\Services\NotificationGateway;
 use App\Support\NotificationTemplates;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -139,8 +141,44 @@ class NotificationTemplateResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->label('Ubah'),
+                static::testSendAction(Tables\Actions\Action::make('testSend')),
             ])
             ->emptyStateHeading('Belum ada template notifikasi');
+    }
+
+    /**
+     * Uji kirim: the saved template rendered with SAMPLE values, sent to an address or
+     * number typed by the admin (works while the channel or template is still off).
+     *
+     * @template T of \Filament\Actions\Action|\Filament\Tables\Actions\Action
+     * @param  T  $action
+     * @return T
+     */
+    public static function testSendAction($action)
+    {
+        return $action
+            ->label('Uji kirim')
+            ->icon('heroicon-m-paper-airplane')
+            ->color('gray')
+            ->modalHeading(fn (NotificationTemplate $record) => 'Uji kirim: ' . (NotificationTemplates::EVENTS[$record->key] ?? $record->key) . ' (' . (NotificationSetting::CHANNELS[$record->channel] ?? $record->channel) . ')')
+            ->modalDescription('Isi template yang tersimpan dikirim dengan data contoh dan diberi tanda [UJI]. Perubahan yang belum disimpan tidak ikut.')
+            ->modalSubmitActionLabel('Kirim pesan uji')
+            ->form(fn (NotificationTemplate $record) => [
+                Forms\Components\TextInput::make('recipient')
+                    ->label($record->channel === 'email' ? 'Kirim ke email' : 'Kirim ke nomor WhatsApp')
+                    ->default(fn () => $record->channel === 'email' ? auth()->user()?->email : auth()->user()?->whatsapp_number)
+                    ->placeholder($record->channel === 'email' ? 'admin@contoh.sch.id' : '628xxxxxxxxxx')
+                    ->rules($record->channel === 'email' ? ['email'] : ['regex:/^\+?[0-9]{8,15}$/'])
+                    ->validationMessages(['regex' => 'Tulis nomor WhatsApp dengan angka saja, mis. 6281234567890.'])
+                    ->required(),
+            ])
+            ->action(function (NotificationTemplate $record, array $data) {
+                $error = app(NotificationGateway::class)->testTemplate($record, $data['recipient'], static::SAMPLE);
+
+                $error === null
+                    ? Notification::make()->title('Pesan uji terkirim ke ' . $data['recipient'] . '.')->success()->send()
+                    : Notification::make()->title('Uji kirim gagal')->body($error)->danger()->persistent()->send();
+            });
     }
 
     public static function getPages(): array

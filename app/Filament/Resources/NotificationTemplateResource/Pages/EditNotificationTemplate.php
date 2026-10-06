@@ -3,11 +3,17 @@
 namespace App\Filament\Resources\NotificationTemplateResource\Pages;
 
 use App\Filament\Resources\NotificationTemplateResource;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 
 class EditNotificationTemplate extends EditRecord
 {
     protected static string $resource = NotificationTemplateResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [NotificationTemplateResource::testSendAction(Action::make('testSend'))];
+    }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {

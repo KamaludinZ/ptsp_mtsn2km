@@ -100,6 +100,7 @@ class PublicController extends Controller
             'layanan' => ['nama' => $service->name, 'slug' => $service->slug],
             'data' => $templates->map(fn (ServiceTemplate $template) => [
                 'nama' => $template->nama,
+                'petunjuk' => $template->petunjuk,
                 'wajib' => (bool) $template->is_required,
                 'versi' => $template->versi,
                 'jenis' => strtolower(pathinfo($template->file_name ?: $template->file_path, PATHINFO_EXTENSION)) ?: null,
@@ -138,6 +139,7 @@ class PublicController extends Controller
             'disposisi' => ServiceDisposition::mode($service->disposition_mode),
             'template_berkas' => $service->activeTemplates->map(fn (ServiceTemplate $template) => [
                 'nama' => $template->nama,
+                'petunjuk' => $template->petunjuk,
                 'versi' => $template->versi,
                 'wajib' => $template->is_required,
                 'tersedia' => $available = $template->isAvailable(),

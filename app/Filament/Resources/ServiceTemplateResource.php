@@ -73,6 +73,11 @@ class ServiceTemplateResource extends Resource
                     ->where('service_id', $get('service_id') ?? $record?->service_id ?? (method_exists($livewire, 'getOwnerRecord') ? $livewire->getOwnerRecord()->getKey() : null))
                     ->ignore($record?->getKey())])
                 ->validationMessages(['unique' => 'Layanan ini sudah punya template dengan nama yang sama.']),
+            Forms\Components\Textarea::make('petunjuk')->label('Petunjuk pengisian')
+                ->placeholder('mis. Isi dengan huruf kapital, tanda tangani di atas meterai, lalu pindai sebagai PDF.')
+                ->helperText('Ditampilkan kepada pemohon di bawah nama template.')
+                ->rows(2)
+                ->maxLength(500),
             Forms\Components\Placeholder::make('current_file')
                 ->label('Berkas saat ini')
                 ->content(fn (ServiceTemplate $record) => new \Illuminate\Support\HtmlString(
@@ -111,7 +116,7 @@ class ServiceTemplateResource extends Resource
             ->reorderable('sort')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')->label('Template')->weight('semibold')->wrap()->searchable()
-                    ->description(fn (ServiceTemplate $record) => $record->file_name),
+                    ->description(fn (ServiceTemplate $record) => $record->petunjuk ? \Illuminate\Support\Str::limit($record->petunjuk, 80) : $record->file_name),
                 Tables\Columns\TextColumn::make('service.name')->label('Layanan')->searchable()->wrap()->toggleable(),
                 Tables\Columns\TextColumn::make('info')->label('Berkas')
                     ->state(fn (ServiceTemplate $record) => $record->fileInfo())

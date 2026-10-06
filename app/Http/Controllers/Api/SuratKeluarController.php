@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\TicketActionException;
 use App\Exports\SuratKeluarExport;
-use App\Filament\Resources\SuratKeluarResource;
 use App\Http\Controllers\Controller;
 use App\Models\SuratKeluar;
 use App\Services\SuratKeluarService;
@@ -25,7 +24,7 @@ class SuratKeluarController extends Controller
     /** GET /api/surat-keluar: the register, filtered and paginated. */
     public function index(Request $request): JsonResponse
     {
-        abort_unless(SuratKeluarResource::canViewAny(), 403);
+        $this->authorize('viewAny', SuratKeluar::class);
 
         $filters = $this->filters($request);
         $page = $this->register($filters)->with('pembuat:id,name')->paginate($filters['per_halaman'] ?? 25)->withQueryString();
@@ -41,7 +40,7 @@ class SuratKeluarController extends Controller
     /** GET /api/surat-keluar/ekspor?format=xlsx|pdf with the same filters. */
     public function export(Request $request)
     {
-        abort_unless(SuratKeluarResource::canViewAny(), 403);
+        $this->authorize('viewAny', SuratKeluar::class);
 
         $filters = $this->filters($request);
         $format = $request->validate(['format' => ['nullable', 'in:xlsx,pdf']])['format'] ?? 'xlsx';
@@ -94,7 +93,7 @@ class SuratKeluarController extends Controller
     /** POST /api/surat-keluar/nomor: reserve `jumlah` consecutive numbers. */
     public function reserve(Request $request): JsonResponse
     {
-        abort_unless(SuratKeluarResource::canCreate(), 403);
+        $this->authorize('create', SuratKeluar::class);
 
         $data = $request->validate([
             'jumlah' => ['required', 'integer', 'min:1', 'max:' . SuratKeluarService::MAX_PER_REQUEST],
@@ -122,7 +121,7 @@ class SuratKeluarController extends Controller
     /** PUT /api/surat-keluar/{suratKeluar}: fill in or correct a reserved letter. */
     public function update(Request $request, SuratKeluar $suratKeluar): JsonResponse
     {
-        abort_unless(SuratKeluarResource::canEdit($suratKeluar), 403);
+        $this->authorize('update', $suratKeluar);
 
         $data = $request->validate([
             'tanggal_surat' => ['nullable', 'date'],

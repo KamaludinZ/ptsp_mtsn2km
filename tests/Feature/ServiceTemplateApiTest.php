@@ -161,7 +161,7 @@ class ServiceTemplateApiTest extends TestCase
             ->assertJsonPath('layanan.slug', $this->service->slug)
             ->assertJsonCount(2, 'data')
             ->assertJsonPath('data.0', [
-                'nama' => 'Formulir', 'wajib' => true, 'versi' => 1, 'jenis' => 'pdf', 'ukuran' => 10 * 1024 + 9, 'tersedia' => true,
+                'nama' => 'Formulir', 'petunjuk' => null, 'wajib' => true, 'versi' => 1, 'jenis' => 'pdf', 'ukuran' => 10 * 1024 + 9, 'tersedia' => true,
                 'unduh' => ServiceTemplate::where('nama', 'Formulir')->firstOrFail()->downloadUrl(),
             ])
             ->assertJsonPath('jumlah_wajib', 1)

@@ -62,6 +62,25 @@ class SuratKeluarTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_policy_lets_every_processor_unit_keep_the_register(): void
+    {
+        $letter = SuratKeluar::firstOrFail();
+        $wakaHumas = tap(User::factory()->create(['user_type' => 'pegawai']))->assignRole('waka_humas');
+        $inactive = tap(User::factory()->create(['user_type' => 'pegawai', 'is_active' => false]))->assignRole('tata_usaha');
+        $frontDesk = $this->user('loket1@mtsn2malang.sch.id');
+
+        $this->assertTrue($wakaHumas->can('viewAny', SuratKeluar::class));
+        $this->assertTrue($wakaHumas->can('create', SuratKeluar::class));
+        $this->assertTrue($wakaHumas->can('update', $letter));
+        $this->assertFalse($wakaHumas->can('delete', $letter));
+        $this->assertFalse($inactive->can('viewAny', SuratKeluar::class));
+        $this->assertFalse($frontDesk->can('view', $letter));
+
+        Sanctum::actingAs($frontDesk);
+        $this->getJson('/api/surat-keluar')->assertForbidden();
+        $this->putJson('/api/surat-keluar/' . $letter->id, ['perihal' => 'x'])->assertForbidden();
+    }
+
     public function test_letters_are_never_deleted(): void
     {
         $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));

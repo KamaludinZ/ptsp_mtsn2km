@@ -50,6 +50,7 @@ class ServiceTemplateController extends Controller
             'wajib' => ['sometimes', 'boolean'],
             'urutan' => ['sometimes', 'integer', 'min:0', 'max:65535'],
             'aktif' => ['sometimes', 'boolean'],
+            'petunjuk' => ['sometimes', 'nullable', 'string', 'max:500'],
         ], ['nama.unique' => 'Layanan ini sudah punya template dengan nama yang sama.']);
 
         $template->update(array_filter([
@@ -57,7 +58,7 @@ class ServiceTemplateController extends Controller
             'is_required' => $data['wajib'] ?? null,
             'sort' => $data['urutan'] ?? null,
             'is_active' => $data['aktif'] ?? null,
-        ], fn ($value) => $value !== null));
+        ], fn ($value) => $value !== null) + (array_key_exists('petunjuk', $data) ? ['petunjuk' => filled($data['petunjuk']) ? trim($data['petunjuk']) : null] : []));
 
         activity('audit')->causedBy($request->user())->performedOn($template)->log("Mengubah template {$template->nama}");
 
@@ -74,11 +75,13 @@ class ServiceTemplateController extends Controller
             'nama' => ['required', 'string', 'max:255', Rule::unique('service_templates', 'nama')->where('service_id', $service->id)],
             'wajib' => ['nullable', 'boolean'],
             'urutan' => ['nullable', 'integer', 'min:0', 'max:65535'],
+            'petunjuk' => ['nullable', 'string', 'max:500'],
         ], ['nama.unique' => 'Layanan ini sudah punya template dengan nama yang sama.']);
 
         try {
             $template = $this->storage->store($service, $data['berkas'], [
                 'nama' => $data['nama'], 'is_required' => $data['wajib'] ?? false, 'sort' => $data['urutan'] ?? null,
+                'petunjuk' => filled($data['petunjuk'] ?? null) ? trim($data['petunjuk']) : null,
             ]);
         } catch (TicketActionException $e) {
             return response()->json(['message' => $e->getMessage(), 'errors' => ['berkas' => [$e->getMessage()]]], 422);
@@ -125,6 +128,7 @@ class ServiceTemplateController extends Controller
         return [
             'id' => $template->id,
             'nama' => $template->nama,
+            'petunjuk' => $template->petunjuk,
             'nama_berkas' => $template->file_name,
             'jenis' => $template->mime_type,
             'ukuran' => $template->file_size,

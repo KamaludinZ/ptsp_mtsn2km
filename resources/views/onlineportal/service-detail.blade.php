@@ -143,6 +143,9 @@
                                         @if ($template->is_required)
                                             <span class="badge bg-warning text-dark ms-1">Wajib</span>
                                         @endif
+                                        @if ($template->petunjuk)
+                                            <span class="d-block small">{{ $template->petunjuk }}</span>
+                                        @endif
                                         <span class="d-block small text-muted">{{ $info ?? 'Berkas sedang tidak tersedia. Silakan hubungi petugas PTSP.' }}</span>
                                     </span>
                                 </span>

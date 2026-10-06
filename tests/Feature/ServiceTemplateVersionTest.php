@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/** Template berkas versions and status: replaced files raise the version, inactive templates leave the public pages. */
+/** Template berkas versions, status and petunjuk: replaced files raise the version, inactive templates leave the public pages, instructions reach applicants. */
 class ServiceTemplateVersionTest extends TestCase
 {
     use RefreshDatabase;
@@ -92,5 +92,21 @@ class ServiceTemplateVersionTest extends TestCase
             ->assertCanSeeTableRecords([$template]);
 
         $this->assertFalse($template->fresh()->is_active);
+    }
+
+    public function test_petunjuk_reaches_the_applicant_and_the_api(): void
+    {
+        $this->template('formulir', ['petunjuk' => 'Isi dengan huruf kapital lalu tanda tangani.']);
+
+        $this->get(route('onlineportal.service.detail', $this->service->slug))->assertOk()->assertSee('Isi dengan huruf kapital lalu tanda tangani.');
+        $this->assertStringContainsString('Isi dengan huruf kapital', (string) \App\Support\ServiceSummary::templates($this->service->fresh()));
+        $this->getJson('/api/publik/layanan/' . $this->service->slug)->assertJsonPath('template_berkas.0.petunjuk', 'Isi dengan huruf kapital lalu tanda tangani.');
+
+        \Laravel\Sanctum\Sanctum::actingAs(User::where('email', 'ptsp@mtsn2malang.sch.id')->firstOrFail());
+        $template = $this->service->templates()->firstOrFail();
+        $this->patchJson("/api/layanan-ptsp/{$this->service->id}/template/{$template->id}", ['petunjuk' => 'Cukup isi bagian A.'])
+            ->assertOk()->assertJsonPath('data.petunjuk', 'Cukup isi bagian A.');
+        $this->patchJson("/api/layanan-ptsp/{$this->service->id}/template/{$template->id}", ['petunjuk' => null])
+            ->assertOk()->assertJsonPath('data.petunjuk', null);
     }
 }

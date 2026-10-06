@@ -23,7 +23,7 @@ class ServiceTemplateStorage
 
     public const EXTENSIONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
 
-    /** @param  array{nama: string, is_required?: bool, sort?: int}  $data */
+    /** @param  array{nama: string, is_required?: bool, sort?: int, petunjuk?: ?string}  $data */
     public function store(Service $service, UploadedFile $file, array $data): ServiceTemplate
     {
         $path = $this->put($service, $file);
@@ -35,6 +35,7 @@ class ServiceTemplateStorage
                 'file_name' => self::cleanName($file->getClientOriginalName()),
                 'is_required' => (bool) ($data['is_required'] ?? false),
                 'sort' => (int) ($data['sort'] ?? ((int) $service->templates()->max('sort') + 1)),
+                'petunjuk' => $data['petunjuk'] ?? null,
             ]));
         } catch (\Throwable $e) {
             Storage::disk(ServiceTemplate::DISK)->delete($path);

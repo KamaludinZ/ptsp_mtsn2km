@@ -11,7 +11,7 @@ class ServiceTemplate extends Model
 {
     public const DISK = 'local';
 
-    protected $fillable = ['service_id', 'nama', 'file_path', 'file_name', 'mime_type', 'file_size', 'is_required', 'sort', 'versi', 'is_active'];
+    protected $fillable = ['service_id', 'nama', 'file_path', 'file_name', 'mime_type', 'file_size', 'is_required', 'sort', 'versi', 'is_active', 'petunjuk'];
 
     protected $attributes = ['versi' => 1, 'is_active' => true];
 

@@ -60,6 +60,28 @@ class NotificationTemplateTest extends TestCase
         $this->assertSame(count(NotificationTemplates::EVENTS), NotificationTemplate::where('channel', 'whatsapp')->where('is_active', true)->count());
     }
 
+    public function test_admin_test_sends_a_template_with_sample_data(): void
+    {
+        $this->actingAs($this->admin());
+        $email = NotificationTemplate::where('key', 'ticket_created')->where('channel', 'email')->firstOrFail();
+        $whatsapp = NotificationTemplate::where('key', 'ticket_created')->where('channel', 'whatsapp')->firstOrFail();
+        \App\Models\NotificationSetting::store('whatsapp', false, ['provider' => 'fonnte', 'api_url' => 'https://api.fonnte.com/send', 'api_token' => 't']);
+        \Illuminate\Support\Facades\Http::swap(new \Illuminate\Http\Client\Factory());
+        \Illuminate\Support\Facades\Http::fake(['api.fonnte.com/*' => \Illuminate\Support\Facades\Http::response(['status' => true])]);
+
+        Livewire::test(ListNotificationTemplates::class)
+            ->callTableAction('testSend', $whatsapp, ['recipient' => 'bukan nomor'])
+            ->assertHasTableActionErrors(['recipient'])
+            ->callTableAction('testSend', $whatsapp, ['recipient' => '6281234567890'])
+            ->assertNotified('Pesan uji terkirim ke 6281234567890.');
+
+        \Illuminate\Support\Facades\Http::assertSent(fn ($request) => $request['target'] === '6281234567890'
+            && str_starts_with($request['message'], '[UJI] ') && str_contains($request['message'], 'TKT-20261002-0007'));
+
+        Livewire::test(EditNotificationTemplate::class, ['record' => $email->getRouteKey()])
+            ->assertActionVisible('testSend');
+    }
+
     public function test_every_event_has_an_email_and_a_whatsapp_template(): void
     {
         foreach (array_keys(NotificationTemplates::EVENTS) as $key) {

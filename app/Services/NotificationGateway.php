@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\NotificationSetting;
+use App\Models\NotificationTemplate;
+use App\Support\NotificationTemplates;
 use App\Support\WhatsAppGateways;
 use Illuminate\Mail\Mailer;
 use Illuminate\Mail\Message;
@@ -37,12 +39,12 @@ class NotificationGateway
     }
 
     /** Send a test e-mail; returns null on success or the error to show the admin. */
-    public function testEmail(string $recipient): ?string
+    public function testEmail(string $recipient, ?string $subject = null, ?string $body = null): ?string
     {
         try {
             $this->mailer()->raw(
-                'Ini adalah email uji dari ' . app_brand_name() . '. Jika Anda menerimanya, pengaturan SMTP sudah benar.',
-                fn (Message $message) => $message->to($recipient)->subject('Uji koneksi email PTSP'),
+                $body ?? 'Ini adalah email uji dari ' . app_brand_name() . '. Jika Anda menerimanya, pengaturan SMTP sudah benar.',
+                fn (Message $message) => $message->to($recipient)->subject($subject ?? 'Uji koneksi email PTSP'),
             );
         } catch (Throwable $e) {
             return self::readable($e->getMessage());
@@ -52,7 +54,7 @@ class NotificationGateway
     }
 
     /** Send a test WhatsApp message; returns null on success or the error to show the admin. */
-    public function testWhatsApp(string $number): ?string
+    public function testWhatsApp(string $number, ?string $message = null): ?string
     {
         $wa = NotificationSetting::for('whatsapp');
         $url = $wa->value('api_url', config('whatsapp.api_url'));
@@ -65,7 +67,7 @@ class NotificationGateway
         }
 
         try {
-            $response = WhatsAppGateways::send($provider, $url, $token, $sender, $number, 'Pesan uji dari ' . app_brand_name() . '. Pengaturan WhatsApp sudah benar.');
+            $response = WhatsAppGateways::send($provider, $url, $token, $sender, $number, $message ?? 'Pesan uji dari ' . app_brand_name() . '. Pengaturan WhatsApp sudah benar.');
         } catch (Throwable $e) {
             return self::readable($e->getMessage());
         }
@@ -75,6 +77,20 @@ class NotificationGateway
             $response->successful() => 'Gateway menolak pesan: ' . self::readable((string) ($response->json('reason') ?? $response->json('message') ?? 'tanpa keterangan')),
             default => 'Gateway menjawab HTTP ' . $response->status() . '.',
         };
+    }
+
+    /**
+     * Uji kirim satu template: rendered with $values (sample data) and sent through
+     * its channel to $recipient, marked as a test. Works even while the channel
+     * or the template is switched off, so it can be checked before going live.
+     */
+    public function testTemplate(NotificationTemplate $template, string $recipient, array $values): ?string
+    {
+        $body = '[UJI] ' . NotificationTemplates::render($template->body, $values);
+
+        return $template->channel === 'email'
+            ? $this->testEmail($recipient, '[UJI] ' . NotificationTemplates::render((string) ($template->subject ?: NotificationTemplates::EVENTS[$template->key] ?? $template->key), $values), $body)
+            : $this->testWhatsApp($recipient, $body);
     }
 
     /** Errors can echo credentials (e.g. SMTP AUTH); keep them short and generic. */
