@@ -64,6 +64,27 @@ class ImpersonationActivityLogTest extends TestCase
         $this->assertArrayNotHasKey('impersonated_by', Activity::query()->where('log_name', '!=', 'impersonation')->latest('id')->firstOrFail()->properties->all());
     }
 
+    public function test_records_carry_times_device_and_the_expiry_explanation(): void
+    {
+        config(['impersonation.max_minutes' => 30]);
+        $admin = User::role('admin')->firstOrFail();
+        $applicant = User::where('email', 'budi.santoso@email.com')->firstOrFail();
+
+        $this->actingAs($admin)->withHeader('User-Agent', 'Uji/1.0')
+            ->post(route('ganti-akun.mulai', $applicant), ['alasan' => 'Meninjau keluhan unggah berkas']);
+        $this->travel(31)->minutes();
+        $this->get('/portal');
+
+        [$started, $ended] = Activity::inLog('impersonation')->oldest('id')->get();
+        $this->assertSame('Uji/1.0', $started->properties['perangkat']);
+        $this->assertNotNull($started->properties['mulai']);
+        $this->assertArrayNotHasKey('selesai', $started->properties->all());
+        $this->assertSame('kedaluwarsa', $ended->properties['cara_berakhir']);
+        $this->assertSame('Sesi ganti akun melewati batas 30 menit.', $ended->properties['keterangan']);
+        $this->assertSame(31, $ended->properties['durasi_menit']);
+        $this->assertStringContainsString('Ditutup otomatis', $ended->description);
+    }
+
     public function test_signing_out_and_expiry_are_recorded_too(): void
     {
         $admin = User::role('admin')->firstOrFail();

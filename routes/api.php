@@ -250,6 +250,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('peran-aktif')->name
     Route::put('/', [\App\Http\Controllers\Api\ActiveRoleController::class, 'update'])->name('update');
 });
 
+// Rekam jejak aktivitas (role switches, account switches, ticket actions), for administrators (active role).
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/rekam-jejak', [\App\Http\Controllers\Api\ActivityTrailController::class, 'index'])->name('api.rekam-jejak');
+
 // Ganti akun sementara: the session log, for administrators (active role).
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/ganti-akun/log', [\App\Http\Controllers\Api\ImpersonationLogController::class, 'index'])->name('api.ganti-akun.log');
 

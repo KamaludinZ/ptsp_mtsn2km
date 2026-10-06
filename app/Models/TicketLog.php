@@ -26,6 +26,28 @@ class TicketLog extends Model
                 $log->acting_role = \App\Support\ActiveRoles::actingRoleOf(User::find($log->performed_by));
             }
         });
+        // Rekam jejak aktivitas: a staff action on a ticket, with the role it was taken in and the ticket context.
+        static::created(function (TicketLog $log) {
+            if ($log->acting_role === null) {
+                return; // applicants and the system: the ticket history already has them
+            }
+
+            $ticket = Ticket::with('service:id,name')->find($log->ticket_id, ['id', 'ticket_number', 'service_id']);
+            activity('ticket')
+                ->causedBy($log->performed_by ? User::find($log->performed_by) : null)
+                ->performedOn($ticket ?? $log)
+                ->event($log->action)
+                ->withProperties(array_filter([
+                    'tiket' => $ticket?->ticket_number,
+                    'layanan' => $ticket?->service?->name,
+                    'peran_aktif' => $log->acting_role,
+                    'status_awal' => $log->from_status,
+                    'status_akhir' => $log->to_status,
+                    'riwayat_id' => $log->id,
+                    'ip' => $log->ip_address,
+                ], fn ($v) => $v !== null))
+                ->log(TicketLabels::logAction($log->action) . ($ticket ? ' · ' . $ticket->ticket_number : ''));
+        });
         static::updating(fn () => throw new LogicException('Riwayat layanan tidak dapat diubah.'));
         static::deleting(fn () => throw new LogicException('Riwayat layanan tidak dapat dihapus.'));
     }

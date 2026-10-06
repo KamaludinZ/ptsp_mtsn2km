@@ -27,9 +27,12 @@ class Security extends Page
 
     protected static string $view = 'filament.pages.security';
 
+    /** Administrators working as one: logs and the activity trail are not shown in another active role. */
     public static function canAccess(): bool
     {
-        return (bool) auth()->user()?->hasRole('admin');
+        $user = auth()->user();
+
+        return $user instanceof \App\Models\User && \App\Support\ActiveRoles::hasRole($user, 'admin');
     }
 
     private function monitor(): SecurityMonitor

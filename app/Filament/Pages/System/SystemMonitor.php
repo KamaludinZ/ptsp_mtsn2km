@@ -51,9 +51,12 @@ class SystemMonitor extends Page
 
     public string $auditSearch = '';
 
+    /** Administrators working as one: logs and the activity trail are not shown in another active role. */
     public static function canAccess(): bool
     {
-        return (bool) auth()->user()?->hasRole('admin');
+        $user = auth()->user();
+
+        return $user instanceof \App\Models\User && \App\Support\ActiveRoles::hasRole($user, 'admin');
     }
 
     public static function getNavigationBadge(): ?string

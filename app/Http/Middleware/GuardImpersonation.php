@@ -22,7 +22,7 @@ class GuardImpersonation
         }
 
         if ($why = Impersonation::expiryReason()) {
-            Impersonation::end('kedaluwarsa');
+            Impersonation::end('kedaluwarsa', $why);
 
             Notification::make()->warning()->title('Sesi ganti akun diakhiri')->body($why)->send();
 

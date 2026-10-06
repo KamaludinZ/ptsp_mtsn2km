@@ -44,8 +44,19 @@ class AppServiceProvider extends ServiceProvider
             fn () => new \Illuminate\Support\HtmlString(\App\Support\DisplayPreferences::headHtml(auth()->user())),
         );
 
+        // Rekam jejak aktivitas is audit evidence: entries are only ever added (a database trigger enforces it too).
+        \Spatie\Activitylog\Models\Activity::updating(fn () => throw new \LogicException('Rekam jejak aktivitas tidak dapat diubah.'));
+        \Spatie\Activitylog\Models\Activity::deleting(fn () => throw new \LogicException('Rekam jejak aktivitas tidak dapat dihapus.'));
+
         // Ganti akun sementara: anything recorded while an admin uses another account says who really did it.
         \Spatie\Activitylog\Models\Activity::creating(function (\Spatie\Activitylog\Models\Activity $activity) {
+            // The role a staff member was working in when they did it (rekam jejak aktivitas).
+            $causer = $activity->causer;
+            if ($causer instanceof \App\Models\User && ! collect($activity->properties)->has('peran_aktif')
+                && ($role = \App\Support\ActiveRoles::actingRoleOf($causer))) {
+                $activity->properties = collect($activity->properties)->put('peran_aktif', $role);
+            }
+
             if ($activity->log_name !== 'impersonation' && ($session = \App\Support\Impersonation::current())) {
                 $activity->properties = collect($activity->properties)->put('impersonated_by', [
                     'admin_id' => $session['admin']?->getKey(),

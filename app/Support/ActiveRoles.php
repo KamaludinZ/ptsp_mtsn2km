@@ -120,6 +120,7 @@ class ActiveRoles
         $request = request();
         $ownSession = $request->hasSession() && $request->user()?->is($user);
         $from = $ownSession ? self::resolve($user, $request->session()->get(self::SESSION_KEY)) : self::current($user);
+        $choosingAfterSignIn = $ownSession && (bool) $request->session()->get(self::PICK_FLAG);
 
         $user->forceFill([
             'active_role_id' => Role::findByName($role, 'web')->getKey(),
@@ -134,7 +135,38 @@ class ActiveRoles
             $request->attributes->set(self::REQUEST_ATTRIBUTE, $role);
         }
 
+        if ($from !== $role || $choosingAfterSignIn) {
+            self::record($user, $from, $role, $choosingAfterSignIn ? 'chosen' : 'switched');
+        }
+
         return ['from' => $from, 'to' => $role];
+    }
+
+    /**
+     * Rekam jejak perpindahan peran (activity_log "role", tidak dapat diubah):
+     * siapa, dari peran apa ke peran apa, kapan, dan dari mana.
+     */
+    private static function record(User $user, ?string $from, string $to, string $event): void
+    {
+        $request = request();
+
+        activity('role')
+            ->causedBy($user)
+            ->performedOn($user)
+            ->event($event)
+            ->withProperties(array_filter([
+                'dari' => $from,
+                'ke' => $to,
+                'dari_label' => $from ? RoleAccess::roleLabel($from) : null,
+                'ke_label' => RoleAccess::roleLabel($to),
+                'sumber' => $request->is('api/*') ? 'api' : 'web',
+                'halaman' => $request->is('api/*') ? null : (parse_url((string) $request->headers->get('referer'), PHP_URL_PATH) ?: $request->path()),
+                'ip' => $request->ip(),
+                'perangkat' => mb_substr((string) $request->userAgent(), 0, 200) ?: null,
+            ], fn ($v) => $v !== null))
+            ->log($event === 'chosen'
+                ? 'Memilih peran ' . RoleAccess::roleLabel($to) . ' saat masuk'
+                : 'Berpindah peran ' . ($from ? RoleAccess::roleLabel($from) . ' → ' : '') . RoleAccess::roleLabel($to));
     }
 
     /**

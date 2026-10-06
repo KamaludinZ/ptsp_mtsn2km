@@ -111,14 +111,14 @@ class Impersonation
      *
      * @param  string  $reason  ImpersonationSession::END_REASONS key
      */
-    public static function end(string $reason = 'selesai'): ?array
+    public static function end(string $reason = 'selesai', ?string $note = null): ?array
     {
         $current = self::current();
         if (! $current) {
             return null;
         }
 
-        self::closeLog($current['log_id'], $reason);
+        self::closeLog($current['log_id'], $reason, $note);
         session()->forget([self::SESSION_KEY, ActiveRoles::SESSION_KEY, ActiveRoles::PICK_FLAG]);
 
         $admin = $current['admin'];
@@ -155,17 +155,17 @@ class Impersonation
     }
 
     /** Log an ended session that never came back through end() (e.g. signing out). */
-    public static function closeLog(?int $logId, string $reason): void
+    public static function closeLog(?int $logId, string $reason, ?string $note = null): void
     {
         $log = $logId ? ImpersonationSession::find($logId) : null;
         if ($log?->isOpen()) {
             $log->update(['ended_at' => now(), 'end_reason' => $reason]);
-            self::record($log, 'ended', 'Mengakhiri ganti akun ' . $log->target_name . ' (' . (ImpersonationSession::END_REASONS[$reason] ?? $reason) . ')');
+            self::record($log, 'ended', 'Mengakhiri ganti akun ' . $log->target_name . ' (' . (ImpersonationSession::END_REASONS[$reason] ?? $reason) . ')', $note);
         }
     }
 
     /** Rekam jejak di activity_log (log "impersonation"): pelaku administrator, subjek akun yang dipakai. */
-    private static function record(ImpersonationSession $log, string $event, string $description): void
+    private static function record(ImpersonationSession $log, string $event, string $description, ?string $note = null): void
     {
         activity('impersonation')
             ->causedBy($log->admin_id ? User::find($log->admin_id) : null)
@@ -179,7 +179,11 @@ class Impersonation
                 'alasan' => $event === 'started' ? $log->reason : null,
                 'cara_berakhir' => $log->end_reason,
                 'durasi_menit' => $log->ended_at ? (int) $log->started_at->diffInMinutes($log->ended_at) : null,
+                'mulai' => $log->started_at?->toIso8601String(),
+                'selesai' => $log->ended_at?->toIso8601String(),
+                'keterangan' => $note,
                 'ip' => request()->ip(),
+                'perangkat' => mb_substr((string) request()->userAgent(), 0, 200) ?: null,
             ], fn ($v) => $v !== null))
             ->log($description);
     }
