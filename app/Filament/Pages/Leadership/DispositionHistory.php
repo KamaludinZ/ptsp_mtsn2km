@@ -76,6 +76,10 @@ class DispositionHistory extends Page implements HasTable
                         : null),
                 Tables\Columns\TextColumn::make('ticket.service.name')->label('Layanan')->wrap()->placeholder('–'),
                 Tables\Columns\TextColumn::make('performer.name')->label('Pejabat')->searchable()->placeholder('Sistem'),
+                // The role the decision was taken in (active role); empty for decisions made before it was recorded.
+                Tables\Columns\TextColumn::make('acting_role')->label('Sebagai')
+                    ->formatStateUsing(fn (?string $state) => $state ? RoleAccess::roleLabel($state) : null)
+                    ->placeholder('–'),
                 Tables\Columns\TextColumn::make('action')->label('Keputusan')->badge()
                     ->formatStateUsing(fn (string $state) => $state === 'approved' ? 'Didisposisi' : 'Ditolak')
                     ->color(fn (string $state) => $state === 'approved' ? 'success' : 'danger'),
@@ -89,6 +93,9 @@ class DispositionHistory extends Page implements HasTable
                     ->options(['approved' => 'Didisposisi', 'rejected' => 'Ditolak']),
                 Tables\Filters\SelectFilter::make('performed_by')->label('Pejabat')
                     ->options(fn () => User::role(RoleAccess::LEADERSHIP)->orderBy('name')->pluck('name', 'id')),
+                Tables\Filters\SelectFilter::make('acting_role')->label('Sebagai peran')
+                    ->options(fn () => TicketLog::query()->whereIn('action', ['approved', 'rejected'])->whereNotNull('acting_role')
+                        ->distinct()->pluck('acting_role')->mapWithKeys(fn (string $role) => [$role => RoleAccess::roleLabel($role)])->sort()->all()),
                 Tables\Filters\SelectFilter::make('signature')->label('Model tanda tangan')
                     ->options(array_combine(ServiceDisposition::SIGNATURE_TYPES, array_map(
                         fn (string $type) => ServiceDisposition::signatureTypeLabel($type),

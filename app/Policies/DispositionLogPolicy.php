@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\DispositionLog;
 use App\Models\User;
+use App\Support\ActiveRoles;
 
 /**
  * Riwayat disposisi: staff who may see the ticket may read its
@@ -25,8 +26,10 @@ class DispositionLogPolicy
     /** Upload the TTD scan / TTE file later, for a disposition signed that way. */
     public function uploadSignature(User $user, DispositionLog $disposition): bool
     {
+        // The deciding leader in the role they disposed in, or an administrator working as one.
         return (bool) $disposition->signature_model?->needsFile()
-            && ($disposition->actor_id === $user->id || $user->hasRole('admin'));
+            && (($disposition->actor_id === $user->id && ($disposition->role === null || ActiveRoles::inContext($user) === $disposition->role))
+                || ActiveRoles::hasRole($user, 'admin'));
     }
 
     public function update(User $user, DispositionLog $disposition): bool

@@ -55,6 +55,16 @@ class ActiveRoleController extends Controller
             'aktif' => $active ? $this->present($active) : null,
             'perlu_memilih' => ActiveRoles::needsChoice($user),
             'peran' => $roles->map(fn (array $role) => $this->present($role))->values(),
+            // What the active role may do now (TicketPolicy follows the active role).
+            'wewenang' => [
+                'disposisi' => ActiveRoles::actsAsLeader($user),
+                'proses_tiket' => ActiveRoles::can($user, 'backoffice.access'),
+                'serah_terima' => ActiveRoles::can($user, 'frontdesk.access'),
+                'pengawasan' => ActiveRoles::can($user, 'supervision.access'),
+            ],
+            'izin' => $active
+                ? \Spatie\Permission\Models\Role::findByName($active['name'], 'web')->permissions->pluck('name')->sort()->values()
+                : [],
         ];
     }
 

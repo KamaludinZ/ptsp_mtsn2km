@@ -26,7 +26,7 @@
                         <td style="padding: 0.5rem 0.75rem;">
                             <span class="font-semibold text-gray-950 dark:text-white">{{ $entry['actor'] }}</span>
                             @if ($entry['role'])
-                                <span class="block text-xs text-gray-500 dark:text-gray-400">{{ $entry['role'] }}</span>
+                                <span class="block text-xs text-gray-500 dark:text-gray-400">sebagai {{ $entry['role'] }}</span>
                             @endif
                         </td>
                         <td style="padding: 0.5rem 0.75rem;">

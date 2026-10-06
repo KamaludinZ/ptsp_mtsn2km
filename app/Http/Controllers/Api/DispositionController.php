@@ -27,7 +27,12 @@ class DispositionController extends Controller
     {
         $tickets = Ticket::approvableBy($request->user());
 
+        $active = \App\Support\ActiveRoles::inContext($request->user());
+
         return response()->json([
+            // The queue follows the active role; an empty queue may just mean another role is active.
+            'peran_aktif' => $active,
+            'memutuskan_sebagai_pimpinan' => \App\Support\ActiveRoles::actsAsLeader($request->user()),
             'total' => $tickets->count(),
             'data' => $tickets->map(fn (Ticket $ticket) => [
                 'nomor_tiket' => $ticket->ticket_number,
@@ -52,7 +57,8 @@ class DispositionController extends Controller
      */
     public function decide(Request $request, Ticket $ticket): JsonResponse
     {
-        abort_unless($request->user()->can('approve', $ticket), 403);
+        // 403 with the reason, e.g. which role to make active.
+        \Illuminate\Support\Facades\Gate::forUser($request->user())->authorize('approve', $ticket);
 
         $data = $request->validate([
             'keputusan' => ['required', Rule::in(['disposisi', 'tolak'])],

@@ -405,10 +405,10 @@ class TicketService
             'ticket_id' => $ticket->id,
             'ticket_log_id' => $entry->id,
             'actor_id' => $leader->id,
-            // The role the leader acted in (active role), else the leadership role they hold.
-            'role' => ActiveRoles::hasRole($leader, RoleAccess::LEADERSHIP)
-                ? ActiveRoles::inContext($leader)
-                : $leader->getRoleNames()->first(fn (string $role) => in_array($role, RoleAccess::LEADERSHIP, true)),
+            // The role the decision was taken in (active role); a leader named on the
+            // service may decide from any role, and that role is what gets recorded.
+            'role' => ActiveRoles::actingRoleOf($leader)
+                ?? $leader->getRoleNames()->first(fn (string $role) => in_array($role, RoleAccess::LEADERSHIP, true)),
             'action' => $approve ? 'disposisi' : 'reject',
             'signature_model' => $approve ? ($metadata['signature_model'] ?? (array_search($signatureType, ServiceDisposition::SIGNATURE_TYPES, true) ?: null)) : null,
             'signature_file_id' => $signedSheet?->id,

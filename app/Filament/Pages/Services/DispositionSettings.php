@@ -42,7 +42,10 @@ class DispositionSettings extends Page implements HasTable
 
     public static function canAccess(): bool
     {
-        return (bool) auth()->user()?->hasRole('admin');
+        // Administrators, while working in the admin role.
+        $user = auth()->user();
+
+        return $user !== null && \App\Support\ActiveRoles::hasRole($user, 'admin');
     }
 
     public function getSubheading(): ?string

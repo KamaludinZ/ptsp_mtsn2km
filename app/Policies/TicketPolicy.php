@@ -72,9 +72,18 @@ class TicketPolicy
      * Disposing / rejecting a ticket: only while the active role is one of
      * the service's disposing roles, not merely because the user holds it.
      */
-    public function approve(User $user, Ticket $ticket): bool
+    public function approve(User $user, Ticket $ticket): Response
     {
-        return app(DispositionAuthority::class)->canDisposeInActiveRole($user, $ticket);
+        $authority = app(DispositionAuthority::class);
+
+        if ($authority->canDisposeInActiveRole($user, $ticket)) {
+            return Response::allow();
+        }
+
+        // A leader of this ticket working in another role is told which role to activate.
+        return $authority->canDispose($user, $ticket)
+            ? Response::deny(\App\Exceptions\OutsideActiveRoleException::for($user, 'memutuskan permohonan ini', $authority->roles($ticket->service))->getMessage())
+            : Response::deny('Anda tidak berwenang memutuskan permohonan ini.');
     }
 
     /**

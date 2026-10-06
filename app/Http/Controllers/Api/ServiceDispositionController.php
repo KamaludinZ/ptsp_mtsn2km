@@ -33,7 +33,7 @@ class ServiceDispositionController extends Controller
     /** PUT /api/pengaturan-disposisi/{service:slug} (admin) */
     public function update(Request $request, Service $service): JsonResponse
     {
-        abort_unless($request->user()->hasRole('admin'), 403);
+        abort_unless(\App\Support\ActiveRoles::hasRole($request->user(), 'admin'), 403, 'Pengaturan disposisi diubah dari peran aktif Administrator.');
 
         $data = $request->validate([
             'mode' => ['required', Rule::in(array_keys(ServiceDisposition::MODES))],
