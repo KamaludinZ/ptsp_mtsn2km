@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Services\DispositionAuthority;
+use App\Support\ActiveRoles;
 use Illuminate\Auth\Access\Response;
 
 class TicketPolicy
@@ -42,10 +43,10 @@ class TicketPolicy
     /**
      * Determine whether the user can update the model.
      */
-    /** Working a ticket: back office officers (and admins). */
+    /** Working a ticket: back office officers (and admins), in that active role. */
     public function update(User $user, Ticket $ticket): bool
     {
-        return $user->can('backoffice.access');
+        return ActiveRoles::can($user, 'backoffice.access');
     }
 
     /**
@@ -64,15 +65,16 @@ class TicketPolicy
     /** Handing a finished product over at the counter (Modul 9). */
     public function handOver(User $user, Ticket $ticket): bool
     {
-        return $user->can('frontdesk.access');
+        return ActiveRoles::can($user, 'frontdesk.access');
     }
 
     /**
-     * Determine whether the user can approve the model.
+     * Disposing / rejecting a ticket: only while the active role is one of
+     * the service's disposing roles, not merely because the user holds it.
      */
     public function approve(User $user, Ticket $ticket): bool
     {
-        return app(DispositionAuthority::class)->canDispose($user, $ticket);
+        return app(DispositionAuthority::class)->canDisposeInActiveRole($user, $ticket);
     }
 
     /**

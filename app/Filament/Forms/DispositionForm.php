@@ -4,7 +4,9 @@ namespace App\Filament\Forms;
 
 use App\Models\Ticket;
 use App\Services\TicketService;
+use App\Support\ActiveRoles;
 use App\Support\Persuratan;
+use App\Support\RoleAccess;
 use App\Support\ServiceDisposition;
 use App\Support\TicketDocuments;
 use Filament\Forms\Components\CheckboxList;
@@ -29,6 +31,14 @@ class DispositionForm
         $service = $ticket->service;
 
         return [
+            // Pimpinan memutuskan atas nama peran aktifnya (dicatat pada riwayat disposisi).
+            Placeholder::make('acting_role')
+                ->label('Didisposisi sebagai')
+                ->content(fn () => new HtmlString(sprintf(
+                    '<span data-acting-role="%s" class="text-sm font-semibold text-primary-600 dark:text-primary-400">%s</span> <span class="text-xs text-gray-500 dark:text-gray-400">· peran aktif</span>',
+                    e((string) self::actingRole()),
+                    e(self::actingRole() ? RoleAccess::roleLabel(self::actingRole()) : 'Belum memilih peran'),
+                ))),
             CheckboxList::make('recipients')
                 ->label('Diteruskan kepada')
                 ->options(ServiceDisposition::RECIPIENTS)
@@ -57,7 +67,7 @@ class DispositionForm
                 ->label('Telah didisposisi oleh')
                 ->placeholder('mis. Kepala Madrasah — Drs. H. Ahmad')
                 ->helperText('Pimpinan yang mendisposisi bila dicatat atas namanya. Keterangan tambahan tulis di Catatan.')
-                ->default(fn () => auth()->user()?->name)
+                ->default(fn () => trim((self::actingRole() ? RoleAccess::roleLabel(self::actingRole()) . ' — ' : '') . auth()->user()?->name, ' —'))
                 ->maxLength(255)
                 ->required(fn (Get $get) => $get('signature_model') === 'acknowledged_by')
                 ->visible(fn (Get $get) => $get('signature_model') === 'acknowledged_by'),
@@ -80,6 +90,12 @@ class DispositionForm
                 ->visible(fn (Get $get) => in_array($get('signature_model'), ['ttd_upload', 'tte_upload'], true)),
             Textarea::make('notes')->label('Catatan (opsional)')->maxLength(500)->rows(3),
         ];
+    }
+
+    /** Peran aktif pimpinan yang mengisi form ini. */
+    private static function actingRole(): ?string
+    {
+        return ActiveRoles::inContext(auth()->user());
     }
 
     /** Record the disposition from the submitted panel. */

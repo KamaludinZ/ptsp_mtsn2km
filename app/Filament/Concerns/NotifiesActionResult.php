@@ -15,6 +15,10 @@ trait NotifiesActionResult
     {
         try {
             $callback();
+        } catch (\App\Exceptions\OutsideActiveRoleException $e) {
+            \App\Support\ActiveRoleToast::outsideRole($e);
+
+            return false;
         } catch (TicketActionException $e) {
             Notification::make()->title('Tidak dapat diproses')->body($e->getMessage())->danger()->send();
 

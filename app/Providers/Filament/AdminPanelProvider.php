@@ -12,10 +12,12 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -66,6 +68,11 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Manajemen Pengumuman')->collapsed(),
                 NavigationGroup::make('Manajemen Sistem')->collapsed(),
             ])
+            // Penanda peran aktif + ganti peran cepat di header (Fase 1; masih data tiruan).
+            // Render hooks are global once registered, so it checks it is in /cp itself.
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => \Filament\Facades\Filament::getCurrentPanel()?->getId() === 'admin' && auth()->user()?->isStaff()
+                ? Blade::render('@livewire(\App\Livewire\ActiveRoleSwitcher::class)')
+                : '')
             ->unsavedChangesAlerts() // warn before leaving a form with unsaved changes
             ->databaseNotifications()
             ->databaseNotificationsPolling('60s')
@@ -86,6 +93,8 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 // Filament's Authenticate + wrong panel -> own panel instead of a 403.
                 \App\Http\Middleware\RedirectToOwnPanel::class,
-            ]);
+            ])
+            // Konteks peran aktif, juga untuk aksi Livewire (izin aksi mengikuti peran aktif).
+            ->authMiddleware([\App\Http\Middleware\SetActiveRoleContext::class], isPersistent: true);
     }
 }

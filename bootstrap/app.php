@@ -38,6 +38,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             // Per-route permission check that works for the API (sanctum) too: izin:backoffice.access|peran:admin
             'izin' => \App\Http\Middleware\RequirePermission::class,
+            // Konteks peran aktif petugas (ActiveRoles::inContext) di luar panel /cp
+            'peran.aktif' => \App\Http\Middleware\SetActiveRoleContext::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

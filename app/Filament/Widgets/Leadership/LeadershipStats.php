@@ -5,7 +5,6 @@ namespace App\Filament\Widgets\Leadership;
 use App\Filament\Pages\Leadership\Approvals;
 use App\Filament\Pages\Reports\Performance;
 use App\Models\Ticket;
-use App\Support\RoleAccess;
 use App\Support\ServiceMetrics;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -20,7 +19,8 @@ class LeadershipStats extends StatsOverviewWidget
 
     public static function canView(): bool
     {
-        return (bool) auth()->user()?->hasAnyRole(array_diff(RoleAccess::LEADERSHIP, ['admin']));
+        // Leaders (not admin) while a leadership role is their active role.
+        return \App\Support\ActiveRoles::actsAsLeader(auth()->user(), includeAdmin: false);
     }
 
     protected function getStats(): array

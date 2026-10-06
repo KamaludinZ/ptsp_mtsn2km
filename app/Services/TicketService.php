@@ -10,6 +10,7 @@ use App\Models\TicketFile;
 use App\Models\TicketLog;
 use App\Models\TicketOutput;
 use App\Models\User;
+use App\Support\ActiveRoles;
 use App\Support\Persuratan;
 use App\Support\RoleAccess;
 use App\Support\ServiceDisposition;
@@ -363,7 +364,11 @@ class TicketService
     public function decide(Ticket $ticket, bool $approve, User $leader, ?string $signatureType = null, ?string $notes = null, array $metadata = [], ?TicketFile $signedSheet = null): DispositionLog
     {
         if (! $leader->can('approve', $ticket)) {
-            throw new TicketActionException('Anda tidak berwenang memutuskan permohonan ini.');
+            // A leader of this ticket working in another of their roles is told which one to switch to.
+            $authority = app(\App\Services\DispositionAuthority::class);
+            throw $authority->canDispose($leader, $ticket)
+                ? \App\Exceptions\OutsideActiveRoleException::for($leader, 'memutuskan permohonan ini', $authority->roles($ticket->service))
+                : new TicketActionException('Anda tidak berwenang memutuskan permohonan ini.');
         }
 
         if (! Ticket::whereKey($ticket->id)->awaitingApproval()->exists()) {
@@ -400,7 +405,10 @@ class TicketService
             'ticket_id' => $ticket->id,
             'ticket_log_id' => $entry->id,
             'actor_id' => $leader->id,
-            'role' => $leader->getRoleNames()->first(fn (string $role) => in_array($role, RoleAccess::LEADERSHIP, true)),
+            // The role the leader acted in (active role), else the leadership role they hold.
+            'role' => ActiveRoles::hasRole($leader, RoleAccess::LEADERSHIP)
+                ? ActiveRoles::inContext($leader)
+                : $leader->getRoleNames()->first(fn (string $role) => in_array($role, RoleAccess::LEADERSHIP, true)),
             'action' => $approve ? 'disposisi' : 'reject',
             'signature_model' => $approve ? ($metadata['signature_model'] ?? (array_search($signatureType, ServiceDisposition::SIGNATURE_TYPES, true) ?: null)) : null,
             'signature_file_id' => $signedSheet?->id,

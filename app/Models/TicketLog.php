@@ -20,6 +20,12 @@ class TicketLog extends Model
 
     protected static function booted(): void
     {
+        // Peran aktif petugas saat mengambil aksi ini (bukan semua peran yang ia pegang).
+        static::creating(function (TicketLog $log) {
+            if ($log->acting_role === null && $log->performed_by) {
+                $log->acting_role = \App\Support\ActiveRoles::actingRoleOf(User::find($log->performed_by));
+            }
+        });
         static::updating(fn () => throw new LogicException('Riwayat layanan tidak dapat diubah.'));
         static::deleting(fn () => throw new LogicException('Riwayat layanan tidak dapat dihapus.'));
     }
@@ -28,6 +34,7 @@ class TicketLog extends Model
         'ticket_id',
         'action',
         'performed_by',
+        'acting_role',
         'from_status',
         'to_status',
         'notes',

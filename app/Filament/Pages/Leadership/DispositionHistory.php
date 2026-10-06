@@ -5,6 +5,7 @@ namespace App\Filament\Pages\Leadership;
 use App\Filament\Resources\TicketResource;
 use App\Models\TicketLog;
 use App\Models\User;
+use App\Support\ActiveRoles;
 use App\Support\RoleAccess;
 use App\Support\ServiceDisposition;
 use Filament\Forms;
@@ -42,9 +43,17 @@ class DispositionHistory extends Page implements HasTable
         return (bool) $user && ($user->hasAnyRole(RoleAccess::LEADERSHIP) || $user->can('supervision.access'));
     }
 
+    /** In the menu for the active role: a leadership role, or one that supervises. */
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+
+        return $user && (ActiveRoles::actsAsLeader($user) || ActiveRoles::can($user, 'supervision.access'));
+    }
+
     public static function getNavigationGroup(): ?string
     {
-        return auth()->user()?->hasAnyRole(RoleAccess::LEADERSHIP) ? 'Pimpinan' : 'Pengawasan';
+        return ActiveRoles::actsAsLeader(auth()->user()) ? 'Pimpinan' : 'Pengawasan';
     }
 
     public function getSubheading(): ?string

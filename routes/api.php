@@ -244,6 +244,12 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'izin:peran:admin'])->prefix(
     Route::post('/{faq}/{direction}', [\App\Http\Controllers\Api\FaqController::class, 'move'])->whereNumber('faq')->whereIn('direction', ['naik', 'turun'])->name('pindah');
 });
 
+// Peran aktif of the signed-in staff member: the roles they hold and the one in use.
+Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('peran-aktif')->name('api.peran-aktif.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\ActiveRoleController::class, 'index'])->name('index');
+    Route::put('/', [\App\Http\Controllers\Api\ActiveRoleController::class, 'update'])->name('update');
+});
+
 // Preferensi tampilan of the signed-in user (any account).
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('preferensi-tampilan')->name('api.preferensi-tampilan.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\DisplayPreferenceController::class, 'show'])->name('show');

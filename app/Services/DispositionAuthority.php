@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Support\ActiveRoles;
 use App\Support\RoleAccess;
 use App\Support\ServiceDisposition;
 use Illuminate\Support\Collection;
@@ -44,6 +45,28 @@ class DispositionAuthority
         }
 
         return $user->hasAnyRole($this->roles($service));
+    }
+
+    /**
+     * Wewenang memutuskan saat ini: seperti canDispose(), tetapi peran hanya
+     * dihitung bila itu peran aktif user (ActiveRoles). Pimpinan yang
+     * ditunjuk per orang (approval_users) tetap berwenang di peran apa pun.
+     * canDispose() tetap menilai kepemilikan peran, mis. untuk siapa yang
+     * diberi tahu ada permohonan baru.
+     */
+    public function canDisposeInActiveRole(User $user, Ticket $ticket): bool
+    {
+        $service = $ticket->service;
+
+        if (! $ticket->approval_required || ! $service) {
+            return false;
+        }
+
+        if (in_array((string) $user->id, array_map('strval', (array) $service->approval_users), true)) {
+            return true;
+        }
+
+        return ActiveRoles::hasRole($user, $this->roles($service));
     }
 
     /** @return Collection<int, User> the leaders who may dispose this ticket */

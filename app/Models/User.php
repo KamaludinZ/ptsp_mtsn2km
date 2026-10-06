@@ -51,6 +51,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     protected $casts = [
         'email_verified_at' => 'datetime',
         'last_login_at' => 'datetime',
+        'active_role_at' => 'datetime',
         'preferences' => 'array',
         'password' => 'hashed',
         'is_active' => 'boolean',
@@ -96,6 +97,12 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     public function scopeOfType($query, $type)
     {
         return $query->where('user_type', $type);
+    }
+
+    /** Peran aktif terakhir yang dipilih di /cp (konteks kerja; peran yang dimiliki tetap di Spatie). */
+    public function activeRole()
+    {
+        return $this->belongsTo(\Spatie\Permission\Models\Role::class, 'active_role_id');
     }
 
     /**

@@ -51,6 +51,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Staff holding several roles choose the active one first; the page they
+        // were heading to stays as the intended URL for after they choose.
+        if (\App\Support\ActiveRoles::startSession($request->user(), $request->session())) {
+            return redirect()->to(\App\Filament\Pages\ChooseActiveRole::getUrl(panel: 'admin'));
+        }
+
         // Land on the dashboard that belongs to the account's role
         return redirect()->intended(get_dashboard_route_for_user($request->user()));
     }

@@ -5,7 +5,6 @@ namespace App\Filament\Widgets\Leadership;
 use App\Filament\Pages\Leadership\Approvals;
 use App\Filament\Resources\TicketResource;
 use App\Models\Ticket;
-use App\Support\RoleAccess;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -22,7 +21,8 @@ class PendingApprovals extends TableWidget
 
     public static function canView(): bool
     {
-        return (bool) auth()->user()?->hasAnyRole(array_diff(RoleAccess::LEADERSHIP, ['admin']));
+        // Leaders (not admin) while a leadership role is their active role.
+        return \App\Support\ActiveRoles::actsAsLeader(auth()->user(), includeAdmin: false);
     }
 
     public function table(Table $table): Table

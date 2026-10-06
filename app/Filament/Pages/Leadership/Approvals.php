@@ -48,6 +48,12 @@ class Approvals extends Page implements HasTable
         return (bool) auth()->user()?->hasAnyRole(RoleAccess::LEADERSHIP);
     }
 
+    /** In the menu only while a leadership role is active; the page itself stays open to switch from. */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return \App\Support\ActiveRoles::actsAsLeader(auth()->user());
+    }
+
     public static function getNavigationBadge(): ?string
     {
         $count = Ticket::approvableBy(auth()->user())->count();
@@ -92,6 +98,7 @@ class Approvals extends Page implements HasTable
                     ->icon('heroicon-m-check-badge')
                     ->color('success')
                     ->modalHeading(fn (Ticket $record) => 'Disposisi · ' . $record->ticket_number)
+                    ->modalDescription(fn () => self::decidingAs())
                     ->form(fn (Ticket $record) => DispositionForm::schema($record))
                     ->action(fn (Ticket $record, array $data) => self::attempt(
                         fn () => DispositionForm::submit($record, $data),
@@ -101,6 +108,7 @@ class Approvals extends Page implements HasTable
                     ->label('Tolak')
                     ->icon('heroicon-m-x-circle')
                     ->color('danger')
+                    ->modalDescription(fn () => self::decidingAs())
                     ->form([
                         Textarea::make('notes')->label('Alasan penolakan')->required()->maxLength(500)->rows(3),
                     ])
@@ -113,6 +121,20 @@ class Approvals extends Page implements HasTable
             ->emptyStateHeading('Tidak ada disposisi yang menunggu')
             ->emptyStateDescription('Permohonan muncul di sini setelah berkasnya diverifikasi petugas TU.')
             ->emptyStateIcon('heroicon-o-check-circle');
+    }
+
+    /** "Diputuskan sebagai Kepala Tata Usaha" in the decision dialogs. */
+    public static function decidingAs(): ?string
+    {
+        $role = \App\Support\ActiveRoles::inContext(auth()->user());
+
+        return $role ? 'Diputuskan sebagai ' . RoleAccess::roleLabel($role) . '.' : null;
+    }
+
+    /** Petugas multi-peran: atas nama peran apa ia memutuskan. */
+    protected function getHeaderWidgets(): array
+    {
+        return [\App\Filament\Widgets\Leadership\ActiveRoleDecisionPanel::class];
     }
 
     protected function getFooterWidgets(): array

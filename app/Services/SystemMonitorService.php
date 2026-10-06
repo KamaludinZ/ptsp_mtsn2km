@@ -57,9 +57,15 @@ class SystemMonitorService
             if (! is_dir($git)) {
                 return 'tidak diketahui';
             }
-            $describe = @shell_exec('git -C ' . escapeshellarg(base_path()) . ' describe --tags --always 2>/dev/null');
+            // No shell (and no "2>/dev/null"), so it works the same on Windows and Linux.
+            try {
+                $result = \Illuminate\Support\Facades\Process::path(base_path())->timeout(10)
+                    ->run(['git', 'describe', '--tags', '--always']);
+            } catch (\Throwable) {
+                return 'tidak diketahui';
+            }
 
-            return trim((string) $describe) ?: 'tidak diketahui';
+            return ($result->successful() ? trim($result->output()) : '') ?: 'tidak diketahui';
         });
     }
 

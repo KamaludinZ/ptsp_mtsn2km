@@ -41,7 +41,7 @@ class QuickActions extends Widget
         $candidates = [
             [RegisterService::canAccess(), 'Registrasi Layanan', 'Daftarkan permohonan di loket', 'heroicon-o-document-plus', fn () => RegisterService::getUrl()],
             [VisitorResource::canCreate(), 'Catat Tamu', 'Isi buku tamu pengunjung', 'heroicon-o-user-plus', fn () => VisitorResource::getUrl('create')],
-            [Approvals::canAccess(), 'Disposisi', 'Permohonan menunggu keputusan', 'heroicon-o-clipboard-document-check', fn () => Approvals::getUrl()],
+            [Approvals::canAccess() && Approvals::shouldRegisterNavigation(), 'Disposisi', 'Permohonan menunggu keputusan', 'heroicon-o-clipboard-document-check', fn () => Approvals::getUrl()],
             [TicketResource::canViewAny(), 'Permohonan', 'Daftar & proses permohonan', 'heroicon-o-ticket', fn () => TicketResource::getUrl('index')],
             [ComplaintResource::canViewAny(), 'Pengaduan', 'Tindak lanjut pengaduan & WBS', 'heroicon-o-megaphone', fn () => ComplaintResource::getUrl('index')],
             [Performance::canAccess(), 'Kinerja Pelayanan', 'Laporan & rekap layanan', 'heroicon-o-chart-pie', fn () => Performance::getUrl()],

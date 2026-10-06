@@ -12,6 +12,7 @@ use App\Services\TicketService;
 use App\Support\IncomingCategory;
 use App\Support\TicketDocuments;
 use App\Support\TicketLabels;
+use App\Support\TicketRoleActionStub;
 use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -76,6 +77,26 @@ class ViewTicket extends ViewRecord
         return (bool) auth()->user()?->can('update', $this->getRecord());
     }
 
+    /**
+     * Aksi yang tidak berwenang di peran aktif, tetapi bisa diambil lewat
+     * peran lain yang dipegang: tombolnya tetap tampil (nonaktif) dengan
+     * keterangan peran yang perlu diaktifkan. Null bila tidak demikian.
+     */
+    private function lockedReason(string $action): ?string
+    {
+        $row = collect(TicketRoleActionStub::for($this->getRecord(), auth()->user()))->firstWhere('key', $action);
+
+        return $row && ! $row['allowed'] && $row['switch_to']
+            ? "Butuh peran aktif {$row['switch_to']['label']}. Ganti peran lewat penanda peran di header."
+            : null;
+    }
+
+    /** Petugas multi-peran: aksi apa yang tersedia di peran aktif, dan ganti peran cepat. */
+    protected function getHeaderWidgets(): array
+    {
+        return [TicketResource\Widgets\ActiveRoleActions::class];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -97,6 +118,14 @@ class ViewTicket extends ViewRecord
                 ->button()
                 ->color('gray')
                 ->visible(fn () => $this->canWork()),
+            // The same button, locked, for a role the user holds but has not made active.
+            Actions\Action::make('processLocked')
+                ->label('Proses tiket')
+                ->icon('heroicon-m-lock-closed')
+                ->color('gray')
+                ->disabled()
+                ->tooltip(fn () => $this->lockedReason('process'))
+                ->visible(fn () => ! $this->canWork() && $this->lockedReason('process') !== null),
             Actions\Action::make('receipt')
                 ->label('Tanda terima')
                 ->icon('heroicon-m-printer')
@@ -342,10 +371,12 @@ class ViewTicket extends ViewRecord
 
     private function awaitingMyDecision(): bool
     {
-        $ticket = $this->getRecord();
+        return (bool) auth()->user()?->can('approve', $this->getRecord()) && $this->awaitingDecision();
+    }
 
-        return (bool) auth()->user()?->can('approve', $ticket)
-            && Ticket::whereKey($ticket->id)->awaitingApproval()->exists();
+    private function awaitingDecision(): bool
+    {
+        return Ticket::whereKey($this->getRecord()->id)->awaitingApproval()->exists();
     }
 
     private function approveAction(): Actions\Action
@@ -356,6 +387,7 @@ class ViewTicket extends ViewRecord
             ->color('success')
             ->visible(fn () => $this->awaitingMyDecision())
             ->modalHeading('Disposisi permohonan')
+            ->modalDescription(fn () => Approvals::decidingAs())
             ->form(fn () => DispositionForm::schema($this->getRecord()))
             ->action(function (array $data) {
                 $done = self::attempt(fn () => DispositionForm::submit($this->getRecord(), $data), 'Permohonan telah didisposisi. Petugas dapat menyiapkan produk layanan.');
@@ -375,6 +407,7 @@ class ViewTicket extends ViewRecord
             ->icon('heroicon-m-x-circle')
             ->color('danger')
             ->visible(fn () => $this->awaitingMyDecision())
+            ->modalDescription(fn () => Approvals::decidingAs())
             ->form([
                 Textarea::make('notes')->label('Alasan penolakan')->required()->maxLength(500)->rows(3),
             ])
@@ -390,9 +423,11 @@ class ViewTicket extends ViewRecord
             ->label('Serahkan ke pemohon')
             ->icon('heroicon-m-hand-raised')
             ->color('success')
-            ->visible(fn () => auth()->user()?->can('handOver', $this->getRecord())
+            ->visible(fn () => (auth()->user()?->can('handOver', $this->getRecord()) || $this->lockedReason('handOver') !== null)
                 && $this->getRecord()->status === 'completed'
                 && $this->getRecord()->ready_for_pickup)
+            ->disabled(fn () => ! auth()->user()?->can('handOver', $this->getRecord()))
+            ->tooltip(fn () => auth()->user()?->can('handOver', $this->getRecord()) ? null : $this->lockedReason('handOver'))
             ->requiresConfirmation()
             ->modalDescription('Pastikan produk layanan sudah diterima pemohon.')
             ->action(function () {

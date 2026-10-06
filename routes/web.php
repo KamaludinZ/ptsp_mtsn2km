@@ -152,6 +152,9 @@ Route::middleware('auth')->get('/surat-keluar/{suratKeluar}/lampiran/{index}', f
         : $disk->response($path, $suratKeluar->attachmentName($path));
 })->can('view', 'suratKeluar')->whereNumber('index')->name('surat-keluar.lampiran');
 
+// Ganti peran cepat from the /cp header: switch the active role, back to the same page (staff only)
+Route::middleware(['auth', 'throttle:30,1'])->post('/peran-aktif/ganti', \App\Http\Controllers\ActiveRoleSwitchController::class)->name('peran-aktif.ganti');
+
 // Images inserted into TinyMCE rich text fields (staff only)
 Route::middleware(['auth', 'throttle:30,1'])->post('/editor/unggah-gambar', \App\Http\Controllers\EditorUploadController::class)->name('editor.upload');
 
