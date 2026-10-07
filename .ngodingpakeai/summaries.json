@@ -66,10 +66,10 @@
     "summary": "Stack produksi Docker Compose (dipakai Coolify): service app (env aplikasi, PostgreSQL, sesi aman yang bisa diatur, TINYMCE_API_KEY, fallback email/WhatsApp, volume storage, healthcheck), postgres 16 (volume, healthcheck), dan service backup opsional (profil backup: pg_dump harian dan arsip storage dengan masa simpan); rotasi log dan graceful stop."
   },
   "docker/db-check.php": {
-    "summary": "Script PHP untuk memeriksa koneksi database PostgreSQL sebelum aplikasi dimulai di container Docker, digunakan oleh entrypoint.sh sebagai health check."
+    "summary": "Helper container untuk entrypoint: target mencetak tujuan koneksi database tanpa password, ready keluar 0 bila database menerima koneksi (libpq PGCONNECT_TIMEOUT 5 detik agar host salah tidak menggantung), empty keluar 0 bila belum ada user (deploy pertama). Memakai konfigurasi database aplikasi sehingga DATABASE_URL maupun DB_* berlaku."
   },
   "docker/entrypoint.sh": {
-    "summary": "Shell script entrypoint Docker: menunggu database siap, menjalankan php artisan migrate --force, php artisan db:seed (jika fresh), php artisan optimize, lalu memulai Supervisor (Nginx + PHP-FPM)."
+    "summary": "Entrypoint container produksi: wajib APP_KEY, siapkan folder storage di volume, tunggu database dengan menampilkan tujuan koneksi tanpa password dan alasan gagal tiap sekitar 10 detik (tiap percobaan dibatasi 10 detik, berhenti setelah DB_WAIT_TIMEOUT dengan petunjuk DATABASE_URL), bersihkan cache lama, migrasi otomatis (AUTO_MIGRATE), seed hanya pada deploy pertama, storage:link, optimize, lalu jalankan supervisord."
   },
   "docker/nginx.conf": {
     "summary": "Konfigurasi Nginx untuk aplikasi Laravel PTSP di Docker: root ke public/, try_files untuk SPA routing, PHP-FPM fastcgi_pass, gzip compression, dan security headers dasar."
