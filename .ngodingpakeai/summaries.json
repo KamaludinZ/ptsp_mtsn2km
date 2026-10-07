@@ -978,7 +978,7 @@
     "summary": "Tes registrasi: form valid membuat user, redirect ke verifikasi email, validasi field duplikat."
   },
   "tests/Feature/AdminDashboardWidgetsTest.php": {
-    "summary": "Tes widget dashboard admin: assert semua widget StatsOverview render tanpa error untuk user admin."
+    "summary": "Tes widget dashboard admin: semua widget StatsOverview render tanpa error untuk admin, termasuk skenario pengguna multi-peran yang melihat panel keputusan peran aktif."
   },
   "tests/Feature/DashboardNavigationTest.php": {
     "summary": "Tes navigasi dashboard: staf redirect ke /cp, pemohon ke /portal, tamu ke login."
@@ -1176,10 +1176,10 @@
     "summary": "Resource Filament Pengumuman (tabel pengumumen): form judul, isi dengan TinyEditor lengkap dan pratinjau langsung, kategori, lampiran, tanggal tayang/berakhir, status; tabel dengan filter, jumlah tampilan unik dan aksi status."
   },
   "app/Filament/Resources/PersuratanMasterResource/Pages/ListPersuratanMasters.php": {
-    "summary": "Halaman daftar Master Persuratan: tab per daftar (tujuan naskah, jenis surat, tembusan, klasifikasi, instruksi disposisi) dengan jumlah, subjudul tentang isian manual yang tercatat nonaktif, tombol Tambah pilihan sesuai tab aktif."
+    "summary": "Halaman daftar Master Persuratan: tab per daftar (tujuan naskah, jenis surat, tembusan, klasifikasi, instruksi disposisi) dengan jumlah, ditambah tab Penomoran Otomatis dan Variabel Tambahan yang sama-sama menampilkan jenis surat; subjudul menyesuaikan tab aktif; tombol Tambah pilihan memakai tipe daftar dari tab aktif (activeListType)."
   },
   "app/Filament/Resources/PersuratanMasterResource.php": {
-    "summary": "Resource Master Persuratan (tabel persuratan_masters): pilihan rutin surat dan disposisi per tab; back office membaca, hanya admin/kepala TU/TU yang mengubah; validasi kode klasifikasi, tolak duplikat abaikan huruf/spasi (distinct), toggle aktif, aksi massal aktif/nonaktif."
+    "summary": "Resource Master Persuratan (tabel persuratan_masters): pilihan rutin surat dan disposisi per tab; back office membaca, hanya admin/kepala TU/TU yang mengubah; validasi kode klasifikasi, tolak duplikat abaikan huruf/spasi, toggle aktif, aksi massal. Di tab Penomoran Otomatis menampilkan kolom format nomor, singkatan beserta sumbernya, dan contoh nomor serta aksi atur penomoran dan timpa singkatan; di tab Variabel Tambahan menampilkan variabel, status wajib, dan pemakaiannya di format serta aksi tambah/ubah/hapus variabel."
   },
   "app/Filament/Resources/RoleResource/Pages/ListRoles.php": {
     "summary": "Halaman daftar peran (Spatie roles) dengan tab tambahan Kode Registrasi untuk kode pendaftaran civitas."
@@ -1206,13 +1206,13 @@
     "summary": "Resource Template Berkas Layanan (admin, service_templates): fields() dipakai bersama relation manager (layanan, nama unik, petunjuk pengisian, unggah berkas privat, info versi, toggle aktif, wajib, urutan); tabel per layanan dengan petunjuk singkat, versi, toggle aktif, filter status, aksi unduh/ubah/hapus."
   },
   "app/Filament/Resources/SuratKeluarResource/Pages/ListSuratKeluar.php": {
-    "summary": "Halaman buku register surat keluar: aksi Minta Nomor Surat (1-50 nomor, tanggal, data surat opsional, berkas bila satu nomor) via SuratKeluarService::reserve; unduh Excel dan cetak PDF; widget footer Riwayat permintaan nomor agenda."
+    "summary": "Halaman buku register surat keluar: aksi Minta Nomor Surat (1-50 nomor dengan pesan validasi jelas, tanggal) dengan bagian Penomoran berisi jenis surat beserta ringkasan format/bulan/singkatan/variabel, isian variabel dinamis yang wajib bila ditentukan dan direset saat jenis berganti, klasifikasi, pratinjau nomor, data surat opsional; notifikasi hasil dengan tombol Salin nomor. Juga unduh Excel dan PDF serta widget riwayat permintaan nomor."
   },
   "app/Filament/Resources/SuratKeluarResource/Pages/ViewSuratKeluar.php": {
     "summary": "Halaman detail surat keluar dengan judul nomor surat dan aksi Lengkapi/Ubah yang menyimpan lewat SuratKeluarService::describe."
   },
   "app/Filament/Resources/SuratKeluarResource.php": {
-    "summary": "Resource Surat Keluar (surat_keluar, akses lewat SuratKeluarPolicy): nomor 1-9999 per tahun tanpa hapus; form tanggal, tujuan, perihal, jenis, klasifikasi, lampiran, berkas lampiran privat (attachmentUpload), tembusan, keterangan, pembuat; infolist detail dengan tautan lihat/unduh lampiran; tabel dengan filter tahun/jenis/klasifikasi/pembuat/tanggal/kelengkapan."
+    "summary": "Resource Surat Keluar (surat_keluar, akses lewat SuratKeluarPolicy): nomor 1-9999 per tahun tanpa hapus; form tanggal, tujuan, perihal, jenis surat, klasifikasi, isian variabel tambahan sesuai jenis surat, lampiran, berkas privat, tembusan, keterangan; infolist detail. Tabel register dengan kolom No. Urut di kiri nomor surat (bisa dicari dan diurutkan), nomor surat diurutkan menurut tahun lalu nomor urut, kolom responsif per lebar layar, dan filter tahun/jenis/klasifikasi/pembuat/tanggal/kelengkapan."
   },
   "app/Filament/Resources/TicketResource/Pages/ListTickets.php": {
     "summary": "Halaman daftar tiket staf: satu kotak pencarian untuk nomor, pemohon, WhatsApp, layanan, petugas dan isi permohonan; tab status (TicketTabs) dengan tab default sesuai peran."
@@ -1329,7 +1329,7 @@
     "summary": "API Kelola Permohonan untuk staf: GET /api/tiket dengan tab, pencarian dan filter; pilihan filter; detail tiket; PATCH status; PUT petugas (penugasan via User::assignable dan TicketService::assign); POST hasil (unggah produk layanan, menyelesaikan tiket); POST serah-terima di loket; catatan tindak lanjut; ubah dan riwayat kategori layanan masuk."
   },
   "app/Http/Controllers/Api/SuratKeluarController.php": {
-    "summary": "API surat keluar dengan otorisasi SuratKeluarPolicy: GET /api/surat-keluar register terfilter, GET /api/surat-keluar/ekspor xlsx/pdf, POST /api/surat-keluar/nomor ambil nomor berurutan, PUT /api/surat-keluar/{id} melengkapi data surat."
+    "summary": "API surat keluar dengan otorisasi SuratKeluarPolicy: GET /api/surat-keluar register terfilter (cari termasuk nomor urut, filter nomor_urut, urutkan nomor_urut/nomor_surat/tanggal_surat naik atau turun), GET /api/surat-keluar/ekspor xlsx/pdf, GET /api/surat-keluar/nomor/form jenis surat dengan format dan definisi variabel, POST /api/surat-keluar/nomor ambil nomor berurutan dengan variabel, PUT /api/surat-keluar/{id} melengkapi data surat."
   },
   "app/Http/Controllers/Api/SurveyContentController.php": {
     "summary": "API admin isi survei: CRUD /api/survei/unsur (hapus hanya unsur tanpa pertanyaan) dan /api/survei/pertanyaan per bagian identitas/skm/spak (pertanyaan yang sudah dijawab dinonaktifkan, bukan dihapus)."
@@ -1428,13 +1428,13 @@
     "summary": "Model kunjungan unik pengumuman (pengumuman_views), satu baris per alamat IP, relasi pengumuman."
   },
   "app/Models/PersuratanMaster.php": {
-    "summary": "Model pilihan Master Persuratan (persuratan_masters): tipe tujuan_naskah/jenis_surat/tembusan/klasifikasi/instruksi_disposisi, kode, nama, aktif, urutan; scopeOfType untuk pilihan aktif, accessor value (kode untuk klasifikasi)."
+    "summary": "Model pilihan Master Persuratan (persuratan_masters): tipe tujuan_naskah/jenis_surat/tembusan/klasifikasi/instruksi_disposisi, kode, nama, aktif, urutan, serta pengaturan penomoran jenis surat (format_nomor, mode_bulan, singkatan_unit_kerja, variabel_nomor sebagai array, klasifikasi_arsip); konstanta MODE_BULAN, scopeOfType, accessor value."
   },
   "app/Models/ServiceTemplate.php": {
     "summary": "Model template berkas layanan (service_templates): berkas privat dengan mime/ukuran otomatis, versi naik saat berkas diganti, is_active (scopeActive untuk pemohon), petunjuk pengisian, wajib, urutan; downloadUrl, isAvailable, fileInfo."
   },
   "app/Models/SuratKeluar.php": {
-    "summary": "Model surat keluar (surat_keluar): data nomor, tanggal, tujuan, perihal, jenis, klasifikasi, lampiran dan berkas privat, pembuat, batch; isDraft, attachmentName; perubahan data dicatat di activity_log surat_keluar (hanya kolom yang berubah)."
+    "summary": "Model surat keluar (surat_keluar): data nomor, tanggal, tujuan, perihal, jenis, klasifikasi, nilai variabel tambahan, lampiran dan berkas privat, pembuat, batch; isDraft, attachmentName; perubahan data dicatat di activity_log surat_keluar (hanya kolom yang berubah)."
   },
   "app/Models/SuratKeluarBatch.php": {
     "summary": "Model batch pengambilan beberapa nomor surat keluar sekaligus (surat_keluar_batches) dengan pembuat dan daftar surat."
@@ -1491,7 +1491,7 @@
     "summary": "Unggah dan penyimpanan berkas template layanan: cek isi berkas (PDF/Word/Excel, batas ukuran), simpan privat di service-templates/{service}/acak.ext beserta nama, wajib, urutan dan petunjuk; replace() ganti berkas, cleanName() nama aman."
   },
   "app/Services/SuratKeluarService.php": {
-    "summary": "Penomoran surat keluar: reserve() mengambil 1-50 nomor berurutan per tahun dengan baris surat_sequences dikunci, membuat batch dan mencatat satu activity_log surat_keluar per permintaan; describe() melengkapi/mengoreksi surat; rememberManual(); nextNumber()."
+    "summary": "Penomoran surat keluar terpusat: reserve() mengambil 1-50 nomor berurutan per tahun dengan baris surat_sequences dikunci, menolak permintaan bila variabel wajib jenis surat kosong, membuat batch dan mencatat activity_log; describe() melengkapi surat dan memeriksa ulang variabel bila jenis berganti; composeNumber() satu-satunya perakit nomor dari format jenis surat ({KS}, {N}, {S}, {k}/{K} dengan klasifikasi arsip jenis sebagai cadangan, {v}/{V}, {M}, {Y}); variableProblem(), jenisSurat(), nextNumber()."
   },
   "app/Services/SurveySubmission.php": {
     "summary": "Validasi dan penyimpanan survei SKM & SPAK untuk form web bertahap dan API: identityRules, ratingRules (jawaban harus salah satu opsi), only() menyaring pertanyaan aktif, save() menyimpan untuk edisi aktif dengan skor 1..n sesuai Permenpan RB 14/2017."
@@ -1563,7 +1563,7 @@
     "summary": "Satu tempat penentu label, warna dan ikon status untuk komponen x-status-badge, halaman publik dan API."
   },
   "app/Support/SuratKeluarNumber.php": {
-    "summary": "Penyusun nomor resmi surat keluar, mis. B-12/MTsN2KM/PP.00/10/2026: urutan, kode satker dari pengaturan surat_kode_satker, klasifikasi, bulan dan tahun."
+    "summary": "Konstanta batas nomor urut tahunan surat keluar (9999) dan kunci pengaturan kode satker; kodeSatker() membaca singkatan unit kerja dari Pengaturan Aplikasi untuk token {S}. Perangkaian nomor sepenuhnya di SuratKeluarService::composeNumber."
   },
   "app/Support/SurveyReminders.php": {
     "summary": "Pengingat survei: unrated() permohonan selesai tanpa respons survei, remind() mengirim survey_reminder lewat kanal aktif maksimal sekali per 24 jam (petugas atau otomatis oleh penjadwal) dan mencatat audit, lastSentAt()."
@@ -1746,7 +1746,7 @@
     "summary": "Seeder daftar layanan PTSP madrasah beserta persyaratan, waktu, biaya, produk dan alur dasar."
   },
   "database/seeders/SuratKeluarSeeder.php": {
-    "summary": "Seeder contoh surat keluar tahun berjalan untuk demo (bukan produksi)."
+    "summary": "Seeder contoh surat keluar tahun berjalan untuk demo (bukan produksi); nomor dirangkai lewat SuratKeluarService::composeNumber sesuai format jenis surat."
   },
   "database/seeders/TicketSeeder.php": {
     "summary": "Seeder contoh permohonan di setiap tahap Kelola Permohonan (demo), dibuat lewat TicketService agar riwayat, disposisi dan notifikasi konsisten dengan waktu mundur."
@@ -1935,7 +1935,7 @@
     "summary": "Halaman survei berhasil terkirim dengan ucapan terima kasih dan tautan hasil survei."
   },
   "routes/api.php": {
-    "summary": "Route API Sanctum: layanan, tiket staf, riwayat, disposisi, surat keluar, persuratan, publik, permohonan pemohon, loket, pengaduan, survei, notifikasi, peran aktif (/peran-aktif), rekam jejak (/rekam-jejak, /rekap), log ganti akun (/ganti-akun/log), monitoring (termasuk integrasi dan ip-diblokir), pengguna, peran, pengaturan, konten."
+    "summary": "Route API Sanctum: layanan, tiket staf, riwayat, disposisi, surat keluar (termasuk form minta nomor), persuratan dan Penomoran Otomatis (/persuratan/penomoran: format, singkatan, pratinjau, variabel tambahan), publik, permohonan pemohon, loket, pengaduan, survei, notifikasi, peran aktif, rekam jejak, log ganti akun, monitoring, pengguna, peran, pengaturan, konten."
   },
   "routes/console.php": {
     "summary": "Jadwal Artisan: heartbeat dan snapshot monitoring, arsip survei triwulanan, pemangkasan notifikasi, pengingat survei otomatis surveys:remind pukul 08.00, pengingat permohonan tertunda tiap pagi kerja."
@@ -2106,7 +2106,7 @@
     "summary": "Feature test SettingsIntegrationTest: pengaturan sampai ke dokumen: kop surat, format tanggal dan prefiks nomor tiket."
   },
   "tests/Feature/SettingsPageTest.php": {
-    "summary": "Feature test SettingsPageTest: halaman Pengaturan dengan bagian identitas, kontak, tautan, kop surat dan situs."
+    "summary": "Feature test SettingsPageTest: halaman Pengaturan dengan bagian identitas, kontak, tautan, kop surat dan situs; kode satker dari pengaturan dipakai pada nomor surat keluar yang dirangkai SuratKeluarService."
   },
   "tests/Feature/SidebarByRoleTest.php": {
     "summary": "Feature test SidebarByRoleTest: setiap item sidebar yang terlihat suatu peran dapat dibuka dan item terlarang tidak tampil."
@@ -2121,7 +2121,7 @@
     "summary": "Feature test StatusBadgeTest: label status berwarna StatusBadge dan komponen x-status-badge."
   },
   "tests/Feature/SuratKeluarTest.php": {
-    "summary": "Feature test register surat keluar: akses dan policy, penomoran tahunan sampai 9999, minta nomor dengan data dan berkas, riwayat permintaan nomor, catatan activity_log per permintaan dan perubahan, melengkapi surat, lampiran privat terotorisasi, pencarian, ekspor, API."
+    "summary": "Feature test register surat keluar: akses dan policy, penomoran tahunan sampai 9999, nomor mengikuti format jenis surat (singkatan dari Pengaturan Aplikasi atau penimpaan, klasifikasi arsip cadangan, semua token), minta nomor dengan data dan berkas, riwayat permintaan, activity_log, melengkapi surat, lampiran privat, kolom No. Urut dengan pencarian, pengurutan dan tampilan responsif, ekspor, serta API daftar dengan pencarian dan pengurutan."
   },
   "tests/Feature/SurveyApiTest.php": {
     "summary": "Feature test SurveyApiTest: API survei publik: struktur edisi aktif dan kirim jawaban tiga langkah, CRUD edisi admin, laporan."
@@ -2476,5 +2476,44 @@
   },
   "tests/Feature/VisitorPublicNameTest.php": {
     "summary": "Feature test sensor nama buku tamu: nama yang disamarkan diproses di server, halaman publik tidak pernah menampilkan nama asli, petugas melihat nama asli lewat API."
+  },
+  "app/Support/NomorFormat.php": {
+    "summary": "Perangkai format nomor surat berbasis token: konstanta format bawaan (sama dengan penomoran lama) dan dua pilihan cepat, daftar token {KS} sifat naskah, {N} nomor urut, {S} singkatan unit kerja, {k}/{K} klasifikasi arsip, {v}/{V} variabel tambahan, {M} bulan Arab dua digit atau Romawi, {Y} tahun. Menyediakan validasi format (token tak dikenal, wajib {N}), render nilai ke nomor dengan bagian kosong dirapatkan, contoh nomor, dan konversi angka Romawi."
+  },
+  "app/Support/NomorFormatSettings.php": {
+    "summary": "Pengaturan penomoran per jenis surat yang tersimpan di baris persuratan_masters bertipe jenis_surat: format_nomor, mode_bulan, singkatan_unit_kerja, variabel_nomor. Menghitung format dan singkatan yang berlaku (penimpaan atau kode satker Pengaturan Aplikasi), contoh nomor, menyimpan format/mode/singkatan dengan validasi, serta membaca, mengecek pemakaian di format, dan menyimpan definisi variabel tambahan {v}/{V}."
+  },
+  "app/Filament/Actions/NumberingFormatAction.php": {
+    "summary": "Aksi tabel Master Persuratan di tab Penomoran Otomatis: editor format token per jenis surat dengan tombol pilihan cepat, mode bulan Arab/Romawi, bagian singkatan unit kerja (bawaan dari Pengaturan Aplikasi, toggle penimpaan yang mengisi/mengosongkan isian), pratinjau nomor langsung yang menyebut sumber {S}, panduan token, dan tombol kembali ke format bawaan. Juga aksi terpisah Timpa/Ubah singkatan yang hanya mengganti singkatan jenis surat."
+  },
+  "app/Filament/Actions/NumberVariableAction.php": {
+    "summary": "Aksi tabel tab Variabel Tambahan di Master Persuratan: tambah/ubah definisi variabel {v}/{V} satu jenis surat (nama, arti/petunjuk, wajib diisi) dengan peringatan bila format nomor belum memuat {v} atau {V}, serta hapus variabel dengan konfirmasi. Penyimpanan lewat NomorFormatSettings::saveVariable."
+  },
+  "app/Http/Controllers/Api/NumberingFormatController.php": {
+    "summary": "API Penomoran Otomatis di /api/persuratan/penomoran: daftar jenis surat dengan format, contoh, singkatan, klasifikasi arsip dan variabel (GET /), detail (GET /{master}), simpan format/mode bulan/singkatan/klasifikasi arsip dengan validasi token (PUT /{master}), simpan singkatan saja (PUT /{master}/singkatan), pratinjau nomor (GET /pratinjau), CRUD variabel tambahan (GET/PUT/DELETE /{master}/variabel) dan cari variabel berdasarkan nama jenis surat (GET /variabel). Back office membaca, pengelola Master Persuratan mengubah; perubahan dicatat di audit log."
+  },
+  "database/migrations/2026_10_09_100000_add_numbering_format_to_persuratan_masters.php": {
+    "summary": "Migrasi menambah kolom format_nomor (token, kosong berarti format bawaan) dan mode_bulan (arab/romawi) pada persuratan_masters untuk baris jenis surat."
+  },
+  "database/migrations/2026_10_09_110000_add_unit_abbreviation_to_persuratan_masters.php": {
+    "summary": "Migrasi menambah kolom singkatan_unit_kerja (maks 30 karakter, opsional) pada persuratan_masters sebagai penimpaan token {S}; kosong berarti memakai kode satker dari Pengaturan Aplikasi."
+  },
+  "database/migrations/2026_10_09_120000_add_number_variable_to_persuratan_masters.php": {
+    "summary": "Migrasi menambah kolom jsonb variabel_nomor pada persuratan_masters: definisi variabel tambahan {v}/{V} per jenis surat (label, keterangan, wajib)."
+  },
+  "database/migrations/2026_10_09_130000_add_variabel_to_surat_keluar.php": {
+    "summary": "Migrasi menambah kolom variabel (maks 50 karakter) pada tabel surat_keluar untuk menyimpan nilai variabel tambahan yang diisi petugas, agar nomor dirangkai ulang sama saat surat dilengkapi."
+  },
+  "database/migrations/2026_10_09_140000_add_klasifikasi_arsip_to_persuratan_masters.php": {
+    "summary": "Migrasi menambah kolom klasifikasi_arsip pada persuratan_masters: klasifikasi bawaan jenis surat yang mengisi token {k}/{K} bila petugas tidak memilih klasifikasi."
+  },
+  "tests/Feature/PenomoranOtomatisTabTest.php": {
+    "summary": "Feature test tab Penomoran Otomatis: render token termasuk bulan Arab/Romawi untuk 12 bulan, format bawaan sama dengan penomoran lama, kolom skema jenis surat, tab dan kolom format/singkatan/contoh, pratinjau langsung dan reaktif terhadap singkatan, pilihan cepat, simpan/tolak format, penimpaan singkatan lewat editor dan tombol khusus, serta panduan token."
+  },
+  "tests/Feature/NumberingFormatApiTest.php": {
+    "summary": "Feature test API /api/persuratan/penomoran: baca format dan panduan token, simpan format dan klasifikasi arsip lalu kembali ke bawaan, singkatan dari Pengaturan Aplikasi atau penimpaan, endpoint singkatan saja, pratinjau nomor, CRUD dan pencarian variabel tambahan, serta penolakan format tidak valid dan perubahan oleh staf tanpa hak."
+  },
+  "tests/Feature/VariabelTambahanTest.php": {
+    "summary": "Feature test variabel tambahan {v}/{V}: tab Variabel Tambahan dan aksi tambah/ubah/hapus, field variabel dinamis di form Minta Nomor Surat (muncul, reset saat jenis berganti, wajib diisi dengan pesan jelas, ringkasan jenis surat, tombol salin nomor), validasi di SuratKeluarService dan API, nilai variabel masuk ke token huruf kecil/besar, serta form edit surat yang meminta variabel."
   }
 }
