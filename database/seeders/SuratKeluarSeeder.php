@@ -29,7 +29,7 @@ class SuratKeluarSeeder extends Seeder
             $tanggal = now()->startOfYear()->addDays($i * 17);
 
             SuratKeluar::updateOrCreate(['tahun' => $year, 'nomor_urut' => $urut], [
-                'nomor_surat' => SuratKeluarNumber::format($urut, $tanggal, $klasifikasi),
+                'nomor_surat' => \App\Services\SuratKeluarService::composeNumber($urut, $tanggal, $klasifikasi, $jenis),
                 'tanggal_surat' => $tanggal,
                 'tujuan_surat' => $tujuan,
                 'perihal' => $perihal,

@@ -16,11 +16,14 @@ class PersuratanMaster extends Model
         'instruksi_disposisi' => 'Instruksi Disposisi',
     ];
 
-    protected $fillable = ['type', 'kode', 'nama', 'is_active', 'sort'];
+    protected $fillable = ['type', 'kode', 'nama', 'is_active', 'sort', 'format_nomor', 'mode_bulan', 'singkatan_unit_kerja', 'variabel_nomor', 'klasifikasi_arsip'];
+
+    public const MODE_BULAN = ['arab' => 'Angka Arab', 'romawi' => 'Angka Romawi'];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort' => 'integer',
+        'variabel_nomor' => 'array',
     ];
 
     public function scopeOfType(Builder $query, string $type): Builder

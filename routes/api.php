@@ -66,11 +66,25 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('disposisi')->group(
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('surat-keluar')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\SuratKeluarController::class, 'index'])->name('api.surat-keluar.index');
     Route::get('/ekspor', [\App\Http\Controllers\Api\SuratKeluarController::class, 'export'])->name('api.surat-keluar.ekspor');
-    Route::post('/nomor', [\App\Http\Controllers\Api\SuratKeluarController::class, 'reserve'])->name('api.surat-keluar.nomor');
+    Route::get('/nomor/form', [\App\Http\Controllers\Api\SuratKeluarController::class, 'requestForm'])->name('api.surat-keluar.nomor.form');
+    Route::post('/nomor',[\App\Http\Controllers\Api\SuratKeluarController::class, 'reserve'])->name('api.surat-keluar.nomor');
     Route::put('/{suratKeluar}', [\App\Http\Controllers\Api\SuratKeluarController::class, 'update'])->name('api.surat-keluar.update');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/persuratan/pilihan', [\App\Http\Controllers\Api\PersuratanController::class, 'options'])->name('api.persuratan.pilihan');
+// Penomoran Otomatis: the number format of each jenis surat.
+Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('persuratan/penomoran')->name('api.persuratan.penomoran.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\NumberingFormatController::class, 'index'])->name('index');
+    Route::get('/variabel', [\App\Http\Controllers\Api\NumberingFormatController::class, 'variableFor'])->name('variabel.cari');
+    Route::get('/pratinjau',[\App\Http\Controllers\Api\NumberingFormatController::class, 'preview'])->name('pratinjau');
+    Route::get('/{master}', [\App\Http\Controllers\Api\NumberingFormatController::class, 'show'])->whereNumber('master')->name('show');
+    Route::put('/{master}', [\App\Http\Controllers\Api\NumberingFormatController::class, 'update'])->whereNumber('master')->name('update');
+    Route::put('/{master}/singkatan', [\App\Http\Controllers\Api\NumberingFormatController::class, 'updateAbbreviation'])->whereNumber('master')->name('singkatan');
+    Route::get('/{master}/variabel', [\App\Http\Controllers\Api\NumberingFormatController::class, 'showVariable'])->whereNumber('master')->name('variabel.show');
+    Route::put('/{master}/variabel', [\App\Http\Controllers\Api\NumberingFormatController::class, 'saveVariable'])->whereNumber('master')->name('variabel.save');
+    Route::delete('/{master}/variabel', [\App\Http\Controllers\Api\NumberingFormatController::class, 'deleteVariable'])->whereNumber('master')->name('variabel.delete');
+});
+
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('persuratan/master')->name('api.persuratan.master.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\PersuratanController::class, 'index'])->name('index');
     Route::post('/', [\App\Http\Controllers\Api\PersuratanController::class, 'store'])->name('store');

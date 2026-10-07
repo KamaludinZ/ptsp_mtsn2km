@@ -158,6 +158,52 @@ class SuratKeluarTest extends TestCase
         $this->get(ListSuratKeluar::getUrl())->assertOk()->assertSee('Riwayat permintaan nomor agenda');
     }
 
+    public function test_numbers_follow_the_format_of_their_letter_type(): void
+    {
+        $officer = $this->user('staff1@mtsn2malang.sch.id');
+        $jenis = \App\Models\PersuratanMaster::where('type', 'jenis_surat')->orderBy('id')->firstOrFail();
+        $jenis->update(['kode' => 'SK']);
+        \App\Support\NomorFormatSettings::save($jenis, '{KS}/{N}/{S}/{K}/{M}/{Y}', 'romawi');
+        $date = \Illuminate\Support\Carbon::create(now()->year, 10, 7);
+        $kode = \App\Support\SuratKeluarNumber::kodeSatker();
+
+        $letters = app(SuratKeluarService::class)->reserve(2, $date, $officer, ['jenis_surat' => mb_strtoupper($jenis->nama), 'klasifikasi' => 'pp.00']);
+        [$first, $second] = [$letters[0], $letters[1]];
+        $this->assertSame("SK/{$first->nomor_urut}/{$kode}/PP.00/X/{$date->year}", $first->nomor_surat);
+        $this->assertSame("SK/{$second->nomor_urut}/{$kode}/PP.00/X/{$date->year}", $second->nomor_surat);
+
+        // Completing the letter keeps the same format (the month follows the new date).
+        app(SuratKeluarService::class)->describe($first, ['tanggal_surat' => $date->copy()->setMonth(11)->toDateString()]);
+        $this->assertSame("SK/{$first->nomor_urut}/{$kode}/PP.00/XI/{$date->year}", $first->fresh()->nomor_surat);
+
+        // {S} reads Pengaturan Aplikasi at request time: a changed unit code shows in the next number.
+        \App\Models\AppSetting::set(\App\Support\SuratKeluarNumber::SETTING_KODE_SATKER, 'MTsN.2');
+        $fromSettings = app(SuratKeluarService::class)->reserve(1, $date, $officer, ['jenis_surat' => $jenis->nama, 'klasifikasi' => 'PP.00'])->first();
+        $this->assertSame("SK/{$fromSettings->nomor_urut}/MTsN.2/PP.00/X/{$date->year}", $fromSettings->nomor_surat);
+        $this->assertSame("SK/{$first->nomor_urut}/{$kode}/PP.00/XI/{$date->year}", $first->fresh()->nomor_surat); // issued numbers stay
+
+        // An abbreviation override replaces the settings' unit code for this letter type only.
+        \App\Support\NomorFormatSettings::save($jenis, '{KS}/{N}/{S}/{K}/{M}/{Y}', 'romawi', 'TU.MTsN2');
+        $overridden = app(SuratKeluarService::class)->reserve(1, $date, $officer, ['jenis_surat' => $jenis->nama, 'klasifikasi' => 'PP.00'])->first();
+        $this->assertSame("SK/{$overridden->nomor_urut}/TU.MTsN2/PP.00/X/{$date->year}", $overridden->nomor_surat);
+        // Other letter types keep the settings value; an empty override counts as none.
+        $sibling = \App\Models\PersuratanMaster::where('type', 'jenis_surat')->whereKeyNot($jenis->id)->firstOrFail();
+        \App\Support\NomorFormatSettings::save($sibling, '{N}/{S}/{Y}');
+        $this->assertSame("7/MTsN.2/{$date->year}", SuratKeluarService::composeNumber(7, $date, null, $sibling->nama));
+        $sibling->update(['singkatan_unit_kerja' => '']);
+        $this->assertSame("7/MTsN.2/{$date->year}", SuratKeluarService::composeNumber(7, $date, null, $sibling->nama));
+
+        // One assembler for every token; {k}/{K} fall back to the jenis surat's archive classification.
+        \App\Support\NomorFormatSettings::save($sibling, '{KS}/{N}/{S}/{k}/{K}/{v}/{V}/{M}/{Y}', 'arab');
+        $sibling->update(['kode' => 'ND', 'klasifikasi_arsip' => 'hm.01']);
+        $this->assertSame("ND/9/MTsN.2/hm.01/HM.01/ix-a/IX-A/10/{$date->year}", SuratKeluarService::composeNumber(9, $date, null, $sibling->nama, 'ix-a'));
+        $this->assertSame("ND/9/MTsN.2/pp.00/PP.00/10/{$date->year}", SuratKeluarService::composeNumber(9, $date, 'pp.00', $sibling->nama));
+
+        // A letter type outside the master list uses the default (the earlier numbering).
+        $plain = app(SuratKeluarService::class)->reserve(1, $date, $officer, ['jenis_surat' => 'Surat Lain-lain', 'klasifikasi' => 'PP.00'])->first();
+        $this->assertSame("B-{$plain->nomor_urut}/MTsN.2/PP.00/10/{$date->year}", $plain->nomor_surat);
+    }
+
     public function test_requests_and_changes_are_recorded_in_the_activity_log(): void
     {
         $officer = $this->user('staff1@mtsn2malang.sch.id');
@@ -304,6 +350,46 @@ class SuratKeluarTest extends TestCase
         $this->assertTrue($batch->every(fn (SuratKeluar $l) => $l->berkas_lampiran === null));
     }
 
+    public function test_register_shows_the_sequence_number_left_of_the_letter_number(): void
+    {
+        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $letters = app(SuratKeluarService::class)->reserve(3, now(), auth()->user());
+        [$first, , $third] = [$letters[0], $letters[1], $letters[2]];
+
+        $page = Livewire::test(\App\Filament\Resources\SuratKeluarResource\Pages\ListSuratKeluar::class)
+            ->assertTableColumnExists('nomor_urut')
+            ->assertTableColumnStateSet('nomor_urut', $third->nomor_urut, $third)
+            ->assertCanSeeTableRecords([$third, $first], inOrder: true) // newest first
+            ->sortTable('nomor_urut')
+            ->assertCanSeeTableRecords([$first, $third], inOrder: true)
+            ->sortTable('nomor_urut', 'desc')
+            ->assertCanSeeTableRecords([$third, $first], inOrder: true)
+            ->sortTable('nomor_surat')
+            ->assertCanSeeTableRecords([$first, $third], inOrder: true)
+            ->sortTable('nomor_surat', 'desc')
+            ->assertCanSeeTableRecords([$third, $first], inOrder: true)
+            ->searchTable((string) $third->nomor_urut)
+            ->assertCanSeeTableRecords([$third])
+            ->assertCanNotSeeTableRecords([$first])
+            // The full number (or part of it) finds the letter too; text is not read as a sequence number.
+            ->searchTable($first->nomor_surat)
+            ->assertCanSeeTableRecords([$first])
+            ->assertCanNotSeeTableRecords([$third])
+            ->searchTable('B-' . $first->nomor_urut . '/')
+            ->assertCanSeeTableRecords([$first]);
+
+        // The column sits left of the full number.
+        $columns = $page->instance()->getTable()->getColumns();
+        $this->assertSame(['nomor_urut', 'nomor_surat'], array_slice(array_keys($columns), 0, 2));
+
+        // Narrow screens keep number, date, and subject; the rest appear as the screen widens.
+        foreach (['nomor_urut', 'nomor_surat', 'tanggal_surat', 'perihal'] as $name) {
+            $this->assertNull($columns[$name]->getVisibleFrom(), $name);
+        }
+        $this->assertSame(['tujuan_surat' => 'md', 'jenis_surat' => 'lg', 'klasifikasi' => 'lg', 'pembuat.name' => 'xl'],
+            collect($columns)->map->getVisibleFrom()->filter()->all());
+    }
+
     public function test_register_can_be_searched_and_filtered(): void
     {
         $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
@@ -393,6 +479,26 @@ class SuratKeluarTest extends TestCase
         $this->getJson('/api/surat-keluar?q=' . urlencode('wisuda 100%'))->assertOk()->assertJsonPath('total', 1)->assertJsonPath('data.0.perihal', 'Undangan wisuda 100%');
         $this->getJson('/api/surat-keluar?jenis_surat=Undangan&lengkap=1')->assertOk()->assertJsonPath('data.0.jenis_surat', 'Undangan');
         $this->getJson('/api/surat-keluar?tahun=' . (now()->year + 5))->assertOk()->assertJsonPath('total', 0);
+
+        // Nomor urut: in every item, and searchable on its own.
+        $letter = SuratKeluar::where('perihal', 'Undangan wisuda 100%')->firstOrFail();
+        $this->getJson('/api/surat-keluar?nomor_urut=' . $letter->nomor_urut)->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonPath('data.0.nomor_urut', $letter->nomor_urut)
+            ->assertJsonPath('data.0.nomor_surat', $letter->nomor_surat);
+        $this->getJson('/api/surat-keluar?q=' . $letter->nomor_urut)->assertOk()->assertJsonFragment(['nomor_urut' => $letter->nomor_urut]);
+        $this->getJson('/api/surat-keluar?nomor_urut=0')->assertUnprocessable()->assertJsonValidationErrors('nomor_urut');
+
+        // Sorting: by sequence or letter number (number order), up or down; newest first by default.
+        app(SuratKeluarService::class)->reserve(2, now(), $staff);
+        $urut = fn (string $query) => collect($this->getJson('/api/surat-keluar?' . $query)->assertOk()->json('data'))->pluck('nomor_urut')->all();
+        $all = SuratKeluar::where('tahun', now()->year)->orderBy('nomor_urut')->pluck('nomor_urut')->all();
+        $this->assertSame(array_reverse($all), $urut('per_halaman=100'));
+        $this->assertSame($all, $urut('urutkan=nomor_urut&arah=asc&per_halaman=100'));
+        $this->assertSame($all, $urut('urutkan=nomor_surat&arah=asc&per_halaman=100'));
+        $this->assertSame(array_reverse($all), $urut('urutkan=nomor_surat&arah=desc&per_halaman=100'));
+        $this->getJson('/api/surat-keluar?urutkan=perihal')->assertUnprocessable()->assertJsonValidationErrors('urutkan');
+        $this->getJson('/api/surat-keluar?arah=naik')->assertUnprocessable()->assertJsonValidationErrors('arah');
 
         $this->get('/api/surat-keluar/ekspor')->assertOk();
         Excel::assertDownloaded('register-surat-keluar-' . now()->format('Ymd-His') . '.xlsx');

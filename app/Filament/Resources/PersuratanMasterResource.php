@@ -134,7 +134,40 @@ class PersuratanMasterResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('kode')->label('Kode')->searchable()->placeholder('–')
                     ->visible(fn ($livewire) => in_array($livewire->activeTab ?? null, ['klasifikasi', null], true)),
-                Tables\Columns\TextColumn::make('nama')->label('Nama')->searchable()->wrap(),
+                Tables\Columns\TextColumn::make('nama')->label(fn ($livewire) => in_array($livewire->activeTab ?? null, [Pages\ListPersuratanMasters::NUMBERING_TAB, Pages\ListPersuratanMasters::VARIABLE_TAB], true) ? 'Jenis surat' : 'Nama')->searchable()->wrap(),
+                // Penomoran Otomatis tab: the format of each jenis surat and an example number.
+                Tables\Columns\TextColumn::make('format_nomor')->label('Format nomor')
+                    ->state(fn (PersuratanMaster $record) => \App\Support\NomorFormatSettings::for($record)['format'])
+                    ->placeholder('Bawaan: ' . \App\Support\NomorFormat::DEFAULT)
+                    ->fontFamily('mono')
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? null) === \App\Filament\Resources\PersuratanMasterResource\Pages\ListPersuratanMasters::NUMBERING_TAB),
+                Tables\Columns\TextColumn::make('singkatan_unit_kerja')->label('Singkatan')
+                    ->state(fn (PersuratanMaster $record) => \App\Support\NomorFormatSettings::effectiveSingkatan($record))
+                    ->fontFamily('mono')
+                    ->description(fn (PersuratanMaster $record) => $record->singkatan_unit_kerja ? 'khusus jenis surat ini' : 'dari Pengaturan Aplikasi')
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? null) === \App\Filament\Resources\PersuratanMasterResource\Pages\ListPersuratanMasters::NUMBERING_TAB),
+                Tables\Columns\TextColumn::make('contoh_nomor')->label('Contoh nomor')
+                    ->state(fn (PersuratanMaster $record) => \App\Support\NomorFormatSettings::preview($record))
+                    ->fontFamily('mono')->color('primary')->copyable()
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? null) === \App\Filament\Resources\PersuratanMasterResource\Pages\ListPersuratanMasters::NUMBERING_TAB),
+                // Variabel Tambahan tab: the extra value each letter type asks for, and whether its format uses it.
+                Tables\Columns\TextColumn::make('variabel_label')->label('Variabel tambahan')
+                    ->state(fn (PersuratanMaster $record) => \App\Support\NomorFormatSettings::variable($record)['label'] ?? null)
+                    ->description(fn (PersuratanMaster $record) => \App\Support\NomorFormatSettings::variable($record)['keterangan'] ?? null)
+                    ->placeholder('Tidak ada')
+                    ->wrap()
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? null) === Pages\ListPersuratanMasters::VARIABLE_TAB),
+                Tables\Columns\TextColumn::make('variabel_wajib')->label('Pengisian')->badge()
+                    ->state(fn (PersuratanMaster $record) => ($v = \App\Support\NomorFormatSettings::variable($record)) ? ($v['wajib'] ? 'Wajib' : 'Opsional') : null)
+                    ->color(fn (?string $state) => $state === 'Wajib' ? 'warning' : 'gray')
+                    ->placeholder('–')
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? null) === Pages\ListPersuratanMasters::VARIABLE_TAB),
+                Tables\Columns\TextColumn::make('variabel_di_format')->label('Di format nomor')
+                    ->state(fn (PersuratanMaster $record) => \App\Support\NomorFormatSettings::usesVariable($record) ? 'Dipakai' : 'Belum dipakai')
+                    ->icon(fn (?string $state) => $state === 'Dipakai' ? 'heroicon-m-check-circle' : 'heroicon-m-minus-circle')
+                    ->color(fn (?string $state) => $state === 'Dipakai' ? 'success' : 'gray')
+                    ->description(fn (PersuratanMaster $record) => \App\Support\NomorFormatSettings::effectiveFormat($record))
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? null) === Pages\ListPersuratanMasters::VARIABLE_TAB),
                 Tables\Columns\TextColumn::make('type')->label('Daftar')->badge()->color('gray')
                     ->formatStateUsing(fn (string $state) => PersuratanMaster::TYPES[$state] ?? $state)
                     ->visible(fn ($livewire) => blank($livewire->activeTab ?? null)),
@@ -143,6 +176,10 @@ class PersuratanMasterResource extends Resource
             ])
             ->defaultSort('sort')
             ->actions([
+                \App\Filament\Actions\NumberingFormatAction::make(),
+                \App\Filament\Actions\NumberingFormatAction::abbreviation(),
+                \App\Filament\Actions\NumberVariableAction::make(),
+                \App\Filament\Actions\NumberVariableAction::delete(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->modalDescription('Pilihan ini hilang dari form. Surat yang sudah memakainya tidak berubah. Untuk menyembunyikan sementara, matikan "Aktif".'),
@@ -161,7 +198,7 @@ class PersuratanMasterResource extends Resource
             ->emptyStateIcon('heroicon-o-list-bullet')
             ->emptyStateHeading(fn ($livewire) => filled($livewire->tableSearch ?? null)
                 ? 'Tidak ada pilihan yang cocok'
-                : trim('Belum ada pilihan ' . mb_strtolower(PersuratanMaster::TYPES[$livewire->activeTab ?? ''] ?? '')))
+                : trim('Belum ada pilihan ' . mb_strtolower(PersuratanMaster::TYPES[$livewire->activeListType() ?? ''] ?? '')))
             ->emptyStateDescription(fn ($livewire) => filled($livewire->tableSearch ?? null)
                 ? 'Coba kata kunci lain atau hapus pencarian.'
                 : 'Tambahkan pilihan rutin agar petugas cukup memilih dari daftar. Petugas tetap dapat mengetik isian sendiri.')
@@ -171,7 +208,7 @@ class PersuratanMasterResource extends Resource
                     ->icon('heroicon-m-plus')
                     ->model(PersuratanMaster::class)
                     ->form(fn (Form $form) => static::form($form))
-                    ->fillForm(fn ($livewire) => ['type' => $livewire->activeTab ?: 'tujuan_naskah', 'is_active' => true, 'sort' => 0])
+                    ->fillForm(fn ($livewire) => ['type' => $livewire->activeListType() ?: 'tujuan_naskah', 'is_active' => true, 'sort' => 0])
                     ->hidden(fn ($livewire) => filled($livewire->tableSearch ?? null)),
             ]);
     }

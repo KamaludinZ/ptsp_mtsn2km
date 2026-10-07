@@ -87,6 +87,17 @@ class AdminDashboardWidgetsTest extends TestCase
             }
         }
 
+        // Some widgets are only for staff holding several roles (active role panels).
+        $multi = User::factory()->create(['user_type' => 'pegawai']);
+        $multi->assignRole([Role::findOrCreate('kepala_tu'), Role::findOrCreate('front_desk')]);
+        $this->actingAs($multi->fresh());
+        foreach ($widgets as $widget) {
+            if ($widget::canView()) {
+                $this->assertRenders($widget);
+                $rendered[$widget] = true;
+            }
+        }
+
         // Every widget is visible to at least one role.
         $this->assertSame([], array_values(array_diff($widgets, array_keys($rendered))));
     }

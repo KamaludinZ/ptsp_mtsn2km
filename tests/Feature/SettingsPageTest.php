@@ -118,7 +118,7 @@ class SettingsPageTest extends TestCase
         $this->assertSame('LYN-' . now()->format('Ym') . '-0002', $next->ticket_number);
 
         $this->get(route('tickets.receipt', $ticket))->assertOk()->assertSee(now()->format('d/m/Y'));
-        $this->assertStringStartsWith('B-1/MTSN.2/', \App\Support\SuratKeluarNumber::format(1, now()));
+        $this->assertStringStartsWith('B-1/MTSN.2/', \App\Services\SuratKeluarService::composeNumber(1, now()));
 
         Livewire::test(Settings::class)
             ->fillForm(['app_name' => 'PTSP', 'app_name_full' => 'MTsN 2', 'ticket_prefix' => 'P1', 'surat_kode_satker' => 'a b'])

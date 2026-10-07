@@ -40,6 +40,7 @@ class SuratKeluar extends Model
         'perihal',
         'jenis_surat',
         'klasifikasi',
+        'variabel',
         'lampiran',
         'tembusan',
         'keterangan',

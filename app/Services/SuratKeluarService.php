@@ -3,10 +3,13 @@
 namespace App\Services;
 
 use App\Exceptions\TicketActionException;
+use App\Models\PersuratanMaster;
 use App\Models\SuratKeluar;
 use App\Models\SuratKeluarBatch;
 use App\Models\User;
 use App\Support\Persuratan;
+use App\Support\NomorFormat;
+use App\Support\NomorFormatSettings;
 use App\Support\SuratKeluarNumber;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
@@ -34,6 +37,11 @@ class SuratKeluarService
             throw new TicketActionException('Jumlah nomor harus antara 1 dan ' . self::MAX_PER_REQUEST . '.');
         }
 
+        // The variable of the chosen jenis surat ({v}/{V}) must be filled when it is required.
+        if ($problem = self::variableProblem($data['jenis_surat'] ?? null, $data['variabel'] ?? null)) {
+            throw new TicketActionException($problem);
+        }
+
         $year = (int) $tanggal->format('Y');
 
         return DB::transaction(function () use ($count, $tanggal, $pembuat, $data, $year) {
@@ -53,13 +61,13 @@ class SuratKeluarService
             ]);
 
             // Uploaded files belong to one letter only, never to a whole batch.
-            $fields = ['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'lampiran', 'tembusan', 'keterangan', ...($count === 1 ? ['berkas_lampiran', 'berkas_lampiran_nama'] : [])];
+            $fields = ['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'variabel', 'lampiran', 'tembusan', 'keterangan', ...($count === 1 ? ['berkas_lampiran', 'berkas_lampiran_nama'] : [])];
 
             $letters = collect(range($last + 1, $last + $count))->map(fn (int $urut) => SuratKeluar::create([
                 ...array_intersect_key($data, array_flip($fields)),
                 'tahun' => $year,
                 'nomor_urut' => $urut,
-                'nomor_surat' => SuratKeluarNumber::format($urut, $tanggal, $data['klasifikasi'] ?? null),
+                'nomor_surat' => self::composeNumber($urut, $tanggal, $data['klasifikasi'] ?? null, $data['jenis_surat'] ?? null, $data['variabel'] ?? null),
                 'tanggal_surat' => $tanggal,
                 'pembuat_id' => $pembuat->id,
                 'batch_id' => $batch->id,
@@ -94,10 +102,14 @@ class SuratKeluarService
         }
 
         $letter->fill([
-            ...array_intersect_key($data, array_flip(['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'lampiran', 'tembusan', 'keterangan', 'berkas_lampiran', 'berkas_lampiran_nama'])),
+            ...array_intersect_key($data, array_flip(['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'variabel', 'lampiran', 'tembusan', 'keterangan', 'berkas_lampiran', 'berkas_lampiran_nama'])),
             'tanggal_surat' => $date,
         ]);
-        $letter->nomor_surat = SuratKeluarNumber::format($letter->nomor_urut, $date, $letter->klasifikasi);
+        // Same rule as when the number was requested: the (possibly new) jenis surat's required variable.
+        if ($letter->isDirty(['jenis_surat', 'variabel']) && ($problem = self::variableProblem($letter->jenis_surat, $letter->variabel))) {
+            throw new TicketActionException($problem);
+        }
+        $letter->nomor_surat = self::composeNumber($letter->nomor_urut, $date, $letter->klasifikasi, $letter->jenis_surat, $letter->variabel);
         $letter->save();
         $this->rememberManual($data);
 
@@ -112,6 +124,51 @@ class SuratKeluarService
             'jenis_surat' => $data['jenis_surat'] ?? null,
             'tembusan' => $data['tembusan'] ?? null,
         ]);
+    }
+
+    /**
+     * Perakit nomor terpusat: nomor surat dari format jenis surat (Master
+     * Persuratan, tab Penomoran Otomatis) atau format bawaan, mode bulannya,
+     * kode surat jenis itu ({KS}, bawaan B), singkatan unit kerja ({S}),
+     * klasifikasi ({k}/{K}), dan variabel tambahan ({v}/{V}).
+     */
+    public static function composeNumber(int $urut, CarbonInterface $tanggal, ?string $klasifikasi = null, ?string $jenisSurat = null, ?string $variabel = null): string
+    {
+        $jenis = self::jenisSurat($jenisSurat);
+        $settings = $jenis ? NomorFormatSettings::for($jenis) : ['format' => null, 'mode_bulan' => 'arab'];
+
+        return NomorFormat::render($settings['format'] ?? NomorFormat::DEFAULT, [
+            'KS' => $jenis?->kode ?: NomorFormat::TOKENS['KS']['example'],
+            'N' => $urut,
+            'S' => NomorFormatSettings::effectiveSingkatan($jenis),
+            // {k}/{K}: the letter's classification, else the jenis surat's archive classification.
+            'k' => filled($klasifikasi) ? trim($klasifikasi) : ($jenis?->klasifikasi_arsip ?: ''),
+            'v' => filled($variabel) ? trim($variabel) : '',
+            'tanggal' => $tanggal,
+            'mode_bulan' => $settings['mode_bulan'],
+        ]);
+    }
+
+    /** Why the variable value cannot be used for this jenis surat, or null. */
+    public static function variableProblem(?string $jenisSurat, ?string $value): ?string
+    {
+        $variable = NomorFormatSettings::variable(self::jenisSurat($jenisSurat));
+        $value = trim((string) $value);
+
+        return match (true) {
+            $variable && $variable['wajib'] && $value === '' => $variable['label'] . ' wajib diisi untuk jenis surat ini.',
+            str_contains($value, '/') => 'Variabel tambahan tidak boleh berisi garis miring (/).',
+            mb_strlen($value) > 50 => 'Variabel tambahan paling panjang 50 karakter.',
+            default => null,
+        };
+    }
+
+    /** The jenis surat row for a letter's (typed or chosen) jenis surat, if it is in the master list. */
+    public static function jenisSurat(?string $nama): ?PersuratanMaster
+    {
+        return filled($nama)
+            ? PersuratanMaster::where('type', 'jenis_surat')->whereRaw('lower(nama) = ?', [mb_strtolower(trim($nama))])->first()
+            : null;
     }
 
     /** The number the next request would receive for $year. */

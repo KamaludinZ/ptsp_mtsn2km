@@ -27,7 +27,14 @@ class SuratKeluarController extends Controller
         $this->authorize('viewAny', SuratKeluar::class);
 
         $filters = $this->filters($request);
-        $page = $this->register($filters)->with('pembuat:id,name')->paginate($filters['per_halaman'] ?? 25)->withQueryString();
+        $direction = $filters['arah'] ?? 'desc';
+        // nomor_surat sorts in number order (year, then sequence), never as text.
+        $query = match ($filters['urutkan'] ?? 'nomor_urut') {
+            'tanggal_surat' => $this->register($filters)->reorder('tanggal_surat', $direction)->orderBy('nomor_urut', $direction),
+            'nomor_surat' => $this->register($filters)->reorder('tahun', $direction)->orderBy('nomor_urut', $direction),
+            default => $this->register($filters)->reorder('nomor_urut', $direction),
+        };
+        $page = $query->with('pembuat:id,name')->paginate($filters['per_halaman'] ?? 25)->withQueryString();
 
         return response()->json([
             'data' => collect($page->items())->map(fn (SuratKeluar $letter) => self::present($letter)),
@@ -63,12 +70,15 @@ class SuratKeluarController extends Controller
         return $request->validate([
             'tahun' => ['nullable', 'integer', 'min:2000', 'max:2100'],
             'q' => ['nullable', 'string', 'max:100'],
+            'nomor_urut' => ['nullable', 'integer', 'min:1', 'max:' . \App\Support\SuratKeluarNumber::MAX],
             'jenis_surat' => ['nullable', 'string', 'max:100'],
             'klasifikasi' => ['nullable', 'string', 'max:50'],
             'dari' => ['nullable', 'date'],
             'sampai' => ['nullable', 'date', 'after_or_equal:dari'],
             'lengkap' => ['nullable', 'boolean'],
             'per_halaman' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'urutkan' => ['nullable', 'in:nomor_urut,nomor_surat,tanggal_surat'],
+            'arah' => ['nullable', 'in:asc,desc'],
         ]);
     }
 
@@ -78,8 +88,11 @@ class SuratKeluarController extends Controller
             ->where('tahun', $filters['tahun'] ?? now()->year)
             ->when($filters['q'] ?? null, function ($query, string $term) {
                 $like = '%' . addcslashes($term, '%_\\') . '%';
-                $query->where(fn ($q) => $q->where('nomor_surat', 'ilike', $like)->orWhere('tujuan_surat', 'ilike', $like)->orWhere('perihal', 'ilike', $like));
+                $query->where(fn ($q) => $q->where('nomor_surat', 'ilike', $like)->orWhere('tujuan_surat', 'ilike', $like)->orWhere('perihal', 'ilike', $like)
+                    // A plain number is also the sequence number.
+                    ->when(ctype_digit(trim($term)), fn ($w) => $w->orWhere('nomor_urut', (int) trim($term))));
             })
+            ->when($filters['nomor_urut'] ?? null, fn ($q, $v) => $q->where('nomor_urut', $v))
             ->when($filters['jenis_surat'] ?? null, fn ($q, $v) => $q->where('jenis_surat', $v))
             ->when($filters['klasifikasi'] ?? null, fn ($q, $v) => $q->where('klasifikasi', $v))
             ->when($filters['dari'] ?? null, fn ($q, $d) => $q->whereDate('tanggal_surat', '>=', $d))
@@ -88,6 +101,27 @@ class SuratKeluarController extends Controller
                 ? $q->whereNotNull('perihal')->whereNotNull('tujuan_surat')
                 : $q->where(fn ($w) => $w->whereNull('perihal')->orWhereNull('tujuan_surat')))
             ->orderByDesc('nomor_urut');
+    }
+
+    /**
+     * GET /api/surat-keluar/nomor/form: what the Minta Nomor form needs per jenis surat:
+     * its format and the variable field ({v}/{V}) it asks for.
+     */
+    public function requestForm(): JsonResponse
+    {
+        $this->authorize('create', SuratKeluar::class);
+
+        return response()->json([
+            'maks_per_permintaan' => SuratKeluarService::MAX_PER_REQUEST,
+            'nomor_berikutnya' => $this->letters->nextNumber((int) now()->format('Y')),
+            'jenis_surat' => \App\Models\PersuratanMaster::ofType('jenis_surat')->get()->map(fn (\App\Models\PersuratanMaster $jenis) => [
+                'id' => $jenis->id,
+                'nama' => $jenis->nama,
+                'format_berlaku' => \App\Support\NomorFormatSettings::effectiveFormat($jenis),
+                'contoh' => \App\Support\NomorFormatSettings::preview($jenis),
+                'variabel' => \App\Support\NomorFormatSettings::variable($jenis),
+            ])->values(),
+        ]);
     }
 
     /** POST /api/surat-keluar/nomor: reserve `jumlah` consecutive numbers. */
@@ -147,6 +181,7 @@ class SuratKeluarController extends Controller
             'perihal' => ['nullable', 'string', 'max:255'],
             'jenis_surat' => ['nullable', 'string', 'max:100'],
             'klasifikasi' => ['nullable', 'string', 'max:50'],
+            'variabel' => ['nullable', 'string', 'max:50'],
             'lampiran' => ['nullable', 'string', 'max:1000'],
             'tembusan' => ['nullable', 'array'],
             'tembusan.*' => ['string', 'max:255'],
@@ -157,7 +192,7 @@ class SuratKeluarController extends Controller
     /** The request's letter fields as model attributes (tembusan: one per line). */
     private function letterFields(array $data): array
     {
-        $fields = array_intersect_key($data, array_flip(['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'lampiran', 'keterangan']));
+        $fields = array_intersect_key($data, array_flip(['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'variabel', 'lampiran', 'keterangan']));
         if (isset($data['tembusan'])) {
             $fields['tembusan'] = implode("\n", $data['tembusan']) ?: null;
         }
@@ -177,6 +212,7 @@ class SuratKeluarController extends Controller
             'perihal' => $letter->perihal,
             'jenis_surat' => $letter->jenis_surat,
             'klasifikasi' => $letter->klasifikasi,
+            'variabel' => $letter->variabel,
             'lampiran' => $letter->lampiran,
             'tembusan' => $letter->tembusan ? explode("\n", $letter->tembusan) : [],
             'keterangan' => $letter->keterangan,

@@ -62,9 +62,11 @@ class SuratKeluarResource extends Resource
             PersuratanFields::tujuan()->required(),
             Forms\Components\TextInput::make('perihal')->label('Perihal')->required()->maxLength(255),
             Forms\Components\Grid::make(2)->schema([
-                PersuratanFields::jenis(),
+                PersuratanFields::jenis()->live(debounce: 400),
                 PersuratanFields::klasifikasi(),
             ]),
+            // The variable ({v}/{V}) the chosen jenis surat asks for; required ones block saving when empty.
+            Pages\ListSuratKeluar::variableField(),
             Forms\Components\Textarea::make('lampiran')->label('Lampiran')->rows(2)->maxLength(1000)
                 ->helperText('Keterangan lampiran yang tertulis di surat, mis. "1 berkas".'),
             static::attachmentUpload(),
@@ -144,17 +146,30 @@ class SuratKeluarResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nomor_surat')->label('Nomor Surat')->searchable()->copyable()->weight('semibold')
-                    ->description(fn (SuratKeluar $record) => $record->isDraft() ? 'Belum dilengkapi' : null),
-                Tables\Columns\TextColumn::make('tanggal_surat')->label('Tanggal')->date('d M Y')->sortable(),
-                Tables\Columns\TextColumn::make('tujuan_surat')->label('Tujuan')->searchable()->wrap()->placeholder('–'),
+                // Nomor urut tahunan, left of the full number: the quickest way to spot gaps or find a letter.
+                Tables\Columns\TextColumn::make('nomor_urut')->label('No. Urut')
+                    ->sortable()
+                    ->searchable(query: fn (Builder $query, string $search) => ctype_digit(trim($search))
+                        ? $query->orWhere('nomor_urut', (int) trim($search))
+                        : $query)
+                    ->alignCenter()
+                    ->fontFamily('mono')
+                    ->width('1%'),
+                Tables\Columns\TextColumn::make('nomor_surat')->label('Nomor Surat')->searchable()->copyable()
+                    // In number order (year, then sequence), not text order where B-10 comes before B-2.
+                    ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy('tahun', $direction)->orderBy('nomor_urut', $direction))->weight('semibold')
+                    ->description(fn (SuratKeluar $record) => $record->isDraft() ? 'Belum dilengkapi' : null)
+                    ->extraAttributes(['class' => 'whitespace-nowrap']),
+                Tables\Columns\TextColumn::make('tanggal_surat')->label('Tanggal')->date('d M Y')->sortable()
+                    ->extraAttributes(['class' => 'whitespace-nowrap']),
+                Tables\Columns\TextColumn::make('tujuan_surat')->label('Tujuan')->searchable()->wrap()->placeholder('–')->visibleFrom('md'),
                 Tables\Columns\TextColumn::make('perihal')->label('Perihal')->searchable()->wrap()->limit(80)->placeholder('–'),
-                Tables\Columns\TextColumn::make('jenis_surat')->label('Jenis')->badge()->color('gray')->placeholder('–'),
-                Tables\Columns\TextColumn::make('klasifikasi')->label('Klasifikasi')->searchable()->placeholder('–')->toggleable(),
-                Tables\Columns\TextColumn::make('pembuat.name')->label('Pembuat')->toggleable(),
+                Tables\Columns\TextColumn::make('jenis_surat')->label('Jenis')->badge()->color('gray')->placeholder('–')->visibleFrom('lg'),
+                Tables\Columns\TextColumn::make('klasifikasi')->label('Klasifikasi')->searchable()->placeholder('–')->toggleable()->visibleFrom('lg'),
+                Tables\Columns\TextColumn::make('pembuat.name')->label('Pembuat')->toggleable()->visibleFrom('xl'),
             ])
             ->defaultSort('nomor_urut', 'desc')
-            ->searchPlaceholder('Cari nomor, tujuan, perihal')
+            ->searchPlaceholder('Cari no. urut, nomor surat, tujuan, perihal')
             ->filtersFormColumns(2)
             ->filters([
                 Tables\Filters\SelectFilter::make('tahun')->label('Tahun')
