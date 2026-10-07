@@ -56,11 +56,12 @@ jobs:
             echo "$code $path"
             [ "$code" = "200" ] || fail=1
           done
-          # Panels send guests to the shared login page
+          # Panels send guests to the shared login page (production links are
+          # always https://, as behind the Coolify proxy)
           for path in /cp /portal; do
             target=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "http://localhost:8080$path")
             echo "$target $path"
-            [ "$target" = "302 http://localhost:8080/login" ] || fail=1
+            [ "$target" = "302 https://localhost:8080/login" ] || fail=1
           done
           # Compiled assets are referenced and served
           asset=$(curl -s http://localhost:8080/ | grep -o '/build/assets/[^"]*\.css' | head -1)
