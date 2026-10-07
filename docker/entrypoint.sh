@@ -20,6 +20,14 @@ if [ -z "${APP_KEY:-}" ]; then
     exit 1
 fi
 
+# Uploaded documents live in storage/: without a volume they vanish on the
+# next redeploy (Coolify's Dockerfile build pack adds none by itself).
+if ! grep -q " /var/www/html/storage " /proc/mounts; then
+    log "PERINGATAN: /var/www/html/storage BUKAN volume permanen. Dokumen dan gambar yang diunggah"
+    log "            akan HILANG saat redeploy. Coolify: Persistent Storage -> Volume Mount,"
+    log "            destination /var/www/html/storage, lalu Redeploy."
+fi
+
 # The storage volume may be empty on the first start: recreate the tree.
 mkdir -p storage/app/public storage/app/private storage/framework/cache/data \
     storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
