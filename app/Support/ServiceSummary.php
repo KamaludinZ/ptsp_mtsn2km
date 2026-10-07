@@ -6,33 +6,17 @@ use App\Models\Service;
 use App\Models\ServiceTemplate;
 use Illuminate\Support\HtmlString;
 
-/** A service's standard (requirements, time, fee, product) for request forms. */
+/** A service's standard and template berkas for the request forms. */
 class ServiceSummary
 {
+    /**
+     * Standar pelayanan for the request forms (portal "Ajukan" and the counter):
+     * facts, requirements, steps and the other components, the same as the
+     * public service page (resources/views/filament/components/service-standard).
+     */
     public static function html(?Service $service): HtmlString
     {
-        if (! $service) {
-            return new HtmlString('');
-        }
-
-        $rows = array_filter([
-            'Persyaratan' => $service->getAttribute('requirements'),
-            'Standar waktu' => $service->processing_time,
-            'Biaya' => (float) $service->fee > 0 ? 'Rp ' . number_format((float) $service->fee, 0, ',', '.') : 'Gratis',
-            'Produk layanan' => $service->product,
-            'Disposisi' => match ($mode = $service->disposition_mode) {
-                'none' => 'Langsung diproses petugas tanpa disposisi pimpinan.',
-                'custom' => 'Memerlukan disposisi pimpinan.',
-                default => 'Memerlukan disposisi ' . ServiceDisposition::mode($mode) . '.',
-            },
-        ], fn ($value) => filled($value));
-
-        // Persyaratan and produk are rich text (TinyMCE); the rest is plain.
-        return new HtmlString(collect($rows)->map(fn ($value, $label) => sprintf(
-            '<div style="margin:0 0 .5rem"><strong>%s</strong><div class="rich-text">%s</div></div>',
-            e($label),
-            in_array($label, ['Persyaratan', 'Produk layanan'], true) ? RichText::render($value) : e($value),
-        ))->implode(''));
+        return new HtmlString($service ? view('filament.components.service-standard', ['service' => $service])->render() : '');
     }
 
     /** Download links for the service's template berkas, empty when it has none. */

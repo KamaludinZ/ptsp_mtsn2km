@@ -111,7 +111,25 @@ class DispositionSettingsTest extends TestCase
             ->assertSee('Kepala Madrasah saja')
             ->assertSee('Anjuran TTD');
 
-        $this->assertStringContainsString('Memerlukan disposisi Kepala Madrasah saja.', (string) ServiceSummary::html($service->fresh()));
+        $this->assertStringContainsString('Disposisi Kepala Madrasah saja', (string) ServiceSummary::html($service->fresh()));
+    }
+
+    public function test_request_summary_shows_the_service_standard(): void
+    {
+        $service = Service::firstOrFail();
+        $service->update(['user_types_allowed' => ['umum'], 'fee' => 0, 'mechanism' => '<ol><li>Langkah satu</li><li>Langkah dua</li></ol>', 'product' => 'Surat keterangan resmi']);
+
+        $html = (string) ServiceSummary::html($service->fresh());
+
+        foreach (['Waktu penyelesaian', 'Gratis', 'Jalur pengajuan', 'Dapat diajukan oleh', 'Persyaratan',
+            'Sistem, Mekanisme, dan Prosedur', 'Langkah dua', 'Surat keterangan resmi', 'Penanganan Pengaduan'] as $text) {
+            $this->assertStringContainsString($text, $html);
+        }
+        $this->assertStringContainsString(route('onlineportal.service.detail', $service->slug), $html);
+
+        // A service the viewer cannot open publicly gets no dead link.
+        $service->update(['user_types_allowed' => ['siswa']]);
+        $this->assertStringNotContainsString(route('onlineportal.service.detail', $service->slug), (string) ServiceSummary::html($service->fresh()));
     }
 
     public function test_ticket_documents_show_the_signature_recommendation(): void

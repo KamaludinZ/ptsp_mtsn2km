@@ -3,40 +3,9 @@
 @section('title', $service->name . ' - Standar Pelayanan')
 
 @php
-    // 14 komponen standar pelayanan (Permen PANRB 15/2014). Enam komponen punya
-    // kolom sendiri di tabel services; sisanya disimpan di service_components
-    // (tab "Standar Pelayanan" di /cp).
-    $components = $service->components->pluck('content', 'component_type');
-
-    $requirementsText = $service->getAttributes()['requirements'] ?? null;
-    $requirementsList = json_decode((string) $requirementsText, true);
-
-    $standard = [
-        ['key' => 'dasar_hukum', 'no' => 1, 'icon' => 'fa-scale-balanced', 'title' => 'Dasar Hukum'],
-        ['key' => 'persyaratan', 'no' => 2, 'icon' => 'fa-list-check', 'title' => 'Persyaratan',
-            'list' => is_array($requirementsList) ? $requirementsList : null, 'value' => $requirementsText],
-        ['key' => 'mekanisme', 'no' => 3, 'icon' => 'fa-diagram-project', 'title' => 'Sistem, Mekanisme, dan Prosedur', 'value' => $service->mechanism],
-        ['key' => 'jangka_waktu', 'no' => 4, 'icon' => 'fa-clock', 'title' => 'Jangka Waktu Penyelesaian', 'value' => $service->processing_time],
-        ['key' => 'biaya', 'no' => 5, 'icon' => 'fa-money-bill-wave', 'title' => 'Biaya/Tarif',
-            'value' => $service->fee > 0 ? 'Rp ' . number_format($service->fee, 0, ',', '.') : 'Gratis (Rp 0)'],
-        ['key' => 'produk_layanan', 'no' => 6, 'icon' => 'fa-file-signature', 'title' => 'Produk Pelayanan', 'value' => $service->product],
-        ['key' => 'sarana_prasarana', 'no' => 7, 'icon' => 'fa-building', 'title' => 'Sarana dan Prasarana'],
-        ['key' => 'kompetensi_pelaksana', 'no' => 8, 'icon' => 'fa-user-tie', 'title' => 'Kompetensi Pelaksana'],
-        ['key' => 'pengawasan_internal', 'no' => 9, 'icon' => 'fa-user-shield', 'title' => 'Pengawasan Internal'],
-        ['key' => 'penanganan_pengaduan', 'no' => 10, 'icon' => 'fa-comments', 'title' => 'Penanganan Pengaduan, Saran, dan Masukan',
-            'value' => $service->complaint_handling, 'link' => [route('supervision.complaints.dashboard'), 'Sampaikan pengaduan']],
-        ['key' => 'jumlah_pelaksana', 'no' => 11, 'icon' => 'fa-users', 'title' => 'Jumlah Pelaksana'],
-        ['key' => 'jaminan_pelayanan', 'no' => 12, 'icon' => 'fa-handshake', 'title' => 'Jaminan Pelayanan'],
-        ['key' => 'jaminan_keamanan', 'no' => 13, 'icon' => 'fa-lock', 'title' => 'Jaminan Keamanan dan Keselamatan'],
-        ['key' => 'evaluasi_kinerja', 'no' => 14, 'icon' => 'fa-chart-line', 'title' => 'Evaluasi Kinerja Pelaksana',
-            'link' => [route('survey.form'), 'Isi Survei Kepuasan (SKM & SPAK)']],
-    ];
-
-    $userTypeLabels = [
-        'guru' => 'Guru', 'pegawai' => 'Pegawai', 'siswa' => 'Siswa', 'walimurid' => 'Wali Murid',
-        'alumni' => 'Alumni', 'instansi' => 'Instansi', 'umum' => 'Masyarakat Umum',
-    ];
-    $modeLabel = ['online' => 'Online', 'offline' => 'Offline (Loket PTSP)'][$service->mode] ?? 'Online & Offline';
+    // 14 komponen standar pelayanan (Permen PANRB 15/2014), shared with the request forms.
+    $standard = \App\Support\ServiceStandard::items($service);
+    $modeLabel = \App\Support\ServiceStandard::MODES[$service->mode] ?? 'Online & Offline';
 @endphp
 
 @section('content')
@@ -90,7 +59,7 @@
                     <div class="col-12 col-md-6">
                         <div class="small text-muted">Dapat diajukan oleh</div>
                         <div class="fw-bold">
-                            {{ collect((array) $service->user_types_allowed)->map(fn ($type) => $userTypeLabels[$type] ?? ucfirst($type))->implode(', ') ?: '-' }}
+                            {{ \App\Support\ServiceStandard::applicants($service) }}
                         </div>
                     </div>
                 </div>
@@ -177,10 +146,8 @@
             <div class="row g-3">
                 @foreach ($standard as $item)
                     @php
-                        // Kolom di tabel services (diisi lewat form /cp) diutamakan; isian
-                        // service_components dipakai bila kolomnya kosong.
-                        $content = filled($item['value'] ?? null) ? $item['value'] : ($components[$item['key']] ?? null);
-                        $list = filled($item['value'] ?? null) ? ($item['list'] ?? null) : null;
+                        $content = $item['content'];
+                        $list = $item['list'];
                     @endphp
                     <div class="col-md-6">
                         <article class="card h-100 border-0 shadow-sm">
@@ -203,11 +170,11 @@
                                     <p class="text-muted fst-italic mb-0">Belum diisi.</p>
                                 @endif
 
-                                @isset($item['link'])
+                                @if ($item['link'])
                                     <a href="{{ $item['link'][0] }}" class="d-inline-block mt-3 fw-semibold">
                                         {{ $item['link'][1] }} <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i>
                                     </a>
-                                @endisset
+                                @endif
                             </div>
                         </article>
                     </div>
