@@ -25,15 +25,23 @@ mkdir -p storage/app/public storage/app/private storage/framework/cache/data \
     storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 
-log "Menunggu database..."
-timeout="${DB_WAIT_TIMEOUT:-60}"
-elapsed=0
-until su-exec www-data php docker/db-check.php ready >/dev/null 2>&1; do
-    elapsed=$((elapsed + 2))
-    if [ "$elapsed" -ge "$timeout" ]; then
-        log "ERROR: database tidak dapat dihubungi setelah ${timeout} detik:"
-        su-exec www-data php docker/db-check.php ready || true
+log "Menunggu database $(su-exec www-data php docker/db-check.php target 2>/dev/null || echo '(konfigurasi tidak terbaca)')..."
+wait_limit="${DB_WAIT_TIMEOUT:-60}"
+started=$(date +%s)
+# Each attempt is capped (an unreachable host must not hang the start-up);
+# the reason is printed every ~10 s so it shows in the Coolify log.
+until reason=$(timeout 10 su-exec www-data php docker/db-check.php ready 2>&1); do
+    elapsed=$(( $(date +%s) - started ))
+    [ -n "$reason" ] || reason="tidak ada jawaban dalam 10 detik (host/jaringan salah?)"
+    if [ "$elapsed" -ge "$wait_limit" ]; then
+        log "ERROR: database tidak dapat dihubungi setelah ${elapsed} detik: ${reason}"
+        log "       Periksa DATABASE_URL (pakai 'Postgres URL (internal)' dari Coolify) atau DB_HOST/DB_PORT/DB_DATABASE/DB_USERNAME/DB_PASSWORD,"
+        log "       dan pastikan database berjalan di server/jaringan yang sama."
         exit 1
+    fi
+    if [ $(( elapsed / 10 )) -ne "${last_report:--1}" ]; then
+        last_report=$(( elapsed / 10 ))
+        log "Database belum siap (${elapsed} detik): ${reason}"
     fi
     sleep 2
 done

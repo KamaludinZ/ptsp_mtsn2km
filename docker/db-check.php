@@ -18,6 +18,21 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+$name = config('database.default');
+$connection = config("database.connections.{$name}");
+
+// Never hang on an unreachable host (wrong network/IP): libpq gives up after
+// 5 s so the entrypoint can report the reason.
+if (getenv('PGCONNECT_TIMEOUT') === false) {
+    putenv('PGCONNECT_TIMEOUT=5');
+}
+
+if (($argv[1] ?? 'ready') === 'target') {
+    // Where the app tries to connect, without the password (for the deploy log).
+    echo sprintf('%s://%s@%s:%s/%s', $connection['driver'] ?? $name, $connection['username'] ?? '?', $connection['host'] ?? '?', $connection['port'] ?? '?', $connection['database'] ?? '?'), PHP_EOL;
+    exit(0);
+}
+
 try {
     DB::connection()->getPdo();
 
