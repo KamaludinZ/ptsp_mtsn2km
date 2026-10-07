@@ -1,6 +1,127 @@
 @php
     use App\Support\LogReader;
+
+    $roleTypes = \App\Filament\Pages\System\ActivityTrail::TYPES;
+    $cards = [
+        ['key' => 'switches_today', 'label' => 'Perpindahan peran hari ini', 'icon' => 'heroicon-o-arrows-right-left'],
+        ['key' => 'open_sessions', 'label' => 'Sesi ganti akun berjalan', 'icon' => 'heroicon-o-user-circle'],
+        ['key' => 'sessions_week', 'label' => 'Sesi ganti akun 7 hari', 'icon' => 'heroicon-o-calendar-days'],
+        ['key' => 'impersonated_actions', 'label' => 'Aksi lewat ganti akun (7 hari)', 'icon' => 'heroicon-o-exclamation-triangle'],
+    ];
 @endphp
+
+{{-- Perpindahan peran & ganti akun: khusus administrator (SystemMonitor::canSeeRoleAudit). --}}
+@if ($roleAudit)
+<x-filament::section heading="Perpindahan peran & ganti akun" icon="heroicon-o-shield-exclamation" data-role-audit
+    description="Hanya administrator. Catatan tidak dapat diubah atau dihapus.">
+    <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))">
+        @foreach ($cards as $card)
+            <div class="rounded-lg ring-1 ring-gray-950/5 dark:ring-white/10" style="padding:.75rem 1rem" data-role-audit-card="{{ $card['key'] }}">
+                <div class="text-xs text-gray-500 dark:text-gray-400" style="display:flex;align-items:center;gap:.375rem">
+                    <x-filament::icon :icon="$card['icon']" class="h-4 w-4" />
+                    {{ $card['label'] }}
+                </div>
+                <div @class([
+                    'text-2xl font-semibold tabular-nums',
+                    'text-warning-600 dark:text-warning-400' => $card['key'] === 'open_sessions' && $roleAudit['summary'][$card['key']] > 0,
+                    'text-gray-950 dark:text-white' => ! ($card['key'] === 'open_sessions' && $roleAudit['summary'][$card['key']] > 0),
+                ])>{{ $roleAudit['summary'][$card['key']] }}</div>
+            </div>
+        @endforeach
+    </div>
+
+    {{-- Saringan & pencarian (berlaku untuk rekap dan catatan terbaru) --}}
+    <div data-role-audit-filters style="display:grid;gap:.75rem;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));margin-top:1rem">
+        <x-filament::input.wrapper prefix-icon="heroicon-m-magnifying-glass" style="grid-column:span 2 / span 2">
+            <x-filament::input type="search" wire:model.live.debounce.400ms="roleAuditFilters.cari" placeholder="Cari pengguna atau kegiatan" aria-label="Cari perpindahan peran dan ganti akun" />
+        </x-filament::input.wrapper>
+        <x-filament::input.wrapper>
+            <x-filament::input.select wire:model.live="roleAuditFilters.pengguna" aria-label="Pengguna">
+                <option value="">Semua pengguna</option>
+                @foreach ($roleAudit['options']['pengguna'] as $name)
+                    <option value="{{ $name }}">{{ $name }}</option>
+                @endforeach
+            </x-filament::input.select>
+        </x-filament::input.wrapper>
+        <x-filament::input.wrapper>
+            <x-filament::input.select wire:model.live="roleAuditFilters.peran" aria-label="Peran aktif">
+                <option value="">Semua peran</option>
+                @foreach ($roleAudit['options']['peran'] as $role)
+                    <option value="{{ $role }}">{{ $role }}</option>
+                @endforeach
+            </x-filament::input.select>
+        </x-filament::input.wrapper>
+        <x-filament::input.wrapper>
+            <x-filament::input.select wire:model.live="roleAuditFilters.jenis" aria-label="Jenis">
+                <option value="">Semua jenis</option>
+                <option value="role_switch">Perpindahan peran</option>
+                <option value="impersonation">Ganti akun</option>
+            </x-filament::input.select>
+        </x-filament::input.wrapper>
+        <x-filament::input.wrapper>
+            <x-filament::input type="date" wire:model.live="roleAuditFilters.dari" aria-label="Dari tanggal" />
+        </x-filament::input.wrapper>
+        <x-filament::input.wrapper>
+            <x-filament::input type="date" wire:model.live="roleAuditFilters.sampai" aria-label="Sampai tanggal" />
+        </x-filament::input.wrapper>
+    </div>
+    @if ($roleAudit['filtering'])
+        <x-filament::link tag="button" wire:click="resetRoleAuditFilters" icon="heroicon-m-x-mark" color="gray" size="sm" style="margin-top:.5rem">
+            Hapus saringan
+        </x-filament::link>
+    @endif
+
+    {{-- Rekap per pengguna–peran aktif, 7 hari --}}
+    <div style="overflow-x:auto;margin-top:1rem">
+        <table class="w-full text-sm" style="border-collapse:collapse;min-width:40rem" data-role-audit-recap>
+            <caption class="text-left text-xs font-medium text-gray-500 dark:text-gray-400" style="padding-bottom:.375rem">Rekap per pengguna & peran aktif, 7 hari terakhir</caption>
+            <thead>
+                <tr class="text-left text-gray-500 dark:text-gray-400">
+                    <th scope="col" style="padding:.375rem .75rem .375rem 0;font-weight:500">Pengguna</th>
+                    <th scope="col" style="padding:.375rem .75rem;font-weight:500">Peran aktif</th>
+                    <th scope="col" style="padding:.375rem .75rem;font-weight:500;text-align:right">Pindah peran</th>
+                    <th scope="col" style="padding:.375rem .75rem;font-weight:500;text-align:right">Sesi ganti akun</th>
+                    <th scope="col" style="padding:.375rem .75rem;font-weight:500;text-align:right">Aksi tiket</th>
+                    <th scope="col" style="padding:.375rem .75rem;font-weight:500;text-align:right">Lewat ganti akun</th>
+                    <th scope="col" style="padding:.375rem 0 .375rem .75rem;font-weight:500">Terakhir</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($roleAudit['recap'] as $row)
+                    <tr class="border-t border-gray-200 dark:border-white/10">
+                        <td class="font-semibold text-gray-950 dark:text-white" style="padding:.375rem .75rem .375rem 0">{{ $row['user'] }}</td>
+                        <td class="text-gray-700 dark:text-gray-200" style="padding:.375rem .75rem">{{ $row['role'] }}</td>
+                        @foreach (['switches', 'sessions', 'ticket_actions', 'impersonated'] as $key)
+                            <td @class(['tabular-nums', 'text-warning-600 dark:text-warning-400 font-semibold' => $key === 'impersonated' && $row[$key] > 0, 'text-gray-700 dark:text-gray-200' => ! ($key === 'impersonated' && $row[$key] > 0)])
+                                style="padding:.375rem .75rem;text-align:right">{{ $row[$key] ?: '–' }}</td>
+                        @endforeach
+                        <td class="text-gray-500 dark:text-gray-400" style="padding:.375rem 0 .375rem .75rem;white-space:nowrap">{{ $row['last']->translatedFormat('j M, H.i') }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="7" class="text-gray-500 dark:text-gray-400" style="padding:.5rem 0">Belum ada aktivitas.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <ol role="list" style="margin-top:1rem">
+        @forelse ($roleAudit['latest'] as $entry)
+            <li class="{{ $loop->first ? '' : 'border-t border-gray-200 dark:border-white/10' }}" style="display:flex;flex-wrap:wrap;gap:.25rem .75rem;padding:.5rem 0;align-items:baseline">
+                <span class="text-xs text-gray-500 dark:text-gray-400" style="min-width:7.5rem">{{ $entry['at']->translatedFormat('j M Y H:i') }}</span>
+                <x-filament::badge :color="$roleTypes[$entry['type']]['color']" size="sm">{{ $roleTypes[$entry['type']]['label'] }}</x-filament::badge>
+                <span class="text-sm font-semibold text-gray-950 dark:text-white">{{ $entry['user'] }}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">{{ $entry['description'] }}</span>
+            </li>
+        @empty
+            <li class="text-sm text-gray-500 dark:text-gray-400">Belum ada perpindahan peran atau sesi ganti akun.</li>
+        @endforelse
+    </ol>
+
+    <x-filament::link :href="\App\Filament\Pages\System\ActivityTrail::getUrl()" icon="heroicon-m-finger-print" size="sm" style="margin-top:.5rem">
+        Buka Rekam Jejak Aktivitas
+    </x-filament::link>
+</x-filament::section>
+@endif
 
 <x-filament::section heading="Log aplikasi" icon="heroicon-o-document-text"
     :description="$logFile ? 'Entri terbaru dari ' . basename($logFile) . ' (pesan saja, tanpa jejak tumpukan).' : 'Belum ada berkas log.'">

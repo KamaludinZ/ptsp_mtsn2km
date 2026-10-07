@@ -51,6 +51,27 @@ class SystemMonitor extends Page
 
     public string $auditSearch = '';
 
+    /** Saringan bagian perpindahan peran & ganti akun: cari, pengguna, peran, jenis, dari, sampai. */
+    public array $roleAuditFilters = ['cari' => '', 'pengguna' => '', 'peran' => '', 'jenis' => '', 'dari' => '', 'sampai' => ''];
+
+    /**
+     * Perpindahan peran & ganti akun: administrators only, in the admin role,
+     * and not while using someone else's account (not even another admin's).
+     */
+    public static function canSeeRoleAudit(): bool
+    {
+        $user = auth()->user();
+
+        return $user instanceof \App\Models\User
+            && \App\Support\ActiveRoles::hasRole($user, 'admin')
+            && ! \App\Support\Impersonation::active();
+    }
+
+    public function resetRoleAuditFilters(): void
+    {
+        $this->roleAuditFilters = array_map(fn () => '', $this->roleAuditFilters);
+    }
+
     /** Administrators working as one: logs and the activity trail are not shown in another active role. */
     public static function canAccess(): bool
     {
@@ -150,6 +171,14 @@ class SystemMonitor extends Page
             'logs' => $tab === 'log' ? LogReader::entries($this->logLevel ?: null, trim($this->logSearch) ?: null) : null,
             'logFile' => $tab === 'log' ? LogReader::latestFile() : null,
             'audit' => $tab === 'log' ? $this->audit() : null,
+            // Perpindahan peran & ganti akun (admin-only panel in the Log & Audit tab).
+            'roleAudit' => $tab === 'log' && self::canSeeRoleAudit() ? [
+                'summary' => \App\Support\AuditPanelStub::summary(),
+                'latest' => \App\Support\AuditPanelStub::latest($this->roleAuditFilters),
+                'recap' => \App\Support\AuditPanelStub::recap($this->roleAuditFilters),
+                'options' => \App\Support\AuditPanelStub::options(),
+                'filtering' => collect($this->roleAuditFilters)->filter(fn ($v) => filled($v))->isNotEmpty(),
+            ] : null,
             'update' => $tab === 'update' ? $this->updateInfo($monitor) : null,
         ];
     }

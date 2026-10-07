@@ -66,9 +66,8 @@ class ActivityTrail extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        $user = auth()->user();
-
-        return $user instanceof User && ActiveRoles::hasRole($user, 'admin');
+        // Same rule as the Log & Audit panel: an administrator, not through a borrowed account.
+        return SystemMonitor::canSeeRoleAudit();
     }
 
     public function mount(): void
