@@ -48,7 +48,9 @@ class TicketSchemaTest extends TestCase
                 DB::transaction($delete);
                 $this->fail('Hard delete should be refused.');
             } catch (QueryException $e) {
-                $this->assertSame('23001', $e->getCode()); // restrict_violation
+                // Refused by ON DELETE RESTRICT: PostgreSQL 18 reports restrict_violation,
+                // earlier versions (16, used in CI and Docker) foreign_key_violation.
+                $this->assertContains($e->getCode(), ['23001', '23503']);
             }
         }
         $this->assertNotNull(Ticket::find($ticket->id));

@@ -144,6 +144,30 @@ dinonaktifkan di Docker, karena di sana update dilakukan dengan deploy ulang ima
 
 **Cara B (git):** `git pull && scripts/build-production.sh`.
 
+### Berkas yang aman saat update
+
+Yang **harus tetap** dan tidak pernah ada di paket rilis maupun di git:
+
+| Data | Tempat |
+| --- | --- |
+| Konfigurasi dan `APP_KEY` | `~/ptsp-app/.env` |
+| Dokumen pemohon dan berkas surat (privat) | `~/ptsp-app/storage/app/private` |
+| Logo, gambar editor, foto tamu, slider (publik) | `~/ptsp-app/storage/app/public`, tampil lewat symlink `public/storage` |
+| Data aplikasi, session, cache | database PostgreSQL |
+
+Folder lain (`app`, `config`, `database`, `resources`, `routes`, `vendor`, `public/build`, ...)
+boleh ditimpa setiap update. Aturannya:
+
+- **Ekstrak paket di atas folder lama.** Jangan menghapus folder aplikasi lalu mengunggah ulang,
+  karena `.env` dan `storage/app` ikut terhapus.
+- Domain yang terkunci ke `public_html` (langkah 7): jangan menimpa `public_html/index.php` yang
+  sudah diubah, dan jangan menghapus symlink `public_html/storage`. Salin hanya `public/build`,
+  `public/js`, dan `public/css`.
+- Jangan mengganti `APP_KEY`. Jangan menjalankan `migrate:fresh`, `migrate:reset`, atau `db:wipe`
+  di server produksi.
+- `scripts/post-deploy.sh` aman dijalankan berulang: hanya menambah migrasi baru, membuat ulang
+  symlink dan cache, serta membuang `public/hot` (sisa `npm run dev` yang membuat tampilan rusak).
+
 ## 9. Backup
 
 Minimal setiap hari, dan selalu sebelum update:
@@ -179,7 +203,9 @@ Memulihkan database: `pg_restore --clean --if-exists --no-owner -d <DB_DATABASE>
 | `could not find driver` | Ekstensi `pdo_pgsql` belum aktif. Aktifkan di cPanel → *Select PHP Version → Extensions*. |
 | `permission denied to create extension "pg_trgm"` | Minta penyedia hosting membuat extension `pg_trgm` (langkah 2). |
 | Error 419 saat login | Buka situs lewat alamat yang sama dengan `APP_URL` dan pastikan HTTPS aktif. |
-| Tampilan tanpa CSS | `public/build` tidak ikut terunggah atau document root salah (langkah 7). |
+| Tampilan tanpa CSS | `public/build` tidak ikut terunggah atau document root salah (langkah 7). Hapus `public/hot` bila ada (sisa `npm run dev`). |
+| `ERR_TOO_MANY_REDIRECTS` di belakang Cloudflare | Pakai `.htaccess` terbaru (mengenali `X-Forwarded-Proto`) dan set SSL Cloudflare ke *Full*, lalu isi `TRUSTED_PROXIES=*`. |
+| Editor teks diblokir (*Content Security Policy*) | `.htaccess` lama mengirim CSP sendiri. Pakai `.htaccess` terbaru: header keamanan dikirim oleh aplikasi. |
 | Gambar/foto tidak tampil | Symlink `public/storage` belum ada (langkah 7.3). |
 | Editor teks tidak muncul | `TINYMCE_API_KEY` kosong atau domain belum terdaftar di tiny.cloud. |
 | Pengingat/monitoring tidak jalan | Cron scheduler belum dipasang (langkah 6). |

@@ -51,10 +51,16 @@ jobs:
       - name: Smoke test pages
         run: |
           fail=0
-          for path in /up / /login /register /services /survey /tracking /pengumuman /complaints/submit /cp/login; do
+          for path in /up / /login /register /services /survey /tracking /pengumuman /complaints /complaints/track; do
             code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8080$path")
             echo "$code $path"
             [ "$code" = "200" ] || fail=1
+          done
+          # Panels send guests to the shared login page
+          for path in /cp /portal; do
+            target=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "http://localhost:8080$path")
+            echo "$target $path"
+            [ "$target" = "302 http://localhost:8080/login" ] || fail=1
           done
           # Compiled assets are referenced and served
           asset=$(curl -s http://localhost:8080/ | grep -o '/build/assets/[^"]*\.css' | head -1)
@@ -74,6 +80,23 @@ jobs:
           done
           curl -fsS http://localhost:8080/up > /dev/null
           # Restart must not seed a second time
+          docker compose exec -T postgres psql -U ptsp -d ptsp -tAc "select count(*) from users" | grep -qx 1
+
+      - name: Uploaded files and data survive a redeploy
+        run: |
+          # An uploaded document (private) and a public image, as the app stores them
+          docker compose exec -T app sh -c 'echo dokumen > storage/app/private/ci-redeploy.txt && echo gambar > storage/app/public/ci-redeploy.txt'
+          # Redeploy = rebuild the image and replace the container, as Coolify does
+          docker compose build app
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --force-recreate --no-deps app
+          for i in $(seq 1 60); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q app)")" = "healthy" ] && break
+            sleep 5
+          done
+          docker compose exec -T app sh -c 'grep -qx dokumen storage/app/private/ci-redeploy.txt && grep -qx gambar storage/app/public/ci-redeploy.txt'
+          # Public files are served through the storage link; private ones never are
+          [ "$(curl -s http://localhost:8080/storage/ci-redeploy.txt)" = "gambar" ]
+          [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/storage/app/private/ci-redeploy.txt)" = "404" ]
           docker compose exec -T postgres psql -U ptsp -d ptsp -tAc "select count(*) from users" | grep -qx 1
 
       - name: Container logs

@@ -50,18 +50,10 @@ FileETag All
 </IfModule>
 
 <IfModule mod_headers.c>
-    # Security headers for production
-    Header always set X-Content-Type-Options nosniff
-    Header always set X-Frame-Options DENY
-    Header always set X-XSS-Protection "1; mode=block"
-    Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    
-    # Content Security Policy (CSP) - Adjust as needed for your application
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
-    
-    # Strict Transport Security (HSTS)
-    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" env=HTTPS
-    
+    # Security headers (CSP, X-Frame-Options, HSTS, ...) come from the app's
+    # SecurityHeaders middleware. Do not set them here as well: Apache would
+    # send a second CSP and browsers enforce both, blocking the TinyMCE editor.
+
     # Remove server signature
     Header unset Server
     Header unset X-Powered-By
@@ -74,8 +66,12 @@ FileETag All
 
     RewriteEngine On
 
-    # Redirect HTTP to HTTPS in production
+    # Redirect HTTP to HTTPS in production. Behind Cloudflare or a reverse
+    # proxy the HTTPS is on the proxy (X-Forwarded-Proto): no redirect then,
+    # otherwise every request loops. Local development is left on http.
     RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+    RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:\d+)?$ [NC]
     RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 

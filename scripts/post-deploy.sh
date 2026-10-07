@@ -17,6 +17,8 @@ trap 'php artisan up' EXIT
 mkdir -p storage/app/public storage/app/private storage/framework/cache/data storage/framework/sessions \
          storage/framework/views storage/logs bootstrap/cache
 chmod -R ug+rwX storage bootstrap/cache
+# Left by `npm run dev`: in production it makes pages load CSS/JS from a dev server
+rm -f public/hot
 
 php artisan optimize:clear
 php artisan migrate --force

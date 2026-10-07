@@ -126,6 +126,39 @@ Cukup push atau merge ke branch `master`. Coolify akan:
 
 Data di volume tetap aman.
 
+## Letak data dan keamanan redeploy
+
+Setiap deploy membuat **image baru** dan **container baru**. Isi container lama dibuang. Yang
+selamat hanya isi volume dan Environment Variables:
+
+| Data | Tempat | Saat redeploy |
+| --- | --- | --- |
+| Database (tiket, surat, akun, pengaturan, log audit) | volume `ptsp-postgres` (Opsi B: database Coolify) | Tetap |
+| Dokumen pemohon dan berkas surat (privat) | volume `ptsp-storage` → `storage/app/private` | Tetap |
+| Logo, gambar editor, foto tamu, slider (publik, lewat `/storage/...`) | volume `ptsp-storage` → `storage/app/public` | Tetap |
+| Session, cache | tabel database | Tetap (pengguna tidak ter-logout) |
+| `APP_KEY`, password database, SMTP, dsb. | Environment Variables Coolify | Tetap |
+| Kode, `vendor/`, aset `public/build` | image | **Diganti** versi baru |
+
+Karena itu aplikasi tidak pernah menyimpan berkas di luar folder `storage/`. Fitur
+*Pembaruan → Unggah paket* sengaja ditolak di container, karena perubahan kodenya akan hilang
+saat redeploy. CI (`.github/workflows/docker.yml`) menguji hal ini pada setiap push: menulis
+berkas privat dan publik, membangun ulang image, mengganti container, lalu memastikan berkas dan
+database masih ada, berkas publik tersaji, dan berkas privat tidak bisa diakses dari luar.
+
+**Jangan lakukan** (data bisa hilang atau tidak terbaca):
+
+- Mengganti nama volume `ptsp-storage`/`ptsp-postgres` di `docker-compose.yml`. Nama baru berarti
+  volume baru yang kosong.
+- Menghapus resource di Coolify dengan opsi *Delete volumes* dicentang.
+- Membuat resource baru, misalnya pindah dari Docker Compose ke Dockerfile, tanpa memindahkan
+  data dulu (bagian 7). Volume milik resource lama tidak ikut pindah.
+- Mengganti `APP_KEY` atau `SERVICE_PASSWORD_POSTGRES` setelah deploy pertama.
+- Menjalankan `php artisan migrate:fresh`, `migrate:reset`, atau `db:wipe` di Terminal produksi.
+
+Sebelum update besar, buat backup (bagian 6). Migrasi berjalan otomatis setiap deploy dan hanya
+menambah perubahan baru; data lama tidak dihapus.
+
 ## 6. Backup
 
 Lakukan backup berkala. Minimal setiap hari untuk database, dan sebelum update besar.
