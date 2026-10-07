@@ -245,6 +245,11 @@ Pilih cara ini jika ingin fitur backup terjadwal Coolify ke S3.
 | --- | --- |
 | Log: `APP_KEY belum diisi` | Isi `APP_KEY` (langkah 1.4), lalu deploy ulang. |
 | Log: `database tidak dapat dihubungi` | Service postgres belum sehat atau password berubah. Cek log postgres. Jika volume database dibuat dengan password lama, password baru tidak berlaku, jadi kembalikan password lama. |
+| Situs menampilkan **502 Bad Gateway**, padahal log berisi `GET /up ... 200` | Proxy Coolify meneruskan ke port yang salah. Build pack Dockerfile: isi **Ports Exposes** dengan `8080`, kosongkan *Ports Mappings*, lalu **Redeploy** (bukan sekadar restart). |
+| Log berhenti di `Menunggu database ...` lalu rollback | Database tidak terjangkau. Log menampilkan tujuan koneksi dan alasannya. Isi `DATABASE_URL` dengan *Postgres URL (internal)* dari resource database di server yang sama; jangan memakai `localhost`. |
+| `invalid interpolation format ... redirectregex.replacement=${1}://${2}` | Bug Coolify pada redirect www ↔ non-www. Isi satu domain saja dan set *Direction* ke **Allow www & non-www**. |
+| Branch `main` tidak ditemukan saat clone | Branch repo ini `master`. Ganti *Git Branch* di Configuration. |
+| Jam di log scheduler mundur 7 jam (UTC) | Image lama tanpa `APP_TIMEZONE`. Redeploy versi terbaru (bawaan `Asia/Jakarta`) atau isi `APP_TIMEZONE=Asia/Jakarta`. |
 | Halaman error 500 | Isi `LOG_LEVEL=debug`, lalu deploy ulang dan lihat tab Logs. Jangan menyalakan `APP_DEBUG` di produksi. |
 | Tampilan tanpa CSS atau tautan `http://` | Pastikan `APP_URL` memakai `https://` dan sama persis dengan domain. |
 | Error 419 (page expired) saat login | Buka situs lewat domain yang sama dengan `APP_URL`, lalu hapus cookie browser. |
