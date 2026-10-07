@@ -55,6 +55,81 @@ class SecurityIpBlockTest extends TestCase
         $this->assertNotContains('203.0.113.10', $this->blocked());
     }
 
+    public function test_blocks_live_in_the_database_and_survive_clearing_the_cache(): void
+    {
+        $security = app(SecurityMonitor::class);
+        $security->blockIp('203.0.113.20', 'Serangan berulang', null, 'admin@example.test');
+
+        $this->assertDatabaseHas('blocked_ips', ['ip' => '203.0.113.20', 'reason' => 'Serangan berulang', 'expires_at' => null]);
+
+        \Illuminate\Support\Facades\Cache::flush();
+        $this->assertNotNull($security->isBlocked('203.0.113.20'));
+
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.20'])->get('/')->assertForbidden();
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.21'])->get('/')->assertOk();
+    }
+
+    public function test_expired_blocks_no_longer_apply(): void
+    {
+        $security = app(SecurityMonitor::class);
+        $security->blockIp('203.0.113.30', 'Sementara', 1, 'admin@example.test');
+        $this->assertNotNull($security->isBlocked('203.0.113.30'));
+
+        $this->travel(2)->hours();
+
+        $this->assertNull($security->isBlocked('203.0.113.30'));
+        $this->assertNotContains('203.0.113.30', $this->blocked());
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.30'])->get('/')->assertOk();
+    }
+
+    public function test_blocks_kept_only_in_the_old_cache_are_carried_over(): void
+    {
+        \Illuminate\Support\Facades\DB::table('blocked_ips')->delete();
+        \Illuminate\Support\Facades\Cache::put('blocked_ips', [
+            '198.51.100.7' => ['reason' => 'Lama', 'blocked_at' => now()->subDay()->toDateTimeString(), 'blocked_by' => 'admin', 'expires_at' => null],
+            '198.51.100.8' => ['reason' => 'Kedaluwarsa', 'blocked_at' => now()->subDays(3)->toDateTimeString(), 'blocked_by' => 'admin', 'expires_at' => now()->subDay()->toDateTimeString()],
+        ]);
+
+        (require database_path('migrations/2026_10_08_140000_create_blocked_ips_table.php'))->down();
+        (require database_path('migrations/2026_10_08_140000_create_blocked_ips_table.php'))->up();
+
+        $this->assertSame(['198.51.100.7'], $this->blocked());
+    }
+
+    public function test_block_and_unblock_through_the_api(): void
+    {
+        \Laravel\Sanctum\Sanctum::actingAs(auth()->user());
+
+        $this->postJson('/api/monitoring/ip-diblokir', ['ip' => '192.0.2.44', 'alasan' => 'Pemindaian port', 'jam' => 12])
+            ->assertCreated()
+            ->assertJsonPath('message', '192.0.2.44 diblokir.')
+            ->assertJsonPath('blokir.reason', 'Pemindaian port');
+
+        $this->getJson('/api/monitoring/ip-diblokir')->assertOk()
+            ->assertJsonFragment(['ip' => '192.0.2.44', 'alasan' => 'Pemindaian port', 'permanen' => false]);
+
+        $this->postJson('/api/monitoring/ip-diblokir', ['ip' => 'bukan-ip', 'alasan' => 'x'])->assertUnprocessable()->assertJsonValidationErrors('ip');
+        $this->postJson('/api/monitoring/ip-diblokir', ['ip' => '127.0.0.1', 'alasan' => 'Uji'])
+            ->assertUnprocessable()->assertJsonValidationErrors(['ip' => 'Alamat ini adalah IP Anda sendiri.']);
+
+        $this->deleteJson('/api/monitoring/ip-diblokir/192.0.2.44')->assertOk()->assertJsonPath('message', 'Blokir 192.0.2.44 dibuka.');
+        $this->deleteJson('/api/monitoring/ip-diblokir/192.0.2.44')->assertNotFound();
+        $this->assertNotContains('192.0.2.44', $this->blocked());
+
+        $this->assertSame(['Memblokir IP 192.0.2.44', 'Membuka blokir IP 192.0.2.44'],
+            \Spatie\Activitylog\Models\Activity::inLog('audit')->where('description', 'like', '%192.0.2.44')->oldest('id')->pluck('description')->all());
+    }
+
+    public function test_other_staff_cannot_use_the_block_api(): void
+    {
+        $officer = User::factory()->create();
+        $officer->assignRole(Role::findOrCreate('front_desk', 'web'));
+        \Laravel\Sanctum\Sanctum::actingAs($officer);
+
+        $this->postJson('/api/monitoring/ip-diblokir', ['ip' => '192.0.2.45', 'alasan' => 'Uji'])->assertForbidden();
+        $this->getJson('/api/monitoring/ip-diblokir')->assertForbidden();
+    }
+
     public function test_admin_unblocks_an_ip(): void
     {
         app(SecurityMonitor::class)->blockIp('198.51.100.4', 'Uji', null, 'admin@example.test');

@@ -26,43 +26,18 @@ class CheckBlockedIP
             return $next($request);
         }
 
-        $blockedIPs = Cache::get('blocked_ips', []);
+        // Active blocks from the blocked_ips table (cached briefly); expired ones never match.
+        if ($blockData = app(\App\Support\SecurityMonitor::class)->isBlocked($ip)) {
+            Log::warning('Blocked IP attempted access', [
+                'ip' => $ip,
+                'url' => $request->fullUrl(),
+                'user_agent' => $request->userAgent(),
+            ]);
 
-        if (isset($blockedIPs[$ip])) {
-            $blockData = $blockedIPs[$ip];
-
-            // Check if the block has expired
-            if (isset($blockData['expires_at']) && $blockData['expires_at']) {
-                if (Carbon::parse($blockData['expires_at'])->isPast()) {
-                    // Remove expired block
-                    unset($blockedIPs[$ip]);
-                    Cache::put('blocked_ips', $blockedIPs, now()->addYears(10));
-                } else {
-                    // Block is still active
-                    Log::warning('Blocked IP attempted access', [
-                        'ip' => $ip,
-                        'url' => $request->fullUrl(),
-                        'user_agent' => $request->userAgent(),
-                    ]);
-
-                    return response()->view('errors.blocked', [
-                        'reason' => $blockData['reason'] ?? 'Your IP address has been blocked.',
-                        'expires_at' => $blockData['expires_at'],
-                    ], 403);
-                }
-            } else {
-                // Permanent block
-                Log::warning('Blocked IP attempted access', [
-                    'ip' => $ip,
-                    'url' => $request->fullUrl(),
-                    'user_agent' => $request->userAgent(),
-                ]);
-
-                return response()->view('errors.blocked', [
-                    'reason' => $blockData['reason'] ?? 'Your IP address has been blocked.',
-                    'expires_at' => null,
-                ], 403);
-            }
+            return response()->view('errors.blocked', [
+                'reason' => $blockData['reason'] ?? 'Your IP address has been blocked.',
+                'expires_at' => $blockData['expires_at'],
+            ], 403);
         }
 
         return $next($request);

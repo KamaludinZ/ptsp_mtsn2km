@@ -104,6 +104,74 @@ class MonitoringController extends Controller
         ]);
     }
 
+    /** GET /api/monitoring/integrasi: Email/WhatsApp switches and the last 24 hours of deliveries. */
+    public function integrations(): JsonResponse
+    {
+        $this->authorizeAdmin();
+
+        return response()->json(['data' => collect($this->monitor->integrations())->map(fn (array $channel, string $key) => [
+            'kanal' => $key,
+            'label' => $channel['label'],
+            'aktif' => $channel['enabled'],
+            'terkirim_24_jam' => $channel['sent'],
+            'gagal_24_jam' => $channel['failed'],
+            'gagal_terakhir' => $channel['last_failure'] ? [
+                'waktu' => $channel['last_failure']['at']?->toIso8601String(),
+                'galat' => $channel['last_failure']['error'],
+            ] : null,
+        ])->values()]);
+    }
+
+    /** GET /api/monitoring/ip-diblokir: active blocks. */
+    public function blockedIps(\App\Support\SecurityMonitor $security): JsonResponse
+    {
+        $this->authorizeAdmin();
+
+        return response()->json(['data' => collect($security->blockedIps())->map(fn (array $block, string $ip) => [
+            'ip' => $ip,
+            'alasan' => $block['reason'],
+            'diblokir_oleh' => $block['blocked_by'],
+            'diblokir' => $block['blocked_at'],
+            'berakhir' => $block['expires_at'],
+            'permanen' => $block['expires_at'] === null,
+        ])->values()]);
+    }
+
+    /** POST /api/monitoring/ip-diblokir {ip, alasan, jam?}: block an address (jam empty = permanent). */
+    public function blockIp(Request $request, \App\Support\SecurityMonitor $security): JsonResponse
+    {
+        $this->authorizeAdmin();
+
+        $data = $request->validate([
+            'ip' => ['required', 'ip', Rule::notIn([$request->ip()])],
+            'alasan' => ['required', 'string', 'max:255'],
+            'jam' => ['nullable', 'integer', 'min:1', 'max:8760'],
+        ], ['ip.not_in' => 'Alamat ini adalah IP Anda sendiri.']);
+
+        $security->blockIp($data['ip'], $data['alasan'], $data['jam'] ?? null, $request->user()->email);
+        activity('audit')->causedBy($request->user())
+            ->withProperties(['ip' => $request->ip(), 'ip_diblokir' => $data['ip'], 'jam' => $data['jam'] ?? null])
+            ->log("Memblokir IP {$data['ip']}");
+
+        return response()->json(['message' => "{$data['ip']} diblokir.", 'blokir' => $security->blockedIps()[$data['ip']] ?? null], 201);
+    }
+
+    /** DELETE /api/monitoring/ip-diblokir/{ip}: lift a block. */
+    public function unblockIp(Request $request, string $ip, \App\Support\SecurityMonitor $security): JsonResponse
+    {
+        $this->authorizeAdmin();
+
+        if (! $security->unblockIp($ip, $request->user()->email)) {
+            return response()->json(['message' => "{$ip} tidak ada di daftar blokir."], 404);
+        }
+
+        activity('audit')->causedBy($request->user())
+            ->withProperties(['ip' => $request->ip(), 'ip_dibuka' => $ip])
+            ->log("Membuka blokir IP {$ip}");
+
+        return response()->json(['message' => "Blokir {$ip} dibuka."]);
+    }
+
     /** GET /api/monitoring/keamanan */
     public function security(): JsonResponse
     {

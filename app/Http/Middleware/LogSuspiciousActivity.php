@@ -167,17 +167,10 @@ class LogSuspiciousActivity
      */
     private function autoBlockIP($ip, $reason)
     {
-        $blockedIPs = Cache::get('blocked_ips', []);
+        $security = app(\App\Support\SecurityMonitor::class);
 
-        if (!isset($blockedIPs[$ip])) {
-            $blockedIPs[$ip] = [
-                'reason' => $reason,
-                'blocked_at' => now()->toDateTimeString(),
-                'blocked_by' => 'System (Auto-block)',
-                'expires_at' => now()->addHours(24)->toDateTimeString(), // Block for 24 hours
-            ];
-
-            Cache::put('blocked_ips', $blockedIPs, now()->addYears(10));
+        if (! $security->isBlocked($ip)) {
+            $security->blockIp($ip, $reason, 24, 'System (Auto-block)'); // block for 24 hours
 
             Log::critical('IP auto-blocked due to suspicious activity', [
                 'ip' => $ip,

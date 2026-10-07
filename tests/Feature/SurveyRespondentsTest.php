@@ -76,6 +76,32 @@ class SurveyRespondentsTest extends TestCase
         SurveyReminders::remind($this->ticket, $this->supervisor);
     }
 
+    public function test_scheduler_reminds_on_day_one_and_day_seven_after_completion(): void
+    {
+        $sentFor = fn () => Mail::sent(TemplateNotificationMail::class, fn ($mail) => $mail->hasTo('siti@example.test'))->count();
+
+        // Completed today: not yet.
+        $this->artisan('surveys:remind')->assertSuccessful();
+        $this->assertSame(0, $sentFor());
+
+        $this->travel(1)->days();
+        $this->artisan('surveys:remind')->expectsOutputToContain('1 pengingat survei dikirim')->assertSuccessful();
+        $this->artisan('surveys:remind')->assertSuccessful(); // same day: no second reminder
+        $this->assertSame(1, $sentFor());
+        $this->assertTrue(\Spatie\Activitylog\Models\Activity::where('description', 'Mengirim pengingat survei otomatis')->exists());
+
+        $this->travel(2)->days();
+        $this->artisan('surveys:remind')->assertSuccessful();
+        $this->assertSame(1, $sentFor());
+
+        $this->travel(4)->days(); // day 7
+        $this->artisan('surveys:remind')->assertSuccessful();
+        $this->assertSame(2, $sentFor());
+
+        $this->assertTrue(collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())
+            ->contains(fn ($event) => str_contains((string) $event->command, 'surveys:remind')));
+    }
+
     public function test_rated_requests_leave_the_reminder_list(): void
     {
         $this->ticket->surveyResponses()->create(['survey_id' => \App\Models\Survey::firstOrFail()->id, 'completed_at' => now(), 'user_id' => $this->ticket->user_id]);

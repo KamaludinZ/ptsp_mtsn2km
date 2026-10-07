@@ -26,23 +26,14 @@ class WhitelistLocalhostIP extends Command
      */
     public function handle()
     {
-        // Get current blocked IPs
-        $blockedIPs = Cache::get('blocked_ips', []);
-
         // Remove localhost IPs if they were blocked
-        $localhostIPs = ['127.0.0.1', '::1', 'localhost'];
+        $security = app(\App\Support\SecurityMonitor::class);
 
-        foreach ($localhostIPs as $ip) {
-            if (isset($blockedIPs[$ip])) {
-                unset($blockedIPs[$ip]);
-                $this->info("Removed {$ip} from blocked IPs");
-            } else {
-                $this->info("{$ip} was not in the blocked list");
-            }
+        foreach (['127.0.0.1', '::1', 'localhost'] as $ip) {
+            $this->info($security->unblockIp($ip, 'artisan')
+                ? "Removed {$ip} from blocked IPs"
+                : "{$ip} was not in the blocked list");
         }
-
-        // Update the blocked IPs cache
-        Cache::put('blocked_ips', $blockedIPs, now()->addYears(10));
 
         $this->info('Successfully processed localhost IP addresses for development.');
         $this->info('Localhost IP addresses will now be excluded from blocking during development.');

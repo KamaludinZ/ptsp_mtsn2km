@@ -82,6 +82,9 @@ class CreateQuarterlySurveyArchives extends Command
             return;
         }
 
+        // The quarter's last day counts in full (Carbon::create() is midnight).
+        $endDate = $endDate->endOfDay();
+
         // Check if archive already exists
         $existingArchive = SurveyArchive::where('type', $surveyType)
             ->where('year', $year)

@@ -46,4 +46,27 @@ class MonitoringIntegrationsPanelTest extends TestCase
             ->assertSee('Integrasi notifikasi')
             ->assertSeeInOrder(['Integrasi notifikasi', 'Nonaktif', '0 gagal', 'Aktif, ada kegagalan', '1 gagal', 'HTTP 500 dari gateway']);
     }
+
+    public function test_status_through_the_api_for_admins_only(): void
+    {
+        NotificationSetting::updateOrCreate(['channel' => 'email'], ['is_enabled' => true]);
+        $this->delivery('email', 'failed', 'SMTP menolak');
+
+        $admin = User::factory()->create();
+        $admin->assignRole(Role::findOrCreate('admin', 'web'));
+        \Laravel\Sanctum\Sanctum::actingAs($admin);
+
+        $this->getJson('/api/monitoring/integrasi')->assertOk()
+            ->assertJsonPath('data.0.kanal', 'email')
+            ->assertJsonPath('data.0.aktif', true)
+            ->assertJsonPath('data.0.gagal_24_jam', 1)
+            ->assertJsonPath('data.0.gagal_terakhir.galat', 'SMTP menolak')
+            ->assertJsonPath('data.1.kanal', 'whatsapp')
+            ->assertJsonPath('data.1.gagal_terakhir', null);
+
+        $officer = User::factory()->create();
+        $officer->assignRole(Role::findOrCreate('front_desk', 'web'));
+        \Laravel\Sanctum\Sanctum::actingAs($officer);
+        $this->getJson('/api/monitoring/integrasi')->assertForbidden();
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\BlockedIp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -74,49 +75,65 @@ class SecurityMonitor
         return Cache::get('last_security_scan_results');
     }
 
-    /** Active blocks; expired ones are dropped. */
+    /** Cached copy of the active blocks for CheckBlockedIP; the table is the source of truth. */
+    public const BLOCKED_CACHE_KEY = 'blocked_ips_active';
+
+    /**
+     * Active blocks, keyed by IP (read from the database).
+     *
+     * @return array<string, array{reason: string, blocked_at: ?string, blocked_by: ?string, expires_at: ?string}>
+     */
     public function blockedIps(): array
     {
-        $blocked = Cache::get('blocked_ips', []);
+        return BlockedIp::active()->orderByDesc('blocked_at')->get()
+            ->mapWithKeys(fn (BlockedIp $block) => [$block->ip => $block->toBlockData()])
+            ->all();
+    }
 
-        foreach ($blocked as $ip => $data) {
-            if (! empty($data['expires_at']) && Carbon::parse($data['expires_at'])->isPast()) {
-                unset($blocked[$ip]);
-            }
+    /**
+     * Active blocks for the per-request check: cached for a few minutes and
+     * rebuilt from the table whenever the cache is cleared. Expiry is checked
+     * again by the caller, so a cached block never outlives its end.
+     */
+    public function activeBlockMap(): array
+    {
+        try {
+            return Cache::remember(self::BLOCKED_CACHE_KEY, now()->addMinutes(5), fn () => $this->blockedIps());
+        } catch (\Throwable) {
+            return []; // no database yet (install, fresh deploy)
         }
+    }
 
-        Cache::put('blocked_ips', $blocked, now()->addYears(10));
+    public function isBlocked(string $ip): ?array
+    {
+        $block = $this->activeBlockMap()[$ip] ?? null;
 
-        return $blocked;
+        return $block && (empty($block['expires_at']) || Carbon::parse($block['expires_at'])->isFuture()) ? $block : null;
     }
 
     public function blockIp(string $ip, string $reason, ?int $hours, string $by): void
     {
-        $blocked = $this->blockedIps();
-        $blocked[$ip] = [
+        BlockedIp::updateOrCreate(['ip' => $ip], [
             'reason' => $reason,
-            'blocked_at' => now()->toDateTimeString(),
             'blocked_by' => $by,
-            'expires_at' => $hours ? now()->addHours($hours)->toDateTimeString() : null,
-        ];
+            'blocked_at' => now(),
+            'expires_at' => $hours ? now()->addHours($hours) : null,
+        ]);
 
-        Cache::put('blocked_ips', $blocked, now()->addYears(10));
+        Cache::forget(self::BLOCKED_CACHE_KEY);
         Log::warning('IP address blocked', ['ip' => $ip, 'reason' => $reason, 'blocked_by' => $by]);
     }
 
     public function unblockIp(string $ip, string $by): bool
     {
-        $blocked = $this->blockedIps();
+        $removed = BlockedIp::where('ip', $ip)->active()->exists() && BlockedIp::where('ip', $ip)->delete() > 0;
+        Cache::forget(self::BLOCKED_CACHE_KEY);
 
-        if (! isset($blocked[$ip])) {
-            return false;
+        if ($removed) {
+            Log::info('IP address unblocked', ['ip' => $ip, 'unblocked_by' => $by]);
         }
 
-        unset($blocked[$ip]);
-        Cache::put('blocked_ips', $blocked, now()->addYears(10));
-        Log::info('IP address unblocked', ['ip' => $ip, 'unblocked_by' => $by]);
-
-        return true;
+        return $removed;
     }
 
     public function isDown(): bool

@@ -169,4 +169,19 @@ class Complaint extends Model
     {
         return $this->complaint_type === 'whistleblowing' || (bool) $this->is_confidential;
     }
+
+    /**
+     * Reporter as shown to $viewer: anonymous whistleblowers stay "Anonim";
+     * a secret report's identity is only shown to complaint handlers.
+     */
+    public function reporterLabel(?User $viewer = null): string
+    {
+        $viewer ??= auth()->user();
+
+        return match (true) {
+            $this->complaint_type === 'whistleblowing' && $this->anonymous => 'Anonim',
+            $this->isSecret() && ! $viewer?->hasAnyRole(\App\Support\RoleAccess::COMPLAINT_HANDLERS) => 'Identitas dirahasiakan',
+            default => $this->reporter_name ?: 'Anonim',
+        };
+    }
 }

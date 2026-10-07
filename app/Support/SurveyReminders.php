@@ -33,11 +33,11 @@ class SurveyReminders
     }
 
     /**
-     * Send the reminder on the active channels.
+     * Send the reminder on the active channels ($actor: the staff member, or null for the scheduler).
      *
      * @return array<int, string> the channels it went out on
      */
-    public static function remind(Ticket $ticket, User $actor): array
+    public static function remind(Ticket $ticket, ?User $actor): array
     {
         if ($ticket->status !== 'completed' || $ticket->hasSurveyCompleted()) {
             throw new TicketActionException("Permohonan {$ticket->ticket_number} tidak perlu diingatkan.");
@@ -53,8 +53,10 @@ class SurveyReminders
 
         if ($channels) {
             Cache::put(self::key($ticket), now()->toIso8601String(), now()->addHours(self::COOLDOWN_HOURS));
+            // $actor null: the daily automatic reminder (surveys:remind).
             activity('audit')->causedBy($actor)->performedOn($ticket)
-                ->withProperties(['kanal' => $channels])->log('Mengirim pengingat survei');
+                ->withProperties(['kanal' => $channels, 'otomatis' => $actor === null])
+                ->log($actor ? 'Mengirim pengingat survei' : 'Mengirim pengingat survei otomatis');
         }
 
         return $channels;

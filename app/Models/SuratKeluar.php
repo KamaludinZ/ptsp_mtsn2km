@@ -4,11 +4,32 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /** One outgoing letter number in the register (buku register surat keluar). */
 class SuratKeluar extends Model
 {
+    use LogsActivity;
+
     protected $table = 'surat_keluar';
+
+    /** Reserving numbers is logged once per request (SuratKeluarService); changes per letter. */
+    protected static $recordEvents = ['updated', 'deleted'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('surat_keluar')
+            ->logOnly(['nomor_surat', 'tanggal_surat', 'tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'lampiran', 'tembusan', 'keterangan', 'berkas_lampiran_nama'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $event) => match ($event) {
+                'updated' => 'Mengubah data surat keluar ' . $this->nomor_surat,
+                'deleted' => 'Menghapus surat keluar ' . $this->nomor_surat,
+                default => $event,
+            });
+    }
 
     protected $fillable = [
         'tahun',

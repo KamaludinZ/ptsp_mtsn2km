@@ -86,7 +86,7 @@ class ComplaintResource extends Resource
                     }),
                 Tables\Columns\TextColumn::make('title')->label('Judul')->searchable()->wrap()->limit(60),
                 Tables\Columns\TextColumn::make('reporter_name')->label('Pelapor')->searchable()
-                    ->formatStateUsing(fn (?string $state, Complaint $record) => $record->complaint_type === 'whistleblowing' && $record->anonymous ? 'Anonim' : $state)
+                    ->formatStateUsing(fn (?string $state, Complaint $record) => $record->reporterLabel())
                     ->placeholder('–')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')->label('Status')->badge()

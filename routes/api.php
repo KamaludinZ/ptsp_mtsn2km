@@ -177,6 +177,10 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'role:admin,sanctum'])->prefi
     Route::get('/server', [\App\Http\Controllers\Api\MonitoringController::class, 'server'])->name('server');
     Route::get('/metrik', [\App\Http\Controllers\Api\MonitoringController::class, 'metrics'])->name('metrik');
     Route::get('/keamanan', [\App\Http\Controllers\Api\MonitoringController::class, 'security'])->name('keamanan');
+    Route::get('/integrasi', [\App\Http\Controllers\Api\MonitoringController::class, 'integrations'])->name('integrasi');
+    Route::get('/ip-diblokir', [\App\Http\Controllers\Api\MonitoringController::class, 'blockedIps'])->name('ip-diblokir');
+    Route::post('/ip-diblokir', [\App\Http\Controllers\Api\MonitoringController::class, 'blockIp'])->name('ip-diblokir.tambah');
+    Route::delete('/ip-diblokir/{ip}', [\App\Http\Controllers\Api\MonitoringController::class, 'unblockIp'])->where('ip', '[0-9a-fA-F:.]+')->name('ip-diblokir.hapus');
     Route::get('/log', [\App\Http\Controllers\Api\MonitoringController::class, 'logs'])->name('log');
     Route::get('/pembaruan', [\App\Http\Controllers\Api\MonitoringController::class, 'updates'])->name('pembaruan');
     Route::get('/pembaruan/riwayat', [\App\Http\Controllers\Api\MonitoringController::class, 'updateHistory'])->name('pembaruan.riwayat');
@@ -252,6 +256,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('peran-aktif')->name
 
 // Rekam jejak aktivitas (role switches, account switches, ticket actions), for administrators (active role).
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/rekam-jejak', [\App\Http\Controllers\Api\ActivityTrailController::class, 'index'])->name('api.rekam-jejak');
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/rekam-jejak/rekap', [\App\Http\Controllers\Api\ActivityTrailController::class, 'recap'])->name('api.rekam-jejak.rekap');
 
 // Ganti akun sementara: the session log, for administrators (active role).
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/ganti-akun/log', [\App\Http\Controllers\Api\ImpersonationLogController::class, 'index'])->name('api.ganti-akun.log');

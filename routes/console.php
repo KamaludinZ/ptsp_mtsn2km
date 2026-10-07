@@ -36,5 +36,8 @@ Schedule::call(function () {
 // Notifikasi in-app: drop old notifications every night.
 Schedule::command('notifications:prune')->dailyAt('02:30')->name('notifications-prune');
 
+// Pengingat survei: applicants who have not rated a finished request (day 1 and day 7), every morning.
+Schedule::command('surveys:remind')->dailyAt('08:00')->name('surveys-remind')->withoutOverlapping();
+
 // Pengingat permohonan tertunda: every working day at 07:00.
 Schedule::command('tickets:remind-pending')->weekdays()->dailyAt('07:00')->name('tickets-remind-pending')->withoutOverlapping();

@@ -158,6 +158,24 @@ class SuratKeluarTest extends TestCase
         $this->get(ListSuratKeluar::getUrl())->assertOk()->assertSee('Riwayat permintaan nomor agenda');
     }
 
+    public function test_requests_and_changes_are_recorded_in_the_activity_log(): void
+    {
+        $officer = $this->user('staff1@mtsn2malang.sch.id');
+        $this->actingAs($officer);
+        $before = \Spatie\Activitylog\Models\Activity::inLog('surat_keluar')->count();
+
+        $letters = app(SuratKeluarService::class)->reserve(3, now(), $officer);
+        $letters->first()->update(['perihal' => 'Undangan rapat komite', 'tujuan_surat' => 'Komite Madrasah']);
+
+        $entries = \Spatie\Activitylog\Models\Activity::inLog('surat_keluar')->oldest('id')->get()->slice($before)->values();
+        $this->assertSame(['reserved', 'updated'], $entries->pluck('event')->all()); // one entry per request, not per number
+        $this->assertTrue($entries[0]->causer->is($officer));
+        $this->assertSame(3, $entries[0]->properties['jumlah']);
+        $this->assertStringContainsString('Meminta 3 nomor surat keluar', $entries[0]->description);
+        $this->assertSame('Undangan rapat komite', $entries[1]->properties['attributes']['perihal']);
+        $this->assertSame('Mengubah data surat keluar ' . $letters->first()->nomor_surat, $entries[1]->description);
+    }
+
     public function test_officer_completes_a_reserved_letter(): void
     {
         $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));

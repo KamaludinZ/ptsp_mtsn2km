@@ -118,8 +118,8 @@ class ComplaintController extends Controller
             'status_label' => Complaint::STATUSES[$complaint->status] ?? $complaint->status,
             'prioritas' => $complaint->priority,
             'rahasia' => $complaint->isSecret(),
-            // Anonymous whistleblowers stay anonymous in lists.
-            'pelapor' => $complaint->complaint_type === 'whistleblowing' && $complaint->anonymous ? 'Anonim' : $complaint->reporter_name,
+            // Anonymous whistleblowers stay anonymous; secret identities only for handlers.
+            'pelapor' => $complaint->reporterLabel(),
             'masuk' => $complaint->created_at?->toIso8601String(),
         ];
     }

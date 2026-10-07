@@ -39,7 +39,7 @@
         <ul class="space-y-2">
             @forelse($recentWhistleblowing as $wbs)
                 <li class="text-sm text-gray-600 dark:text-gray-300">
-                    <div class="font-medium">{{ $wbs->reporter_name ?? 'Anonim' }}</div>
+                    <div class="font-medium">{{ $wbs->reporterLabel() }}</div>
                     <div class="text-xs text-gray-500 dark:text-gray-400">
                         {{ Str::limit($wbs->subject, 30) }} - {{ $wbs->created_at->format('d/m/Y H:i') }}
                     </div>

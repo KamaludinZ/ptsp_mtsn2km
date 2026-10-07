@@ -174,10 +174,10 @@ class SystemMonitor extends Page
             'integrations' => $tab === 'aplikasi' ? $monitor->integrations() : null,
             // Perpindahan peran & ganti akun (admin-only panel in the Log & Audit tab).
             'roleAudit' => $tab === 'log' && self::canSeeRoleAudit() ? [
-                'summary' => \App\Support\AuditPanelStub::summary(),
-                'latest' => \App\Support\AuditPanelStub::latest($this->roleAuditFilters),
-                'recap' => \App\Support\AuditPanelStub::recap($this->roleAuditFilters),
-                'options' => \App\Support\AuditPanelStub::options(),
+                'summary' => ($audit = app(\App\Services\AuditPanelService::class))->summary(),
+                'latest' => $audit->latest($this->roleAuditFilters),
+                'recap' => $audit->recap($this->roleAuditFilters),
+                'options' => $audit->options(),
                 'filtering' => collect($this->roleAuditFilters)->filter(fn ($v) => filled($v))->isNotEmpty(),
             ] : null,
             'update' => $tab === 'update' ? $this->updateInfo($monitor) : null,

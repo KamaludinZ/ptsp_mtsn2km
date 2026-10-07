@@ -33,4 +33,30 @@ class ComplaintStatusTimelineTest extends TestCase
             ->assertSee('data-complaint-timeline', false)
             ->assertSeeInOrder(['Riwayat status', 'Ditelaah', 'Saat ini', $handler->name, 'Laporan sedang kami telaah.', 'Cek CCTV loket']);
     }
+
+    public function test_status_history_cannot_be_changed_or_removed(): void
+    {
+        $complaint = Complaint::create(['complaint_type' => 'complaint', 'title' => 'Uji', 'description' => 'Uraian uji', 'status' => 'submitted', 'reporter_name' => 'Pelapor']);
+        $log = ComplaintStatusLog::create(['complaint_id' => $complaint->id, 'from_status' => 'submitted', 'to_status' => 'in_review', 'response' => 'Ditelaah']);
+
+        try {
+            $log->update(['response' => 'Diubah']);
+            $this->fail('The model should refuse the change.');
+        } catch (\LogicException) {
+        }
+
+        foreach ([
+            fn () => \Illuminate\Support\Facades\DB::table('complaint_status_logs')->where('id', $log->id)->update(['response' => 'Diubah']),
+            fn () => \Illuminate\Support\Facades\DB::table('complaint_status_logs')->where('id', $log->id)->delete(),
+        ] as $change) {
+            try {
+                \Illuminate\Support\Facades\DB::transaction($change);
+                $this->fail('The database should refuse the change.');
+            } catch (\Illuminate\Database\QueryException $e) {
+                $this->assertStringContainsString('Riwayat pengaduan tidak dapat diubah atau dihapus', $e->getMessage());
+            }
+        }
+
+        $this->assertSame('Ditelaah', $log->fresh()->response);
+    }
 }

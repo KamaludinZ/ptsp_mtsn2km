@@ -71,6 +71,26 @@ class ActivityTrailApiTest extends TestCase
         $this->getJson('/api/rekam-jejak?jenis=audit')->assertUnprocessable();
     }
 
+    public function test_recap_per_user_and_role(): void
+    {
+        $this->travelTo('2026-10-07 12:00');
+        Sanctum::actingAs($this->admin);
+
+        $this->getJson('/api/rekam-jejak/rekap')->assertOk()
+            ->assertJsonPath('rentang_hari', 7)
+            ->assertJsonPath('ringkasan.sesi_ganti_akun_berjalan', 0)
+            ->assertJsonFragment(['pengguna' => 'Bu Sari', 'peran_aktif' => 'Kepala Tata Usaha', 'pindah_peran' => 1, 'aksi_tiket' => 1, 'sesi_ganti_akun' => 0, 'lewat_ganti_akun' => 0])
+            ->assertJsonFragment(['pengguna' => 'Admin PTSP', 'sesi_ganti_akun' => 1]);
+
+        $this->getJson('/api/rekam-jejak/rekap?peran=Front Desk')->assertOk()
+            ->assertJsonCount(1, 'rekap')
+            ->assertJsonPath('rekap.0.pengguna', 'Bu Sari');
+
+        $this->sari->forceFill(['active_role_id' => Role::findByName('kepala_tu', 'web')->id])->save();
+        Sanctum::actingAs($this->sari);
+        $this->getJson('/api/rekam-jejak/rekap')->assertForbidden();
+    }
+
     public function test_only_administrators(): void
     {
         $this->getJson('/api/rekam-jejak')->assertUnauthorized();

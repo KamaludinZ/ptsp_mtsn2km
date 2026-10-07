@@ -68,6 +68,12 @@ class SuratKeluarService
             DB::table('surat_sequences')->where('tahun', $year)->update(['last_number' => $last + $count, 'updated_at' => now()]);
             $this->rememberManual($data);
 
+            activity('surat_keluar')->causedBy($pembuat)->performedOn($batch)->event('reserved')
+                ->withProperties(['tahun' => $year, 'jumlah' => $count, 'nomor_awal' => $last + 1, 'nomor_akhir' => $last + $count])
+                ->log($count === 1
+                    ? 'Meminta nomor surat keluar ' . $letters->first()->nomor_surat
+                    : "Meminta {$count} nomor surat keluar (urut " . ($last + 1) . '–' . ($last + $count) . " tahun {$year})");
+
             return $letters;
         });
     }

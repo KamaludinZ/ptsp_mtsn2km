@@ -56,4 +56,39 @@ class ActivityTrailController extends Controller
             'halaman_terakhir' => $page->lastPage(),
         ]);
     }
+
+    /** GET /api/rekam-jejak/rekap?cari=&pengguna=(nama)&peran=(label)&dari=&sampai= : ringkasan dan rekap per pengguna–peran (7 hari). */
+    public function recap(Request $request, \App\Services\AuditPanelService $audit): JsonResponse
+    {
+        abort_unless(ActiveRoles::hasRole($request->user(), 'admin'), 403, 'Rekam jejak hanya untuk peran aktif Administrator.');
+
+        $filters = $request->validate([
+            'cari' => ['nullable', 'string', 'max:100'],
+            'pengguna' => ['nullable', 'string', 'max:255'],
+            'peran' => ['nullable', 'string', 'max:125'],
+            'dari' => ['nullable', 'date'],
+            'sampai' => ['nullable', 'date', 'after_or_equal:dari'],
+        ]);
+
+        $summary = $audit->summary();
+
+        return response()->json([
+            'rentang_hari' => \App\Services\AuditPanelService::RECAP_DAYS,
+            'ringkasan' => [
+                'perpindahan_peran_hari_ini' => $summary['switches_today'],
+                'sesi_ganti_akun_berjalan' => $summary['open_sessions'],
+                'sesi_ganti_akun_7_hari' => $summary['sessions_week'],
+                'aksi_lewat_ganti_akun_7_hari' => $summary['impersonated_actions'],
+            ],
+            'rekap' => collect($audit->recap($filters))->map(fn (array $row) => [
+                'pengguna' => $row['user'],
+                'peran_aktif' => $row['role'],
+                'pindah_peran' => $row['switches'],
+                'sesi_ganti_akun' => $row['sessions'],
+                'aksi_tiket' => $row['ticket_actions'],
+                'lewat_ganti_akun' => $row['impersonated'],
+                'terakhir' => $row['last']->toIso8601String(),
+            ])->values(),
+        ]);
+    }
 }
