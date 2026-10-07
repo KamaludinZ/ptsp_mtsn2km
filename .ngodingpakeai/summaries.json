@@ -69,7 +69,7 @@
     "summary": "Helper container untuk entrypoint: target mencetak tujuan koneksi database tanpa password, ready keluar 0 bila database menerima koneksi (libpq PGCONNECT_TIMEOUT 5 detik agar host salah tidak menggantung), empty keluar 0 bila belum ada user (deploy pertama). Memakai konfigurasi database aplikasi sehingga DATABASE_URL maupun DB_* berlaku."
   },
   "docker/entrypoint.sh": {
-    "summary": "Entrypoint container produksi: wajib APP_KEY, siapkan folder storage di volume, tunggu database dengan menampilkan tujuan koneksi tanpa password dan alasan gagal tiap sekitar 10 detik (tiap percobaan dibatasi 10 detik, berhenti setelah DB_WAIT_TIMEOUT dengan petunjuk DATABASE_URL), bersihkan cache lama, migrasi otomatis (AUTO_MIGRATE), seed hanya pada deploy pertama, storage:link, optimize, lalu jalankan supervisord."
+    "summary": "Entrypoint container produksi: wajib APP_KEY, peringatan di log bila /var/www/html/storage bukan volume permanen (berkas unggahan akan hilang saat redeploy), siapkan folder storage, tunggu database dengan menampilkan tujuan koneksi tanpa password dan alasan gagal tiap sekitar 10 detik (berhenti setelah DB_WAIT_TIMEOUT dengan petunjuk DATABASE_URL), bersihkan cache lama, migrasi otomatis, seed hanya pada deploy pertama, storage:link, optimize, lalu jalankan supervisord."
   },
   "docker/nginx.conf": {
     "summary": "Konfigurasi Nginx untuk aplikasi Laravel PTSP di Docker: root ke public/, try_files untuk SPA routing, PHP-FPM fastcgi_pass, gzip compression, dan security headers dasar."
