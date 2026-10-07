@@ -60,6 +60,7 @@ ENV APP_ENV=production \
     ASSET_MODE=compiled \
     CHECK_VITE_SERVER=false \
     TZ=Asia/Jakarta \
+    APP_TIMEZONE=Asia/Jakarta \
     PHP_OPCACHE_VALIDATE_TIMESTAMPS=0 \
     PHP_FPM_MAX_CHILDREN=10 \
     TRUSTED_PROXIES=* \
