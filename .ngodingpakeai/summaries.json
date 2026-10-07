@@ -15,7 +15,7 @@
     "summary": "GitHub Actions CI workflow untuk Laravel: menjalankan tes PHPUnit dengan PostgreSQL 16, composer audit keamanan dependensi, dan memastikan semua tes lulus setiap push atau pull request."
   },
   "Dockerfile": {
-    "summary": "Image produksi multi-stage: dependensi Composer tanpa dev, build aset Vite (Node 22), runtime PHP 8.3-FPM Alpine dengan ekstensi pgsql/intl/gd/zip/bcmath/pcntl/opcache, nginx dan supervisord (php-fpm, nginx, scheduler); package:discover dan filament:assets saat build, APP_VERSION dari build arg atau SOURCE_COMMIT Coolify, label OCI, port 8080 dan healthcheck /up."
+    "summary": "Image produksi multi-stage: dependensi Composer tanpa dev, build aset Vite (Node 22), runtime PHP 8.3-FPM Alpine dengan ekstensi pgsql/intl/gd/zip/bcmath/pcntl/opcache, nginx dan supervisord (php-fpm, nginx, scheduler); zona waktu bawaan Asia/Jakarta (TZ dan APP_TIMEZONE, berlaku juga untuk build pack Dockerfile Coolify); package:discover dan filament:assets saat build, APP_VERSION dari build arg atau SOURCE_COMMIT Coolify, port 8080 dan healthcheck /up."
   },
   "README.md": {
     "summary": "Dokumentasi utama proyek PTSP MTsN 2 Kota Malang: deskripsi modul (portal publik, pengaduan, survei, buku tamu, panel staf /cp, portal pemohon /portal), teknologi (Laravel 12, Filament 3, PostgreSQL), cara menjalankan lokal, tes, dan panduan deploy Docker/Coolify."
