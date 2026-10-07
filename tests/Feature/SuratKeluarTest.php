@@ -141,6 +141,23 @@ class SuratKeluarTest extends TestCase
         $this->assertSame($before + 3, SuratKeluar::count());
     }
 
+    public function test_number_requests_are_listed_with_their_range_and_progress(): void
+    {
+        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $letters = app(SuratKeluarService::class)->reserve(3, now(), auth()->user());
+        $letters->first()->update(['perihal' => 'Undangan rapat komite', 'tujuan_surat' => 'Komite Madrasah']);
+        $letters->last()->update(['perihal' => 'Belum ada tujuan']); // still a draft
+        $batch = \App\Models\SuratKeluarBatch::latest('id')->firstOrFail();
+
+        Livewire::test(\App\Filament\Resources\SuratKeluarResource\Widgets\NumberRequestHistory::class)
+            ->assertCanSeeTableRecords([$batch])
+            ->assertTableColumnStateSet('range', $batch->nomor_awal . '–' . $batch->nomor_akhir, $batch)
+            ->assertSee('1 dari 3')
+            ->assertTableColumnStateSet('creator.name', auth()->user()->name, $batch);
+
+        $this->get(ListSuratKeluar::getUrl())->assertOk()->assertSee('Riwayat permintaan nomor agenda');
+    }
+
     public function test_officer_completes_a_reserved_letter(): void
     {
         $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));

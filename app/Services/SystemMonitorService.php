@@ -125,6 +125,36 @@ class SystemMonitorService
         ];
     }
 
+    /**
+     * Integrasi notifikasi: each channel's switch (Integrasi Notifikasi page)
+     * and how its deliveries went in the last 24 hours.
+     *
+     * @return array<string, array{label: string, enabled: bool, sent: int, failed: int, last_failure: ?array{at: \Illuminate\Support\Carbon, error: ?string}}>
+     */
+    public function integrations(): array
+    {
+        $since = now()->subDay();
+
+        return collect(['email' => 'Email', 'whatsapp' => 'WhatsApp'])->map(function (string $label, string $channel) use ($since) {
+            try {
+                $enabled = (bool) \App\Models\NotificationSetting::where('channel', $channel)->value('is_enabled');
+                $counts = \App\Models\NotificationDelivery::where('channel', $channel)->where('created_at', '>=', $since)
+                    ->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+                $failure = \App\Models\NotificationDelivery::where('channel', $channel)->where('status', 'failed')->latest()->first(['created_at', 'error']);
+            } catch (Throwable) {
+                return ['label' => $label, 'enabled' => false, 'sent' => 0, 'failed' => 0, 'last_failure' => null];
+            }
+
+            return [
+                'label' => $label,
+                'enabled' => $enabled,
+                'sent' => (int) ($counts['sent'] ?? 0),
+                'failed' => (int) ($counts['failed'] ?? 0),
+                'last_failure' => $failure ? ['at' => $failure->created_at, 'error' => $failure->error ? mb_strimwidth($failure->error, 0, 160, '…') : null] : null,
+            ];
+        })->all();
+    }
+
     public function application(): array
     {
         $database = $this->database();

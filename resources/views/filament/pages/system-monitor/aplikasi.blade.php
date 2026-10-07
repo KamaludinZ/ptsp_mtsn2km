@@ -34,3 +34,32 @@
         @endforeach
     </dl>
 </x-filament::section>
+
+{{-- Integrasi notifikasi: saklar kanal dan hasil pengiriman 24 jam terakhir. --}}
+<x-filament::section heading="Integrasi notifikasi" icon="heroicon-o-bell-alert" data-integrations
+    description="Kanal Email dan WhatsApp beserta hasil pengiriman 24 jam terakhir.">
+    <x-slot name="headerEnd">
+        <x-filament::link :href="\App\Filament\Pages\System\NotificationIntegrations::getUrl()" size="sm" icon="heroicon-m-cog-6-tooth">Atur integrasi</x-filament::link>
+    </x-slot>
+
+    <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))">
+        @foreach ($integrations as $key => $channel)
+            <div class="rounded-lg ring-1 ring-gray-950/5 dark:ring-white/10" style="padding:.75rem 1rem" data-integration="{{ $key }}">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+                    <span class="text-sm font-semibold text-gray-950 dark:text-white">{{ $channel['label'] }}</span>
+                    <x-filament::badge :color="$channel['enabled'] ? ($channel['failed'] > 0 ? 'warning' : 'success') : 'gray'" size="sm">
+                        {{ $channel['enabled'] ? ($channel['failed'] > 0 ? 'Aktif, ada kegagalan' : 'Aktif') : 'Nonaktif' }}
+                    </x-filament::badge>
+                </div>
+                <p class="text-sm text-gray-700 dark:text-gray-200" style="margin-top:.5rem">
+                    {{ $channel['sent'] }} terkirim · {{ $channel['failed'] }} gagal (24 jam)
+                </p>
+                @if ($channel['last_failure'])
+                    <p class="text-xs text-gray-500 dark:text-gray-400" style="margin-top:.25rem">
+                        Gagal terakhir {{ $channel['last_failure']['at']->diffForHumans() }}@if ($channel['last_failure']['error']): {{ $channel['last_failure']['error'] }}@endif
+                    </p>
+                @endif
+            </div>
+        @endforeach
+    </div>
+</x-filament::section>

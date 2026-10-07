@@ -171,6 +171,7 @@ class SystemMonitor extends Page
             'logs' => $tab === 'log' ? LogReader::entries($this->logLevel ?: null, trim($this->logSearch) ?: null) : null,
             'logFile' => $tab === 'log' ? LogReader::latestFile() : null,
             'audit' => $tab === 'log' ? $this->audit() : null,
+            'integrations' => $tab === 'aplikasi' ? $monitor->integrations() : null,
             // Perpindahan peran & ganti akun (admin-only panel in the Log & Audit tab).
             'roleAudit' => $tab === 'log' && self::canSeeRoleAudit() ? [
                 'summary' => \App\Support\AuditPanelStub::summary(),

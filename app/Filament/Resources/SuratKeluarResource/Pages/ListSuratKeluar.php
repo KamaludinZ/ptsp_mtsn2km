@@ -31,6 +31,11 @@ class ListSuratKeluar extends ListRecords
         return 'Buku register surat keluar. Nomor berurutan 1–9999 dan dimulai ulang setiap tahun.';
     }
 
+    protected function getFooterWidgets(): array
+    {
+        return [\App\Filament\Resources\SuratKeluarResource\Widgets\NumberRequestHistory::class];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

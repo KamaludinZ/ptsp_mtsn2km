@@ -194,6 +194,14 @@ class ComplaintResource extends Resource
                     TextEntry::make('response')->label('Tanggapan kepada pelapor')->placeholder('Belum ada tanggapan.')->columnSpanFull()->prose(),
                     TextEntry::make('resolution_notes')->label('Catatan internal')->placeholder('–')->columnSpanFull(),
                 ]),
+            Section::make('Riwayat status')
+                ->icon('heroicon-o-clock')
+                ->collapsible()
+                ->schema([
+                    \Filament\Infolists\Components\ViewEntry::make('status_history')
+                        ->hiddenLabel()
+                        ->view('filament.infolists.complaint-status-history'),
+                ]),
         ]);
     }
 
