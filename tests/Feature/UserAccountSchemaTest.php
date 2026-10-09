@@ -34,6 +34,17 @@ class UserAccountSchemaTest extends TestCase
         $this->assertNotNull($user->fresh()->last_login_at);
     }
 
+    public function test_users_track_password_rotation(): void
+    {
+        $user = User::factory()->create();
+        $user->forceFill(['password_changed_at' => now()->subMonths(7), 'must_change_password' => true])->save();
+
+        $user = $user->fresh();
+        $this->assertTrue($user->must_change_password);
+        $this->assertTrue($user->password_changed_at->lt(now()->subMonths(6)));
+        $this->assertFalse(User::factory()->create()->fresh()->must_change_password);
+    }
+
     public function test_every_labelled_permission_exists_after_sync(): void
     {
         RoleAccess::sync();
