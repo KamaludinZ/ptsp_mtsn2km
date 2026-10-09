@@ -41,6 +41,8 @@ class PasswordRotationBannerTest extends TestCase
         Livewire::test(PasswordRotationBanner::class)
             ->assertSee('lebih dari 6 bulan')
             ->assertSee('Ganti kata sandi')
+            ->assertSee('Tutup pengingat')
+            ->assertSeeHtml('href="' . filament()->getProfileUrl() . '"')
             ->call('dismiss')
             ->assertDontSee('Ganti kata sandi');
 
