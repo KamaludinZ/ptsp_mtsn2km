@@ -37,7 +37,7 @@ class ListUsers extends ListRecords
     {
         return [
             Actions\Action::make('excel')
-                ->label('Unduh Excel')
+                ->label(fn () => ($this->activeTab ?? 'semua') === 'semua' ? 'Unduh Excel' : 'Unduh Excel (' . $this->activeTabLabel() . ')')
                 ->icon('heroicon-o-table-cells')
                 ->color('gray')
                 ->tooltip(fn () => 'Berisi akun pada tab ' . $this->activeTabLabel() . ', sesuai pencarian dan filter yang aktif.')

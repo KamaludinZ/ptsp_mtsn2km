@@ -67,7 +67,9 @@ class UserListTest extends TestCase
 
         Livewire::test(ListUsers::class)
             ->assertActionExists('excel')
+            ->assertActionHasLabel('excel', 'Unduh Excel')
             ->set('activeTab', 'petugas')
+            ->assertActionHasLabel('excel', 'Unduh Excel (Petugas)')
             ->callAction('excel');
 
         \Maatwebsite\Excel\Facades\Excel::assertDownloaded('/^akun-pengguna-petugas-\d{8}-\d{6}\.xlsx$/', function (\App\Exports\UserExport $export) use ($staff) {
