@@ -80,6 +80,10 @@ class UserListTest extends TestCase
                 && ! in_array($staff->password, $export->map($staff->fresh()), true);
         });
 
+        $log = \Spatie\Activitylog\Models\Activity::where('log_name', 'audit')->where('description', 'Mengekspor data akun pengguna')->latest('id')->firstOrFail();
+        $this->assertSame(auth()->id(), $log->causer_id);
+        $this->assertSame('Petugas', $log->properties['tab']);
+
         $this->assertSame('Petugas', Livewire::test(ListUsers::class)->set('activeTab', 'petugas')->instance()->activeTabLabel());
     }
 
@@ -100,6 +104,11 @@ class UserListTest extends TestCase
 
         $this->assertTrue(User::where('email', 'guru.import@contoh.sch.id')->firstOrFail()->must_change_password);
         $this->assertSame([], \Illuminate\Support\Facades\Storage::disk('local')->allFiles('imports'));
+
+        $log = \Spatie\Activitylog\Models\Activity::where('log_name', 'audit')->where('description', 'Mengimport akun pengguna')->latest('id')->firstOrFail();
+        $this->assertSame(auth()->id(), $log->causer_id);
+        $this->assertSame(1, $log->properties['created']);
+        $this->assertSame([['row' => 3, 'reason' => 'Email sudah terdaftar.']], $log->properties['failed']);
     }
 
     public function test_import_report_lists_created_count_and_failed_rows(): void

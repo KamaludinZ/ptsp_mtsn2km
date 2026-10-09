@@ -41,10 +41,16 @@ class ListUsers extends ListRecords
                 ->icon('heroicon-o-table-cells')
                 ->color('gray')
                 ->tooltip(fn () => 'Berisi akun pada tab ' . $this->activeTabLabel() . ', sesuai pencarian dan filter yang aktif.')
-                ->action(fn () => Excel::download(
-                    new UserExport($this->getFilteredSortedTableQuery(), $this->activeTabLabel()),
-                    UserExport::filename($this->activeTabLabel()),
-                )),
+                ->action(function () {
+                    $query = $this->getFilteredSortedTableQuery();
+
+                    activity('audit')
+                        ->causedBy(auth()->user())
+                        ->withProperties(['tab' => $this->activeTabLabel(), 'rows' => (clone $query)->count(), 'filters' => $this->tableFilters, 'search' => $this->tableSearch])
+                        ->log('Mengekspor data akun pengguna');
+
+                    return Excel::download(new UserExport($query, $this->activeTabLabel()), UserExport::filename($this->activeTabLabel()));
+                }),
             self::importAction(),
             Actions\CreateAction::make()->label('Tambah pengguna')->icon('heroicon-m-user-plus'),
         ];
@@ -112,6 +118,9 @@ class ListUsers extends ListRecords
                     Excel::import($import, $data['file'], 'local');
                 } catch (\Throwable $e) {
                     report($e);
+                    activity('audit')->causedBy(auth()->user())
+                        ->withProperties(['file' => basename($data['file']), 'error' => 'Berkas tidak dapat dibaca'])
+                        ->log('Import akun pengguna gagal');
                     Notification::make()->title('Berkas tidak dapat dibaca')->body('Pastikan berkas .xlsx/.csv memakai kolom seperti template.')->danger()->send();
 
                     return;
@@ -119,6 +128,15 @@ class ListUsers extends ListRecords
                     // Berkas berisi data pribadi: tidak disimpan setelah diproses.
                     Storage::disk('local')->delete($data['file']);
                 }
+
+                activity('audit')->causedBy(auth()->user())
+                    ->withProperties([
+                        'created' => count($import->created),
+                        'created_ids' => collect($import->created)->pluck('id')->all(),
+                        // Nomor baris dan alasan saja; email baris gagal tidak ikut dicatat.
+                        'failed' => collect($import->failed)->map(fn (array $row) => ['row' => $row['row'], 'reason' => $row['reason']])->all(),
+                    ])
+                    ->log('Mengimport akun pengguna');
 
                 $livewire->replaceMountedAction('importReport', ['report' => $import->report()]);
             });
