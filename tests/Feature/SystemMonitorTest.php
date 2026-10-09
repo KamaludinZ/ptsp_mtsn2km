@@ -155,11 +155,16 @@ class SystemMonitorTest extends TestCase
     {
         $this->actingAs($this->admin());
         activity('audit')->causedBy($this->admin())->withProperties(['created' => 12, 'failed' => [['row' => 4, 'reason' => 'Email sudah terdaftar.']]])->log(\App\Support\UserAccountAudit::IMPORTED);
-        activity('audit')->causedBy($this->admin())->withProperties(['tab' => 'Petugas', 'rows' => 40])->log(\App\Support\UserAccountAudit::EXPORTED);
+        activity('audit')->causedBy($this->admin())->withProperties([
+            'tab' => 'Petugas', 'rows' => 40, 'search' => 'waka',
+            'filters' => ['roles' => ['values' => [\Spatie\Permission\Models\Role::findByName('back_office')->id]], 'never_logged_in' => ['isActive' => true], 'user_type' => ['value' => null]],
+        ])->log(\App\Support\UserAccountAudit::EXPORTED);
 
         Livewire::test(SystemMonitor::class)->set('tab', 'log')
             ->assertSee(['Mengimport akun pengguna', '12 akun dibuat · 1 baris gagal', 'Mengekspor data akun pengguna', 'Tab Petugas · 40 akun'])
             ->assertSee(['Rincian import', 'Baris dibaca', 'Email sudah terdaftar.'])
+            ->assertSee(['Rincian ekspor', 'Pencarian', 'waka', 'Role: Back Office; Belum pernah masuk'])
+            ->assertDontSee('Kategori:')
             ->set('auditSearch', 'akun pengguna')
             ->assertSee('Tab Petugas · 40 akun');
     }
