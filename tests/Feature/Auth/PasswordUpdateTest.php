@@ -14,6 +14,7 @@ class PasswordUpdateTest extends TestCase
     public function test_password_can_be_updated(): void
     {
         $user = User::factory()->create();
+        $user->forceFill(['password_changed_at' => now()->subYear(), 'must_change_password' => true])->save();
 
         $response = $this
             ->actingAs($user)
@@ -29,6 +30,9 @@ class PasswordUpdateTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
+        // Pengingat ganti kata sandi dimulai lagi.
+        $this->assertTrue($user->password_changed_at->isToday());
+        $this->assertFalse($user->must_change_password);
     }
 
     public function test_correct_password_must_be_provided_to_update_password(): void
