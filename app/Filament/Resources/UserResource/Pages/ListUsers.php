@@ -10,6 +10,7 @@ use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
+use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,9 +31,26 @@ class ListUsers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('excel')
+                ->label('Unduh Excel')
+                ->icon('heroicon-o-table-cells')
+                ->color('gray')
+                ->tooltip(fn () => 'Berisi akun pada tab ' . $this->activeTabLabel() . ', sesuai pencarian dan filter yang aktif.')
+                // Berkas Excel menyusul (UserExport); sementara hanya menyebut isi yang akan diunduh.
+                ->action(fn () => Notification::make()
+                    ->title('Unduh Excel belum tersedia')
+                    ->body($this->getFilteredSortedTableQuery()->count() . ' akun pada tab ' . $this->activeTabLabel() . ' akan diunduh.')
+                    ->info()
+                    ->send()),
             self::importAction(),
             Actions\CreateAction::make()->label('Tambah pengguna')->icon('heroicon-m-user-plus'),
         ];
+    }
+
+    /** Nama tab yang sedang dibuka, mis. "Petugas". */
+    public function activeTabLabel(): string
+    {
+        return $this->getTabs()[$this->activeTab ?? 'semua']?->getLabel() ?? 'Semua';
     }
 
     /** Import akun masal: unggah berkas Excel/CSV berisi akun baru. */

@@ -59,6 +59,17 @@ class UserListTest extends TestCase
             ->assertFileDownloaded('template-import-akun.csv');
     }
 
+    public function test_excel_button_follows_the_active_tab(): void
+    {
+        Livewire::test(ListUsers::class)
+            ->assertActionExists('excel')
+            ->set('activeTab', 'petugas')
+            ->callAction('excel')
+            ->assertNotified('Unduh Excel belum tersedia');
+
+        $this->assertSame('Petugas', Livewire::test(ListUsers::class)->set('activeTab', 'petugas')->instance()->activeTabLabel());
+    }
+
     public function test_import_report_lists_created_count_and_failed_rows(): void
     {
         Livewire::test(ListUsers::class)
