@@ -80,6 +80,12 @@ class AppServiceProvider extends ServiceProvider
             fn () => view('components.impersonation-banner'),
         );
 
+        // Pengingat ganti kata sandi: di atas isi halaman kedua panel.
+        \Filament\Support\Facades\FilamentView::registerRenderHook(
+            \Filament\View\PanelsRenderHook::CONTENT_START,
+            fn () => auth()->check() ? \Illuminate\Support\Facades\Blade::render('@livewire(\App\Livewire\PasswordRotationBanner::class)') : '',
+        );
+
         // E-mail "atur ulang kata sandi" in Indonesian (website and API use the same link).
         \Illuminate\Auth\Notifications\ResetPassword::toMailUsing(function ($user, string $token) {
             $url = url(route('password.reset', ['token' => $token, 'email' => $user->getEmailForPasswordReset()], false));
