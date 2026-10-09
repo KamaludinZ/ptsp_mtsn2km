@@ -5,6 +5,8 @@ namespace App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
 use Filament\Actions;
+use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,8 +23,45 @@ class ListUsers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            self::importAction(),
             Actions\CreateAction::make()->label('Tambah pengguna')->icon('heroicon-m-user-plus'),
         ];
+    }
+
+    /** Import akun masal: unggah berkas Excel/CSV berisi akun baru. */
+    public static function importAction(): Actions\Action
+    {
+        return Actions\Action::make('import')
+            ->label('Unggah berkas akun')
+            ->icon('heroicon-o-arrow-up-tray')
+            ->color('gray')
+            ->modalHeading('Import akun dari berkas')
+            ->modalDescription('Satu baris satu akun: nama, email, nomor WhatsApp, tipe pengguna, kode registrasi, dan role. Password dibuat otomatis dan tidak dikirim ke pengguna.')
+            ->modalSubmitActionLabel('Proses import')
+            ->form([
+                FileUpload::make('file')
+                    ->label('Berkas Excel/CSV')
+                    ->acceptedFileTypes([
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'application/vnd.ms-excel',
+                        'text/csv',
+                        'text/plain',
+                    ])
+                    ->disk('local')
+                    ->directory('imports/users')
+                    ->maxSize(5120)
+                    ->required()
+                    ->helperText('Format .xlsx atau .csv, maks. 5 MB. Baris pertama berisi judul kolom.')
+                    ->validationMessages(['required' => 'Pilih berkas yang akan diimport.']),
+            ])
+            ->action(function (array $data) {
+                // Proses import menyusul (UserImport); sementara berkas hanya diterima.
+                Notification::make()
+                    ->title('Berkas diterima')
+                    ->body('Pemrosesan akun dari berkas ini belum tersedia.')
+                    ->info()
+                    ->send();
+            });
     }
 
     public function getTabs(): array

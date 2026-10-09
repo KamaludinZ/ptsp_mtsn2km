@@ -40,6 +40,18 @@ class UserListTest extends TestCase
             ->set('activeTab', 'nonaktif')->assertCanSeeTableRecords([$inactive])->assertCanNotSeeTableRecords([$staff, $applicant]);
     }
 
+    public function test_import_action_opens_upload_modal_and_requires_a_file(): void
+    {
+        $this->get(UserResource::getUrl())->assertOk()->assertSee('Unggah berkas akun');
+
+        Livewire::test(ListUsers::class)
+            ->assertActionExists('import')
+            ->mountAction('import')
+            ->assertSee('Import akun dari berkas')
+            ->callMountedAction()
+            ->assertHasActionErrors(['file' => 'required']);
+    }
+
     public function test_last_sign_in_and_role_filters(): void
     {
         $staff = User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail();
