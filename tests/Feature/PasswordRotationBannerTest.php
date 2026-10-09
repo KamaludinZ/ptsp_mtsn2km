@@ -51,6 +51,21 @@ class PasswordRotationBannerTest extends TestCase
         $this->assertSame(PasswordRotation::REASON_PERIODIC, PasswordRotation::reason($user->fresh()));
     }
 
+    public function test_periodic_reminder_starts_exactly_six_months_after_the_last_change(): void
+    {
+        $user = User::factory()->create();
+
+        $user->forceFill(['password_changed_at' => now()->subMonths(6)->addDay()])->save();
+        $this->assertNull(PasswordRotation::reason($user->fresh()));
+
+        $user->forceFill(['password_changed_at' => now()->subMonths(6)])->save();
+        $this->assertSame(PasswordRotation::REASON_PERIODIC, PasswordRotation::reason($user->fresh()));
+
+        // Data lama tanpa catatan: dihitung sejak akun dibuat.
+        $user->forceFill(['password_changed_at' => null, 'created_at' => now()->subYear()])->saveQuietly();
+        $this->assertSame(PasswordRotation::REASON_PERIODIC, PasswordRotation::reason($user->fresh()));
+    }
+
     public function test_imported_account_is_reminded_once(): void
     {
         $user = User::factory()->create();
