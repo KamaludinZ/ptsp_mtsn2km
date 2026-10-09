@@ -77,6 +77,26 @@ class UserImportTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_each_account_gets_its_own_unknown_password_and_whatsapp_number(): void
+    {
+        $import = new UserImport;
+        Excel::import($import, $this->csv([
+            ['Satu', 'satu@contoh.id', '+62 812 1111 2222', 'umum', '', ''],
+            ['Dua', 'dua@contoh.id', '', 'umum', '', ''],
+        ]));
+
+        [$satu, $dua] = [User::where('email', 'satu@contoh.id')->firstOrFail(), User::where('email', 'dua@contoh.id')->firstOrFail()];
+
+        $this->assertSame('+6281211112222', $satu->whatsapp_number);
+        $this->assertNull($dua->whatsapp_number);
+        // Kata sandi acak dan tersimpan sebagai hash; bukan kata sandi bawaan yang bisa ditebak.
+        $this->assertNotSame($satu->password, $dua->password);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::isHashed($satu->password));
+        foreach (['password', 'satu@contoh.id', '081211112222', ''] as $guess) {
+            $this->assertFalse(\Illuminate\Support\Facades\Hash::check($guess, $satu->password));
+        }
+    }
+
     public function test_file_without_the_template_columns_is_rejected_as_a_whole(): void
     {
         $import = new UserImport;
