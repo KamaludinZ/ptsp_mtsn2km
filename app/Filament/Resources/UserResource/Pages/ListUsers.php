@@ -4,16 +4,24 @@ namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
 use App\Models\User;
+use App\Services\FrontDeskService;
+use App\Support\RoleAccess;
 use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Section;
 use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 
 class ListUsers extends ListRecords
 {
     protected static string $resource = UserResource::class;
+
+    /** Kolom berkas import akun, urut seperti di template. */
+    public const IMPORT_COLUMNS = ['nama', 'email', 'nomor_whatsapp', 'tipe_pengguna', 'kode_registrasi', 'role'];
 
     public function getSubheading(): ?string
     {
@@ -38,7 +46,35 @@ class ListUsers extends ListRecords
             ->modalHeading('Import akun dari berkas')
             ->modalDescription('Satu baris satu akun: nama, email, nomor WhatsApp, tipe pengguna, kode registrasi, dan role. Password dibuat otomatis dan tidak dikirim ke pengguna.')
             ->modalSubmitActionLabel('Proses import')
+            ->extraModalFooterActions([
+                Actions\Action::make('template')
+                    ->label('Unduh template')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('gray')
+                    ->action(fn () => response()->streamDownload(function () {
+                        $out = fopen('php://output', 'w');
+                        fputcsv($out, self::IMPORT_COLUMNS);
+                        fputcsv($out, ['Contoh Guru', 'guru@contoh.sch.id', '081234567890', 'guru', 'GURU-001', 'guru']);
+                        fclose($out);
+                    }, 'template-import-akun.csv', ['Content-Type' => 'text/csv'])),
+            ])
             ->form([
+                Section::make('Template & petunjuk')
+                    ->description('Unduh template lewat tombol di bawah, isi satu baris per akun, lalu unggah kembali.')
+                    ->collapsible()
+                    ->compact()
+                    ->schema([
+                        Placeholder::make('import_columns')
+                            ->label('Kolom template')
+                            ->content(new HtmlString('<span class="font-mono text-sm">' . e(implode(', ', self::IMPORT_COLUMNS)) . '</span>')),
+                        Placeholder::make('import_user_types')
+                            ->label('Isian tipe_pengguna')
+                            ->content(self::codeList(FrontDeskService::APPLICANT_TYPES)),
+                        Placeholder::make('import_roles')
+                            ->label('Isian role (' . count(RoleAccess::SYSTEM_ROLES) . ' peran)')
+                            ->helperText('Tulis kodenya, mis. back_office. Role di luar daftar ini dilaporkan gagal.')
+                            ->content(self::codeList(RoleAccess::SYSTEM_ROLES)),
+                    ]),
                 FileUpload::make('file')
                     ->label('Berkas Excel/CSV')
                     ->acceptedFileTypes([
@@ -62,6 +98,14 @@ class ListUsers extends ListRecords
                     ->info()
                     ->send();
             });
+    }
+
+    /** Kode → label sebagai daftar dua kolom untuk petunjuk import. */
+    private static function codeList(array $items): HtmlString
+    {
+        return new HtmlString('<dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-sm">'
+            . collect($items)->map(fn (string $label, string $code) => '<dt class="font-mono text-gray-950 dark:text-white">' . e($code) . '</dt><dd class="text-gray-500 dark:text-gray-400">' . e($label) . '</dd>')->join('')
+            . '</dl>');
     }
 
     public function getTabs(): array

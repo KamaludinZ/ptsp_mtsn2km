@@ -48,8 +48,15 @@ class UserListTest extends TestCase
             ->assertActionExists('import')
             ->mountAction('import')
             ->assertSee('Import akun dari berkas')
+            ->assertSee(['nomor_whatsapp', 'back_office', 'Penjamin Mutu', 'walimurid'])
             ->callMountedAction()
             ->assertHasActionErrors(['file' => 'required']);
+
+        Livewire::test(ListUsers::class)
+            ->mountAction('import')
+            // The template button runs at once (no modal), leaving the import modal open.
+            ->call('mountAction', 'template')
+            ->assertFileDownloaded('template-import-akun.csv');
     }
 
     public function test_last_sign_in_and_role_filters(): void
