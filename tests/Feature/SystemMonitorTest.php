@@ -159,6 +159,7 @@ class SystemMonitorTest extends TestCase
 
         Livewire::test(SystemMonitor::class)->set('tab', 'log')
             ->assertSee(['Mengimport akun pengguna', '12 akun dibuat · 1 baris gagal', 'Mengekspor data akun pengguna', 'Tab Petugas · 40 akun'])
+            ->assertSee(['Rincian import', 'Baris dibaca', 'Email sudah terdaftar.'])
             ->set('auditSearch', 'akun pengguna')
             ->assertSee('Tab Petugas · 40 akun');
     }

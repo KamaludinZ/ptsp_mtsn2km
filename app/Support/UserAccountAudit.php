@@ -18,6 +18,30 @@ class UserAccountAudit
 
     public const DESCRIPTIONS = [self::IMPORTED, self::IMPORT_FAILED, self::EXPORTED];
 
+    /**
+     * Rincian satu catatan import: ringkasan berlabel dan baris yang gagal.
+     *
+     * @return array{summary: array<string, string>, failed: array<int, array{row: int, reason: string}>}|null
+     */
+    public static function importDetail(Activity $activity): ?array
+    {
+        if ($activity->log_name !== 'audit' || $activity->description !== self::IMPORTED) {
+            return null;
+        }
+
+        $p = collect($activity->properties);
+        $failed = collect($p->get('failed', []))->map(fn ($row) => ['row' => (int) ($row['row'] ?? 0), 'reason' => (string) ($row['reason'] ?? '')])->all();
+
+        return [
+            'summary' => [
+                'Akun dibuat' => (string) (int) $p->get('created'),
+                'Baris gagal' => (string) count($failed),
+                'Baris dibaca' => (string) ((int) $p->get('created') + count($failed)),
+            ],
+            'failed' => $failed,
+        ];
+    }
+
     /** Mis. "12 akun dibuat · 3 baris gagal" atau "Tab Petugas · 40 akun"; null untuk catatan lain. */
     public static function summary(Activity $activity): ?string
     {

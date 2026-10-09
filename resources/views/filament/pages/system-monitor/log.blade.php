@@ -169,6 +169,36 @@
             @if ($activity->subject_type)
                 <x-filament::badge color="gray" size="sm">{{ class_basename($activity->subject_type) }} #{{ $activity->subject_id }}</x-filament::badge>
             @endif
+            @if ($importDetail = \App\Support\UserAccountAudit::importDetail($activity))
+                <details data-account-import-detail style="flex-basis:100%">
+                    <summary class="text-sm text-primary-600 dark:text-primary-400" style="cursor:pointer">Rincian import</summary>
+                    <dl class="text-sm" style="display:grid;grid-template-columns:auto 1fr;gap:.125rem .75rem;margin:.5rem 0">
+                        @foreach ($importDetail['summary'] as $label => $value)
+                            <dt class="text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                            <dd class="text-gray-950 dark:text-white">{{ $value }}</dd>
+                        @endforeach
+                    </dl>
+                    @if ($importDetail['failed'])
+                        <table class="text-sm" style="border-collapse:collapse">
+                            <caption class="sr-only">Baris gagal</caption>
+                            <thead>
+                                <tr class="text-gray-950 dark:text-white" style="text-align:left">
+                                    <th scope="col" style="padding:.25rem .75rem .25rem 0">Baris</th>
+                                    <th scope="col" style="padding:.25rem 0">Alasan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($importDetail['failed'] as $row)
+                                    <tr class="border-t border-gray-100 dark:border-white/5 text-gray-700 dark:text-gray-300">
+                                        <td style="padding:.25rem .75rem .25rem 0;font-variant-numeric:tabular-nums">{{ $row['row'] }}</td>
+                                        <td style="padding:.25rem 0">{{ $row['reason'] }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </details>
+            @endif
         </div>
     @empty
         <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada aktivitas yang cocok.</p>
