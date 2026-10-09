@@ -70,7 +70,14 @@ class UserListTest extends TestCase
             ->assertActionHasLabel('excel', 'Unduh Excel')
             ->set('activeTab', 'petugas')
             ->assertActionHasLabel('excel', 'Unduh Excel (Petugas)')
-            ->callAction('excel');
+            ->callAction('excel')
+            ->assertNotified();
+
+        Livewire::test(ListUsers::class)
+            ->searchTable('tidak-ada-akun-seperti-ini')
+            ->callAction('excel')
+            ->assertNotified('Tidak ada akun untuk diunduh')
+            ->assertNoFileDownloaded();
 
         \Maatwebsite\Excel\Facades\Excel::assertDownloaded('/^akun-pengguna-petugas-\d{8}-\d{6}\.xlsx$/', function (\App\Exports\UserExport $export) use ($staff) {
             $emails = $export->query()->pluck('email');

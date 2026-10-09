@@ -43,11 +43,20 @@ class ListUsers extends ListRecords
                 ->tooltip(fn () => 'Berisi akun pada tab ' . $this->activeTabLabel() . ', sesuai pencarian dan filter yang aktif.')
                 ->action(function () {
                     $query = $this->getFilteredSortedTableQuery();
+                    $rows = (clone $query)->count();
+
+                    if ($rows === 0) {
+                        Notification::make()->title('Tidak ada akun untuk diunduh')->body('Tab ' . $this->activeTabLabel() . ' kosong dengan pencarian dan filter saat ini.')->warning()->send();
+
+                        return null;
+                    }
 
                     activity('audit')
                         ->causedBy(auth()->user())
-                        ->withProperties(['tab' => $this->activeTabLabel(), 'rows' => (clone $query)->count(), 'filters' => $this->tableFilters, 'search' => $this->tableSearch])
+                        ->withProperties(['tab' => $this->activeTabLabel(), 'rows' => $rows, 'filters' => $this->tableFilters, 'search' => $this->tableSearch])
                         ->log('Mengekspor data akun pengguna');
+
+                    Notification::make()->title('Mengunduh ' . $rows . ' akun')->body('Berkas Excel tab ' . $this->activeTabLabel() . ' sedang disiapkan oleh peramban.')->success()->send();
 
                     return Excel::download(new UserExport($query, $this->activeTabLabel()), UserExport::filename($this->activeTabLabel()));
                 }),
