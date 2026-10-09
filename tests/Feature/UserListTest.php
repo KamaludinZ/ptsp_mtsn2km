@@ -85,7 +85,7 @@ class UserListTest extends TestCase
             return $export->title() === 'Akun Petugas'
                 && $emails->contains($staff->email)
                 && ! $emails->contains('budi.santoso@email.com')
-                && $export->map($staff->fresh())[6] === 'Aktif'
+                && $export->map($staff->fresh())[7] === 'Aktif'
                 && ! in_array($staff->password, $export->map($staff->fresh()), true);
         });
 

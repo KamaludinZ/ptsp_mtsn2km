@@ -38,15 +38,19 @@ class UserExport implements FromQuery, ShouldAutoSize, WithColumnFormatting, Wit
         return 'Akun ' . $this->tab;
     }
 
+    private int $row = 0;
+
+    /** Identitas, akses, lalu riwayat akun; kolom D (Nomor WhatsApp) berformat teks. */
     public function headings(): array
     {
-        return ['Nama', 'Email', 'Nomor WhatsApp', 'Tipe Pengguna', 'Kode Registrasi', 'Role', 'Status', 'Terakhir Masuk', 'Dibuat'];
+        return ['No', 'Nama', 'Email', 'Nomor WhatsApp', 'Tipe Pengguna', 'Kode Registrasi', 'Role', 'Status', 'Wajib Ganti Kata Sandi', 'Kata Sandi Diganti', 'Terakhir Masuk', 'Dibuat'];
     }
 
     /** @param  User  $user */
     public function map($user): array
     {
         return [
+            ++$this->row,
             $user->name,
             $user->email,
             $user->whatsapp_number,
@@ -54,6 +58,8 @@ class UserExport implements FromQuery, ShouldAutoSize, WithColumnFormatting, Wit
             $user->registration_code,
             $user->roles->pluck('name')->map(fn (string $role) => RoleAccess::roleLabel($role))->join(', '),
             $user->is_active ? 'Aktif' : 'Nonaktif',
+            $user->must_change_password ? 'Ya' : 'Tidak',
+            $user->password_changed_at?->format('Y-m-d'),
             $user->last_login_at?->format('Y-m-d H:i'),
             $user->created_at?->format('Y-m-d'),
         ];
@@ -62,11 +68,14 @@ class UserExport implements FromQuery, ShouldAutoSize, WithColumnFormatting, Wit
     public function columnFormats(): array
     {
         // Nomor WhatsApp tetap teks agar nol di depan tidak hilang.
-        return ['C' => NumberFormat::FORMAT_TEXT];
+        return ['D' => NumberFormat::FORMAT_TEXT];
     }
 
     public function styles(Worksheet $sheet): array
     {
+        $sheet->freezePane('C2');
+        $sheet->setAutoFilter('A1:' . $sheet->getHighestColumn() . '1');
+
         return [1 => ['font' => ['bold' => true]]];
     }
 }
