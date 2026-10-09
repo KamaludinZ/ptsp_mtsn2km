@@ -87,7 +87,7 @@
     "summary": "Konfigurasi npm proyek PTSP: Vite 7 sebagai build tool, dependencies Bootstrap 5, FontAwesome, AOS, SweetAlert2. Script: dev (vite), build (vite build), preview (vite preview)."
   },
   "phpunit.xml.dist": {
-    "summary": "Konfigurasi PHPUnit untuk tes PTSP: database ptsp_testing (PostgreSQL), environment APP_ENV=testing, DB_CONNECTION=pgsql, dan path test suite Feature dan Unit di tests/."
+    "summary": "Konfigurasi PHPUnit untuk tes PTSP: database ptsp_testing (PostgreSQL), APP_ENV=testing, DB_CONNECTION=pgsql, batas memori 512M untuk tes panel berseeder dan unduhan Excel, serta test suite Feature dan Unit di tests/."
   },
   "postcss.config.cjs": {
     "summary": "Konfigurasi PostCSS untuk Vite: menggunakan plugin autoprefixer untuk kompatibilitas CSS lintas browser."
@@ -972,7 +972,7 @@
     "summary": "Tes konfirmasi password: akses halaman confirm-password, submit password benar/salah."
   },
   "tests/Feature/Auth/PasswordUpdateTest.php": {
-    "summary": "Tes update password saat login: PUT /password dengan current_password benar/salah."
+    "summary": "Tes update password saat login: PUT /password dengan current_password benar/salah; penggantian berhasil mencatat password_changed_at dan menghapus must_change_password."
   },
   "tests/Feature/Auth/RegistrationTest.php": {
     "summary": "Tes registrasi: form valid membuat user, redirect ke verifikasi email, validasi field duplikat."
@@ -1224,7 +1224,7 @@
     "summary": "Halaman ubah pengguna dengan aksi header Masuk sebagai (ganti akun sementara, peran aktif Administrator) dan hapus (tidak untuk akun sendiri)."
   },
   "app/Filament/Resources/UserResource/Pages/ListUsers.php": {
-    "summary": "Halaman daftar pengguna dengan subjudul, tombol tambah, dan tab Semua/Petugas/Pemohon/Nonaktif."
+    "summary": "Halaman daftar pengguna /cp dengan tab Semua/Petugas/Pemohon/Nonaktif dan aksi header: Unduh Excel (UserExport mengikuti tab aktif, notifikasi jumlah akun, peringatan bila kosong, dicatat ke log audit), Unggah berkas akun (modal import Excel/CSV dengan petunjuk kolom, tipe pengguna, dan role serta tombol Unduh template), dan Tambah pengguna. Import diproses UserImport, berkas dihapus setelah dibaca, hasil dicatat ke audit, lalu modal importReport menampilkan ringkasan dan baris gagal."
   },
   "app/Filament/Resources/VisitorResource/Pages/ViewVisitor.php": {
     "summary": "Halaman detail kunjungan tamu dengan widget Riwayat kunjungan dan aksi ubah."
@@ -1263,7 +1263,7 @@
     "summary": "API portal pemohon (Sanctum): GET /api/permohonan daftar permohonan sendiri, GET /api/permohonan/{nomor} detail, GET /api/permohonan/layanan layanan yang bisa diajukan daring, POST /api/permohonan pengajuan dengan berkas, POST /api/permohonan/{nomor}/berkas unggah persyaratan susulan."
   },
   "app/Http/Controllers/Api/AuthController.php": {
-    "summary": "API autentikasi Sanctum: POST /api/auth/masuk (kunci setelah 5 gagal, akun nonaktif ditolak, pemohon wajib email terverifikasi), GET /api/auth/saya, keluar, keluar-semua, ganti kata sandi, lupa dan reset kata sandi."
+    "summary": "API autentikasi Sanctum: POST /api/auth/masuk (kunci setelah gagal berulang, akun nonaktif ditolak, pemohon wajib email terverifikasi), GET /api/auth/saya, keluar, keluar-semua, ganti kata sandi, lupa dan reset kata sandi, serta GET /api/auth/pengingat-kata-sandi dan POST /api/auth/pengingat-kata-sandi/abaikan untuk status pengingat rotasi kata sandi (PasswordRotation)."
   },
   "app/Http/Controllers/Api/ComplaintController.php": {
     "summary": "API pengaduan/saran/WBS untuk penangan: GET /api/pengaduan dengan filter, PATCH tindak lanjut dan tanggapan, POST rahasiakan identitas (satu arah); nama pelapor lewat Complaint::reporterLabel (anonim tetap Anonim, identitas rahasia hanya untuk penangan)."
@@ -1839,7 +1839,7 @@
     "summary": "Partial tab Keamanan di Monitoring Sistem: login gagal, akun terkunci, IP diblokir, sesi, HTTPS dan temuan konfigurasi berisiko."
   },
   "resources/views/filament/pages/system-monitor/log.blade.php": {
-    "summary": "Partial tab Log & Audit: bagian Perpindahan peran & ganti akun khusus admin (kartu ringkasan, saringan, rekap per pengguna–peran, catatan terbaru, tautan Rekam Jejak), log aplikasi per level, dan audit trail aktivitas."
+    "summary": "Partial tab Log & Audit: bagian Perpindahan peran & ganti akun khusus admin, log aplikasi per level, dan audit trail aktivitas dengan pencarian. Entri import/ekspor akun diberi badge ringkasan dan rincian yang bisa dibuka (UserAccountAudit) berisi ringkasan berlabel serta tabel baris gagal import."
   },
   "resources/views/filament/pages/system-monitor/ringkasan.blade.php": {
     "summary": "Partial tab Ringkasan di Monitoring Sistem: kartu indikator utama aplikasi dan server dengan warna persentase."
@@ -1935,7 +1935,7 @@
     "summary": "Halaman survei berhasil terkirim dengan ucapan terima kasih dan tautan hasil survei."
   },
   "routes/api.php": {
-    "summary": "Route API Sanctum: layanan, tiket staf, riwayat, disposisi, surat keluar (termasuk form minta nomor), persuratan dan Penomoran Otomatis (/persuratan/penomoran: format, singkatan, pratinjau, variabel tambahan), publik, permohonan pemohon, loket, pengaduan, survei, notifikasi, peran aktif, rekam jejak, log ganti akun, monitoring, pengguna, peran, pengaturan, konten."
+    "summary": "Route API Sanctum: layanan, tiket staf, riwayat, disposisi, surat keluar, persuratan dan penomoran otomatis, publik, permohonan pemohon, loket, pengaduan, survei, notifikasi, auth (masuk, saya, keluar, kata sandi, pengingat-kata-sandi dan abaikan), peran aktif, rekam jejak, log ganti akun, monitoring, pengguna, peran, pengaturan, konten."
   },
   "routes/console.php": {
     "summary": "Jadwal Artisan: heartbeat dan snapshot monitoring, arsip survei triwulanan, pemangkasan notifikasi, pengingat survei otomatis surveys:remind pukul 08.00, pengingat permohonan tertunda tiap pagi kerja."
@@ -1944,7 +1944,7 @@
     "summary": "Test penjaga route dan halaman akses ditolak: pengguna diarahkan ke panelnya sendiri, akun nonaktif melihat halaman 403, tamu diarahkan login."
   },
   "tests/Feature/ApiAuthTest.php": {
-    "summary": "Test API autentikasi: masuk/keluar token, keluar semua perangkat, penguncian setelah gagal, akun nonaktif/belum verifikasi ditolak, ganti/lupa/reset kata sandi."
+    "summary": "Test API autentikasi: masuk/keluar token, keluar semua perangkat, penguncian setelah gagal, akun nonaktif/belum verifikasi ditolak, ganti/lupa/reset kata sandi, serta status dan abaikan pengingat rotasi kata sandi lewat /api/auth/pengingat-kata-sandi."
   },
   "tests/Feature/AppSettingSchemaTest.php": {
     "summary": "Test skema dan cache pengaturan aplikasi: baris tidak valid ditolak, kunci dinormalisasi dan pengubah dicatat, satu salinan cache dan penyimpanan tidak membuang cache lain."
@@ -2136,7 +2136,7 @@
     "summary": "Feature test Responden Survei dan pengingat: template ada, akses pengawas, pengingat manual sekali sehari dengan tautan survei, penjadwal surveys:remind pada hari ke-1 dan ke-7, tiket yang dinilai keluar dari daftar, API."
   },
   "tests/Feature/SystemMonitorTest.php": {
-    "summary": "Feature test SystemMonitorTest: Monitoring Sistem (admin): kesehatan aplikasi/server, metrik, keamanan, log, pembaruan dan API terkait."
+    "summary": "Feature test Monitoring Sistem (admin): kesehatan aplikasi/server, metrik, keamanan, log dan audit trail termasuk ringkasan serta rincian import/ekspor akun, pembaruan dan API terkait."
   },
   "tests/Feature/TicketAssignApiTest.php": {
     "summary": "Feature test TicketAssignApiTest: API aksi petugas: penugasan petugas (hanya staf aktif), unggah hasil layanan menyelesaikan tiket, serah terima produk oleh loket."
@@ -2157,7 +2157,7 @@
     "summary": "Feature test UnitStaffApiTest: API /api/unit-kerja: staf melihat enam unit dan pemegangnya, admin mengganti pemegang (hanya staf back office aktif), unit tidak dikenal 404."
   },
   "tests/Feature/UserAccountSchemaTest.php": {
-    "summary": "Feature test UserAccountSchemaTest: skema pengguna/peran/izin: email tidak peka huruf, login terakhir, semua izin tersedia."
+    "summary": "Feature test skema pengguna/peran/izin: email tidak peka huruf, login terakhir, kolom pelacakan rotasi kata sandi, semua izin tersedia, tipe pengguna tak dikenal ditolak."
   },
   "tests/Feature/UserApiTest.php": {
     "summary": "Feature test UserApiTest: API /api/pengguna admin: daftar dan filter, buat/ubah, aktif/nonaktif, reset kata sandi, hapus, admin terakhir dilindungi."
@@ -2166,7 +2166,7 @@
     "summary": "Feature test UserFormTest: form tambah dan ubah pengguna di panel."
   },
   "tests/Feature/UserListTest.php": {
-    "summary": "Feature test UserListTest: daftar pengguna admin: kolom peran berlabel, status, filter dan tab."
+    "summary": "Feature test daftar pengguna admin: tab, filter, modal import (template, validasi, unggah berkas membuat akun dan laporan, audit), modal hasil import, serta tombol Unduh Excel yang mengikuti setiap tab, notifikasi, dan pencatatan audit."
   },
   "tests/Feature/UserUnitRolesTest.php": {
     "summary": "Feature test UserUnitRolesTest: peran unit penerima disposisi di pengelolaan pengguna: admin menetapkan peran Penjamin Mutu yang tampil dengan labelnya."
@@ -2205,7 +2205,7 @@
     "summary": "Middleware header keamanan: nosniff, XSS protection, HSTS saat HTTPS, Content-Security-Policy per lingkungan (Vite dev server, font Bunny, Google Maps, dan domain TinyMCE Cloud *.tiny.cloud untuk skrip/gaya/font/gambar/koneksi), Referrer-Policy dan Permissions-Policy."
   },
   "app/Providers/AppServiceProvider.php": {
-    "summary": "Service provider aplikasi: URL disk public dibuat relatif (/storage) agar gambar lolos CSP di host/port mana pun, aset JS editor TinyMCE untuk panel, render hook preferensi tampilan, email reset kata sandi berbahasa Indonesia, rate limiter, header keamanan, dan berbagi pengaturan ke view."
+    "summary": "Service provider aplikasi: URL disk public relatif (/storage) agar lolos CSP, aset editor TinyMCE, render hook preferensi tampilan, banner ganti akun di BODY_START, banner pengingat ganti kata sandi (PasswordRotationBanner) di CONTENT_START kedua panel, email reset kata sandi berbahasa Indonesia, rate limiter, header keamanan, dan berbagi pengaturan ke view."
   },
   "app/Support/RichText.php": {
     "summary": "Helper rich text TinyMCE: sanitize() membersihkan HTML (elemen aman, link http/https/mailto/tel, tanpa skrip/iframe) dan menyaring atribut style hanya ke properti aman (text-align, padding-left, warna, dekorasi, list-style-type, ukuran/perataan gambar dan tabel); render() untuk halaman; plain() teks ringkas; toHtml() mengubah teks lama '1. a 2. b' atau JSON menjadi daftar HTML."
@@ -2515,5 +2515,44 @@
   },
   "tests/Feature/VariabelTambahanTest.php": {
     "summary": "Feature test variabel tambahan {v}/{V}: tab Variabel Tambahan dan aksi tambah/ubah/hapus, field variabel dinamis di form Minta Nomor Surat (muncul, reset saat jenis berganti, wajib diisi dengan pesan jelas, ringkasan jenis surat, tombol salin nomor), validasi di SuratKeluarService dan API, nilai variabel masuk ke token huruf kecil/besar, serta form edit surat yang meminta variabel."
+  },
+  "app/Exports/UserExport.php": {
+    "summary": "Ekspor Excel daftar akun pengguna (UserExport, maatwebsite/excel) sesuai tab, pencarian, dan filter aktif di ListUsers. Kolom: No, Nama, Email, Nomor WhatsApp (format teks), Tipe Pengguna, Kode Registrasi, Role berlabel, Status, Wajib Ganti Kata Sandi, Kata Sandi Diganti, Terakhir Masuk, Dibuat; tanpa kata sandi; baris judul dibekukan dengan autofilter."
+  },
+  "app/Exports/UserImportTemplateExport.php": {
+    "summary": "Template unduhan import akun (template-import-akun.xlsx) dengan sheet Akun berisi judul kolom nama, email, nomor_whatsapp, tipe_pengguna, kode_registrasi, role plus contoh baris, dan sheet Petunjuk berisi aturan pengisian, kode tipe pengguna (FrontDeskService::APPLICANT_TYPES), serta daftar role sistem RoleAccess::SYSTEM_ROLES. Kolom WhatsApp diformat teks agar nol di depan tidak hilang."
+  },
+  "app/Imports/UserImport.php": {
+    "summary": "Import akun masal (UserImport) dari Excel/CSV dengan baris judul, hanya sheet pertama. Memeriksa kolom wajib nama, email, tipe_pengguna dan batas 1000 baris; tiap baris divalidasi (format email, email duplikat di berkas/database, nomor WhatsApp, tipe pengguna, role dikenal di tabel roles). Baris valid menjadi akun aktif terverifikasi dengan kata sandi acak yang tidak dikirim, must_change_password aktif, role dari kolom atau mengikuti tipe pengguna; baris gagal dicatat dengan nomor baris dan alasan untuk report()."
+  },
+  "app/Livewire/PasswordRotationBanner.php": {
+    "summary": "Komponen Livewire banner pengingat ganti kata sandi di atas isi halaman panel /cp dan /portal. Menampilkan pesan sesuai alasan dari PasswordRotation (akun hasil import atau kata sandi berumur 6 bulan), tautan ke halaman profil, dan aksi dismiss (Ingatkan nanti)."
+  },
+  "app/Models/User.php": {
+    "summary": "Model User (Sanctum, Spatie Permission, soft delete, activity log): atribut nama, email huruf kecil, nomor WhatsApp, tipe pengguna, kode registrasi, status aktif, peran aktif, serta kolom rotasi kata sandi password_changed_at dan must_change_password. Hook booted mengisi password_changed_at saat dibuat dan mereset siklus pengingat setiap kata sandi diganti; konstanta tipe pengguna dan STAFF_ROLES, relasi tiket, notifikasi, dan akses panel."
+  },
+  "app/Support/PasswordRotation.php": {
+    "summary": "Logika pengingat rotasi kata sandi di dalam panel: alasan imported bila must_change_password aktif, periodic bila password_changed_at (atau created_at) berumur 6 bulan atau lebih. Menyediakan reason() untuk banner dengan sesi Ingatkan nanti, status() untuk API (perlu_diingatkan, alasan, pesan, pengingat_berikutnya), message(), dan dismiss() yang menghapus penanda akun hasil import."
+  },
+  "app/Support/UserAccountAudit.php": {
+    "summary": "Deskripsi baku catatan audit import dan ekspor akun (Mengimport akun pengguna, Import akun pengguna gagal, Mengekspor data akun pengguna) di log audit yang sudah ada, plus summary() untuk badge ringkas dan detail() untuk rincian di tab Log & Audit: jumlah akun dibuat dan baris gagal untuk import, tab, jumlah akun, pencarian, serta filter aktif berlabel untuk ekspor."
+  },
+  "database/migrations/2026_10_09_150000_add_password_rotation_to_users.php": {
+    "summary": "Migrasi tabel users: kolom password_changed_at (timestamp) dan must_change_password (boolean, bawaan false) untuk pengingat rotasi kata sandi; akun lama diisi waktu ganti kata sandi dari created_at."
+  },
+  "resources/views/filament/resources/user-resource/import-report.blade.php": {
+    "summary": "Isi modal Hasil import akun di daftar Pengguna: kartu jumlah baris dibaca, akun dibuat, dan baris gagal, lalu tabel baris gagal (nomor baris, email, alasan) atau pesan semua baris berhasil."
+  },
+  "resources/views/livewire/password-rotation-banner.blade.php": {
+    "summary": "Tampilan banner pengingat ganti kata sandi: ikon kunci, pesan alasan, tombol Ganti kata sandi ke halaman profil, tombol Ingatkan nanti (sembunyikan untuk sesi), dan tombol tutup yang menyembunyikan banner di halaman ini saja."
+  },
+  "tests/Feature/PasswordRotationBannerTest.php": {
+    "summary": "Feature test banner pengingat kata sandi: akun baru tanpa banner, pengingat berkala 6 bulan beserta batasnya, Ingatkan nanti per sesi, pengingat akun hasil import hanya sekali, dan penggantian kata sandi memulai ulang siklus."
+  },
+  "tests/Feature/UserExportTest.php": {
+    "summary": "Feature test UserExport: berkas Excel data akun memiliki susunan kolom yang benar, nomor WhatsApp tetap teks, autofilter judul, dan tidak memuat kata sandi."
+  },
+  "tests/Feature/UserImportTest.php": {
+    "summary": "Feature test UserImport: baris valid menjadi akun dan baris tidak valid dilaporkan, kata sandi acak per akun dan nomor WhatsApp, template unduhan memuat daftar role dan bisa diimport ulang, kolom template wajib, serta batas jumlah baris."
   }
 }
