@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Spatie\Permission\Models\Role;
 
 /**
@@ -18,8 +19,14 @@ use Spatie\Permission\Models\Role;
  * dikirim ke siapa pun dan wajib diganti; baris yang tidak valid dilewati dan
  * dicatat beserta alasannya.
  */
-class UserImport implements ToCollection, WithHeadingRow
+class UserImport implements ToCollection, WithHeadingRow, WithMultipleSheets
 {
+    /** Hanya sheet pertama ("Akun"); sheet "Petunjuk" di template tidak dibaca. */
+    public function sheets(): array
+    {
+        return [0 => $this];
+    }
+
     /** Akun yang berhasil dibuat. @var array<int, User> */
     public array $created = [];
 

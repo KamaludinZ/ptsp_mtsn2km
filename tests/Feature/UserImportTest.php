@@ -97,6 +97,28 @@ class UserImportTest extends TestCase
         }
     }
 
+    public function test_downloaded_template_lists_roles_and_imports_its_example_row(): void
+    {
+        $xlsx = Excel::raw(new \App\Exports\UserImportTemplateExport, \Maatwebsite\Excel\Excel::XLSX);
+        $path = tempnam(sys_get_temp_dir(), 'tpl') . '.xlsx';
+        file_put_contents($path, $xlsx);
+
+        $book = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
+        $this->assertSame(['Akun', 'Petunjuk'], $book->getSheetNames());
+        $guide = collect($book->getSheetByName('Petunjuk')->toArray())->pluck(0)->filter()->all();
+        foreach (array_keys(\App\Support\RoleAccess::SYSTEM_ROLES) as $role) {
+            $this->assertContains($role, $guide);
+        }
+
+        // Template diunggah kembali apa adanya: hanya sheet Akun yang dibaca.
+        $import = new UserImport;
+        Excel::import($import, $path);
+        @unlink($path);
+
+        $this->assertSame(['created' => 1, 'failed' => []], $import->report());
+        $this->assertSame('081234567890', User::where('email', 'guru@contoh.sch.id')->firstOrFail()->whatsapp_number);
+    }
+
     public function test_file_without_the_template_columns_is_rejected_as_a_whole(): void
     {
         $import = new UserImport;

@@ -18,6 +18,8 @@
         </include>
     </source>
     <php>
+        <!-- Seeded panel tests already use ~110MB; Excel downloads (zipstream) need headroom above the 128M default. -->
+        <ini name="memory_limit" value="512M"/>
         <env name="APP_ENV" value="testing"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>

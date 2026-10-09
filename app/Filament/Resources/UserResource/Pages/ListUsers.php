@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use App\Exports\UserImportTemplateExport;
 use App\Filament\Resources\UserResource;
 use App\Imports\UserImport;
 use App\Models\User;
@@ -71,12 +72,7 @@ class ListUsers extends ListRecords
                     ->label('Unduh template')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('gray')
-                    ->action(fn () => response()->streamDownload(function () {
-                        $out = fopen('php://output', 'w');
-                        fputcsv($out, self::IMPORT_COLUMNS);
-                        fputcsv($out, ['Contoh Guru', 'guru@contoh.sch.id', '081234567890', 'guru', 'GURU-001', 'guru']);
-                        fclose($out);
-                    }, 'template-import-akun.csv', ['Content-Type' => 'text/csv'])),
+                    ->action(fn () => Excel::download(new UserImportTemplateExport, UserImportTemplateExport::FILENAME)),
             ])
             ->form([
                 Section::make('Template & petunjuk')

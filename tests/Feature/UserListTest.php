@@ -56,7 +56,7 @@ class UserListTest extends TestCase
             ->mountAction('import')
             // The template button runs at once (no modal), leaving the import modal open.
             ->call('mountAction', 'template')
-            ->assertFileDownloaded('template-import-akun.csv');
+            ->assertFileDownloaded('template-import-akun.xlsx');
     }
 
     public function test_excel_button_follows_the_active_tab(): void
