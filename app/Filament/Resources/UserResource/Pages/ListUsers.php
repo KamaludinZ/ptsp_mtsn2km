@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Imports\UserImport;
 use App\Models\User;
 use App\Services\FrontDeskService;
 use App\Support\RoleAccess;
@@ -14,7 +15,9 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ListUsers extends ListRecords
 {
@@ -108,7 +111,21 @@ class ListUsers extends ListRecords
                     ->validationMessages(['required' => 'Pilih berkas yang akan diimport.']),
             ])
             ->action(function (array $data, self $livewire) {
-                $livewire->replaceMountedAction('importReport', ['report' => self::demoReport()]);
+                $import = new UserImport;
+
+                try {
+                    Excel::import($import, $data['file'], 'local');
+                } catch (\Throwable $e) {
+                    report($e);
+                    Notification::make()->title('Berkas tidak dapat dibaca')->body('Pastikan berkas .xlsx/.csv memakai kolom seperti template.')->danger()->send();
+
+                    return;
+                } finally {
+                    // Berkas berisi data pribadi: tidak disimpan setelah diproses.
+                    Storage::disk('local')->delete($data['file']);
+                }
+
+                $livewire->replaceMountedAction('importReport', ['report' => $import->report()]);
             });
     }
 
@@ -124,20 +141,6 @@ class ListUsers extends ListRecords
             ->modalCancelActionLabel('Tutup')
             ->modalWidth('3xl')
             ->after(fn () => $this->resetTable());
-    }
-
-    /** Data tiruan sampai UserImport tersedia: bentuknya sama dengan laporan import sungguhan. */
-    private static function demoReport(): array
-    {
-        return [
-            'demo' => true,
-            'created' => 12,
-            'failed' => [
-                ['row' => 4, 'email' => 'guru@contoh.sch.id', 'reason' => 'Email sudah terdaftar.'],
-                ['row' => 7, 'email' => 'siswa-baru', 'reason' => 'Format email tidak valid.'],
-                ['row' => 9, 'email' => 'tu@contoh.sch.id', 'reason' => 'Role "operator" tidak dikenal.'],
-            ],
-        ];
     }
 
     /** Kode → label sebagai daftar dua kolom untuk petunjuk import. */

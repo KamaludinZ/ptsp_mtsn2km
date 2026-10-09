@@ -70,6 +70,25 @@ class UserListTest extends TestCase
         $this->assertSame('Petugas', Livewire::test(ListUsers::class)->set('activeTab', 'petugas')->instance()->activeTabLabel());
     }
 
+    public function test_uploaded_file_creates_accounts_and_shows_the_report(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $file = \Illuminate\Http\UploadedFile::fake()->createWithContent('akun.csv', implode("\n", [
+            'nama,email,nomor_whatsapp,tipe_pengguna,kode_registrasi,role',
+            'Guru Import,guru.import@contoh.sch.id,081234567890,guru,G-77,guru',
+            'Ganda,staff1@mtsn2malang.sch.id,,pegawai,,',
+        ]) . "\n");
+
+        Livewire::test(ListUsers::class)
+            ->callAction('import', data: ['file' => $file])
+            ->assertHasNoActionErrors()
+            ->assertSet('mountedActions', ['importReport'])
+            ->assertSee(['Hasil import akun', 'staff1@mtsn2malang.sch.id', 'Email sudah terdaftar.']);
+
+        $this->assertTrue(User::where('email', 'guru.import@contoh.sch.id')->firstOrFail()->must_change_password);
+        $this->assertSame([], \Illuminate\Support\Facades\Storage::disk('local')->allFiles('imports'));
+    }
+
     public function test_import_report_lists_created_count_and_failed_rows(): void
     {
         Livewire::test(ListUsers::class)

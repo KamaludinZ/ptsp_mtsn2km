@@ -2,10 +2,6 @@
 @php($failed = $report['failed'] ?? [])
 
 <div data-import-report class="space-y-4">
-    @if ($report['demo'] ?? false)
-        <p class="text-sm text-warning-600 dark:text-warning-400">Contoh tampilan: pemrosesan berkas belum aktif, angka di bawah bukan hasil berkas Anda.</p>
-    @endif
-
     <dl style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem;">
         @foreach ([
             'Baris dibaca' => ($report['created'] ?? 0) + count($failed),
