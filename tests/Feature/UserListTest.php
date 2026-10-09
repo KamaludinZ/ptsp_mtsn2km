@@ -61,11 +61,24 @@ class UserListTest extends TestCase
 
     public function test_excel_button_follows_the_active_tab(): void
     {
+        \Maatwebsite\Excel\Facades\Excel::fake();
+        \Maatwebsite\Excel\Facades\Excel::matchByRegex();
+        $staff = User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail();
+
         Livewire::test(ListUsers::class)
             ->assertActionExists('excel')
             ->set('activeTab', 'petugas')
-            ->callAction('excel')
-            ->assertNotified('Unduh Excel belum tersedia');
+            ->callAction('excel');
+
+        \Maatwebsite\Excel\Facades\Excel::assertDownloaded('/^akun-pengguna-petugas-\d{8}-\d{6}\.xlsx$/', function (\App\Exports\UserExport $export) use ($staff) {
+            $emails = $export->query()->pluck('email');
+
+            return $export->title() === 'Akun Petugas'
+                && $emails->contains($staff->email)
+                && ! $emails->contains('budi.santoso@email.com')
+                && $export->map($staff->fresh())[6] === 'Aktif'
+                && ! in_array($staff->password, $export->map($staff->fresh()), true);
+        });
 
         $this->assertSame('Petugas', Livewire::test(ListUsers::class)->set('activeTab', 'petugas')->instance()->activeTabLabel());
     }

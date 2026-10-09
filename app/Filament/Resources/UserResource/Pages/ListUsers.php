@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use App\Exports\UserExport;
 use App\Exports\UserImportTemplateExport;
 use App\Filament\Resources\UserResource;
 use App\Imports\UserImport;
@@ -40,12 +41,10 @@ class ListUsers extends ListRecords
                 ->icon('heroicon-o-table-cells')
                 ->color('gray')
                 ->tooltip(fn () => 'Berisi akun pada tab ' . $this->activeTabLabel() . ', sesuai pencarian dan filter yang aktif.')
-                // Berkas Excel menyusul (UserExport); sementara hanya menyebut isi yang akan diunduh.
-                ->action(fn () => Notification::make()
-                    ->title('Unduh Excel belum tersedia')
-                    ->body($this->getFilteredSortedTableQuery()->count() . ' akun pada tab ' . $this->activeTabLabel() . ' akan diunduh.')
-                    ->info()
-                    ->send()),
+                ->action(fn () => Excel::download(
+                    new UserExport($this->getFilteredSortedTableQuery(), $this->activeTabLabel()),
+                    UserExport::filename($this->activeTabLabel()),
+                )),
             self::importAction(),
             Actions\CreateAction::make()->label('Tambah pengguna')->icon('heroicon-m-user-plus'),
         ];
