@@ -120,6 +120,31 @@ class UserListTest extends TestCase
         $this->assertSame([['row' => 3, 'reason' => 'Email sudah terdaftar.']], $log->properties['failed']);
     }
 
+    public function test_export_query_matches_every_tab(): void
+    {
+        \Maatwebsite\Excel\Facades\Excel::fake();
+        \Maatwebsite\Excel\Facades\Excel::matchByRegex();
+        $staff = User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail();
+        $applicant = User::where('email', 'budi.santoso@email.com')->firstOrFail();
+        $inactive = User::factory()->create(['email' => 'lama@contoh.id', 'is_active' => false]);
+
+        foreach ([
+            'semua' => [[$staff, $applicant, $inactive], []],
+            'petugas' => [[$staff], [$applicant]],
+            'pemohon' => [[$applicant], [$staff]],
+            'nonaktif' => [[$inactive], [$staff, $applicant]],
+        ] as $tab => [$in, $out]) {
+            Livewire::test(ListUsers::class)->set('activeTab', $tab)->callAction('excel');
+
+            \Maatwebsite\Excel\Facades\Excel::assertDownloaded('/^akun-pengguna-' . $tab . '-/', function (\App\Exports\UserExport $export) use ($in, $out) {
+                $emails = $export->query()->pluck('email');
+
+                return collect($in)->every(fn (User $u) => $emails->contains($u->email))
+                    && collect($out)->every(fn (User $u) => ! $emails->contains($u->email));
+            });
+        }
+    }
+
     public function test_import_report_lists_created_count_and_failed_rows(): void
     {
         Livewire::test(ListUsers::class)
