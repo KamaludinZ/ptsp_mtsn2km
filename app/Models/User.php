@@ -213,6 +213,22 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         return $this->morphMany(Notification::class, 'notifiable')->latest();
     }
 
+    /** Pengingat ganti kata sandi: catat kapan kata sandi dibuat atau diganti. */
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            $user->password_changed_at ??= now();
+        });
+
+        // Kata sandi diganti pemiliknya (profil, atur ulang): pengingat dimulai lagi dari nol.
+        static::updating(function (User $user) {
+            if ($user->isDirty('password') && ! $user->isDirty('password_changed_at')) {
+                $user->password_changed_at = now();
+                $user->must_change_password = false;
+            }
+        });
+    }
+
     /** E-mail addresses are case-insensitive: always stored in lower case. */
     public function setEmailAttribute(?string $value): void
     {

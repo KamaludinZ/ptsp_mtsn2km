@@ -14,11 +14,29 @@ class PasswordRotationBannerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_banner_shows_reminder_and_can_be_dismissed_for_the_session(): void
+    protected function setUp(): void
     {
-        $this->app['env'] = 'local';
-        $this->actingAs(User::factory()->create());
+        parent::setUp();
+
         filament()->setCurrentPanel(filament()->getPanel('portal'));
+    }
+
+    public function test_new_accounts_record_when_their_password_was_set_and_see_no_banner(): void
+    {
+        $user = User::factory()->create();
+
+        $this->assertNotNull($user->password_changed_at);
+        $this->assertNull(PasswordRotation::reason($user));
+
+        $this->actingAs($user);
+        Livewire::test(PasswordRotationBanner::class)->assertDontSee('Ganti kata sandi');
+    }
+
+    public function test_password_older_than_six_months_shows_the_periodic_reminder_until_dismissed(): void
+    {
+        $user = User::factory()->create();
+        $user->forceFill(['password_changed_at' => now()->subMonths(6)->subDay()])->save();
+        $this->actingAs($user);
 
         Livewire::test(PasswordRotationBanner::class)
             ->assertSee('lebih dari 6 bulan')
@@ -26,14 +44,36 @@ class PasswordRotationBannerTest extends TestCase
             ->call('dismiss')
             ->assertDontSee('Ganti kata sandi');
 
-        $this->assertNull(PasswordRotation::reason(auth()->user()));
+        // Hanya untuk sesi ini: sesi berikutnya diingatkan lagi.
+        session()->forget(PasswordRotation::DISMISS_KEY);
+        $this->assertSame(PasswordRotation::REASON_PERIODIC, PasswordRotation::reason($user->fresh()));
     }
 
-    public function test_banner_stays_hidden_without_a_reason(): void
+    public function test_imported_account_is_reminded_once(): void
     {
-        $this->actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        $user->forceFill(['must_change_password' => true])->save();
+        $this->actingAs($user);
 
-        Livewire::test(PasswordRotationBanner::class)->assertDontSee('Ganti kata sandi');
-        $this->assertStringContainsString('kata sandi sementara', PasswordRotation::message(PasswordRotation::REASON_IMPORTED));
+        Livewire::test(PasswordRotationBanner::class)
+            ->assertSee('kata sandi sementara')
+            ->call('dismiss');
+
+        session()->forget(PasswordRotation::DISMISS_KEY);
+        $this->assertFalse($user->fresh()->must_change_password);
+        $this->assertNull(PasswordRotation::reason($user->fresh()));
+    }
+
+    public function test_changing_the_password_restarts_the_cycle(): void
+    {
+        $user = User::factory()->create();
+        $user->forceFill(['password_changed_at' => now()->subYear(), 'must_change_password' => true])->save();
+
+        $user->update(['password' => 'KataSandiBaru123']);
+
+        $user = $user->fresh();
+        $this->assertTrue($user->password_changed_at->isToday());
+        $this->assertFalse($user->must_change_password);
+        $this->assertNull(PasswordRotation::reason($user));
     }
 }

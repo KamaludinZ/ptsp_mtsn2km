@@ -6,8 +6,8 @@ use App\Models\User;
 
 /**
  * Pengingat ganti kata sandi di dalam panel (bukan e-mail/WhatsApp). Dua pemicu:
- * akun hasil import yang baru dipakai pertama kali, dan kata sandi yang sudah
- * berumur 6 bulan. Pengguna boleh mengabaikannya untuk sesi ini.
+ * akun hasil import yang baru dipakai pertama kali (must_change_password), dan
+ * kata sandi yang sudah berumur 6 bulan (password_changed_at).
  */
 class PasswordRotation
 {
@@ -26,9 +26,13 @@ class PasswordRotation
             return null;
         }
 
-        // Kolom pelacak waktu ganti kata sandi menyusul; sementara pengingat hanya
-        // tampil sebagai contoh di lingkungan lokal.
-        return app()->isLocal() ? self::REASON_PERIODIC : null;
+        if ($user->must_change_password) {
+            return self::REASON_IMPORTED;
+        }
+
+        $changedAt = $user->password_changed_at ?? $user->created_at;
+
+        return $changedAt && $changedAt->lte(now()->subMonths(self::MONTHS)) ? self::REASON_PERIODIC : null;
     }
 
     public static function message(string $reason): string
@@ -38,8 +42,16 @@ class PasswordRotation
             : 'Kata sandi Anda sudah dipakai lebih dari ' . self::MONTHS . ' bulan. Ganti secara berkala agar akun tetap aman.';
     }
 
-    public static function dismiss(): void
+    /**
+     * "Ingatkan nanti": pengingat berkala disembunyikan sampai sesi berikutnya;
+     * pengingat akun hasil import hanya tampil sekali, jadi penandanya dihapus.
+     */
+    public static function dismiss(?User $user): void
     {
         session([self::DISMISS_KEY => true]);
+
+        if ($user?->must_change_password) {
+            $user->forceFill(['must_change_password' => false])->saveQuietly();
+        }
     }
 }

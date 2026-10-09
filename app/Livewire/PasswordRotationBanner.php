@@ -12,7 +12,7 @@ class PasswordRotationBanner extends Component
 
     public function dismiss(): void
     {
-        PasswordRotation::dismiss();
+        PasswordRotation::dismiss(auth()->user());
         $this->dismissed = true;
     }
 
