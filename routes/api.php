@@ -238,6 +238,8 @@ Route::prefix('auth')->name('api.auth.')->group(function () {
         Route::post('/keluar', [\App\Http\Controllers\Api\AuthController::class, 'logout'])->name('keluar');
         Route::post('/keluar-semua', [\App\Http\Controllers\Api\AuthController::class, 'logoutEverywhere'])->name('keluar-semua');
         Route::put('/kata-sandi', [\App\Http\Controllers\Api\AuthController::class, 'changePassword'])->name('kata-sandi');
+        Route::get('/pengingat-kata-sandi', [\App\Http\Controllers\Api\AuthController::class, 'passwordRotation'])->name('pengingat-kata-sandi');
+        Route::post('/pengingat-kata-sandi/abaikan', [\App\Http\Controllers\Api\AuthController::class, 'dismissPasswordRotation'])->name('pengingat-kata-sandi.abaikan');
     });
 });
 

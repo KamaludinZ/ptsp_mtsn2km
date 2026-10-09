@@ -26,13 +26,28 @@ class PasswordRotation
             return null;
         }
 
-        if ($user->must_change_password) {
-            return self::REASON_IMPORTED;
-        }
+        return self::status($user)['alasan'];
+    }
 
+    /**
+     * Status pengingat untuk klien API (tanpa sesi "Ingatkan nanti": aplikasi
+     * klien mengatur sendiri kapan menutup pengingat).
+     */
+    public static function status(User $user): array
+    {
         $changedAt = $user->password_changed_at ?? $user->created_at;
+        $reason = $user->must_change_password
+            ? self::REASON_IMPORTED
+            : ($changedAt && $changedAt->lte(now()->subMonths(self::MONTHS)) ? self::REASON_PERIODIC : null);
 
-        return $changedAt && $changedAt->lte(now()->subMonths(self::MONTHS)) ? self::REASON_PERIODIC : null;
+        return [
+            'perlu_diingatkan' => (bool) $reason,
+            'alasan' => $reason,
+            'pesan' => $reason ? self::message($reason) : null,
+            'wajib_ganti' => (bool) $user->must_change_password,
+            'kata_sandi_diganti' => $changedAt?->toIso8601String(),
+            'pengingat_berikutnya' => $changedAt?->copy()->addMonths(self::MONTHS)->toIso8601String(),
+        ];
     }
 
     public static function message(string $reason): string

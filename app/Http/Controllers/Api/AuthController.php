@@ -84,6 +84,23 @@ class AuthController extends Controller
         return response()->json(self::profile($request->user()));
     }
 
+    /** GET /api/auth/pengingat-kata-sandi: apakah pengguna perlu diingatkan mengganti kata sandi. */
+    public function passwordRotation(Request $request): JsonResponse
+    {
+        return response()->json(\App\Support\PasswordRotation::status($request->user()));
+    }
+
+    /** POST /api/auth/pengingat-kata-sandi/abaikan: pengingat akun hasil import hanya tampil sekali. */
+    public function dismissPasswordRotation(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if ($user->must_change_password) {
+            $user->forceFill(['must_change_password' => false])->saveQuietly();
+        }
+
+        return response()->json(\App\Support\PasswordRotation::status($user));
+    }
+
     /** POST /api/auth/keluar: revokes the token used for this request. */
     public function logout(Request $request): JsonResponse
     {

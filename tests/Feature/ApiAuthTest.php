@@ -26,6 +26,29 @@ class ApiAuthTest extends TestCase
         return ['Authorization' => 'Bearer ' . $token, 'Accept' => 'application/json'];
     }
 
+    public function test_password_rotation_status_and_dismissal(): void
+    {
+        $user = User::factory()->create();
+        $user->forceFill(['must_change_password' => true])->save();
+        $headers = $this->bearer($user->createToken('uji')->plainTextToken);
+
+        $this->getJson('/api/auth/pengingat-kata-sandi', $headers)->assertOk()
+            ->assertJsonPath('perlu_diingatkan', true)
+            ->assertJsonPath('alasan', 'imported')
+            ->assertJsonPath('wajib_ganti', true);
+
+        $this->postJson('/api/auth/pengingat-kata-sandi/abaikan', [], $headers)->assertOk()
+            ->assertJsonPath('perlu_diingatkan', false)
+            ->assertJsonPath('wajib_ganti', false);
+
+        $user->forceFill(['password_changed_at' => now()->subMonths(7)])->save();
+        $this->getJson('/api/auth/pengingat-kata-sandi', $this->bearer($user->createToken('uji2')->plainTextToken))->assertOk()
+            ->assertJsonPath('alasan', 'periodic');
+
+        $this->app['auth']->forgetGuards();
+        $this->getJson('/api/auth/pengingat-kata-sandi')->assertUnauthorized();
+    }
+
     public function test_officer_signs_in_uses_the_token_and_signs_out(): void
     {
         $officer = User::factory()->create(['email' => 'rina@contoh.id', 'user_type' => 'pegawai'])->assignRole('back_office');
