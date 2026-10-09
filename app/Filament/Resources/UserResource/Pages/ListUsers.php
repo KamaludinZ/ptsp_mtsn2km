@@ -9,6 +9,7 @@ use App\Imports\UserImport;
 use App\Models\User;
 use App\Services\FrontDeskService;
 use App\Support\RoleAccess;
+use App\Support\UserAccountAudit;
 use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
@@ -54,7 +55,7 @@ class ListUsers extends ListRecords
                     activity('audit')
                         ->causedBy(auth()->user())
                         ->withProperties(['tab' => $this->activeTabLabel(), 'rows' => $rows, 'filters' => $this->tableFilters, 'search' => $this->tableSearch])
-                        ->log('Mengekspor data akun pengguna');
+                        ->log(UserAccountAudit::EXPORTED);
 
                     Notification::make()->title('Mengunduh ' . $rows . ' akun')->body('Berkas Excel tab ' . $this->activeTabLabel() . ' sedang disiapkan oleh peramban.')->success()->send();
 
@@ -129,7 +130,7 @@ class ListUsers extends ListRecords
                     report($e);
                     activity('audit')->causedBy(auth()->user())
                         ->withProperties(['file' => basename($data['file']), 'error' => 'Berkas tidak dapat dibaca'])
-                        ->log('Import akun pengguna gagal');
+                        ->log(UserAccountAudit::IMPORT_FAILED);
                     Notification::make()->title('Berkas tidak dapat dibaca')->body('Pastikan berkas .xlsx/.csv memakai kolom seperti template.')->danger()->send();
 
                     return;
@@ -145,7 +146,7 @@ class ListUsers extends ListRecords
                         // Nomor baris dan alasan saja; email baris gagal tidak ikut dicatat.
                         'failed' => collect($import->failed)->map(fn (array $row) => ['row' => $row['row'], 'reason' => $row['reason']])->all(),
                     ])
-                    ->log('Mengimport akun pengguna');
+                    ->log(UserAccountAudit::IMPORTED);
 
                 $livewire->replaceMountedAction('importReport', ['report' => $import->report()]);
             });

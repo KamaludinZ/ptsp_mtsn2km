@@ -151,6 +151,18 @@ class SystemMonitorTest extends TestCase
             ->assertDontSee('Mengubah pengaturan uji-audit-789');
     }
 
+    public function test_audit_trail_summarises_account_imports_and_exports(): void
+    {
+        $this->actingAs($this->admin());
+        activity('audit')->causedBy($this->admin())->withProperties(['created' => 12, 'failed' => [['row' => 4, 'reason' => 'Email sudah terdaftar.']]])->log(\App\Support\UserAccountAudit::IMPORTED);
+        activity('audit')->causedBy($this->admin())->withProperties(['tab' => 'Petugas', 'rows' => 40])->log(\App\Support\UserAccountAudit::EXPORTED);
+
+        Livewire::test(SystemMonitor::class)->set('tab', 'log')
+            ->assertSee(['Mengimport akun pengguna', '12 akun dibuat · 1 baris gagal', 'Mengekspor data akun pengguna', 'Tab Petugas · 40 akun'])
+            ->set('auditSearch', 'akun pengguna')
+            ->assertSee('Tab Petugas · 40 akun');
+    }
+
     public function test_update_tab_compares_with_github_and_lists_history(): void
     {
         Http::swap(new HttpFactory());

@@ -163,6 +163,9 @@
             <span class="text-xs text-gray-500 dark:text-gray-400" style="min-width:7.5rem">{{ $activity->created_at->translatedFormat('j M Y H:i') }}</span>
             <span class="text-sm font-semibold text-gray-950 dark:text-white">{{ $activity->causer?->name ?? 'Sistem' }}</span>
             <span class="text-sm text-gray-700 dark:text-gray-300">{{ $activity->description }}</span>
+            @if ($accountSummary = \App\Support\UserAccountAudit::summary($activity))
+                <x-filament::badge :color="$activity->description === \App\Support\UserAccountAudit::IMPORT_FAILED ? 'danger' : 'info'" size="sm" icon="heroicon-m-users" data-account-audit>{{ $accountSummary }}</x-filament::badge>
+            @endif
             @if ($activity->subject_type)
                 <x-filament::badge color="gray" size="sm">{{ class_basename($activity->subject_type) }} #{{ $activity->subject_id }}</x-filament::badge>
             @endif
