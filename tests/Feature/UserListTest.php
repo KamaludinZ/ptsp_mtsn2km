@@ -59,6 +59,16 @@ class UserListTest extends TestCase
             ->assertFileDownloaded('template-import-akun.csv');
     }
 
+    public function test_import_report_lists_created_count_and_failed_rows(): void
+    {
+        Livewire::test(ListUsers::class)
+            ->mountAction('importReport', ['report' => ['created' => 5, 'failed' => [
+                ['row' => 3, 'email' => 'dobel@contoh.sch.id', 'reason' => 'Email sudah terdaftar.'],
+            ]]])
+            ->assertSee(['Hasil import akun', 'Akun dibuat', 'dobel@contoh.sch.id', 'Email sudah terdaftar.'])
+            ->assertDontSee('Contoh tampilan');
+    }
+
     public function test_last_sign_in_and_role_filters(): void
     {
         $staff = User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail();
