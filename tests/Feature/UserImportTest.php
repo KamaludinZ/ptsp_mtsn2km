@@ -76,4 +76,27 @@ class UserImportTest extends TestCase
         Mail::assertNothingSent();
         Notification::assertNothingSent();
     }
+
+    public function test_file_without_the_template_columns_is_rejected_as_a_whole(): void
+    {
+        $import = new UserImport;
+        Excel::import($import, UploadedFile::fake()->createWithContent('akun.csv', "name,mail\nBudi,budi@contoh.id\n"));
+
+        $this->assertSame(0, $import->report()['created']);
+        $this->assertCount(1, $import->report()['failed']);
+        $this->assertSame(1, $import->report()['failed'][0]['row']);
+        $this->assertStringContainsString('Kolom nama, email, tipe_pengguna tidak ditemukan', $import->report()['failed'][0]['reason']);
+    }
+
+    public function test_rows_past_the_limit_are_reported_and_skipped(): void
+    {
+        $rows = array_map(fn (int $i) => ["Akun $i", "akun$i@contoh.id", '', 'umum', '', ''], range(1, UserImport::MAX_ROWS + 2));
+
+        $import = new UserImport;
+        Excel::import($import, $this->csv($rows));
+
+        $this->assertSame(UserImport::MAX_ROWS, $import->report()['created']);
+        $this->assertSame(UserImport::MAX_ROWS + 2, $import->report()['failed'][0]['row']);
+        $this->assertFalse(User::where('email', 'akun' . (UserImport::MAX_ROWS + 1) . '@contoh.id')->exists());
+    }
 }

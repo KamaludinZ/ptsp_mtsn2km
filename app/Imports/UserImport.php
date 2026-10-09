@@ -26,13 +26,32 @@ class UserImport implements ToCollection, WithHeadingRow
     /** Baris gagal: nomor baris di berkas, email, dan alasan. @var array<int, array{row: int, email: ?string, reason: string}> */
     public array $failed = [];
 
+    /** Kolom yang harus ada di baris judul. */
+    public const REQUIRED_COLUMNS = ['nama', 'email', 'tipe_pengguna'];
+
+    /** Batas baris akun per berkas agar satu unggahan tetap cepat diproses. */
+    public const MAX_ROWS = 1000;
+
     public function collection(Collection $rows): void
     {
+        $missing = array_diff(self::REQUIRED_COLUMNS, array_keys($rows->first()?->all() ?? []));
+        if ($rows->isNotEmpty() && $missing) {
+            $this->failed[] = ['row' => 1, 'email' => null, 'reason' => 'Kolom ' . implode(', ', $missing) . ' tidak ditemukan; gunakan judul kolom seperti template.'];
+
+            return;
+        }
+
         $roles = Role::where('guard_name', 'web')->pluck('name')->all();
         $seen = [];
 
         foreach ($rows as $index => $row) {
             $line = $index + 2; // baris 1 berisi judul kolom
+
+            if ($index >= self::MAX_ROWS) {
+                $this->failed[] = ['row' => $line, 'email' => null, 'reason' => 'Melebihi ' . self::MAX_ROWS . ' baris per berkas; baris ini dan setelahnya tidak diproses. Unggah sisanya di berkas terpisah.'];
+
+                return;
+            }
             $data = $this->normalize($row->all());
 
             if (! array_filter($data)) {
