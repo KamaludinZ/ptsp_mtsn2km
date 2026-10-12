@@ -84,7 +84,7 @@ class ListSuratKeluar extends ListRecords
                         ->validationMessages([
                             'required' => 'Isi jumlah nomor yang dibutuhkan.',
                             'min' => 'Minta paling sedikit 1 nomor.',
-                            'max' => 'Paling banyak ' . SuratKeluarService::MAX_PER_REQUEST . ' nomor sekali minta.',
+                            'max' => 'Paling banyak ' . number_format(SuratKeluarService::MAX_PER_REQUEST, 0, ',', '.') . ' nomor sekali minta.',
                             'integer' => 'Jumlah nomor harus bilangan bulat.',
                         ]),
                     DatePicker::make('tanggal_surat')
@@ -131,12 +131,18 @@ class ListSuratKeluar extends ListRecords
                         ->content(function (Get $get) {
                             $count = max(1, min((int) $get('count'), SuratKeluarService::MAX_PER_REQUEST));
                             $date = Carbon::parse($get('tanggal_surat') ?: now());
-                            $first = app(SuratKeluarService::class)->nextNumber((int) $date->format('Y'));
-                            $last = $first + $count - 1;
+                            // The lowest free numbers: ones freed by deleted letters come first.
+                            $numbers = app(SuratKeluarService::class)->freeNumbers((int) $date->format('Y'), $count);
 
-                            return $last > SuratKeluarNumber::MAX
-                                ? 'Nomor tahun ' . $date->format('Y') . ' tidak mencukupi.'
-                                : SuratKeluarService::composeNumber($first, $date, $get('klasifikasi'), $get('jenis_surat'), $get('variabel')) . ($count > 1 ? ' s.d. ' . SuratKeluarService::composeNumber($last, $date, $get('klasifikasi'), $get('jenis_surat'), $get('variabel')) : '');
+                            if (count($numbers) < $count) {
+                                return 'Nomor tahun ' . $date->format('Y') . ' tidak mencukupi (tinggal ' . count($numbers) . ').';
+                            }
+
+                            $compose = SuratKeluarService::numberComposer($date, $get('klasifikasi'), $get('jenis_surat'), $get('variabel'));
+
+                            return $compose($numbers[0])
+                                . ($count > 1 ? ' s.d. ' . $compose(end($numbers)) : '')
+                                . ($count > 1 && end($numbers) - $numbers[0] + 1 !== $count ? ' (nomor urut ' . SuratKeluarNumber::ranges($numbers) . ')' : '');
                         }),
                 ])
                 ->action(function (array $data) {
@@ -150,7 +156,10 @@ class ListSuratKeluar extends ListRecords
 
                     Notification::make()
                         ->title($letters->count() . ' nomor surat diberikan')
-                        ->body($letters->pluck('nomor_surat')->join('<br>'))
+                        // A long request is summarised; Salin still copies every number.
+                        ->body($letters->count() <= 10
+                            ? $letters->pluck('nomor_surat')->join('<br>')
+                            : $letters->first()->nomor_surat . '<br>s.d.<br>' . $letters->last()->nomor_surat . '<br>(nomor urut ' . SuratKeluarNumber::ranges($letters->pluck('nomor_urut')) . ')')
                         // Salin: the numbers go straight to the clipboard for the letter text.
                         ->actions([
                             \Filament\Notifications\Actions\Action::make('copy')

@@ -10,7 +10,7 @@ use App\Support\ActiveRoles;
  * Buku surat keluar: every pemroses naskah (back office — Tata Usaha, the
  * Waka units, penjamin mutu) reads the register, takes numbers and fills in
  * letters. Only an administrator deletes a letter, with a reason kept in the
- * audit log: a gap in the register must stay explainable.
+ * audit log; its number is then handed out again.
  */
 class SuratKeluarPolicy
 {

@@ -124,7 +124,7 @@ class SuratKeluarController extends Controller
         ]);
     }
 
-    /** POST /api/surat-keluar/nomor: reserve `jumlah` consecutive numbers. */
+    /** POST /api/surat-keluar/nomor: reserve `jumlah` numbers, the lowest free ones of the year. */
     public function reserve(Request $request): JsonResponse
     {
         $this->authorize('create', SuratKeluar::class);

@@ -42,7 +42,9 @@ class NumberRequestHistory extends TableWidget
                 Tables\Columns\TextColumn::make('created_at')->label('Diminta')->dateTime('d M Y H:i')->sortable(),
                 Tables\Columns\TextColumn::make('tahun')->label('Tahun')->sortable(),
                 Tables\Columns\TextColumn::make('range')->label('Nomor urut')
-                    ->state(fn (SuratKeluarBatch $b) => $b->nomor_awal === $b->nomor_akhir ? (string) $b->nomor_awal : "{$b->nomor_awal}–{$b->nomor_akhir}"),
+                    // Runs of the letters' numbers: a request may reuse freed numbers or lose deleted ones.
+                    ->state(fn (SuratKeluarBatch $b) => \App\Support\SuratKeluarNumber::ranges($b->letters()->pluck('nomor_urut')))
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('jumlah_diminta')->label('Jumlah')->numeric(),
                 Tables\Columns\TextColumn::make('creator.name')->label('Diminta oleh')->placeholder('–'),
                 Tables\Columns\TextColumn::make('filled_count')->label('Sudah diisi')

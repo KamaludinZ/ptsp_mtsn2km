@@ -141,10 +141,69 @@ class SuratKeluarTest extends TestCase
 
     public function test_numbers_stop_at_9999(): void
     {
-        DB::table('surat_sequences')->updateOrInsert(['tahun' => now()->year], ['last_number' => 9998]);
+        $year = now()->addYears(2)->year;
+        collect(range(1, 9998))->chunk(1000)->each(fn ($chunk) => DB::table('surat_keluar')->insert($chunk->map(fn (int $n) => [
+            'tahun' => $year, 'nomor_urut' => $n, 'nomor_surat' => "T-{$n}/{$year}", 'tanggal_surat' => "{$year}-01-01", 'created_at' => now(), 'updated_at' => now(),
+        ])->values()->all()));
+        $service = app(SuratKeluarService::class);
+        $staff = $this->user('staff1@mtsn2malang.sch.id');
+
+        try {
+            $service->reserve(2, now()->addYears(2), $staff);
+            $this->fail('Reserving past 9999 should be refused.');
+        } catch (TicketActionException $e) {
+            $this->assertSame("Nomor surat tahun {$year} tinggal 1.", $e->getMessage());
+        }
+
+        $this->assertSame(9999, $service->reserve(1, now()->addYears(2), $staff)->first()->nomor_urut);
+    }
+
+    public function test_a_deleted_number_is_handed_out_again_and_leaves_the_request_history(): void
+    {
+        $admin = $this->user('ptsp@mtsn2malang.sch.id');
+        $staff = $this->user('staff1@mtsn2malang.sch.id');
+        $service = app(SuratKeluarService::class);
+
+        $single = $service->reserve(1, now(), $staff)->first();
+        $three = $service->reserve(3, now(), $staff);
+        $singleBatch = $single->batch_id;
+
+        // The only letter of a request: the request disappears from the history.
+        $service->delete($single, $admin, 'Salah ambil nomor');
+        $this->assertDatabaseMissing('surat_keluar_batches', ['id' => $singleBatch]);
+
+        // One letter of three: the request keeps the two letters left.
+        $middle = $three[1];
+        $service->delete($middle, $admin, 'Surat batal');
+        $this->assertDatabaseHas('surat_keluar_batches', ['id' => $middle->batch_id, 'jumlah_diminta' => 2, 'nomor_awal' => $three[0]->nomor_urut, 'nomor_akhir' => $three[2]->nomor_urut]);
+
+        // The freed numbers come first, lowest first, then new ones.
+        $this->assertSame($single->nomor_urut, $service->nextNumber(now()->year));
+        $again = $service->reserve(3, now(), $staff);
+        $this->assertSame([$single->nomor_urut, $middle->nomor_urut, $three[2]->nomor_urut + 1], $again->pluck('nomor_urut')->all());
+        $this->assertSame($single->nomor_surat, $again[0]->nomor_surat);
+
+        $this->actingAs($staff);
+        Livewire::test(\App\Filament\Resources\SuratKeluarResource\Widgets\NumberRequestHistory::class)
+            ->assertTableColumnStateSet('range', \App\Support\SuratKeluarNumber::ranges($again->pluck('nomor_urut')), $again[0]->batch)
+            ->assertTableColumnStateSet('range', $three[0]->nomor_urut . ', ' . $three[2]->nomor_urut, $three[0]->batch);
+    }
+
+    public function test_thousands_of_numbers_can_be_reserved_at_once(): void
+    {
+        $this->assertSame(5000, SuratKeluarService::MAX_PER_REQUEST);
+        $service = app(SuratKeluarService::class);
+        $next = $service->nextNumber(now()->year);
+
+        $letters = $service->reserve(2000, now(), $this->user('staff1@mtsn2malang.sch.id'), ['klasifikasi' => 'PP.00']);
+
+        $this->assertCount(2000, $letters);
+        $this->assertSame(range($next, $next + 1999), $letters->pluck('nomor_urut')->all());
+        $this->assertSame(SuratKeluarService::composeNumber($next + 1999, now(), 'PP.00'), $letters->last()->nomor_surat);
+        $this->assertDatabaseHas('surat_keluar_batches', ['jumlah_diminta' => 2000, 'nomor_awal' => $next, 'nomor_akhir' => $next + 1999]);
 
         $this->expectException(TicketActionException::class);
-        app(SuratKeluarService::class)->reserve(2, now(), $this->user('staff1@mtsn2malang.sch.id'));
+        $service->reserve(5001, now(), $this->user('staff1@mtsn2malang.sch.id'));
     }
 
     public function test_officer_requests_numbers_from_the_register_page(): void
@@ -460,8 +519,14 @@ class SuratKeluarTest extends TestCase
 
         $this->postJson('/api/surat-keluar/nomor', ['jumlah' => 0])->assertUnprocessable()->assertJsonValidationErrors('jumlah');
 
-        DB::table('surat_sequences')->where('tahun', now()->year)->update(['last_number' => 9999]);
-        $this->postJson('/api/surat-keluar/nomor', ['jumlah' => 1])->assertUnprocessable()->assertJsonPath('message', 'Nomor surat tahun ' . now()->year . ' tinggal 0.');
+        $this->postJson('/api/surat-keluar/nomor', ['jumlah' => SuratKeluarService::MAX_PER_REQUEST + 1])->assertUnprocessable()->assertJsonValidationErrors('jumlah');
+
+        // Every number of the year is held by a letter.
+        $year = now()->addYears(2)->year;
+        collect(range(1, 9999))->chunk(1000)->each(fn ($chunk) => DB::table('surat_keluar')->insert($chunk->map(fn (int $n) => [
+            'tahun' => $year, 'nomor_urut' => $n, 'nomor_surat' => "T-{$n}/{$year}", 'tanggal_surat' => "{$year}-01-01", 'created_at' => now(), 'updated_at' => now(),
+        ])->values()->all()));
+        $this->postJson('/api/surat-keluar/nomor', ['jumlah' => 1, 'tanggal_surat' => "{$year}-03-01"])->assertUnprocessable()->assertJsonPath('message', "Nomor surat tahun {$year} tinggal 0.");
 
         Sanctum::actingAs($this->user('loket1@mtsn2malang.sch.id'));
         $this->postJson('/api/surat-keluar/nomor', ['jumlah' => 1])->assertForbidden();

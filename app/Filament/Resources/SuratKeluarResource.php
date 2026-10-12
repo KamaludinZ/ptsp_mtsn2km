@@ -106,7 +106,7 @@ class SuratKeluarResource extends Resource
         return $action
             ->label('Hapus')
             ->modalHeading(fn (SuratKeluar $record) => 'Hapus surat ' . $record->nomor_surat . '?')
-            ->modalDescription('Nomor ini tidak diberikan lagi, jadi register akan berlubang. Alasan penghapusan dicatat di Log & Audit.')
+            ->modalDescription('Nomornya kembali tersedia dan diberikan lagi pada permintaan nomor berikutnya; riwayat permintaannya ikut disesuaikan. Alasan penghapusan dicatat di Log & Audit.')
             ->form([
                 Forms\Components\Textarea::make('alasan')->label('Alasan penghapusan')
                     ->required()->minLength(5)->maxLength(500)->rows(3)

@@ -304,9 +304,9 @@ class VariabelTambahanTest extends TestCase
             ->assertSee('Pilih tanggal surat; bulan dan tahunnya masuk ke nomor.');
 
         Livewire::test(\App\Filament\Resources\SuratKeluarResource\Pages\ListSuratKeluar::class)
-            ->callAction('reserve', ['count' => 51, 'tanggal_surat' => now()->toDateString()])
+            ->callAction('reserve', ['count' => 5001, 'tanggal_surat' => now()->toDateString()])
             ->assertHasActionErrors(['count' => 'max'])
-            ->assertSee('Paling banyak 50 nomor sekali minta.');
+            ->assertSee('Paling banyak 5.000 nomor sekali minta.');
     }
 
     public function test_given_number_is_shown_with_a_copy_button(): void

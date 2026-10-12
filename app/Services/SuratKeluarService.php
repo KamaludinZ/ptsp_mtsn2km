@@ -18,16 +18,21 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Penomoran surat keluar: sequential numbers 1-9999 that restart every year,
- * reserved one or several at a time. The yearly counter row is locked while
- * numbers are handed out, so two officers never receive the same number.
+ * Penomoran surat keluar: numbers 1-9999 that restart every year, reserved
+ * one or several at a time. A request gets the lowest free numbers of the
+ * year, so a number freed by deleting its letter is handed out again first.
+ * The yearly counter row is locked while numbers are handed out, so two
+ * officers never receive the same number.
  */
 class SuratKeluarService
 {
-    public const MAX_PER_REQUEST = 50;
+    public const MAX_PER_REQUEST = 5000;
+
+    /** Rows per insert statement when reserving many numbers at once. */
+    private const INSERT_CHUNK = 500;
 
     /**
-     * Reserve $count consecutive numbers for the year of $tanggal.
+     * Reserve $count numbers for the year of $tanggal: the lowest free ones.
      *
      * @param  array<string, mixed>  $data  letter fields shared by every reserved number
      * @return Collection<int, SuratKeluar>
@@ -35,7 +40,7 @@ class SuratKeluarService
     public function reserve(int $count, CarbonInterface $tanggal, User $pembuat, array $data = []): Collection
     {
         if ($count < 1 || $count > self::MAX_PER_REQUEST) {
-            throw new TicketActionException('Jumlah nomor harus antara 1 dan ' . self::MAX_PER_REQUEST . '.');
+            throw new TicketActionException('Jumlah nomor harus antara 1 dan ' . number_format(self::MAX_PER_REQUEST, 0, ',', '.') . '.');
         }
 
         // The variable of the chosen jenis surat ({v}/{V}) must be filled when it is required.
@@ -49,42 +54,72 @@ class SuratKeluarService
             DB::table('surat_sequences')->insertOrIgnore(['tahun' => $year, 'last_number' => 0, 'created_at' => now(), 'updated_at' => now()]);
             $last = (int) DB::table('surat_sequences')->where('tahun', $year)->lockForUpdate()->value('last_number');
 
-            if ($last + $count > SuratKeluarNumber::MAX) {
-                throw new TicketActionException('Nomor surat tahun ' . $year . ' tinggal ' . (SuratKeluarNumber::MAX - $last) . '.');
+            $numbers = $this->freeNumbers($year, $count);
+            if (count($numbers) < $count) {
+                throw new TicketActionException('Nomor surat tahun ' . $year . ' tinggal ' . count($numbers) . '.');
             }
 
             $batch = SuratKeluarBatch::create([
                 'tahun' => $year,
                 'jumlah_diminta' => $count,
-                'nomor_awal' => $last + 1,
-                'nomor_akhir' => $last + $count,
+                'nomor_awal' => $numbers[0],
+                'nomor_akhir' => end($numbers),
                 'created_by' => $pembuat->id,
             ]);
 
             // Uploaded files belong to one letter only, never to a whole batch.
             $fields = ['tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'variabel', 'lampiran', 'tembusan', 'keterangan', ...($count === 1 ? ['berkas_lampiran', 'berkas_lampiran_nama'] : [])];
+            $compose = self::numberComposer($tanggal, $data['klasifikasi'] ?? null, $data['jenis_surat'] ?? null, $data['variabel'] ?? null);
+            $now = now();
 
-            $letters = collect(range($last + 1, $last + $count))->map(fn (int $urut) => SuratKeluar::create([
-                ...array_intersect_key($data, array_flip($fields)),
-                'tahun' => $year,
-                'nomor_urut' => $urut,
-                'nomor_surat' => self::composeNumber($urut, $tanggal, $data['klasifikasi'] ?? null, $data['jenis_surat'] ?? null, $data['variabel'] ?? null),
-                'tanggal_surat' => $tanggal,
-                'pembuat_id' => $pembuat->id,
-                'batch_id' => $batch->id,
-            ]));
+            // Many numbers at once: built through the model (casts) and inserted in chunks.
+            collect($numbers)->chunk(self::INSERT_CHUNK)->each(fn (Collection $chunk) => SuratKeluar::insert($chunk->map(fn (int $urut) => [
+                ...(new SuratKeluar([
+                    ...array_intersect_key($data, array_flip($fields)),
+                    'tahun' => $year,
+                    'nomor_urut' => $urut,
+                    'nomor_surat' => $compose($urut),
+                    'tanggal_surat' => $tanggal,
+                    'pembuat_id' => $pembuat->id,
+                    'batch_id' => $batch->id,
+                ]))->getAttributes(),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->values()->all()));
 
-            DB::table('surat_sequences')->where('tahun', $year)->update(['last_number' => $last + $count, 'updated_at' => now()]);
+            $letters = SuratKeluar::where('batch_id', $batch->id)->orderBy('nomor_urut')->get();
+
+            DB::table('surat_sequences')->where('tahun', $year)->update(['last_number' => max($last, end($numbers)), 'updated_at' => now()]);
             $this->rememberManual($data);
 
             activity('surat_keluar')->causedBy($pembuat)->performedOn($batch)->event('reserved')
-                ->withProperties(['tahun' => $year, 'jumlah' => $count, 'nomor_awal' => $last + 1, 'nomor_akhir' => $last + $count])
+                ->withProperties(['tahun' => $year, 'jumlah' => $count, 'nomor_awal' => $numbers[0], 'nomor_akhir' => end($numbers)])
                 ->log($count === 1
                     ? 'Meminta nomor surat keluar ' . $letters->first()->nomor_surat
-                    : "Meminta {$count} nomor surat keluar (urut " . ($last + 1) . '–' . ($last + $count) . " tahun {$year})");
+                    : "Meminta {$count} nomor surat keluar (urut " . SuratKeluarNumber::ranges($numbers) . " tahun {$year})");
 
             return $letters;
         });
+    }
+
+    /**
+     * The $count lowest numbers of $year that no letter holds: numbers freed
+     * by deleted letters first, then new ones, up to SuratKeluarNumber::MAX.
+     *
+     * @return list<int>
+     */
+    public function freeNumbers(int $year, int $count): array
+    {
+        $used = array_flip(SuratKeluar::where('tahun', $year)->pluck('nomor_urut')->all());
+        $free = [];
+
+        for ($n = 1; $n <= SuratKeluarNumber::MAX && count($free) < $count; $n++) {
+            if (! isset($used[$n])) {
+                $free[] = $n;
+            }
+        }
+
+        return $free;
     }
 
     /**
@@ -118,14 +153,23 @@ class SuratKeluarService
     }
 
     /**
-     * Delete one letter (administrators only, see SuratKeluarPolicy). The
-     * number is not handed out again, so the gap stays in the register; the
-     * audit log keeps the letter's data, who deleted it, and why.
+     * Delete one letter (administrators only, see SuratKeluarPolicy). Its
+     * number becomes free and is handed out again by the next request; its
+     * request in Riwayat permintaan nomor shrinks to the letters left, or
+     * disappears with the last one. The audit log keeps the letter's data,
+     * who deleted it, and why.
      */
     public function delete(SuratKeluar $letter, User $by, string $alasan): void
     {
         DB::transaction(function () use ($letter, $by, $alasan) {
             $letter->delete();
+
+            if ($batch = $letter->batch) {
+                $left = $batch->letters()->pluck('nomor_urut');
+                $left->isEmpty()
+                    ? $batch->delete()
+                    : $batch->update(['jumlah_diminta' => $left->count(), 'nomor_awal' => $left->min(), 'nomor_akhir' => $left->max()]);
+            }
 
             activity('surat_keluar')->causedBy($by)->performedOn($letter)->event('deleted')
                 ->withProperties([
@@ -160,19 +204,30 @@ class SuratKeluarService
      */
     public static function composeNumber(int $urut, CarbonInterface $tanggal, ?string $klasifikasi = null, ?string $jenisSurat = null, ?string $variabel = null): string
     {
+        return self::numberComposer($tanggal, $klasifikasi, $jenisSurat, $variabel)($urut);
+    }
+
+    /**
+     * composeNumber() for many numbers sharing date, classification, jenis
+     * surat and variable: the jenis surat and its settings are looked up once.
+     *
+     * @return \Closure(int): string
+     */
+    public static function numberComposer(CarbonInterface $tanggal, ?string $klasifikasi = null, ?string $jenisSurat = null, ?string $variabel = null): \Closure
+    {
         $jenis = self::jenisSurat($jenisSurat);
         $settings = $jenis ? NomorFormatSettings::for($jenis) : ['format' => null, 'mode_bulan' => 'arab'];
-
-        return NomorFormat::render($settings['format'] ?? NomorFormat::DEFAULT, [
+        $tokens = [
             'KS' => $jenis?->kode ?: NomorFormat::TOKENS['KS']['example'],
-            'N' => $urut,
             'S' => NomorFormatSettings::effectiveSingkatan($jenis),
             // {k}/{K}: the letter's classification, else the jenis surat's archive classification.
             'k' => filled($klasifikasi) ? trim($klasifikasi) : ($jenis?->klasifikasi_arsip ?: ''),
             'v' => filled($variabel) ? trim($variabel) : '',
             'tanggal' => $tanggal,
             'mode_bulan' => $settings['mode_bulan'],
-        ]);
+        ];
+
+        return fn (int $urut) => NomorFormat::render($settings['format'] ?? NomorFormat::DEFAULT, [...$tokens, 'N' => $urut]);
     }
 
     /** Why the variable value cannot be used for this jenis surat, or null. */
@@ -200,6 +255,6 @@ class SuratKeluarService
     /** The number the next request would receive for $year. */
     public function nextNumber(int $year): int
     {
-        return (int) DB::table('surat_sequences')->where('tahun', $year)->value('last_number') + 1;
+        return $this->freeNumbers($year, 1)[0] ?? SuratKeluarNumber::MAX + 1;
     }
 }
