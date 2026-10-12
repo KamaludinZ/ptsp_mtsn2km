@@ -14,8 +14,8 @@ class SuratKeluar extends Model
 
     protected $table = 'surat_keluar';
 
-    /** Reserving numbers is logged once per request (SuratKeluarService); changes per letter. */
-    protected static $recordEvents = ['updated', 'deleted'];
+    /** Reserving (per request) and deleting (with its reason) are logged by SuratKeluarService; changes per letter. */
+    protected static $recordEvents = ['updated'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -26,7 +26,6 @@ class SuratKeluar extends Model
             ->dontSubmitEmptyLogs()
             ->setDescriptionForEvent(fn (string $event) => match ($event) {
                 'updated' => 'Mengubah data surat keluar ' . $this->nomor_surat,
-                'deleted' => 'Menghapus surat keluar ' . $this->nomor_surat,
                 default => $event,
             });
     }

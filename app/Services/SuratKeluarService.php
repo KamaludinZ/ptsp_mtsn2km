@@ -15,6 +15,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Penomoran surat keluar: sequential numbers 1-9999 that restart every year,
@@ -114,6 +115,31 @@ class SuratKeluarService
         $this->rememberManual($data);
 
         return $letter;
+    }
+
+    /**
+     * Delete one letter (administrators only, see SuratKeluarPolicy). The
+     * number is not handed out again, so the gap stays in the register; the
+     * audit log keeps the letter's data, who deleted it, and why.
+     */
+    public function delete(SuratKeluar $letter, User $by, string $alasan): void
+    {
+        DB::transaction(function () use ($letter, $by, $alasan) {
+            $letter->delete();
+
+            activity('surat_keluar')->causedBy($by)->performedOn($letter)->event('deleted')
+                ->withProperties([
+                    'alasan' => $alasan,
+                    'old' => [
+                        ...$letter->only(['tahun', 'nomor_urut', 'nomor_surat', 'tujuan_surat', 'perihal', 'jenis_surat', 'klasifikasi', 'pembuat_id', 'batch_id']),
+                        'tanggal_surat' => $letter->tanggal_surat?->toDateString(),
+                        'berkas_lampiran_nama' => array_values($letter->berkas_lampiran_nama ?? []),
+                    ],
+                ])
+                ->log('Menghapus surat keluar ' . $letter->nomor_surat . ' — alasan: ' . $alasan);
+        });
+
+        Storage::disk('local')->delete($letter->berkas_lampiran ?? []);
     }
 
     /** Hand-typed letter values become inactive Master Persuratan choices for review. */

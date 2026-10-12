@@ -24,6 +24,7 @@ class ViewSuratKeluar extends ViewRecord
                 ->label(fn (SuratKeluar $record) => $record->isDraft() ? 'Lengkapi' : 'Ubah')
                 ->modalHeading(fn (SuratKeluar $record) => 'Data surat ' . $record->nomor_surat)
                 ->using(fn (SuratKeluar $record, array $data) => app(SuratKeluarService::class)->describe($record, $data)),
+            SuratKeluarResource::deleteAction(Actions\DeleteAction::make()),
         ];
     }
 }

@@ -81,12 +81,35 @@ class SuratKeluarTest extends TestCase
         $this->putJson('/api/surat-keluar/' . $letter->id, ['perihal' => 'x'])->assertForbidden();
     }
 
-    public function test_letters_are_never_deleted(): void
+    public function test_only_admin_deletes_a_letter_and_the_reason_is_audited(): void
     {
-        $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
+        $letter = SuratKeluar::firstOrFail();
 
-        $this->assertFalse(SuratKeluarResource::canDelete(SuratKeluar::firstOrFail()));
+        $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $this->assertFalse(SuratKeluarResource::canDelete($letter));
+        Livewire::test(ListSuratKeluar::class)->assertTableActionHidden('delete', $letter);
+
+        $admin = $this->user('ptsp@mtsn2malang.sch.id');
+        $this->actingAs($admin);
+        $this->assertTrue(SuratKeluarResource::canDelete($letter));
         $this->assertFalse(SuratKeluarResource::canDeleteAny());
+
+        Livewire::test(ListSuratKeluar::class)
+            ->assertTableActionVisible('delete', $letter)
+            ->callTableAction('delete', $letter, ['alasan' => ''])
+            ->assertHasTableActionErrors(['alasan' => 'required'])
+            ->callTableAction('delete', $letter, ['alasan' => 'Nomor ganda, surat batal dikirim'])
+            ->assertHasNoTableActionErrors();
+
+        $this->assertModelMissing($letter);
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'surat_keluar',
+            'event' => 'deleted',
+            'subject_id' => $letter->id,
+            'causer_id' => $admin->id,
+            'description' => 'Menghapus surat keluar ' . $letter->nomor_surat . ' — alasan: Nomor ganda, surat batal dikirim',
+        ]);
+        $this->assertSame(1, \Spatie\Activitylog\Models\Activity::where('subject_id', $letter->id)->where('event', 'deleted')->count());
     }
 
     public function test_reserving_three_numbers_at_once_gives_consecutive_numbers(): void

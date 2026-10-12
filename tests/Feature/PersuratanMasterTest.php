@@ -292,30 +292,33 @@ class PersuratanMasterTest extends TestCase
         $this->assertSame(2, $this->getJson('/api/persuratan/master?per_halaman=5&page=2')->json('halaman'));
     }
 
-    public function test_back_office_reads_but_only_managers_change_the_lists(): void
+    public function test_back_office_adds_and_edits_but_only_admin_deletes(): void
     {
         $choice = PersuratanMaster::firstOrFail();
 
         Sanctum::actingAs($this->user('staff1@mtsn2malang.sch.id'));
         $this->getJson('/api/persuratan/master')->assertOk();
-        $this->postJson('/api/persuratan/master', ['jenis' => 'tembusan', 'nama' => 'Baru'])->assertForbidden();
-        $this->putJson('/api/persuratan/master/' . $choice->id, ['aktif' => false])->assertForbidden();
+        $this->postJson('/api/persuratan/master', ['jenis' => 'tembusan', 'nama' => 'Baru'])->assertCreated();
+        $this->putJson('/api/persuratan/master/' . $choice->id, ['urutan' => 9])->assertOk();
         $this->deleteJson('/api/persuratan/master/' . $choice->id)->assertForbidden();
 
         Sanctum::actingAs($this->user('katu@mtsn2malang.sch.id'));
-        $this->postJson('/api/persuratan/master', ['jenis' => 'tembusan', 'nama' => 'Baru'])->assertCreated();
+        $this->deleteJson('/api/persuratan/master/' . $choice->id)->assertForbidden();
 
-        Sanctum::actingAs(tap(User::factory()->create())->assignRole('tata_usaha'));
-        $this->putJson('/api/persuratan/master/' . $choice->id, ['urutan' => 9])->assertOk();
+        Sanctum::actingAs($this->user('ptsp@mtsn2malang.sch.id'));
+        $this->deleteJson('/api/persuratan/master/' . $choice->id)->assertNoContent();
     }
 
-    public function test_back_office_sees_the_list_page_without_edit_actions(): void
+    public function test_back_office_sees_add_and_edit_but_no_delete_actions(): void
     {
         $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $choice = PersuratanMaster::firstOrFail();
 
         Livewire::test(ListPersuratanMasters::class)
             ->assertOk()
-            ->assertActionHidden('create')
-            ->assertTableActionHidden('edit', PersuratanMaster::firstOrFail());
+            ->assertActionVisible('create')
+            ->assertTableActionVisible('edit', $choice)
+            ->assertTableActionHidden('delete', $choice)
+            ->assertTableBulkActionHidden('delete');
     }
 }

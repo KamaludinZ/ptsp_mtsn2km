@@ -92,6 +92,30 @@ class SuratKeluarResource extends Resource
             ->helperText('PDF, gambar, atau Word; maks. 10 berkas @ 10 MB.');
     }
 
+    /**
+     * Hapus (admin only, via SuratKeluarPolicy): asks for a reason, which goes
+     * to Log & Audit with the letter's data. Shared by the table and the detail page.
+     *
+     * @template T of Tables\Actions\DeleteAction|\Filament\Actions\DeleteAction
+     *
+     * @param  T  $action
+     * @return T
+     */
+    public static function deleteAction(Tables\Actions\DeleteAction|\Filament\Actions\DeleteAction $action): Tables\Actions\DeleteAction|\Filament\Actions\DeleteAction
+    {
+        return $action
+            ->label('Hapus')
+            ->modalHeading(fn (SuratKeluar $record) => 'Hapus surat ' . $record->nomor_surat . '?')
+            ->modalDescription('Nomor ini tidak diberikan lagi, jadi register akan berlubang. Alasan penghapusan dicatat di Log & Audit.')
+            ->form([
+                Forms\Components\Textarea::make('alasan')->label('Alasan penghapusan')
+                    ->required()->minLength(5)->maxLength(500)->rows(3)
+                    ->validationMessages(['required' => 'Tulis alasan penghapusan; dicatat di Log & Audit.']),
+            ])
+            ->using(fn (SuratKeluar $record, array $data) => app(SuratKeluarService::class)->delete($record, auth()->user(), $data['alasan']))
+            ->successNotificationTitle('Surat keluar dihapus');
+    }
+
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist->schema([
@@ -215,6 +239,7 @@ class SuratKeluarResource extends Resource
                     ->label(fn (SuratKeluar $record) => $record->isDraft() ? 'Lengkapi' : 'Ubah')
                     ->modalHeading(fn (SuratKeluar $record) => 'Data surat ' . $record->nomor_surat)
                     ->using(fn (SuratKeluar $record, array $data) => app(SuratKeluarService::class)->describe($record, $data)),
+                static::deleteAction(Tables\Actions\DeleteAction::make()),
             ])
             ->emptyStateHeading('Belum ada surat keluar')
             ->emptyStateDescription('Ambil nomor surat untuk mulai mencatat surat keluar tahun ini.')

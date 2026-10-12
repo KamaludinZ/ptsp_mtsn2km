@@ -36,17 +36,18 @@ class PersuratanMasterResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    /** Who keeps the lists: administrators and Tata Usaha (the letters' owners). */
-    public const MANAGERS = ['admin', 'kepala_tu', 'tata_usaha'];
-
-    /** Back office reads the lists; only MANAGERS change them. */
+    /** Back office reads, adds and edits the lists; only administrators delete from them. */
     public static function can(string $action, ?Model $record = null): bool
     {
         $user = auth()->user();
 
+        if (! $user instanceof \App\Models\User || $user->is_active === false) {
+            return false;
+        }
+
         return match ($action) {
-            'viewAny', 'view' => (bool) $user?->can('backoffice.access'),
-            default => (bool) $user?->hasAnyRole(self::MANAGERS),
+            'delete', 'deleteAny', 'forceDelete', 'forceDeleteAny' => \App\Support\ActiveRoles::hasRole($user, 'admin'),
+            default => $user->can('backoffice.access'),
         };
     }
 
