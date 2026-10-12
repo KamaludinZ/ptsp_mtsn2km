@@ -18,7 +18,7 @@ use Throwable;
 /**
  * Sends a notification by its templates: on each channel that is switched
  * on and whose template is active, the {placeholders} are filled from the
- * ticket and the message goes out. A failing gateway is logged and never
+ * ticket (or complaint) and the message goes out. A failing gateway is logged and never
  * breaks the service flow that triggered it.
  */
 class NotificationDispatcher
@@ -37,7 +37,25 @@ class NotificationDispatcher
             return [];
         }
 
-        $values = $this->values($ticket, $recipient, $extra);
+        return $this->sendTo($event, $this->values($ticket, $recipient, $extra), $recipient->email, $recipient->whatsapp_number, [
+            'ticket_id' => $ticket->id,
+            'user_id' => $recipient->id,
+        ]);
+    }
+
+    /**
+     * Send $event to an address that need not belong to an account (e.g. the
+     * reporter of a complaint), with placeholder values already filled.
+     *
+     * @param  array{ticket_id?: ?int, complaint_id?: ?int, user_id?: ?int}  $context  what the riwayat notifikasi links to
+     * @return array<int, string> channels the message went out on
+     */
+    public function sendTo(string $event, array $values, ?string $email, ?string $whatsapp, array $context = []): array
+    {
+        if (static::$muted) {
+            return [];
+        }
+
         $channels = [];
 
         foreach (NotificationTemplate::where('key', $event)->where('is_active', true)->get() as $template) {
@@ -45,7 +63,7 @@ class NotificationDispatcher
                 continue;
             }
 
-            $to = $template->channel === 'email' ? $recipient->email : $recipient->whatsapp_number;
+            $to = $template->channel === 'email' ? $email : $whatsapp;
             if (blank($to)) {
                 continue;
             }
@@ -56,8 +74,9 @@ class NotificationDispatcher
             $delivery = new NotificationDelivery([
                 'event' => $event,
                 'channel' => $template->channel,
-                'ticket_id' => $ticket->id,
-                'user_id' => $recipient->id,
+                'ticket_id' => $context['ticket_id'] ?? null,
+                'complaint_id' => $context['complaint_id'] ?? null,
+                'user_id' => $context['user_id'] ?? null,
                 'recipient' => $to,
                 'subject' => $template->channel === 'email' ? ($subject ?? NotificationTemplates::EVENTS[$event] ?? $event) : null,
                 'body' => $body,
@@ -84,7 +103,7 @@ class NotificationDispatcher
                 : (bool) app(WhatsAppService::class)->sendMessage($delivery->recipient, $delivery->body);
             $error = $delivered ? null : 'Layanan WhatsApp menolak pesan.';
         } catch (Throwable $e) {
-            Log::warning("Notification {$delivery->event} via {$delivery->channel} failed: " . $e->getMessage(), ['ticket' => $delivery->ticket_id]);
+            Log::warning("Notification {$delivery->event} via {$delivery->channel} failed: " . $e->getMessage(), ['ticket' => $delivery->ticket_id, 'complaint' => $delivery->complaint_id]);
             $delivered = false;
             $error = mb_strimwidth($e->getMessage(), 0, 500, '…');
         }

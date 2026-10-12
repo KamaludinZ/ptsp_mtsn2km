@@ -7,6 +7,7 @@ use App\Models\Complaint;
 use App\Models\ComplaintStatusLog;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -46,6 +47,8 @@ class ComplaintService
         ]);
 
         if ($from !== $complaint->status || $replyChanged) {
+            DB::afterCommit(fn () => app(ComplaintNotifier::class)->updated($complaint->fresh(), $replyChanged ? $response : null));
+
             ComplaintStatusLog::create([
                 'complaint_id' => $complaint->id,
                 'from_status' => $from,
@@ -150,6 +153,8 @@ class ComplaintService
         if ($evidence) {
             $complaint->update(['evidence_files' => json_encode(array_map(fn (UploadedFile $file) => $file->store('complaint-evidence', 'local'), $evidence))]);
         }
+
+        DB::afterCommit(fn () => app(ComplaintNotifier::class)->received($complaint));
 
         return $complaint;
     }

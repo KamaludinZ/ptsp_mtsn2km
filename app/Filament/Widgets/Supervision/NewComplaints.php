@@ -4,6 +4,7 @@ namespace App\Filament\Widgets\Supervision;
 
 use App\Filament\Resources\ComplaintResource;
 use App\Models\Complaint;
+use App\Support\ActiveRoles;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -21,7 +22,8 @@ class NewComplaints extends TableWidget
 
     public static function canView(): bool
     {
-        return (bool) auth()->user()?->hasRole('supervisor');
+        // Kepala madrasah and kepala TU handle reports (admin has its own summary).
+        return ActiveRoles::actsAsLeader(auth()->user(), includeAdmin: false) && ComplaintResource::canViewAny();
     }
 
     public function table(Table $table): Table

@@ -48,7 +48,7 @@ class ActiveRoles
         'admin' => 'Kelola pengguna, peran, layanan, integrasi notifikasi, dan keamanan sistem.',
         'kepala_sekolah' => 'Setujui permohonan layanan dan beri disposisi ke unit pemroses.',
         'kepala_tu' => 'Setujui permohonan, awasi loket dan back office tata usaha.',
-        'supervisor' => 'Tindak lanjuti pengaduan, WBS, dan pantau hasil survei.',
+        'supervisor' => 'Pantau hasil survei dan kinerja layanan.',
         'back_office' => 'Proses tiket layanan yang masuk dan unggah dokumen hasil.',
         'front_desk' => 'Layani pemohon walk-in, buku tamu, dan serah-terima hasil di loket.',
         'waka_humas' => 'Proses naskah hasil disposisi untuk unit kehumasan.',

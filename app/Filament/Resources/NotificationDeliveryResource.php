@@ -63,7 +63,7 @@ class NotificationDeliveryResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['ticket:id,ticket_number', 'user:id,name']);
+        return parent::getEloquentQuery()->with(['ticket:id,ticket_number', 'complaint:id,complaint_number', 'user:id,name']);
     }
 
     public static function table(Table $table): Table
@@ -86,6 +86,9 @@ class NotificationDeliveryResource extends Resource
                         ->orWhereHas('user', fn (Builder $u) => $u->where('name', 'ilike', "%{$search}%")))),
                 Tables\Columns\TextColumn::make('ticket.ticket_number')->label('Tiket')->placeholder('–')
                     ->url(fn (NotificationDelivery $record) => $record->ticket ? TicketResource::getUrl('view', ['record' => $record->ticket]) : null)
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('complaint.complaint_number')->label('Laporan')->placeholder('–')
+                    ->url(fn (NotificationDelivery $record) => $record->complaint && ComplaintResource::canView($record->complaint) ? ComplaintResource::getUrl('view', ['record' => $record->complaint]) : null)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')->label('Status')->badge()
                     ->formatStateUsing(fn (string $state) => NotificationDelivery::STATUSES[$state] ?? $state)

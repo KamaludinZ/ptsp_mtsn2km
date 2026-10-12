@@ -39,12 +39,12 @@ class SupervisionStats extends StatsOverviewWidget
                 ->description($complaints['dumas']['in_progress'] . ' sedang ditindaklanjuti')
                 ->descriptionIcon('heroicon-m-chat-bubble-left-right')
                 ->color($complaints['dumas']['new'] ? 'warning' : 'gray')
-                ->url(ComplaintResource::getUrl('index')),
+                ->url(ComplaintResource::canViewAny() ? ComplaintResource::getUrl('index') : null),
             Stat::make('Whistleblowing baru', $complaints['whistleblowing']['new'])
                 ->description($complaints['whistleblowing']['in_progress'] . ' sedang ditindaklanjuti')
                 ->descriptionIcon('heroicon-m-shield-exclamation')
                 ->color($complaints['whistleblowing']['new'] ? 'danger' : 'gray')
-                ->url(ComplaintResource::getUrl('index', ['activeTab' => 'whistleblowing'])),
+                ->url(ComplaintResource::canViewAny() ? ComplaintResource::getUrl('index', ['activeTab' => 'whistleblowing']) : null),
         ];
     }
 }

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
-/** Linimasa riwayat status di halaman pengaduan (petugas pengawasan). */
+/** Linimasa riwayat status di halaman pengaduan (petugas penanganan pengaduan). */
 class ComplaintStatusTimelineTest extends TestCase
 {
     use RefreshDatabase;
@@ -21,7 +21,7 @@ class ComplaintStatusTimelineTest extends TestCase
         Http::fake();
         Mail::fake();
         $this->seed();
-        $handler = User::where('email', 'pengawas@mtsn2malang.sch.id')->firstOrFail();
+        $handler = User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail();
         $complaint = Complaint::query()->firstOrFail();
 
         ComplaintStatusLog::create(['complaint_id' => $complaint->id, 'from_status' => 'submitted', 'to_status' => 'in_review', 'actor_id' => $handler->id, 'response' => 'Laporan sedang kami telaah.', 'internal_note' => 'Cek CCTV loket']);

@@ -52,6 +52,9 @@ class NotificationTemplateResource extends Resource
         'catatan' => 'Berkas sudah lengkap.',
         'tautan' => 'https://ptsp.example/tracking',
         'instansi' => 'MTsN 2 Kota Malang',
+        'nomor_laporan' => 'PEM-202610-0003',
+        'jenis_laporan' => 'Pengaduan',
+        'judul' => 'Antrean legalisir terlalu lama',
     ];
 
     public static function form(Form $form): Form

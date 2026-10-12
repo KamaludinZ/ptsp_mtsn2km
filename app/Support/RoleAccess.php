@@ -31,8 +31,14 @@ class RoleAccess
         'penjamin_mutu' => ['backoffice.access'],
     ];
 
-    /** Roles that follow up complaints and whistleblowing reports (Modul 10) and read survey reports. */
-    public const COMPLAINT_HANDLERS = ['admin', 'supervisor', 'kepala_sekolah', 'kepala_tu'];
+    /**
+     * Roles that open and follow up complaints, suggestions and whistleblowing
+     * reports (Modul 10); they are also the ones notified of a new report.
+     */
+    public const COMPLAINT_HANDLERS = ['admin', 'kepala_sekolah', 'kepala_tu'];
+
+    /** Roles that read survey reports and remind applicants to fill the survey. */
+    public const SURVEY_READERS = ['admin', 'supervisor', 'kepala_sekolah', 'kepala_tu'];
 
     /** Roles that approve service requests (Modul 8) and see the executive dashboard (Modul 13). */
     public const LEADERSHIP = ['admin', 'kepala_sekolah', 'kepala_tu'];

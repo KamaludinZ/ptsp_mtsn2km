@@ -29,7 +29,7 @@ class ComplaintReporterLabelTest extends TestCase
 
     public function test_labels_for_each_kind_of_report(): void
     {
-        $handler = $this->user('supervisor');
+        $handler = $this->user('kepala_tu');
         $officer = $this->user('front_desk');
 
         $anonymousWbs = $this->report(['complaint_type' => 'whistleblowing', 'anonymous' => true]);
@@ -49,7 +49,7 @@ class ComplaintReporterLabelTest extends TestCase
     public function test_handler_api_keeps_anonymous_reporters_anonymous(): void
     {
         $this->report(['complaint_type' => 'whistleblowing', 'anonymous' => true, 'title' => 'Laporan anonim']);
-        Sanctum::actingAs($this->user('supervisor'));
+        Sanctum::actingAs($this->user('kepala_tu'));
 
         $rows = collect($this->getJson('/api/pengaduan')->assertOk()->json('data'));
 

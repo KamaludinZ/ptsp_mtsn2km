@@ -14,6 +14,9 @@ use Illuminate\Validation\Rule;
 /** Riwayat pengiriman notifikasi as JSON (admin), with resending of failed messages. */
 class NotificationDeliveryController extends Controller
 {
+    /** What a delivery links to: the ticket or the complaint it was about. */
+    private const LINKS = ['ticket:id,ticket_number', 'complaint:id,complaint_number'];
+
     /** GET /api/riwayat-notifikasi?kanal=&status=&pemicu=&q=&dari=&sampai=&per_halaman= */
     public function index(Request $request): JsonResponse
     {
@@ -30,7 +33,7 @@ class NotificationDeliveryController extends Controller
         ]);
 
         $page = NotificationDelivery::query()
-            ->with('ticket:id,ticket_number')
+            ->with(self::LINKS)
             ->when($filters['kanal'] ?? null, fn (Builder $q, $v) => $q->where('channel', $v))
             ->when($filters['status'] ?? null, fn (Builder $q, $v) => $q->where('status', $v))
             ->when($filters['pemicu'] ?? null, fn (Builder $q, $v) => $q->where('event', $v))
@@ -38,7 +41,8 @@ class NotificationDeliveryController extends Controller
             ->when($filters['sampai'] ?? null, fn (Builder $q, $v) => $q->whereDate('created_at', '<=', $v))
             ->when($filters['q'] ?? null, fn (Builder $q, $v) => $q->where(fn (Builder $w) => $w
                 ->where('recipient', 'ilike', "%{$v}%")
-                ->orWhereHas('ticket', fn (Builder $t) => $t->where('ticket_number', 'ilike', "%{$v}%"))))
+                ->orWhereHas('ticket', fn (Builder $t) => $t->where('ticket_number', 'ilike', "%{$v}%"))
+                ->orWhereHas('complaint', fn (Builder $c) => $c->where('complaint_number', 'ilike', "%{$v}%"))))
             ->latest('id')
             ->paginate($filters['per_halaman'] ?? 25)
             ->withQueryString();
@@ -54,7 +58,7 @@ class NotificationDeliveryController extends Controller
     {
         abort_unless($request->user()->hasRole('admin'), 403);
 
-        return response()->json($this->present($delivery->load('ticket:id,ticket_number'), true));
+        return response()->json($this->present($delivery->load(self::LINKS), true));
     }
 
     /** POST /api/riwayat-notifikasi/{delivery}/kirim-ulang: resend a failed email/WhatsApp message. */
@@ -69,7 +73,7 @@ class NotificationDeliveryController extends Controller
         $sent = app(NotificationDispatcher::class)->deliver($delivery);
         activity('audit')->causedBy($request->user())->performedOn($delivery)->withProperties(['terkirim' => $sent])->log('Mengirim ulang notifikasi');
 
-        return response()->json($this->present($delivery->fresh('ticket:id,ticket_number'), true), $sent ? 200 : 422);
+        return response()->json($this->present($delivery->fresh(self::LINKS), true), $sent ? 200 : 422);
     }
 
     private function present(NotificationDelivery $delivery, bool $withBody): array
@@ -82,12 +86,13 @@ class NotificationDeliveryController extends Controller
             'kanal' => $delivery->channel,
             'penerima' => $delivery->recipient,
             'tiket' => $delivery->ticket?->ticket_number,
+            'laporan' => $delivery->complaint?->complaint_number,
             'status' => $delivery->status,
             'status_label' => NotificationDelivery::STATUSES[$delivery->status] ?? $delivery->status,
             'percobaan' => $delivery->attempts,
             'galat' => $delivery->error,
             'subjek' => $withBody ? $delivery->subject : null,
             'isi' => $withBody ? $delivery->body : null,
-        ], fn ($value, $key) => $value !== null || in_array($key, ['tiket', 'galat'], true), ARRAY_FILTER_USE_BOTH);
+        ], fn ($value, $key) => $value !== null || in_array($key, ['tiket', 'laporan', 'galat'], true), ARRAY_FILTER_USE_BOTH);
     }
 }

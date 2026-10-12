@@ -29,7 +29,7 @@ class FilamentPanelsTest extends TestCase
         '/cp/visitors' => ['admin', 'kepala_tu', 'front_desk'],
         '/cp/visitors/create' => ['admin', 'kepala_tu', 'front_desk'],
         '/cp/loket/registrasi-layanan' => ['admin', 'kepala_tu', 'front_desk'],
-        '/cp/pengaduan' => ['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor'],
+        '/cp/pengaduan' => ['admin', 'kepala_sekolah', 'kepala_tu'],
         '/cp/saran' => ['admin', 'kepala_sekolah', 'kepala_tu'],
         '/cp/roles?bagian=kode-registrasi' => ['admin'],
         '/cp/laporan-survei' => ['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor'],
@@ -81,7 +81,7 @@ class FilamentPanelsTest extends TestCase
         $complaint = Complaint::first();
         $pages = self::STAFF_PAGES + [
             '/cp/tiket/' . $ticket->id => self::STAFF_ROLES,
-            '/cp/pengaduan/' . $complaint->id => ['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor'],
+            '/cp/pengaduan/' . $complaint->id => ['admin', 'kepala_sekolah', 'kepala_tu'],
             '/buku-tamu/' . Visitor::first()->id . '/cetak' => ['admin', 'kepala_tu', 'front_desk'],
             '/tiket/' . $ticket->id . '/tanda-terima' => self::STAFF_ROLES,
         ];

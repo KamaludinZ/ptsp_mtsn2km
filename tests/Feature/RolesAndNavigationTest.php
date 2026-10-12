@@ -64,7 +64,7 @@ class RolesAndNavigationTest extends TestCase
             'back_office' => ['back_office', ['tickets', 'performance'], ['register', 'approvals', 'users']],
             'kepala_sekolah' => ['kepala_sekolah', ['approvals', 'tickets', 'complaints', 'performance'], ['register', 'users']],
             'kepala_tu' => ['kepala_tu', ['approvals', 'register', 'guestBook', 'tickets', 'complaints'], ['users']],
-            'supervisor' => ['supervisor', ['performance', 'complaints'], ['approvals', 'register', 'users']],
+            'supervisor' => ['supervisor', ['performance'], ['complaints', 'approvals', 'register', 'users']],
             'admin' => ['admin', ['register', 'guestBook', 'tickets', 'approvals', 'complaints', 'performance', 'users'], []],
         ];
     }

@@ -29,7 +29,7 @@ class ComplaintIdentityTest extends TestCase
         Http::fake();
         Mail::fake();
         $this->seed();
-        $this->handler = User::where('email', 'pengawas@mtsn2malang.sch.id')->firstOrFail();
+        $this->handler = User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail();
         $this->complaint = Complaint::create(['complaint_type' => 'complaint', 'title' => 'Pungutan', 'description' => 'Diminta biaya tambahan', 'reporter_name' => 'Warga', 'reporter_email' => 'warga@example.test', 'status' => 'submitted', 'priority' => 'normal']);
     }
 

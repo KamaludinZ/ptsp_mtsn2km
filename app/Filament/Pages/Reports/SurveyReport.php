@@ -57,7 +57,7 @@ class SurveyReport extends Page
 
     public static function canAccess(): bool
     {
-        return (bool) auth()->user()?->hasAnyRole(RoleAccess::COMPLAINT_HANDLERS);
+        return (bool) auth()->user()?->hasAnyRole(RoleAccess::SURVEY_READERS);
     }
 
     /** @return array{0: CarbonInterface, 1: CarbonInterface} */

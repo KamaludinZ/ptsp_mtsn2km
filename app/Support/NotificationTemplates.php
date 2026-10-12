@@ -15,6 +15,9 @@ class NotificationTemplates
         'ticket_completed' => 'Permohonan selesai',
         'ticket_rejected' => 'Permohonan ditolak',
         'survey_reminder' => 'Pengingat survei kepuasan',
+        'complaint_received' => 'Pengaduan/saran diterima (ke pelapor)',
+        'complaint_new' => 'Laporan baru untuk petugas pengaduan',
+        'complaint_updated' => 'Tindak lanjut pengaduan (ke pelapor)',
     ];
 
     public const PLACEHOLDERS = [
@@ -25,6 +28,9 @@ class NotificationTemplates
         'catatan' => 'Catatan petugas / alasan',
         'tautan' => 'Tautan pelacakan atau detail',
         'instansi' => 'Nama madrasah',
+        'nomor_laporan' => 'Nomor pengaduan / saran / WBS',
+        'jenis_laporan' => 'Jenis laporan (Pengaduan, Saran, Whistleblowing)',
+        'judul' => 'Perihal laporan (dirahasiakan untuk WBS)',
     ];
 
     /** @return array<string, array{subject: string, body: string}> keyed by event */
@@ -54,6 +60,18 @@ class NotificationTemplates
             'survey_reminder' => [
                 'subject' => 'Bagaimana layanan {layanan} kami?',
                 'body' => "Yth. {nama},\nPermohonan {nomor_tiket} ({layanan}) telah selesai. Mohon luangkan 2 menit untuk menilai layanan kami melalui {tautan}.\nPenilaian Anda membantu kami memperbaiki pelayanan.\n\n{instansi}",
+            ],
+            'complaint_received' => [
+                'subject' => '{jenis_laporan} {nomor_laporan} kami terima',
+                'body' => "Yth. {nama},\nTerima kasih, {jenis_laporan} Anda telah kami terima dengan nomor {nomor_laporan}.\nSimpan nomor ini untuk melacak tindak lanjutnya di {tautan}.\n\n{instansi}",
+            ],
+            'complaint_new' => [
+                'subject' => 'Laporan baru: {jenis_laporan} {nomor_laporan}',
+                'body' => "Yth. {nama},\nAda laporan baru yang perlu ditelaah.\nJenis: {jenis_laporan}\nNomor: {nomor_laporan}\nPerihal: {judul}\nBuka: {tautan}",
+            ],
+            'complaint_updated' => [
+                'subject' => 'Tindak lanjut {nomor_laporan}: {status}',
+                'body' => "Yth. {nama},\nStatus {jenis_laporan} {nomor_laporan} kini: {status}.\n{catatan}\nLacak di {tautan}.\n\n{instansi}",
             ],
         ];
     }

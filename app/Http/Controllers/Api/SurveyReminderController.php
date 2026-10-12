@@ -17,7 +17,7 @@ class SurveyReminderController extends Controller
     /** GET /api/survei/belum-mengisi?per_halaman= */
     public function index(Request $request): JsonResponse
     {
-        abort_unless($request->user()->hasAnyRole(RoleAccess::COMPLAINT_HANDLERS), 403);
+        abort_unless($request->user()->hasAnyRole(RoleAccess::SURVEY_READERS), 403);
 
         $page = SurveyReminders::unrated()
             ->with(['service:id,name', 'user:id,name'])
@@ -39,7 +39,7 @@ class SurveyReminderController extends Controller
     /** POST /api/survei/pengingat {tiket: [ticket_number, …]} (max 50) */
     public function send(Request $request): JsonResponse
     {
-        abort_unless($request->user()->hasAnyRole(RoleAccess::COMPLAINT_HANDLERS), 403);
+        abort_unless($request->user()->hasAnyRole(RoleAccess::SURVEY_READERS), 403);
 
         $numbers = $request->validate([
             'tiket' => ['required', 'array', 'min:1', 'max:50'],

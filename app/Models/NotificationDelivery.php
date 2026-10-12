@@ -12,13 +12,18 @@ class NotificationDelivery extends Model
 
     public const STATUSES = ['sent' => 'Terkirim', 'failed' => 'Gagal'];
 
-    protected $fillable = ['event', 'channel', 'ticket_id', 'user_id', 'recipient', 'subject', 'body', 'status', 'error', 'attempts'];
+    protected $fillable = ['event', 'channel', 'ticket_id', 'complaint_id', 'user_id', 'recipient', 'subject', 'body', 'status', 'error', 'attempts'];
 
     protected $casts = ['attempts' => 'integer'];
 
     public function ticket(): BelongsTo
     {
         return $this->belongsTo(Ticket::class);
+    }
+
+    public function complaint(): BelongsTo
+    {
+        return $this->belongsTo(Complaint::class);
     }
 
     public function user(): BelongsTo

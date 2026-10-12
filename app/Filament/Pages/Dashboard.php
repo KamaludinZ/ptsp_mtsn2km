@@ -26,6 +26,7 @@ class Dashboard extends BaseDashboard
             // Pimpinan (Kepala Sekolah, Kepala TU)
             Widgets\Leadership\LeadershipStats::class,
             Widgets\Leadership\PendingApprovals::class,
+            Widgets\Supervision\NewComplaints::class,
 
             // Loket
             Widgets\FrontDesk\FrontDeskStats::class,
@@ -38,7 +39,6 @@ class Dashboard extends BaseDashboard
 
             // Pengawasan
             Widgets\Supervision\SupervisionStats::class,
-            Widgets\Supervision\NewComplaints::class,
 
             // Administrator
             Widgets\DashboardOverview::class,

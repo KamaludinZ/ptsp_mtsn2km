@@ -28,7 +28,7 @@ class ConfidentialComplaintTest extends TestCase
         Http::fake();
         Mail::fake();
         $this->seed();
-        $this->actingAs(User::where('email', 'pengawas@mtsn2malang.sch.id')->firstOrFail());
+        $this->actingAs(User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail());
 
         $wbs = Complaint::where('complaint_type', 'whistleblowing')->firstOrFail();
         $plain = Complaint::where('complaint_type', 'complaint')->firstOrFail();
@@ -48,7 +48,7 @@ class ConfidentialComplaintTest extends TestCase
         Http::fake();
         Mail::fake();
         $this->seed();
-        $handler = User::where('email', 'pengawas@mtsn2malang.sch.id')->firstOrFail();
+        $handler = User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail();
         $complaint = Complaint::create(['complaint_type' => 'complaint', 'title' => 'Antrean lama', 'description' => 'Menunggu 2 jam', 'reporter_name' => 'Warga', 'status' => 'submitted', 'priority' => 'normal']);
 
         $this->assertSame(['submitted'], $complaint->statusLogs()->pluck('to_status')->all());
@@ -109,7 +109,7 @@ class ConfidentialComplaintTest extends TestCase
     {
         $this->seed();
         $complaint = app(ComplaintService::class)->submit('complaint', ['reporter_name' => 'Warga', 'reporter_email' => 'warga@example.test', 'complaint_title' => 'Antrean', 'complaint_description' => 'x']);
-        app(ComplaintService::class)->followUp($complaint, ['status' => 'resolved', 'priority' => 'normal', 'response' => 'Sudah ditangani.', 'resolution_notes' => 'Rahasia internal'], User::where('email', 'pengawas@mtsn2malang.sch.id')->firstOrFail());
+        app(ComplaintService::class)->followUp($complaint, ['status' => 'resolved', 'priority' => 'normal', 'response' => 'Sudah ditangani.', 'resolution_notes' => 'Rahasia internal'], User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail());
         $url = '/api/publik/pengaduan/' . $complaint->complaint_number;
 
         $this->getJson($url)->assertJsonValidationErrors('email');
@@ -129,7 +129,7 @@ class ConfidentialComplaintTest extends TestCase
         $wbs = $service->submit('whistleblowing', ['complaint_title' => 'Pungli', 'complaint_description' => 'x', 'anonymous' => true, 'reporter_name' => 'Rahasia']);
         $plain = $service->submit('complaint', ['reporter_name' => 'Warga', 'reporter_email' => 'w@example.test', 'complaint_title' => 'AC rusak', 'complaint_description' => 'x']);
 
-        Sanctum::actingAs(User::where('email', 'pengawas@mtsn2malang.sch.id')->firstOrFail());
+        Sanctum::actingAs(User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail());
         $rows = collect($this->getJson('/api/pengaduan?jenis=whistleblowing&per_halaman=100')->assertOk()->json('data'));
         $this->assertTrue($rows->pluck('nomor')->contains($wbs->complaint_number));
         $this->assertFalse($rows->pluck('nomor')->contains($plain->complaint_number));
@@ -146,7 +146,7 @@ class ConfidentialComplaintTest extends TestCase
     {
         $this->seed();
         $complaint = app(ComplaintService::class)->submit('complaint', ['reporter_name' => 'Warga', 'reporter_email' => 'w@example.test', 'complaint_title' => 'Toilet', 'complaint_description' => 'x']);
-        $handler = User::where('email', 'pengawas@mtsn2malang.sch.id')->firstOrFail();
+        $handler = User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail();
         Sanctum::actingAs($handler);
         $url = '/api/pengaduan/' . $complaint->id;
 

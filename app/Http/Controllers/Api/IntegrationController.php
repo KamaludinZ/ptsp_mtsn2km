@@ -29,7 +29,7 @@ class IntegrationController extends Controller
         ],
         'whatsapp' => [
             'aktif' => ['required', 'boolean'],
-            'provider' => ['nullable', 'in:custom,fonnte,wablas'],
+            'provider' => ['nullable', 'in:custom,fonnte,wablas,balesotomatis'],
             'api_url' => ['required_if:aktif,true', 'nullable', 'url'],
             'api_token' => ['nullable', 'string', 'max:500'],
             // Required for the custom gateway only; see update().

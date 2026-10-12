@@ -172,17 +172,21 @@ class ServiceWorkflowTest extends TestCase
         Livewire::test(ViewTicket::class, ['record' => $ticket->id])->assertActionVisible('approve');
     }
 
-    public function test_supervisor_follows_up_a_complaint_until_the_reporter_sees_the_reply(): void
+    public function test_kepala_tu_follows_up_a_complaint_until_the_reporter_sees_the_reply(): void
     {
         $complaint = Complaint::factory()->create([
             'complaint_type' => 'complaint',
             'status' => 'submitted',
             'reporter_email' => 'warga@example.com',
         ]);
-        $supervisor = $this->staff('supervisor');
+
+        // Pengawas no longer handle complaints: only admin, kepala madrasah and kepala TU do.
+        $this->actingAs($this->staff('supervisor'))->get("/cp/pengaduan/{$complaint->id}")->assertForbidden();
+        $this->assertFalse(Widgets\Supervision\NewComplaints::canView());
+
+        $supervisor = $this->staff('kepala_tu');
         $this->actingAs($supervisor);
 
-        Livewire::test(Widgets\Supervision\NewComplaints::class)->assertCanSeeTableRecords([$complaint]);
         $this->get("/cp/pengaduan/{$complaint->id}")->assertOk()->assertSee($complaint->title);
 
         // A report cannot be closed without a reply to the reporter.

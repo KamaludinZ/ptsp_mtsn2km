@@ -48,7 +48,7 @@ class SurveyRespondents extends Page implements HasTable
 
     public static function canAccess(): bool
     {
-        return (bool) auth()->user()?->hasAnyRole(RoleAccess::COMPLAINT_HANDLERS);
+        return (bool) auth()->user()?->hasAnyRole(RoleAccess::SURVEY_READERS);
     }
 
     public function getSubheading(): ?string
