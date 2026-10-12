@@ -1179,7 +1179,7 @@
     "summary": "Halaman daftar Master Persuratan: tab per daftar (tujuan naskah, jenis surat, tembusan, klasifikasi, instruksi disposisi) dengan jumlah, ditambah tab Penomoran Otomatis dan Variabel Tambahan yang sama-sama menampilkan jenis surat; subjudul menyesuaikan tab aktif; tombol Tambah pilihan memakai tipe daftar dari tab aktif (activeListType)."
   },
   "app/Filament/Resources/PersuratanMasterResource.php": {
-    "summary": "Resource Master Persuratan (tabel persuratan_masters): pilihan rutin surat dan disposisi per tab; back office membaca, hanya admin/kepala TU/TU yang mengubah; validasi kode klasifikasi, tolak duplikat abaikan huruf/spasi, toggle aktif, aksi massal. Di tab Penomoran Otomatis menampilkan kolom format nomor, singkatan beserta sumbernya, dan contoh nomor serta aksi atur penomoran dan timpa singkatan; di tab Variabel Tambahan menampilkan variabel, status wajib, dan pemakaiannya di format serta aksi tambah/ubah/hapus variabel."
+    "summary": "Resource Master Persuratan (tabel persuratan_masters, slug master-persuratan): pilihan rutin surat dan disposisi per tab; can() mengizinkan pengguna aktif dengan backoffice.access melihat, menambah dan mengubah, sedangkan delete/deleteAny hanya untuk peran aktif admin (ActiveRoles); validasi kode klasifikasi, tolak duplikat abaikan huruf/spasi, toggle aktif, aksi massal. Di tab Penomoran Otomatis menampilkan kolom format nomor, singkatan beserta sumbernya, dan contoh nomor serta aksi atur penomoran dan timpa singkatan; di tab Variabel Tambahan menampilkan variabel, status wajib, dan pemakaiannya di format serta aksi tambah/ubah/hapus variabel."
   },
   "app/Filament/Resources/RoleResource/Pages/ListRoles.php": {
     "summary": "Halaman daftar peran (Spatie roles) dengan tab tambahan Kode Registrasi untuk kode pendaftaran civitas."
@@ -1209,10 +1209,10 @@
     "summary": "Halaman buku register surat keluar: aksi Minta Nomor Surat (1-50 nomor dengan pesan validasi jelas, tanggal) dengan bagian Penomoran berisi jenis surat beserta ringkasan format/bulan/singkatan/variabel, isian variabel dinamis yang wajib bila ditentukan dan direset saat jenis berganti, klasifikasi, pratinjau nomor, data surat opsional; notifikasi hasil dengan tombol Salin nomor. Juga unduh Excel dan PDF serta widget riwayat permintaan nomor."
   },
   "app/Filament/Resources/SuratKeluarResource/Pages/ViewSuratKeluar.php": {
-    "summary": "Halaman detail surat keluar dengan judul nomor surat dan aksi Lengkapi/Ubah yang menyimpan lewat SuratKeluarService::describe."
+    "summary": "Halaman detail surat keluar dengan judul nomor surat, aksi Lengkapi/Ubah yang menyimpan lewat SuratKeluarService::describe, dan aksi Hapus khusus admin dari SuratKeluarResource::deleteAction yang meminta alasan."
   },
   "app/Filament/Resources/SuratKeluarResource.php": {
-    "summary": "Resource Surat Keluar (surat_keluar, akses lewat SuratKeluarPolicy): nomor 1-9999 per tahun tanpa hapus; form tanggal, tujuan, perihal, jenis surat, klasifikasi, isian variabel tambahan sesuai jenis surat, lampiran, berkas privat, tembusan, keterangan; infolist detail. Tabel register dengan kolom No. Urut di kiri nomor surat (bisa dicari dan diurutkan), nomor surat diurutkan menurut tahun lalu nomor urut, kolom responsif per lebar layar, dan filter tahun/jenis/klasifikasi/pembuat/tanggal/kelengkapan."
+    "summary": "Resource Surat Keluar (surat_keluar, akses lewat SuratKeluarPolicy): nomor 1-9999 per tahun; form tanggal, tujuan, perihal, jenis surat, klasifikasi, isian variabel tambahan sesuai jenis surat, lampiran, berkas privat, tembusan, keterangan; infolist detail. Tabel register dengan kolom No. Urut, filter tahun/jenis/klasifikasi/pembuat/tanggal/kelengkapan, serta aksi Detail, Lampiran, Lengkapi/Ubah dan Hapus. deleteAction() dipakai tabel dan halaman detail: hanya terlihat bagi admin, wajib mengisi alasan penghapusan, lalu memanggil SuratKeluarService::delete sehingga tercatat di Log & Audit."
   },
   "app/Filament/Resources/TicketResource/Pages/ListTickets.php": {
     "summary": "Halaman daftar tiket staf: satu kotak pencarian untuk nomor, pemohon, WhatsApp, layanan, petugas dan isi permohonan; tab status (TicketTabs) dengan tab default sesuai peran."
@@ -1434,7 +1434,7 @@
     "summary": "Model template berkas layanan (service_templates): berkas privat dengan mime/ukuran otomatis, versi naik saat berkas diganti, is_active (scopeActive untuk pemohon), petunjuk pengisian, wajib, urutan; downloadUrl, isAvailable, fileInfo."
   },
   "app/Models/SuratKeluar.php": {
-    "summary": "Model surat keluar (surat_keluar): data nomor, tanggal, tujuan, perihal, jenis, klasifikasi, nilai variabel tambahan, lampiran dan berkas privat, pembuat, batch; isDraft, attachmentName; perubahan data dicatat di activity_log surat_keluar (hanya kolom yang berubah)."
+    "summary": "Model surat keluar (surat_keluar): data nomor, tanggal, tujuan, perihal, jenis, klasifikasi, nilai variabel tambahan, lampiran dan berkas privat, pembuat, batch; isDraft, attachmentName; hanya event updated yang dicatat otomatis di activity_log surat_keluar (kolom yang berubah), sedangkan permintaan nomor dan penghapusan dicatat oleh SuratKeluarService."
   },
   "app/Models/SuratKeluarBatch.php": {
     "summary": "Model batch pengambilan beberapa nomor surat keluar sekaligus (surat_keluar_batches) dengan pembuat dan daftar surat."
@@ -1491,7 +1491,7 @@
     "summary": "Unggah dan penyimpanan berkas template layanan: cek isi berkas (PDF/Word/Excel, batas ukuran), simpan privat di service-templates/{service}/acak.ext beserta nama, wajib, urutan dan petunjuk; replace() ganti berkas, cleanName() nama aman."
   },
   "app/Services/SuratKeluarService.php": {
-    "summary": "Penomoran surat keluar terpusat: reserve() mengambil 1-50 nomor berurutan per tahun dengan baris surat_sequences dikunci, menolak permintaan bila variabel wajib jenis surat kosong, membuat batch dan mencatat activity_log; describe() melengkapi surat dan memeriksa ulang variabel bila jenis berganti; composeNumber() satu-satunya perakit nomor dari format jenis surat ({KS}, {N}, {S}, {k}/{K} dengan klasifikasi arsip jenis sebagai cadangan, {v}/{V}, {M}, {Y}); variableProblem(), jenisSurat(), nextNumber()."
+    "summary": "Penomoran surat keluar terpusat: reserve() mengambil 1-50 nomor berurutan per tahun dengan baris surat_sequences dikunci, menolak permintaan bila variabel wajib jenis surat kosong, membuat batch dan mencatat activity_log; describe() melengkapi surat dan memeriksa ulang variabel bila jenis berganti; delete() menghapus satu surat oleh admin dalam transaksi, mencatat activity_log surat_keluar event deleted beserta alasan dan data lama surat, lalu menghapus berkas lampiran dari disk local; composeNumber() satu-satunya perakit nomor dari format jenis surat ({KS}, {N}, {S}, {k}/{K}, {v}/{V}, {M}, {Y}); variableProblem(), jenisSurat(), nextNumber()."
   },
   "app/Services/SurveySubmission.php": {
     "summary": "Validasi dan penyimpanan survei SKM & SPAK untuk form web bertahap dan API: identityRules, ratingRules (jawaban harus salah satu opsi), only() menyaring pertanyaan aktif, save() menyimpan untuk edisi aktif dengan skor 1..n sesuai Permenpan RB 14/2017."
@@ -2040,7 +2040,7 @@
     "summary": "Feature test PermissionMiddlewareTest: middleware izin per route (izin:a|b dan peran:...) mengizinkan atau menolak sesuai izin pengguna."
   },
   "tests/Feature/PersuratanMasterTest.php": {
-    "summary": "Feature test PersuratanMasterTest: Master Persuratan: isi awal setiap daftar, tab, tambah/ubah/nonaktifkan/hapus, pencarian, pilihan aktif di form, picker klasifikasi 'kode — nama' dan kode ketikan, isian manual tersimpan sebagai pilihan nonaktif, validasi duplikat, API."
+    "summary": "Feature test PersuratanMasterTest: isi awal setiap daftar, tab, tambah/ubah/nonaktifkan/hapus, pencarian, pilihan aktif di form, picker klasifikasi, isian manual sebagai pilihan nonaktif, validasi duplikat, API; back office boleh menambah dan mengubah tetapi hapus (API, aksi tabel dan massal) hanya admin."
   },
   "tests/Feature/ProcessorRoleListTest.php": {
     "summary": "Feature test ProcessorRoleListTest: halaman Peran Pemroses Naskah: enam unit, hitungan pemegang dan layanan, akses admin, penugasan staf back office."
@@ -2121,7 +2121,7 @@
     "summary": "Feature test StatusBadgeTest: label status berwarna StatusBadge dan komponen x-status-badge."
   },
   "tests/Feature/SuratKeluarTest.php": {
-    "summary": "Feature test register surat keluar: akses dan policy, penomoran tahunan sampai 9999, nomor mengikuti format jenis surat (singkatan dari Pengaturan Aplikasi atau penimpaan, klasifikasi arsip cadangan, semua token), minta nomor dengan data dan berkas, riwayat permintaan, activity_log, melengkapi surat, lampiran privat, kolom No. Urut dengan pencarian, pengurutan dan tampilan responsif, ekspor, serta API daftar dengan pencarian dan pengurutan."
+    "summary": "Feature test register surat keluar: akses dan policy, penomoran tahunan sampai 9999, nomor mengikuti format jenis surat, minta nomor dengan data dan berkas, riwayat permintaan, activity_log, melengkapi surat, lampiran privat, kolom No. Urut, ekspor, API; serta hanya admin yang bisa menghapus surat dengan alasan wajib yang tercatat sekali di activity_log."
   },
   "tests/Feature/SurveyApiTest.php": {
     "summary": "Feature test SurveyApiTest: API survei publik: struktur edisi aktif dan kirim jawaban tiga langkah, CRUD edisi admin, laporan."
@@ -2184,7 +2184,7 @@
     "summary": "Feature test WalkInApiTest: API pendaftaran walk-in di loket: mendaftarkan permohonan offline dengan berkas, validasi dan pembatasan untuk loket."
   },
   "app/Policies/SuratKeluarPolicy.php": {
-    "summary": "Policy buku surat keluar (SuratKeluar): pemroses naskah aktif dengan izin backoffice.access (Tata Usaha, Waka, penjamin mutu) boleh melihat register, mengambil nomor (create) dan melengkapi surat termasuk lampiran (update); delete/deleteAny selalu ditolak agar celah nomor tetap bisa dijelaskan. Dipakai SuratKeluarResource, API /api/surat-keluar dan route lampiran."
+    "summary": "Policy buku surat keluar (SuratKeluar): pemroses naskah aktif dengan izin backoffice.access (Tata Usaha, Waka, penjamin mutu) boleh melihat register, mengambil nomor (create) dan melengkapi surat termasuk lampiran (update); delete hanya untuk pengguna aktif dengan peran aktif admin (ActiveRoles::hasRole), deleteAny selalu ditolak sehingga tidak ada hapus massal. Dipakai SuratKeluarResource, API /api/surat-keluar dan route lampiran."
   },
   "database/migrations/2026_10_07_120000_add_petunjuk_to_service_templates.php": {
     "summary": "Migration menambah service_templates.petunjuk (maks 500 karakter): petunjuk singkat cara mengisi template yang ditampilkan kepada pemohon."
