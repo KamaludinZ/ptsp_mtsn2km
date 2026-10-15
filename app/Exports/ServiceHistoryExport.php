@@ -16,6 +16,15 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 /** Riwayat layanan for audit, exactly as filtered on the staff panel. */
 class ServiceHistoryExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles, WithTitle
 {
+    /** Larger exports are refused (the file is built in memory): narrow the filters first. */
+    public static int $maxRows = 20000;
+
+    public static function tooLargeMessage(int $rows): string
+    {
+        return 'Ada ' . number_format($rows, 0, ',', '.') . ' baris riwayat, melebihi batas ' . number_format(self::$maxRows, 0, ',', '.')
+            . ' baris per ekspor. Persempit dengan filter tanggal atau layanan, lalu ekspor lagi.';
+    }
+
     public function __construct(private Builder $query)
     {
     }

@@ -117,6 +117,17 @@ class AppServiceProvider extends ServiceProvider
             fn () => \App\Support\IntegrationRuntime::apply(),
         );
 
+        // WhatsApp welcome once the applicant has verified their email (never
+        // straight from the public sign-up form). Fixed text, sent via the queue.
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Verified::class, function ($event) {
+            if ($event->user instanceof \App\Models\User && filled($event->user->whatsapp_number) && ! $event->user->isStaff()) {
+                \App\Jobs\SendWhatsAppMessage::dispatch(
+                    $event->user->whatsapp_number,
+                    'Halo! Akun Anda di ' . app_brand_name() . ' sudah aktif. Silakan masuk ke portal untuk mengajukan layanan.',
+                );
+            }
+        });
+
         // Log akses for Monitoring Sistem: who signed in and out, from where.
         // Terakhir masuk, kept on the user (no model events / activity log for this bookkeeping).
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($e) {

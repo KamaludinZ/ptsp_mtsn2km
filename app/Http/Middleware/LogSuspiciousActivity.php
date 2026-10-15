@@ -97,17 +97,14 @@ class LogSuspiciousActivity
             $logOnly[] = 'Missing User-Agent';
         }
 
-        // Check for excessive request rate from same IP
-        $requestKey = 'request_count_' . $ip;
-        $requestCount = Cache::get($requestKey, 0);
-
-        // Many users share the school's public IP, so a high request rate is
-        // logged only; per-route rate limiters protect the forms.
+        // Check for excessive request rate from same IP. Many users share the
+        // school's public IP, so a high request rate is logged only; per-route
+        // rate limiters protect the forms. Counted per clock minute in the
+        // local file cache: no database write on every request.
+        $requestCount = $this->countRequest($ip);
         if ($requestCount > 300) {
             $logOnly[] = 'High request rate: ' . $requestCount . ' requests/minute';
         }
-
-        Cache::put($requestKey, $requestCount + 1, now()->addMinutes(1));
 
         // Log suspicious activity
         if (! $suspicious && $logOnly) {
@@ -160,6 +157,21 @@ class LogSuspiciousActivity
         }
 
         return $next($request);
+    }
+
+    /** This IP's requests in the current minute, this one included. */
+    private function countRequest(string $ip): int
+    {
+        $key = 'request_count_' . $ip . '_' . now()->format('YmdHi');
+
+        try {
+            $store = Cache::store('file');
+            $store->add($key, 0, 120);
+
+            return (int) $store->increment($key);
+        } catch (\Throwable) {
+            return 0; // a counter for the log must never break the request
+        }
     }
 
     /**

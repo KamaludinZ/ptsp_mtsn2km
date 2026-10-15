@@ -240,4 +240,36 @@ class NotificationDispatchTest extends TestCase
 
         $this->get(\App\Filament\Resources\NotificationDeliveryResource::getUrl())->assertForbidden();
     }
+
+    public function test_messages_wait_in_the_queue_instead_of_the_request(): void
+    {
+        $this->enable('email');
+        $this->enable('whatsapp');
+        \Illuminate\Support\Facades\Queue::fake();
+
+        $channels = app(NotificationDispatcher::class)->send('ticket_created', $this->ticket);
+
+        // Nothing is sent while the user waits: both messages are queued and recorded as such.
+        $this->assertSame(['email', 'whatsapp'], collect($channels)->sort()->values()->all());
+        Mail::assertNothingSent();
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\DeliverNotification::class, 2);
+        $this->assertSame(2, \App\Models\NotificationDelivery::where('status', 'queued')->where('attempts', 0)->count());
+    }
+
+    public function test_the_queue_worker_sends_and_retries_a_failed_message(): void
+    {
+        $this->enable('whatsapp');
+        Http::swap(new HttpFactory());
+        Http::fake(['wa.test/*' => Http::sequence()->push(['error' => 'sibuk'], 503)->push(['ok' => true])]);
+        $delivery = \App\Models\NotificationDelivery::create(['event' => 'ticket_created', 'channel' => 'whatsapp', 'ticket_id' => $this->ticket->id,
+            'recipient' => '6281299990000', 'body' => 'Isi', 'status' => 'queued', 'attempts' => 0]);
+
+        $job = new \App\Jobs\DeliverNotification($delivery->id);
+        $job->withFakeQueueInteractions()->handle(app(NotificationDispatcher::class));
+        $job->assertReleased();
+        $this->assertSame(['failed', 1], [$delivery->fresh()->status, $delivery->fresh()->attempts]);
+
+        (new \App\Jobs\DeliverNotification($delivery->id))->withFakeQueueInteractions()->handle(app(NotificationDispatcher::class));
+        $this->assertSame(['sent', 2], [$delivery->fresh()->status, $delivery->fresh()->attempts]);
+    }
 }

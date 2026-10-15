@@ -141,10 +141,13 @@ class TicketHistoryController extends Controller
 
         $filters = $this->filters($request);
         $query = $this->historyQuery($filters);
+        $rows = (clone $query)->count();
+
+        abort_if($rows > ServiceHistoryExport::$maxRows, 422, ServiceHistoryExport::tooLargeMessage($rows));
 
         activity('audit')
             ->causedBy($request->user())
-            ->withProperties(['rows' => (clone $query)->count(), 'filters' => $filters, 'via' => 'api'])
+            ->withProperties(['rows' => $rows, 'filters' => $filters, 'via' => 'api'])
             ->log('Mengekspor riwayat layanan');
 
         return Excel::download(new ServiceHistoryExport($query), 'riwayat-layanan-' . now()->format('Ymd-His') . '.xlsx');

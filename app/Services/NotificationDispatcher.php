@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Filament\Resources\TicketResource;
+use App\Jobs\DeliverNotification;
 use App\Mail\TemplateNotificationMail;
 use App\Models\NotificationSetting;
 use App\Models\NotificationDelivery;
@@ -48,7 +49,7 @@ class NotificationDispatcher
      * reporter of a complaint), with placeholder values already filled.
      *
      * @param  array{ticket_id?: ?int, complaint_id?: ?int, user_id?: ?int}  $context  what the riwayat notifikasi links to
-     * @return array<int, string> channels the message went out on
+     * @return array<int, string> channels the message went out (or was queued) on
      */
     public function sendTo(string $event, array $values, ?string $email, ?string $whatsapp, array $context = []): array
     {
@@ -82,7 +83,13 @@ class NotificationDispatcher
                 'body' => $body,
             ]);
 
-            if ($this->deliver($delivery)) {
+            // Kirim lewat antrean (DeliverNotification): gateway yang lambat
+            // tidak membuat pengguna menunggu. Dengan QUEUE_CONNECTION=sync
+            // pesan tetap terkirim saat itu juga.
+            $delivery->fill(['status' => 'queued', 'attempts' => 0])->save();
+            DeliverNotification::dispatch($delivery->id)->afterCommit();
+
+            if ($delivery->refresh()->status !== 'failed') {
                 $channels[] = $template->channel;
             }
         }
@@ -111,7 +118,7 @@ class NotificationDispatcher
         $delivery->fill([
             'status' => $delivered ? 'sent' : 'failed',
             'error' => $error,
-            'attempts' => $delivery->exists ? $delivery->attempts + 1 : 1,
+            'attempts' => $delivery->attempts + 1,
         ])->save();
 
         return $delivered;

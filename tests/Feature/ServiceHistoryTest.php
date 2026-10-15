@@ -378,6 +378,20 @@ class ServiceHistoryTest extends TestCase
         $this->assertDatabaseHas('activity_log', ['description' => 'Mengekspor riwayat layanan']);
     }
 
+    public function test_oversized_history_exports_are_refused(): void
+    {
+        Excel::fake();
+        $this->logStep();
+        ServiceHistoryExport::$maxRows = 0;
+
+        try {
+            Sanctum::actingAs($this->user('pengawas@mtsn2malang.sch.id'));
+            $this->getJson('/api/riwayat/ekspor')->assertStatus(422)->assertJsonPath('message', fn ($message) => str_contains($message, 'Persempit'));
+        } finally {
+            ServiceHistoryExport::$maxRows = 20000;
+        }
+    }
+
     public function test_history_entries_cannot_be_changed_or_removed(): void
     {
         $log = $this->logStep();

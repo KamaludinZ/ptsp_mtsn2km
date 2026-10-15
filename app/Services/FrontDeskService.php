@@ -82,7 +82,7 @@ class FrontDeskService
     public function selfRegister(array $data): Visitor
     {
         $photo = ($data['photo'] ?? null) instanceof \Illuminate\Http\UploadedFile
-            ? $data['photo']->store('visitor-photos', 'public')
+            ? $data['photo']->store('visitor-photos', 'local')
             : null;
 
         return Visitor::create([

@@ -22,6 +22,7 @@ class VisitorPhotoTest extends TestCase
         Http::fake();
         Mail::fake();
         Storage::fake('public');
+        Storage::fake('local');
         $this->seed();
     }
 
@@ -46,7 +47,16 @@ class VisitorPhotoTest extends TestCase
 
         $visitor = Visitor::latest('id')->firstOrFail();
         $this->assertStringStartsWith('visitor-photos/', $visitor->photo_path);
-        Storage::disk('public')->assertExists($visitor->photo_path);
+        Storage::disk('local')->assertExists($visitor->photo_path);
+        Storage::disk('public')->assertMissing($visitor->photo_path);
+
+        // Only the front desk can open the face photo; never a public URL.
+        $this->get(route('visitors.photo', $visitor))->assertRedirect();
+        $this->actingAs(\App\Models\User::where('email', 'loket1@mtsn2malang.sch.id')->firstOrFail())
+            ->get(route('visitors.photo', $visitor))->assertOk();
+        $applicant = \App\Models\User::factory()->create(['user_type' => 'umum']);
+        $applicant->assignRole('umum');
+        $this->actingAs($applicant)->get(route('visitors.photo', $visitor))->assertForbidden();
     }
 
     public function test_photo_is_optional_and_must_be_a_small_image(): void
@@ -120,5 +130,13 @@ class VisitorPhotoTest extends TestCase
         $limited = collect(range(1, 30))->map(fn () => $this->postJson('/api/publik/buku-tamu', $this->guest())->status())->contains(429);
 
         $this->assertTrue($limited);
+    }
+
+    public function test_the_anonymous_applicant_form_sends_no_whatsapp(): void
+    {
+        $this->post(route('public.applicant.submit'), ['name' => 'Pak Budi', 'phone' => '081234567890', 'target_service' => 'Lainnya', 'target_service_other' => 'Legalisir ijazah'])
+            ->assertSessionHasNoErrors();
+
+        Http::assertNothingSent();
     }
 }

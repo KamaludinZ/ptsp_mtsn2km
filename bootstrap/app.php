@@ -14,10 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Behind a reverse proxy (Coolify/Traefik, Docker) trust its
         // X-Forwarded-* headers so HTTPS URLs, secure cookies and client IPs
-        // are right. Comma-separated list, or "*" when the app is reachable
-        // only through the proxy (set in the Docker image).
+        // are right. Comma-separated list of proxy IPs/CIDR ranges, or "*"
+        // when the app is reachable only through the proxy (Docker image);
+        // "*" never takes the client IP from X-Forwarded-For (ProxyTrust).
         if ($proxies = env('TRUSTED_PROXIES')) {
-            $middleware->trustProxies(at: $proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+            $proxies === '*'
+                ? $middleware->trustProxies(at: '*', headers: \App\Support\ProxyTrust::WILDCARD_HEADERS)
+                : $middleware->trustProxies(at: array_map('trim', explode(',', $proxies)));
         }
 
         // Global middleware

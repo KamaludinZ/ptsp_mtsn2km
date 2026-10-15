@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ServiceHistoryResource\Pages;
 use App\Exports\ServiceHistoryExport;
 use App\Filament\Resources\ServiceHistoryResource;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -27,10 +28,17 @@ class ListServiceHistory extends ListRecords
                 ->tooltip('Unduh riwayat sesuai pencarian & filter yang aktif')
                 ->action(function () {
                     $query = $this->getFilteredSortedTableQuery();
+                    $rows = (clone $query)->count();
+
+                    if ($rows > ServiceHistoryExport::$maxRows) {
+                        Notification::make()->title('Ekspor terlalu besar')->body(ServiceHistoryExport::tooLargeMessage($rows))->warning()->send();
+
+                        return null;
+                    }
 
                     activity('audit')
                         ->causedBy(auth()->user())
-                        ->withProperties(['rows' => (clone $query)->count(), 'filters' => $this->tableFilters, 'search' => $this->tableSearch])
+                        ->withProperties(['rows' => $rows, 'filters' => $this->tableFilters, 'search' => $this->tableSearch])
                         ->log('Mengekspor riwayat layanan');
 
                     return Excel::download(new ServiceHistoryExport($query), 'riwayat-layanan-' . now()->format('Ymd-His') . '.xlsx');

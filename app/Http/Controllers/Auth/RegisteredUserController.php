@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 use Illuminate\Validation\ValidationException;
-use App\Services\WhatsAppService;
 
 class RegisteredUserController extends Controller
 {
@@ -93,11 +92,9 @@ class RegisteredUserController extends Controller
         // Assign role based on user type
         $user->assignRole($userType);
 
-        // Send WhatsApp notification
-        $whatsappService = new WhatsAppService();
-        // Fixed text only (no name typed by the visitor), so the school's number cannot be used to relay messages.
-        $message = 'Halo! Registrasi akun Anda di ' . app_brand_name() . ' berhasil. Silakan cek email Anda untuk verifikasi akun.';
-        $whatsappService->sendMessage($user->whatsapp_number, $message);
+        // The WhatsApp welcome goes out only once the email is verified
+        // (AppServiceProvider, Verified event), so a stranger's sign-up form
+        // cannot make the school's number message any phone.
 
         // Fire registered event (will send verification email)
         event(new Registered($user));

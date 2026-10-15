@@ -146,6 +146,15 @@ Route::middleware('auth')->get('/pengaduan/{complaint}/bukti/{index}', function 
     return \Illuminate\Support\Facades\Storage::disk('local')->response($path);
 })->can('view', 'complaint')->whereNumber('index')->name('complaints.evidence');
 
+// Guest photos from the visitor book (faces): private files for the front desk
+Route::middleware('auth')->get('/buku-tamu/{visitor}/foto', function (\App\Models\Visitor $visitor) {
+    $path = $visitor->photo_path ?: abort(404);
+    $disk = \Illuminate\Support\Facades\Storage::disk('local');
+    abort_unless($disk->exists($path), 404);
+
+    return $disk->response($path, null, ['Cache-Control' => 'private, no-store']);
+})->can('view', 'visitor')->name('visitors.photo');
+
 // Outgoing-letter attachments: private files for the back office keeping the register
 Route::middleware('auth')->get('/surat-keluar/{suratKeluar}/lampiran/{index}', function (\App\Models\SuratKeluar $suratKeluar, int $index) {
     $path = $suratKeluar->berkas_lampiran[$index] ?? abort(404);

@@ -162,4 +162,18 @@ class ConfidentialComplaintTest extends TestCase
         Sanctum::actingAs(User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail());
         $this->patchJson($url, ['status' => 'closed'])->assertForbidden();
     }
+
+    public function test_a_reporter_cannot_follow_up_their_own_report(): void
+    {
+        $this->seed();
+        $reporter = tap(User::factory()->create(['user_type' => 'umum']))->assignRole('umum');
+        $complaint = app(ComplaintService::class)->submit('complaint', ['reporter_name' => 'Warga', 'reporter_email' => 'w@example.test', 'complaint_title' => 'Toilet', 'complaint_description' => 'x']);
+        $complaint->update(['user_id' => $reporter->id, 'status' => 'submitted']);
+
+        $this->assertFalse($reporter->can('update', $complaint));
+        Sanctum::actingAs($reporter);
+        $this->patchJson('/api/pengaduan/' . $complaint->id, ['status' => 'closed'])->assertForbidden();
+        $this->postJson('/api/pengaduan/' . $complaint->id . '/rahasiakan', ['alasan' => 'x'])->assertForbidden();
+        $this->assertSame('submitted', $complaint->fresh()->status);
+    }
 }
