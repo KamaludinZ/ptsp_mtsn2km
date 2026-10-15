@@ -132,6 +132,43 @@ class DispositionActionTest extends TestCase
         $this->assertNull(DispositionLog::where('ticket_id', $this->ticket->id)->firstOrFail()->acknowledged_by_name);
     }
 
+    public function test_reprinted_sheet_shows_what_was_actually_decided_and_by_whom(): void
+    {
+        // The service suggests Waka Sarpras, but the head of admin sends it to Tata Usaha instead.
+        ServiceDisposition::apply($this->ticket->service, 'kepsek_tu', ['waka_sarpras']);
+        $headOfAdmin = User::role('kepala_tu')->where('is_active', true)->firstOrFail();
+
+        $this->actingAs($headOfAdmin)->withSession([\App\Support\ActiveRoles::SESSION_KEY => 'kepala_tu'])
+            ->get(route('tickets.disposition-sheet', $this->ticket))
+            ->assertOk()
+            ->assertSee('<span class="box">✓</span>Waka Sarpras', false)
+            ->assertSee('Kepala Tata Usaha')
+            ->assertDontSee('Tanggal disposisi');
+
+        app(TicketService::class)->dispose($this->ticket->fresh(), $headOfAdmin, 'ttd_upload', ['tata_usaha'], 'Segera diproses', 'Lampirkan arsip lama');
+
+        $this->get(route('tickets.disposition-sheet', $this->ticket))
+            ->assertOk()
+            ->assertSee('<span class="box">✓</span>Tata Usaha', false)
+            ->assertDontSee('<span class="box">✓</span>Waka Sarpras', false)
+            ->assertSee('Lampirkan arsip lama')
+            ->assertSee('Tanggal disposisi')
+            ->assertSee('Kepala Tata Usaha')
+            ->assertDontSee('Kepala Madrasah')
+            ->assertSee('(' . $headOfAdmin->name . ')', false);
+    }
+
+    public function test_receiving_units_open_the_sheet_as_proof_only_after_the_disposition(): void
+    {
+        $unit = tap(User::factory()->create())->assignRole('tata_usaha');
+
+        $this->actingAs($unit)->get(route('tickets.disposition-sheet', $this->ticket))->assertForbidden();
+
+        app(TicketService::class)->dispose($this->ticket, $this->headmaster, 'acknowledged_by', ['tata_usaha'], 'Untuk diproses');
+
+        $this->get(route('tickets.disposition-sheet', $this->ticket))->assertOk()->assertSee('Kepala Madrasah')->assertSee('Untuk diproses');
+    }
+
     public function test_front_desk_cannot_print_the_disposition_sheet(): void
     {
         $this->actingAs(User::where('email', 'loket1@mtsn2malang.sch.id')->firstOrFail())

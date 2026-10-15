@@ -130,9 +130,14 @@ Route::middleware('auth')->get('/tiket/{ticket}/tanda-terima', fn (\App\Models\T
     ->name('tickets.receipt');
 
 // Printable disposition sheet: printed and signed (TTD) or saved as PDF and signed electronically (TTE)
-Route::middleware('auth')->get('/tiket/{ticket}/lembar-disposisi', fn (\App\Models\Ticket $ticket) => view('print.disposition-sheet', ['ticket' => $ticket->load(['user', 'service'])]))
-    ->can('approve', 'ticket')
-    ->name('tickets.disposition-sheet');
+// Leaders who may dispose it print it; once disposed, staff who may see the ticket (e.g. the receiving units) can open it as proof.
+Route::middleware('auth')->get('/tiket/{ticket}/lembar-disposisi', function (\App\Models\Ticket $ticket) {
+    $disposed = \App\Models\DispositionLog::where('ticket_id', $ticket->id)->whereIn('action', ['disposisi', 'acknowledge'])->exists();
+    abort_unless(\Illuminate\Support\Facades\Gate::allows('approve', $ticket)
+        || ($disposed && auth()->user()->isStaff() && \Illuminate\Support\Facades\Gate::allows('view', $ticket)), 403);
+
+    return view('print.disposition-sheet', ['ticket' => $ticket->load(['user', 'service'])]);
+})->name('tickets.disposition-sheet');
 
 // Evidence attached to complaint/whistleblowing reports: private files for complaint handlers
 Route::middleware('auth')->get('/pengaduan/{complaint}/bukti/{index}', function (\App\Models\Complaint $complaint, int $index) {
