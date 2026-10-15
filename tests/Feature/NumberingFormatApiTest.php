@@ -110,7 +110,8 @@ class NumberingFormatApiTest extends TestCase
         $this->putJson($url, [])->assertUnprocessable()->assertJsonValidationErrors('singkatan');
         $this->putJson('/api/persuratan/penomoran/' . PersuratanMaster::where('type', 'tembusan')->firstOrFail()->id . '/singkatan', ['singkatan' => 'X'])->assertNotFound();
 
-        Sanctum::actingAs(User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail());
+        // Back office may change the lists (Master Persuratan); the counter may not.
+        Sanctum::actingAs(User::where('email', 'loket1@mtsn2malang.sch.id')->firstOrFail());
         $this->putJson($url, ['singkatan' => 'X'])->assertForbidden();
         $this->assertNull($this->jenis->fresh()->singkatan_unit_kerja);
     }
@@ -166,6 +167,7 @@ class NumberingFormatApiTest extends TestCase
         $this->getJson('/api/persuratan/penomoran/' . PersuratanMaster::where('type', 'tembusan')->firstOrFail()->id . '/variabel')->assertNotFound();
         Sanctum::actingAs(User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail());
         $this->getJson($url)->assertOk();
+        Sanctum::actingAs(User::where('email', 'loket1@mtsn2malang.sch.id')->firstOrFail());
         $this->putJson($url, ['label' => 'Kelas'])->assertForbidden();
         $this->deleteJson($url)->assertForbidden();
     }
@@ -191,7 +193,7 @@ class NumberingFormatApiTest extends TestCase
         $this->putJson('/api/persuratan/penomoran/' . $this->jenis->id, ['format' => '{S}/{Y}'])->assertUnprocessable()->assertJsonValidationErrors('format');
         $this->putJson('/api/persuratan/penomoran/' . $this->jenis->id, ['format' => '{N}/{Y}', 'mode_bulan' => 'lain'])->assertUnprocessable()->assertJsonValidationErrors('mode_bulan');
 
-        Sanctum::actingAs(User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail());
+        Sanctum::actingAs(User::where('email', 'loket1@mtsn2malang.sch.id')->firstOrFail());
         $this->putJson('/api/persuratan/penomoran/' . $this->jenis->id, ['format' => '{N}/{Y}'])->assertForbidden();
         $this->assertNull($this->jenis->fresh()->format_nomor);
     }

@@ -126,9 +126,12 @@ class IncomingServicesTest extends TestCase
 
     public function test_request_list_filters_by_incoming_category_unit_and_overdue(): void
     {
-        [$a, $b, $c] = Ticket::query()->limit(3)->get()->all();
-        $tembusan = $this->disposed($a, 'Untuk diketahui');
-        $koordinasi = $this->disposed($b, 'Untuk dikoordinasikan');
+        // Mulai dari tiket yang belum didisposisi dan belum terlambat, supaya
+        // data seeder (acak) tidak ikut lolos saringan.
+        [$a, $b, $c] = Ticket::query()->orderBy('id')->limit(3)->get()->all();
+        Ticket::query()->update(['disposition_recipients' => null, 'disposition_category' => null, 'incoming_category' => null, 'estimated_completion_date' => today()->addDays(5)]);
+        $tembusan = $this->disposed($a->fresh(), 'Untuk diketahui');
+        $koordinasi = $this->disposed($b->fresh(), 'Untuk dikoordinasikan');
         $c->update(['status' => 'in_process', 'estimated_completion_date' => today()->subDays(2)]);
 
         $this->actingAs(User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail());

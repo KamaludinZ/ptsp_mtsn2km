@@ -22,7 +22,8 @@ class ComplaintStatusTimelineTest extends TestCase
         Mail::fake();
         $this->seed();
         $handler = User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail();
-        $complaint = Complaint::query()->firstOrFail();
+        // A report the complaint page lists (saran have their own menu); ordered, since PostgreSQL's first() is not stable.
+        $complaint = Complaint::where('complaint_type', '!=', 'suggestion')->orderBy('id')->firstOrFail();
 
         ComplaintStatusLog::create(['complaint_id' => $complaint->id, 'from_status' => 'submitted', 'to_status' => 'in_review', 'actor_id' => $handler->id, 'response' => 'Laporan sedang kami telaah.', 'internal_note' => 'Cek CCTV loket']);
 
