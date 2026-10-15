@@ -119,6 +119,54 @@ class NotificationDispatchTest extends TestCase
         Mail::assertSent(TemplateNotificationMail::class, fn ($mail) => $mail->event === 'ticket_status_changed' && $mail->hasTo('siti@example.test'));
     }
 
+    public function test_a_request_needing_disposition_reaches_the_headmaster_and_head_of_admin_with_steps(): void
+    {
+        $this->enable('email');
+        $this->enable('whatsapp');
+        Http::swap(new HttpFactory());
+        Http::fake(['wa.test/*' => Http::response(['ok' => true])]);
+
+        $headmaster = tap(User::role('kepala_sekolah')->firstOrFail())->update(['whatsapp_number' => '6281200000001']);
+        $headOfAdmin = tap(User::factory()->create(['email' => 'ktu@example.test', 'whatsapp_number' => '6281200000002']))->assignRole('kepala_tu');
+        $service = $this->ticket->service;
+        \App\Support\ServiceDisposition::apply($service, 'kepsek_tu');
+
+        $ticket = app(TicketService::class)->open($service->fresh(), $this->applicant, $this->applicant, 'online', 'Surat keterangan');
+
+        foreach ([$headmaster, $headOfAdmin] as $leader) {
+            Mail::assertSent(TemplateNotificationMail::class, fn ($mail) => $mail->event === 'disposition_requested'
+                && $mail->hasTo($leader->email)
+                && str_contains($mail->subjectLine, $ticket->ticket_number)
+                && str_contains($mail->body, 'Siti Aminah')
+                && str_contains($mail->body, 'Cara mendisposisi')
+                && str_contains($mail->body, '"Disposisikan"')
+                && str_contains($mail->body, \App\Filament\Resources\TicketResource::getUrl('view', ['record' => $ticket], panel: 'admin')));
+            Http::assertSent(fn ($request) => $request['number'] === $leader->whatsapp_number && str_contains($request['message'], 'Cara mendisposisi'));
+        }
+        Mail::assertSent(TemplateNotificationMail::class, fn ($mail) => $mail->event === 'disposition_requested' && $mail->hasTo($headmaster->email) && str_contains($mail->body, 'peran aktif di kanan atas adalah Kepala Madrasah.'));
+        Mail::assertSent(TemplateNotificationMail::class, fn ($mail) => $mail->event === 'disposition_requested' && $mail->hasTo('ktu@example.test') && str_contains($mail->body, 'adalah Kepala Tata Usaha.'));
+    }
+
+    public function test_only_the_leader_of_the_disposition_mode_is_messaged(): void
+    {
+        $this->enable('email');
+        $headOfAdmin = tap(User::factory()->create(['email' => 'ktu@example.test']))->assignRole('kepala_tu');
+        $headmaster = User::role('kepala_sekolah')->firstOrFail();
+        $service = $this->ticket->service;
+        \App\Support\ServiceDisposition::apply($service, 'tu');
+
+        app(TicketService::class)->open($service->fresh(), $this->applicant, $this->applicant, 'online', 'Legalisir');
+
+        Mail::assertSent(TemplateNotificationMail::class, fn ($mail) => $mail->event === 'disposition_requested' && $mail->hasTo('ktu@example.test'));
+        Mail::assertNotSent(TemplateNotificationMail::class, fn ($mail) => $mail->event === 'disposition_requested' && $mail->hasTo($headmaster->email));
+
+        // No disposition, no message to the leaders.
+        Mail::fake();
+        \App\Support\ServiceDisposition::apply($service->fresh(), 'none');
+        app(TicketService::class)->open($service->fresh(), $this->applicant, $this->applicant, 'online', 'Legalisir');
+        Mail::assertNotSent(TemplateNotificationMail::class, fn ($mail) => $mail->event === 'disposition_requested');
+    }
+
     public function test_a_rolled_back_change_sends_nothing(): void
     {
         $this->enable('email');
