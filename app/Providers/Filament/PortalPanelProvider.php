@@ -13,6 +13,8 @@ use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -59,6 +61,13 @@ class PortalPanelProvider extends PanelProvider
                 MenuItem::make()->label('Kembali ke Beranda')->url(fn () => route('home'))->icon('heroicon-o-home'),
                 'logout' => MenuItem::make()->label('Keluar')->icon('heroicon-o-arrow-left-on-rectangle')->color('danger'),
             ])
+            // Tombol Panduan, dan bagi petugas yang juga pemohon (mis. Guru) jalan kembali ke panel petugas.
+            ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_BEFORE, fn () => \Filament\Facades\Filament::getCurrentPanel()?->getId() === 'portal' && auth()->check()
+                ? Blade::render('<x-guide-button :url="$url" />', ['url' => \App\Filament\Portal\Pages\Guide::getUrl(panel: 'portal')])
+                    . (auth()->user()->isStaff()
+                        ? Blade::render('<x-filament::button tag="a" :href="$url" size="sm" icon="heroicon-o-arrow-uturn-left">Panel Petugas</x-filament::button>', ['url' => \App\Filament\Pages\Dashboard::getUrl(panel: 'admin')])
+                        : '')
+                : '')
             ->maxContentWidth('7xl')
             ->spa()
             ->databaseNotifications()

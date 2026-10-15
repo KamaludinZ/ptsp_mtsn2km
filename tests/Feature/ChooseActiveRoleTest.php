@@ -117,7 +117,7 @@ class ChooseActiveRoleTest extends TestCase
 
         Livewire::test(ActiveRoleSwitcher::class)
             ->assertSeeInOrder(['Ganti peran', 'Front Desk', 'Kepala Tata Usaha · aktif', 'Tata Usaha', 'Lihat semua peran'])
-            ->assertSeeHtml("switchTo('front_desk')")
+            ->assertSeeHtml("switchTo('front_desk', window.location.href)")
             ->assertDontSeeHtml("switchTo('kepala_tu')");
     }
 
@@ -127,13 +127,56 @@ class ChooseActiveRoleTest extends TestCase
         $this->actingAs($user);
         $page = Notifications::getUrl();
 
+        // The header menu sends the page it is used on (it stays in the header across SPA pages).
         Livewire::test(ActiveRoleSwitcher::class)
-            ->set('returnUrl', $page)
-            ->call('switchTo', 'tata_usaha')
+            ->call('switchTo', 'tata_usaha', $page)
             ->assertNotified('Peran aktif: Tata Usaha')
             ->assertRedirect($page);
 
         $this->assertSame('tata_usaha', $user->fresh()->activeRole->name);
+
+        // Every later switch returns to the page it was made from too.
+        Livewire::test(ActiveRoleSwitcher::class)
+            ->call('switchTo', 'front_desk', $page . '?halaman=2')
+            ->assertRedirect($page . '?halaman=2');
+    }
+
+    public function test_quick_switch_never_returns_outside_the_panel(): void
+    {
+        $this->actingAs($this->multiRole());
+
+        Livewire::test(ActiveRoleSwitcher::class)
+            ->call('switchTo', 'tata_usaha', 'https://evil.example/cp')
+            ->assertRedirect(Dashboard::getUrl());
+    }
+
+    public function test_staff_who_are_also_teachers_see_the_guru_role_and_can_open_the_portal(): void
+    {
+        $user = $this->multiRole();
+        $user->assignRole(\Spatie\Permission\Models\Role::findOrCreate('guru', 'web'));
+        $this->actingAs($user);
+
+        Livewire::test(ActiveRoleSwitcher::class)
+            ->assertSee('Guru · portal pemohon')
+            ->assertSeeHtml(\App\Filament\Portal\Pages\Dashboard::getUrl(panel: 'portal'));
+
+        $this->get(ChooseActiveRole::getUrl())->assertOk()->assertSee('Guru')->assertSee('Buka portal pemohon');
+        $this->assertTrue($user->canAccessPanel(\Filament\Facades\Filament::getPanel('portal')));
+
+        // Staff without an applicant role still stay out of the portal.
+        $this->assertFalse(User::role('admin')->firstOrFail()->canAccessPanel(\Filament\Facades\Filament::getPanel('portal')));
+    }
+
+    public function test_the_portal_offers_teaching_staff_a_way_back_to_the_staff_panel(): void
+    {
+        $user = $this->multiRole();
+        $user->assignRole(\Spatie\Permission\Models\Role::findOrCreate('guru', 'web'));
+
+        // (Filament boots one panel per test process, so this test opens only the portal.)
+        $this->actingAs($user)->get(\App\Filament\Portal\Pages\Dashboard::getUrl(panel: 'portal'))
+            ->assertOk()
+            ->assertSee('Panel Petugas')
+            ->assertSee(\App\Filament\Portal\Pages\Guide::getUrl(panel: 'portal'), false);
     }
 
     public function test_quick_switch_refuses_a_role_the_user_does_not_hold(): void

@@ -37,12 +37,23 @@
                     </x-filament::dropdown.list.item>
                 @else
                     <x-filament::dropdown.list.item :icon="$role['icon']" color="gray"
-                        wire:click="switchTo('{{ $role['name'] }}')" wire:loading.attr="disabled">
+                        wire:click="switchTo('{{ $role['name'] }}', window.location.href)" wire:loading.attr="disabled">
                         {{ $role['label'] }}
                     </x-filament::dropdown.list.item>
                 @endif
             @endforeach
         </x-filament::dropdown.list>
+
+        @if ($portalRoles)
+            <x-filament::dropdown.list>
+                @foreach ($portalRoles as $role)
+                    <x-filament::dropdown.list.item :icon="$role['icon']" color="gray" tag="a" :href="$portalUrl"
+                        :tooltip="$role['description']">
+                        {{ $role['label'] }} · portal pemohon
+                    </x-filament::dropdown.list.item>
+                @endforeach
+            </x-filament::dropdown.list>
+        @endif
 
         <x-filament::dropdown.list>
             <x-filament::dropdown.list.item icon="heroicon-m-squares-2x2" color="gray" tag="a" :href="$pickerUrl">

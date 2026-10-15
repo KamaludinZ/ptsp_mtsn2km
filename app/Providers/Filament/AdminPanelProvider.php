@@ -76,6 +76,10 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn () => \Filament\Facades\Filament::getCurrentPanel()?->getId() === 'admin' && auth()->user()?->isStaff()
                 ? Blade::render('@livewire(\App\Livewire\ActiveRoleSwitcher::class)')
                 : '')
+            // Tombol Panduan: cara memakai menu yang tersedia untuk peran aktif.
+            ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_BEFORE, fn () => \Filament\Facades\Filament::getCurrentPanel()?->getId() === 'admin' && auth()->user()?->isStaff()
+                ? Blade::render('<x-guide-button :url="$url" />', ['url' => \App\Filament\Pages\Guide::getUrl(panel: 'admin')])
+                : '')
             ->unsavedChangesAlerts() // warn before leaving a form with unsaved changes
             ->databaseNotifications()
             ->databaseNotificationsPolling('60s')

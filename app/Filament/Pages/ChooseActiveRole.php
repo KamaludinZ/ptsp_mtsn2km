@@ -7,9 +7,10 @@ use App\Support\ActiveRoleToast;
 use Filament\Pages\Page;
 
 /**
- * Pilih peran aktif (/cp/pilih-peran): petugas yang memegang lebih dari
- * satu peran memilih satu konteks kerja sebelum memproses layanan. Setelah
- * memilih, ia dibawa ke halaman yang tadi dituju (atau dasbor).
+ * Semua peran (/cp/pilih-peran): petugas yang memegang lebih dari satu peran
+ * melihat semua perannya dan bisa berganti konteks kerja. Peran pemohon
+ * yang juga ia pegang (mis. Guru) membuka portal pemohon. Setelah memilih,
+ * ia dibawa ke dasbor (atau halaman yang tadi dituju).
  */
 class ChooseActiveRole extends Page
 {
@@ -31,13 +32,17 @@ class ChooseActiveRole extends Page
     public function getSubheading(): ?string
     {
         return ActiveRoles::for(auth()->user())->count() > 1
-            ? 'Akun Anda memegang beberapa peran. Pilih satu peran untuk sesi kerja ini; menu dan tombol aksi akan mengikuti peran yang dipilih.'
+            ? 'Akun Anda memegang beberapa peran. Satu peran sudah aktif otomatis; pilih peran lain bila ingin berganti. Menu dan tombol aksi mengikuti peran yang aktif.'
             : 'Akun Anda memegang satu peran petugas; peran ini selalu aktif.';
     }
 
     protected function getViewData(): array
     {
-        return ['roles' => ActiveRoles::for(auth()->user())->all()];
+        return [
+            'roles' => ActiveRoles::for(auth()->user())->all(),
+            'portalRoles' => ActiveRoles::portalRolesFor(auth()->user())->all(),
+            'portalUrl' => \App\Filament\Portal\Pages\Dashboard::getUrl(panel: 'portal'),
+        ];
     }
 
     public function choose(string $role): void
@@ -46,6 +51,7 @@ class ChooseActiveRole extends Page
             return;
         }
 
-        $this->redirect(session()->pull('url.intended', Dashboard::getUrl(panel: 'admin')), navigate: true);
+        // Muat ulang penuh: header /cp (mode SPA) baru mengikuti peran baru setelah dimuat ulang.
+        $this->redirect(session()->pull('url.intended', Dashboard::getUrl(panel: 'admin')));
     }
 }

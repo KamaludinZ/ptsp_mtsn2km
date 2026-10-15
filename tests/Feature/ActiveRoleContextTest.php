@@ -69,7 +69,7 @@ class ActiveRoleContextTest extends TestCase
 
         $this->actingAs($user->fresh())->withSession([ActiveRoles::SESSION_KEY => 'kepala_tu'])
             ->get('/_uji/peran-aktif')
-            ->assertExactJson(['konteks' => null, 'sesi' => null]);
+            ->assertExactJson(['konteks' => 'front_desk', 'sesi' => 'front_desk']);
     }
 
     public function test_a_single_staff_role_is_the_context_without_choosing(): void
@@ -88,26 +88,15 @@ class ActiveRoleContextTest extends TestCase
         $this->get('/_uji/peran-aktif')->assertExactJson(['konteks' => 'front_desk', 'sesi' => 'front_desk']);
     }
 
-    public function test_multi_role_staff_must_choose_before_opening_cp_pages(): void
+    public function test_multi_role_staff_open_cp_pages_without_choosing_first(): void
     {
-        $user = $this->staff('kepala_tu', 'front_desk');
-        $page = Notifications::getUrl();
+        $user = $this->staff('front_desk', 'kepala_tu');
 
-        $this->actingAs($user)->get($page)->assertRedirect(ChooseActiveRole::getUrl());
-        $this->assertSame($page, session('url.intended'));
-
-        // The picker itself opens; so does any page once a role is chosen.
+        // No detour to the picker: the leadership role is active until they switch.
+        $this->actingAs($user)->get(Notifications::getUrl())->assertOk();
+        $this->assertSame('kepala_tu', session(ActiveRoles::SESSION_KEY));
+        $this->getJson('/_uji/peran-aktif')->assertJsonPath('konteks', 'kepala_tu');
         $this->get(ChooseActiveRole::getUrl())->assertOk();
-        $this->post('/peran-aktif/ganti', ['peran' => 'front_desk']);
-        $this->get($page)->assertOk();
-    }
-
-    public function test_livewire_and_json_requests_are_not_redirected(): void
-    {
-        $user = $this->staff('kepala_tu', 'front_desk');
-
-        $this->actingAs($user)->getJson('/_uji/peran-aktif')->assertOk()->assertJsonPath('konteks', null);
-        $this->get(Notifications::getUrl(), ['X-Livewire' => 'true'])->assertOk();
     }
 
     public function test_applicants_and_guests_pass_through_untouched(): void

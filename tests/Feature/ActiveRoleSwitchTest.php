@@ -46,9 +46,9 @@ class ActiveRoleSwitchTest extends TestCase
             ->assertRedirect(url('/cp/notifikasi?halaman=2'));
 
         $this->assertSame('front_desk', $user->fresh()->activeRole->name);
-        // First choice: nothing to go back to.
+        // Never chosen before: the leadership role was active automatically.
         $this->assertSame('Peran aktif: Front Desk', $this->toast()['title']);
-        $this->assertSame([], $this->toast()['actions']);
+        $this->assertStringContainsString('Berpindah dari Kepala Tata Usaha', $this->toast()['body']);
 
         $this->post('/peran-aktif/ganti', ['peran' => 'kepala_tu', 'kembali' => url('/cp/notifikasi')])
             ->assertRedirect(url('/cp/notifikasi'));
@@ -87,9 +87,9 @@ class ActiveRoleSwitchTest extends TestCase
     public function test_json_callers_get_the_switch_result(): void
     {
         $this->actingAs($this->staff('kepala_tu', 'front_desk'))
-            ->postJson('/peran-aktif/ganti', ['peran' => 'kepala_tu', 'kembali' => '/cp'])
+            ->postJson('/peran-aktif/ganti', ['peran' => 'front_desk', 'kembali' => '/cp'])
             ->assertOk()
-            ->assertExactJson(['sebelumnya' => null, 'aktif' => 'kepala_tu', 'kembali' => url('/cp')]);
+            ->assertExactJson(['sebelumnya' => 'kepala_tu', 'aktif' => 'front_desk', 'kembali' => url('/cp')]);
     }
 
     public function test_never_returns_to_another_site(): void

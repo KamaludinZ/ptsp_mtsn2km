@@ -191,7 +191,8 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 
         return match ($panel->getId()) {
             'admin' => $this->isStaff(),
-            'portal' => ! $this->isStaff(),
+            // Staff who are also applicants (e.g. a waka who is a guru) may apply in the portal too.
+            'portal' => ! $this->isStaff() || \App\Support\ActiveRoles::portalRolesFor($this)->isNotEmpty(),
             default => false,
         };
     }
