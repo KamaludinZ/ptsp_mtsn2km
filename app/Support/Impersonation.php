@@ -56,6 +56,7 @@ class Impersonation
             ! $admin->is(auth()->user()) || ! ActiveRoles::hasRole($admin, 'admin') => 'Ganti akun hanya dari peran aktif Administrator.',
             $target->is($admin) => 'Ini akun Anda sendiri.',
             $target->is_active === false => 'Akun nonaktif tidak dapat dimasuki.',
+            $target->hasRole('admin') => 'Akun administrator lain tidak dapat dimasuki.',
             default => null,
         };
     }

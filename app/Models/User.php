@@ -228,6 +228,13 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
                 $user->must_change_password = false;
             }
         });
+
+        // A deactivated account loses its API access at once, wherever it was switched off.
+        static::updated(function (User $user) {
+            if ($user->wasChanged('is_active') && $user->is_active === false) {
+                $user->tokens()->delete();
+            }
+        });
     }
 
     /** E-mail addresses are case-insensitive: always stored in lower case. */

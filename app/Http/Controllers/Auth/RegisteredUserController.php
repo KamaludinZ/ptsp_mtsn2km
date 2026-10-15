@@ -95,7 +95,8 @@ class RegisteredUserController extends Controller
 
         // Send WhatsApp notification
         $whatsappService = new WhatsAppService();
-        $message = "Halo {$user->name}! Registrasi akun Anda di PTSP MTsN 2 Kota Malang berhasil. Silakan cek email Anda untuk verifikasi akun.";
+        // Fixed text only (no name typed by the visitor), so the school's number cannot be used to relay messages.
+        $message = 'Halo! Registrasi akun Anda di ' . app_brand_name() . ' berhasil. Silakan cek email Anda untuk verifikasi akun.';
         $whatsappService->sendMessage($user->whatsapp_number, $message);
 
         // Fire registered event (will send verification email)

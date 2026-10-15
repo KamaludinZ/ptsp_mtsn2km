@@ -196,7 +196,8 @@ class PublicController extends Controller
 
         // Send WhatsApp notification to applicant
         $whatsappService = new WhatsAppService();
-        $message = "Halo {$validated['name']}! Permohonan layanan Anda ({$validated['target_service']}) telah kami terima. Kami akan segera memprosesnya.";
+        // Fixed text only: this form needs no sign-in, so nothing typed into it is repeated from the school's number.
+        $message = 'Halo! Pendaftaran Anda di buku tamu ' . app_brand_name() . ' telah kami terima. Petugas akan segera melayani Anda.';
         $whatsappService->sendMessage($validated['phone'], $message);
 
         return redirect()->route('public.visitor.book')

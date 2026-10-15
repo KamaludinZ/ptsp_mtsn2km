@@ -295,6 +295,24 @@ class ServiceHistoryTest extends TestCase
         $this->assertSame('10.0.0.7', $entry['ip']);
     }
 
+    public function test_applicants_never_see_internal_notes_in_the_history(): void
+    {
+        $ticket = Ticket::whereHas('user', fn ($q) => $q->whereDoesntHave('roles', fn ($r) => $r->whereIn('name', User::STAFF_ROLES)))->firstOrFail();
+        $this->writeLog([
+            'ticket_id' => $ticket->id,
+            'action' => 'note_added',
+            'performed_by' => $this->user('staff1@mtsn2malang.sch.id')->id,
+            'notes' => 'Catatan internal: cek ulang ke wali kelas.',
+        ]);
+        $url = '/api/tiket/' . $ticket->ticket_number . '/riwayat';
+
+        Sanctum::actingAs($ticket->user);
+        $this->assertNull(collect($this->getJson($url)->assertOk()->json('riwayat'))->firstWhere('kegiatan', 'note_added'));
+
+        Sanctum::actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $this->assertNotNull(collect($this->getJson($url)->json('riwayat'))->firstWhere('kegiatan', 'note_added'));
+    }
+
     public function test_other_applicants_cannot_read_a_tickets_history(): void
     {
         $ticket = Ticket::firstOrFail();

@@ -184,4 +184,17 @@ class ApiAuthTest extends TestCase
         // The link opens the Indonesian reset page.
         $this->get(route('password.reset', ['token' => 'x', 'email' => 'rina@contoh.id']))->assertOk()->assertSee('Atur Ulang Password');
     }
+
+    public function test_deactivating_an_account_ends_its_api_tokens(): void
+    {
+        $user = User::factory()->create();
+        $user->createToken('ponsel');
+        $this->assertSame(1, $user->tokens()->count());
+
+        $user->update(['name' => 'Nama baru']);
+        $this->assertSame(1, $user->tokens()->count());
+
+        $user->update(['is_active' => false]);
+        $this->assertSame(0, $user->tokens()->count());
+    }
 }
