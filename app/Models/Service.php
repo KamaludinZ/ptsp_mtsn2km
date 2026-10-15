@@ -75,7 +75,11 @@ class Service extends Model
     public function scopeAvailableFor($query, ?string $userType)
     {
         return $query->where(function ($query) use ($userType) {
-            $query->whereJsonContains('user_types_allowed', 'umum');
+            // No applicant type picked means the service is open to everyone
+            // (as the /cp form says), like one listing "umum".
+            $query->whereNull('user_types_allowed')
+                ->orWhereRaw("user_types_allowed::jsonb in ('[]'::jsonb, 'null'::jsonb)")
+                ->orWhereJsonContains('user_types_allowed', 'umum');
 
             if ($userType && $userType !== 'umum') {
                 $query->orWhereJsonContains('user_types_allowed', $userType);
@@ -114,6 +118,41 @@ class Service extends Model
     public function components()
     {
         return $this->hasMany(ServiceComponent::class);
+    }
+
+    /**
+     * Isi komponen standar pelayanan tambahan (ServiceComponent::EXTRA),
+     * berkunci jenis komponen.
+     *
+     * @return array<string, string|null>
+     */
+    public function standardComponents(): array
+    {
+        $saved = $this->components()->whereIn('component_type', array_keys(ServiceComponent::EXTRA))
+            ->pluck('content', 'component_type');
+
+        return collect(ServiceComponent::EXTRA)->map(fn ($meta, string $type) => $saved[$type] ?? null)->all();
+    }
+
+    /**
+     * Simpan komponen tambahan dari form /cp. Isian kosong menghapus
+     * komponennya sehingga portal menampilkan "Belum diisi".
+     *
+     * @param  array<string, string|null>  $values
+     */
+    public function syncStandardComponents(array $values): void
+    {
+        foreach (array_keys(ServiceComponent::EXTRA) as $type) {
+            $content = $values[$type] ?? null;
+
+            if (\App\Support\RichText::sanitize($content) === null) {
+                $this->components()->where('component_type', $type)->delete();
+
+                continue;
+            }
+
+            $this->components()->updateOrCreate(['component_type' => $type], ['content' => $content]);
+        }
     }
 
     // Relationship with tickets

@@ -22,7 +22,7 @@ class ViewService extends ViewRecord
 
     protected function resolveRecord(int | string $key): Service
     {
-        return parent::resolveRecord($key)->load(['categories:id,name', 'workflow.steps' => fn ($q) => $q->orderBy('step_number'), 'templates' => fn ($q) => $q->orderBy('sort')]);
+        return parent::resolveRecord($key)->load(['categories:id,name', 'workflow.steps' => fn ($q) => $q->orderBy('step_number'), 'templates' => fn ($q) => $q->orderBy('sort'), 'components']);
     }
 
     public function getSubheading(): ?string
@@ -138,6 +138,20 @@ class ViewService extends ViewRecord
                             ->placeholder('Tidak ada anjuran'),
                     ]),
             ]),
+            Section::make('Standar pelayanan lainnya')
+                ->description('Komponen Permen PANRB 15/2014 yang tampil di halaman detail layanan portal.')
+                ->icon('heroicon-o-shield-check')
+                ->collapsible()
+                ->columns(['default' => 1, 'lg' => 2])
+                ->schema(collect(\App\Models\ServiceComponent::EXTRA)
+                    ->map(fn (array $meta, string $type) => TextEntry::make("standard_{$type}")
+                        ->label($meta[0])
+                        ->state(fn (Service $record) => $record->components->firstWhere('component_type', $type)?->content)
+                        ->formatStateUsing($html)
+                        ->prose()
+                        ->placeholder('Belum diisi'))
+                    ->values()
+                    ->all()),
         ]);
     }
 }

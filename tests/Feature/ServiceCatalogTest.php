@@ -136,6 +136,76 @@ class ServiceCatalogTest extends TestCase
         $this->assertNull($existing->signature_recommendation);
     }
 
+    public function test_saved_disposition_mode_is_kept_when_the_edit_form_is_reopened(): void
+    {
+        $service = Service::firstOrFail();
+        \App\Support\ServiceDisposition::apply($service, 'tu', ['tata_usaha'], 'ttd');
+
+        // Opening the form and saving without touching the Disposisi tab
+        // must keep the stored setting (it used to come back empty).
+        Livewire::test(\App\Filament\Resources\ServiceResource\Pages\EditService::class, ['record' => $service->getRouteKey()])
+            ->assertFormSet(['disposition_mode' => 'tu', 'disposition_roles' => ['tata_usaha'], 'signature_recommendation' => 'ttd'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $service->refresh();
+        $this->assertSame(['tu', ['tata_usaha'], 'ttd'], [$service->disposition_mode, $service->disposition_roles, $service->signature_recommendation]);
+    }
+
+    public function test_all_fourteen_standard_components_are_editable_from_the_panel(): void
+    {
+        Livewire::test(\App\Filament\Resources\ServiceResource\Pages\CreateService::class)
+            ->fillForm([
+                'name' => 'Surat Tugas Pengawas',
+                'code' => 'STP',
+                'mode' => 'online',
+                'processing_time' => '1-2 hari kerja',
+                'requirements' => '<p>Surat perintah dari instansi</p>',
+                'disposition_mode' => 'kepsek_tu',
+                'standard' => [
+                    'dasar_hukum' => '<p>PMA Nomor 90 Tahun 2013</p>',
+                    'jaminan_pelayanan' => '<p>Selesai tepat waktu</p>',
+                ],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $service = Service::where('code', 'STP')->firstOrFail();
+        $this->assertSame(['dasar_hukum', 'jaminan_pelayanan'], $service->components()->orderBy('component_type')->pluck('component_type')->all());
+
+        // The edit form opens with the saved values; clearing one removes it.
+        Livewire::test(\App\Filament\Resources\ServiceResource\Pages\EditService::class, ['record' => $service->getRouteKey()])
+            ->assertFormSet(['standard.dasar_hukum' => '<p>PMA Nomor 90 Tahun 2013</p>'])
+            ->fillForm([
+                'standard.dasar_hukum' => '',
+                'standard.sarana_prasarana' => '<p>Ruang loket PTSP dan komputer</p>',
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(
+            ['jaminan_pelayanan', 'sarana_prasarana'],
+            $service->components()->orderBy('component_type')->pluck('component_type')->all()
+        );
+
+        $this->get(route('onlineportal.service.detail', $service->slug))->assertOk()
+            ->assertSee('Surat perintah dari instansi')
+            ->assertSee('Ruang loket PTSP dan komputer')
+            ->assertSee('Selesai tepat waktu')
+            ->assertDontSee('PMA Nomor 90 Tahun 2013');
+
+        // The catalog keeps to the six main components; the supplementary
+        // ones are only on the detail page, which the catalog links to.
+        $this->get(route('onlineportal.service.catalog'))->assertOk()
+            ->assertSee('Surat perintah dari instansi')
+            ->assertSee(route('onlineportal.service.detail', $service->slug), false)
+            ->assertDontSee('Ruang loket PTSP dan komputer');
+
+        $this->get(ServiceResource::getUrl('view', ['record' => $service]))->assertOk()
+            ->assertSee('Standar pelayanan lainnya')
+            ->assertSee('Ruang loket PTSP dan komputer');
+    }
+
     public function test_detail_page_shows_requirements_flow_templates_and_disposition(): void
     {
         $service = Service::factory()->create([
