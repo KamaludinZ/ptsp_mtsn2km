@@ -686,6 +686,8 @@
 
                 <div class="collapse mt-3" id="listCollapse{{ $service->id }}">
                     <hr class="my-3">
+                    {{-- Katalog memuat 6 komponen utama; 14 komponen lengkap ada di halaman detail. --}}
+                    <a href="{{ route('onlineportal.service.detail', $service->slug) }}" class="d-inline-block mb-3 fw-semibold">Lihat 14 komponen standar pelayanan <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i></a>
                     <div class="row">
                         <div class="col-md-6">
                             <!-- Persyaratan -->

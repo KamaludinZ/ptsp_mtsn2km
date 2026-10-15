@@ -194,6 +194,13 @@ class ServiceCatalogTest extends TestCase
             ->assertSee('Selesai tepat waktu')
             ->assertDontSee('PMA Nomor 90 Tahun 2013');
 
+        // The catalog keeps to the six main components; the supplementary
+        // ones are only on the detail page, which the catalog links to.
+        $this->get(route('onlineportal.service.catalog'))->assertOk()
+            ->assertSee('Surat perintah dari instansi')
+            ->assertSee(route('onlineportal.service.detail', $service->slug), false)
+            ->assertDontSee('Ruang loket PTSP dan komputer');
+
         $this->get(ServiceResource::getUrl('view', ['record' => $service]))->assertOk()
             ->assertSee('Standar pelayanan lainnya')
             ->assertSee('Ruang loket PTSP dan komputer');
