@@ -3,9 +3,9 @@
 @section('title', $service->name . ' - Standar Pelayanan')
 
 @php
-    // 14 komponen standar pelayanan (Permen PANRB 15/2014). Isian dari tabel
-    // service_components diutamakan; beberapa komponen juga punya kolom sendiri
-    // di tabel services.
+    // 14 komponen standar pelayanan (Permen PANRB 15/2014). Enam komponen punya
+    // kolom sendiri di tabel services; sisanya disimpan di service_components
+    // (tab "Standar Pelayanan" di /cp).
     $components = $service->components->pluck('content', 'component_type');
 
     $requirementsText = $service->getAttributes()['requirements'] ?? null;
@@ -177,8 +177,10 @@
             <div class="row g-3">
                 @foreach ($standard as $item)
                     @php
-                        $content = $components[$item['key']] ?? ($item['value'] ?? null);
-                        $list = $components->has($item['key']) ? null : ($item['list'] ?? null);
+                        // Kolom di tabel services (diisi lewat form /cp) diutamakan; isian
+                        // service_components dipakai bila kolomnya kosong.
+                        $content = filled($item['value'] ?? null) ? $item['value'] : ($components[$item['key']] ?? null);
+                        $list = filled($item['value'] ?? null) ? ($item['list'] ?? null) : null;
                     @endphp
                     <div class="col-md-6">
                         <article class="card h-100 border-0 shadow-sm">

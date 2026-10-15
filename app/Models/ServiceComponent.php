@@ -37,6 +37,22 @@ class ServiceComponent extends Model
     const JAMINAN_KEAMANAN = 'jaminan_keamanan';
     const EVALUASI_KINERJA = 'evaluasi_kinerja';
 
+    /**
+     * Komponen standar pelayanan yang tidak punya kolom sendiri di tabel
+     * services, sehingga disimpan di service_components dan diisi lewat tab
+     * "Standar Pelayanan" di panel /cp. Nilai: [label, petunjuk pengisian].
+     */
+    public const EXTRA = [
+        self::DASAR_HUKUM => ['Dasar hukum', 'Peraturan yang menjadi dasar layanan, mis. undang-undang, PMA, atau keputusan kepala madrasah.'],
+        self::SARANA_PRASARANA => ['Sarana dan prasarana', 'Fasilitas yang dipakai, mis. ruang loket PTSP, komputer, printer, aplikasi PTSP.'],
+        self::KOMPETENSI_PELAKSANA => ['Kompetensi pelaksana', 'Pengetahuan, keahlian, dan sikap yang harus dimiliki petugas.'],
+        self::PENGAWASAN_INTERNAL => ['Pengawasan internal', 'Siapa yang mengawasi pelaksanaan layanan, mis. kepala madrasah dan kepala TU.'],
+        self::JUMLAH_PELAKSANA => ['Jumlah pelaksana', 'Jumlah petugas yang melayani, mis. 2 orang petugas TU.'],
+        self::JAMINAN_PELAYANAN => ['Jaminan pelayanan', 'Janji layanan kepada pemohon, mis. selesai sesuai jangka waktu standar.'],
+        self::JAMINAN_KEAMANAN => ['Jaminan keamanan dan keselamatan', 'Jaminan kerahasiaan data dan keamanan dokumen pemohon.'],
+        self::EVALUASI_KINERJA => ['Evaluasi kinerja pelaksana', 'Cara kinerja layanan dievaluasi, mis. survei kepuasan masyarakat (SKM) tiap triwulan.'],
+    ];
+
     public static function getComponentTypes()
     {
         return [

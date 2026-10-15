@@ -96,6 +96,11 @@ class ServiceResource extends Resource
                                 TinyEditor::make('description')->height(260)
                                     ->label('Deskripsi')
                                     ->columnSpanFull(),
+                                Forms\Components\Placeholder::make('templates_info')
+                                    ->hiddenLabel()
+                                    ->content('Template berkas (formulir yang diunduh pemohon) dapat ditambahkan setelah layanan disimpan, di bagian bawah halaman ubah layanan.')
+                                    ->visibleOn('create')
+                                    ->columnSpanFull(),
                             ]),
                         Forms\Components\Tabs\Tab::make('Persyaratan & Alur')
                             ->icon('heroicon-m-clipboard-document-list')
@@ -105,6 +110,25 @@ class ServiceResource extends Resource
                                 TinyEditor::make('mechanism')->label('Alur / mekanisme'),
                                 TinyEditor::make('product')->label('Produk / hasil layanan'),
                                 TinyEditor::make('complaint_handling')->label('Penanganan pengaduan'),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('Standar Pelayanan')
+                            ->icon('heroicon-m-shield-check')
+                            ->schema([
+                                Forms\Components\Placeholder::make('standard_info')
+                                    ->hiddenLabel()
+                                    ->content('Komponen standar pelayanan (Permen PANRB 15/2014) yang tampil di halaman detail layanan portal. '
+                                        . 'Persyaratan, alur, jangka waktu, biaya, produk, dan penanganan pengaduan diisi di tab Informasi dan Persyaratan & Alur. '
+                                        . 'Komponen yang dikosongkan tampil "Belum diisi".'),
+                                Forms\Components\Group::make()
+                                    ->statePath('standard')
+                                    ->schema(collect(\App\Models\ServiceComponent::EXTRA)
+                                        ->map(fn (array $meta, string $type) => TinyEditor::make($type)
+                                            ->label($meta[0])
+                                            ->helperText($meta[1])
+                                            ->simple()
+                                            ->height(200))
+                                        ->values()
+                                        ->all()),
                             ]),
                         Forms\Components\Tabs\Tab::make('Pemohon')
                             ->icon('heroicon-m-users')
@@ -124,6 +148,13 @@ class ServiceResource extends Resource
                                     ->options(fn (?Service $record) => ServiceDisposition::MODES
                                         + ($record?->disposition_mode === 'custom' ? ['custom' => 'Khusus (diatur manual, dipertahankan)'] : []))
                                     ->default('kepsek_tu')
+                                    // disposition_mode is computed from the approval fields (no
+                                    // column), so the edit form must read it from the record.
+                                    ->afterStateHydrated(function (Forms\Components\Select $component, ?Service $record): void {
+                                        if ($record?->exists) {
+                                            $component->state($record->disposition_mode);
+                                        }
+                                    })
                                     ->helperText(fn (Forms\Get $get) => ServiceDisposition::MODE_DESCRIPTIONS[$get('disposition_mode')] ?? 'Pengaturan khusus tetap dipakai sampai Anda memilih mode lain.')
                                     ->selectablePlaceholder(false)
                                     ->live()
