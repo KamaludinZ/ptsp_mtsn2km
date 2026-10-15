@@ -52,7 +52,7 @@ class ServiceCatalogController extends Controller
 
         return response()->json([
             'data' => collect($page->items())->map(fn (Service $service) => self::summary($service) + [
-                'jumlah_syarat' => $service->requirements_count,
+                'jumlah_syarat' => $service->requirementCount(),
                 'jumlah_template' => $service->templates_count,
                 'permohonan_berjalan' => $service->open_tickets_count,
             ]),
