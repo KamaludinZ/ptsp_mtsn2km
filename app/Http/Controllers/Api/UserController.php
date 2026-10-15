@@ -122,8 +122,9 @@ class UserController extends Controller
             return response()->json(['message' => 'Harus ada setidaknya satu Administrator aktif.'], 422);
         }
 
+        // Deactivating removes every API token (User::booted); count them first.
+        $revoked = $active ? 0 : $user->tokens()->count();
         $user->forceFill(['is_active' => $active])->save();
-        $revoked = $active ? 0 : $user->tokens()->delete();
         activity('audit')->causedBy($request->user())->performedOn($user)->log(($active ? 'Mengaktifkan' : 'Menonaktifkan') . ' pengguna ' . $user->email);
 
         return response()->json([

@@ -106,17 +106,21 @@ class AuditPanelLogTabTest extends TestCase
             ->assertViewHas('roleAudit', $latest([]));
     }
 
-    public function test_hidden_through_a_borrowed_admin_account(): void
+    public function test_hidden_through_a_borrowed_account(): void
     {
+        // Another admin's account cannot be borrowed at all.
         $otherAdmin = User::factory()->create();
         $otherAdmin->assignRole('admin');
-
         $this->post(route('ganti-akun.mulai', $otherAdmin), ['alasan' => 'Meninjau tampilan admin lain'])->assertRedirect();
-        $this->assertAuthenticatedAs($otherAdmin);
+        $this->assertAuthenticatedAs($this->admin);
+
+        $staff = User::factory()->create();
+        $staff->assignRole(Role::findOrCreate('front_desk', 'web'));
+        $this->post(route('ganti-akun.mulai', $staff), ['alasan' => 'Meninjau tampilan loket'])->assertRedirect();
+        $this->assertAuthenticatedAs($staff);
 
         $this->assertFalse(SystemMonitor::canSeeRoleAudit());
         $this->assertFalse(\App\Filament\Pages\System\ActivityTrail::canAccess());
-        Livewire::test(SystemMonitor::class)->set('tab', 'log')->assertDontSeeHtml('data-role-audit')->assertSee('Log aplikasi');
     }
 
     public function test_other_tabs_do_not_load_it(): void

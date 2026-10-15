@@ -171,6 +171,7 @@ class SystemMonitorTest extends TestCase
 
     public function test_update_tab_compares_with_github_and_lists_history(): void
     {
+        config(['app.version' => 'v1.1.0']);
         Http::swap(new HttpFactory());
         Http::fake(['api.github.com/*' => Http::response(['tag_name' => 'v9.0.0', 'name' => 'Rilis 9', 'html_url' => 'https://github.com/x/y/releases/v9.0.0', 'body' => 'Perbaikan penting', 'published_at' => now()->toIso8601String()])]);
         AppUpdate::create(['source' => 'github', 'from_version' => 'v1.0.0', 'to_version' => 'v1.1.0', 'status' => 'applied', 'performed_by' => $this->admin()->id]);
@@ -188,6 +189,7 @@ class SystemMonitorTest extends TestCase
         $this->assertFalse($updates->isNewer('v1.0.0', 'v1.0.0-37-g2b44d7f8'));
         $this->assertTrue($updates->isNewer('v1.1.0', 'v1.0.0-37-g2b44d7f8'));
         $this->assertNull($updates->isNewer('v1.1.0', 'tidak diketahui'));
+        $this->assertNull($updates->isNewer('v9.0.0', '9439a21'), 'a commit hash is not a version');
     }
 
     public function test_update_tab_explains_when_github_has_no_release(): void
@@ -344,6 +346,7 @@ class SystemMonitorTest extends TestCase
 
     public function test_update_check_api_compares_with_github(): void
     {
+        config(['app.version' => 'v1.1.0']);
         Http::swap(new HttpFactory());
         Http::fake(['api.github.com/*' => Http::sequence()
             ->push(['tag_name' => 'v9.0.0', 'name' => 'Rilis 9', 'html_url' => 'https://github.com/x', 'body' => '', 'published_at' => null])

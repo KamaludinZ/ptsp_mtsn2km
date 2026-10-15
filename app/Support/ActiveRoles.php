@@ -34,6 +34,11 @@ class ActiveRoles
 
         if ($user->isStaff() && ($role = self::current($user)) !== null) {
             $session->put(self::SESSION_KEY, $role);
+
+            // Jejak audit: dengan peran apa petugas multi-peran mulai bekerja.
+            if ($user->roles->whereIn('name', User::STAFF_ROLES)->count() > 1) {
+                self::record($user, null, $role, 'signed_in');
+            }
         }
     }
 
@@ -185,9 +190,11 @@ class ActiveRoles
                 'ip' => $request->ip(),
                 'perangkat' => mb_substr((string) $request->userAgent(), 0, 200) ?: null,
             ], fn ($v) => $v !== null))
-            ->log($event === 'chosen'
-                ? 'Memilih peran ' . RoleAccess::roleLabel($to) . ' saat masuk'
-                : 'Berpindah peran ' . ($from ? RoleAccess::roleLabel($from) . ' → ' : '') . RoleAccess::roleLabel($to));
+            ->log(match ($event) {
+                'chosen' => 'Memilih peran ' . RoleAccess::roleLabel($to) . ' saat masuk',
+                'signed_in' => 'Masuk dengan peran ' . RoleAccess::roleLabel($to),
+                default => 'Berpindah peran ' . ($from ? RoleAccess::roleLabel($from) . ' → ' : '') . RoleAccess::roleLabel($to),
+            });
     }
 
     /**
