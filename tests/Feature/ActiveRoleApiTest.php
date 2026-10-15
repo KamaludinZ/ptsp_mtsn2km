@@ -43,7 +43,8 @@ class ActiveRoleApiTest extends TestCase
 
         $this->putJson('/api/peran-aktif', ['peran' => 'front_desk'])->assertOk()
             ->assertJsonPath('message', 'Peran aktif: Front Desk.')
-            ->assertJsonPath('sebelumnya', null)
+            // Never chosen before: the leadership role was active automatically.
+            ->assertJsonPath('sebelumnya', 'kepala_tu')
             ->assertJsonPath('aktif.nama', 'front_desk')
             ->assertJsonPath('perlu_memilih', false);
 
@@ -89,19 +90,20 @@ class ActiveRoleApiTest extends TestCase
         $this->assertNull($user->fresh()->active_role_id);
     }
 
-    public function test_multi_role_staff_without_a_choice_must_pick_one(): void
+    public function test_multi_role_staff_without_a_choice_get_their_first_role_active(): void
     {
         // guru is not a staff role, so it is left out of the list.
         Sanctum::actingAs($this->staff('tata_usaha', 'front_desk', 'guru'));
 
         $this->getJson('/api/peran-aktif')->assertOk()
-            ->assertJsonPath('aktif', null)
-            ->assertJsonPath('perlu_memilih', true)
+            ->assertJsonPath('aktif.nama', 'front_desk')
+            ->assertJsonPath('perlu_memilih', false)
             ->assertJsonCount(2, 'peran')
             // Ordered like User::STAFF_ROLES, not by assignment.
             ->assertJsonPath('peran.0.nama', 'front_desk')
             ->assertJsonPath('peran.0.label', 'Front Desk')
             ->assertJsonPath('peran.0.area', ['Loket'])
+            ->assertJsonPath('peran.0.aktif', true)
             ->assertJsonPath('peran.1.nama', 'tata_usaha')
             ->assertJsonPath('peran.1.aktif', false);
     }

@@ -114,6 +114,41 @@ class Service extends Model
         return $this->hasMany(ServiceRequirement::class);
     }
 
+    /**
+     * Jumlah persyaratan layanan: berkas persyaratan terstruktur bila ada,
+     * selain itu butir pada teks Persyaratan yang diisi di form /cp.
+     */
+    public function requirementCount(): int
+    {
+        $structured = $this->requirements_count ?? $this->requirements()->count();
+
+        return $structured ?: count(static::requirementItemsFrom($this->getAttribute('requirements')));
+    }
+
+    /**
+     * Butir persyaratan dari teks/HTML: daftar <li>, baris/paragraf,
+     * atau penomoran "1. Formulir 2. Fotokopi KK".
+     *
+     * @return list<string>
+     */
+    public static function requirementItemsFrom(?string $text): array
+    {
+        $plain = preg_replace(['~<\s*br\s*/?>~i', '~</\s*(li|p|div|h[1-6]|tr)\s*>~i'], "\n", (string) $text);
+        $plain = html_entity_decode(strip_tags($plain), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        $items = [];
+        foreach (preg_split('/\R/u', $plain) as $line) {
+            foreach (preg_split('/(?:^|\s+)\d+[.)]\s+/u', $line, -1, PREG_SPLIT_NO_EMPTY) as $part) {
+                $part = preg_replace('/^[\s\x{00A0};,\-•*]+|[\s\x{00A0};,]+$/u', '', $part);
+                if ($part !== '') {
+                    $items[] = $part;
+                }
+            }
+        }
+
+        return $items;
+    }
+
     // Relationship with service components
     public function components()
     {

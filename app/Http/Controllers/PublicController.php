@@ -13,7 +13,6 @@ use App\Models\VisitorMaster;
 use App\Services\FrontDeskService;
 use Illuminate\Http\Request; // Don't forget to import Request
 use Carbon\Carbon;
-use App\Services\WhatsAppService;
 
 class PublicController extends Controller
 {
@@ -194,10 +193,8 @@ class PublicController extends Controller
             'status' => 'active',
         ]);
 
-        // Send WhatsApp notification to applicant
-        $whatsappService = new WhatsAppService();
-        $message = "Halo {$validated['name']}! Permohonan layanan Anda ({$validated['target_service']}) telah kami terima. Kami akan segera memprosesnya.";
-        $whatsappService->sendMessage($validated['phone'], $message);
+        // No WhatsApp here: the form needs no sign-in, so anyone could make the
+        // school's number message any phone. The guest sees the confirmation on screen.
 
         return redirect()->route('public.visitor.book')
             ->with('success', 'Pemohon layanan berhasil didaftarkan!')

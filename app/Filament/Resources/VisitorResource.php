@@ -91,13 +91,22 @@ class VisitorResource extends Resource
                             ->label('Bertemu dengan')
                             ->maxLength(255)
                             ->hidden($creating),
+                        // Faces are personal data: kept on the private disk,
+                        // shown only to the front desk (route visitors.photo).
                         Forms\Components\FileUpload::make('photo_path')
                             ->label('Foto tamu')
                             ->image()
-                            ->disk('public')
+                            ->disk('local')
+                            ->visibility('private')
                             ->directory('visitor-photos')
                             ->maxSize(2048)
                             ->visible($creating),
+                        Forms\Components\Placeholder::make('photo')
+                            ->label('Foto tamu')
+                            ->content(fn (?Visitor $record) => new \Illuminate\Support\HtmlString(
+                                '<img src="' . e(route('visitors.photo', $record)) . '" alt="Foto tamu" style="width:8rem;height:8rem;object-fit:cover;border-radius:.5rem">'
+                            ))
+                            ->visible(fn (?Visitor $record) => ! $creating && filled($record?->photo_path)),
                         Forms\Components\DateTimePicker::make('check_in_time')
                             ->label('Waktu check-in')
                             ->required()

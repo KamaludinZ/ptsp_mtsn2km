@@ -37,5 +37,27 @@
                 </div>
             </x-filament::section>
         @endforeach
+
+        @foreach ($portalRoles as $role)
+            <x-filament::section :icon="$role['icon']" icon-color="gray">
+                <x-slot name="heading">{{ $role['label'] }}</x-slot>
+                <x-slot name="description"><code class="text-xs">{{ $role['name'] }}</code></x-slot>
+
+                <p class="text-sm text-gray-600 dark:text-gray-300">{{ $role['description'] }}</p>
+
+                <div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-top:1rem">
+                    @foreach ($role['areas'] as $area)
+                        <x-filament::badge color="gray">{{ $area }}</x-filament::badge>
+                    @endforeach
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;margin-top:1.25rem">
+                    <x-filament::button size="sm" color="gray" tag="a" :href="$portalUrl"
+                        icon="heroicon-m-arrow-top-right-on-square" icon-position="after">
+                        Buka portal pemohon
+                    </x-filament::button>
+                </div>
+            </x-filament::section>
+        @endforeach
     </div>
 </x-filament-panels::page>

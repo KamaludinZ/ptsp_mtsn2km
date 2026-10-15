@@ -10,11 +10,13 @@ class NotificationDelivery extends Model
 {
     public const CHANNELS = ['email' => 'Email', 'whatsapp' => 'WhatsApp', 'database' => 'Dalam aplikasi'];
 
-    public const STATUSES = ['sent' => 'Terkirim', 'failed' => 'Gagal'];
+    public const STATUSES = ['queued' => 'Dalam antrean', 'sent' => 'Terkirim', 'failed' => 'Gagal'];
 
     protected $fillable = ['event', 'channel', 'ticket_id', 'complaint_id', 'user_id', 'recipient', 'subject', 'body', 'status', 'error', 'attempts'];
 
     protected $casts = ['attempts' => 'integer'];
+
+    protected $attributes = ['attempts' => 0];
 
     public function ticket(): BelongsTo
     {
@@ -33,6 +35,10 @@ class NotificationDelivery extends Model
 
     public function statusColor(): string
     {
-        return $this->status === 'sent' ? 'success' : 'danger';
+        return match ($this->status) {
+            'sent' => 'success',
+            'queued' => 'warning',
+            default => 'danger',
+        };
     }
 }

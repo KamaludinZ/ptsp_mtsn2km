@@ -11,6 +11,7 @@ class NotificationTemplates
     public const EVENTS = [
         'ticket_created' => 'Permohonan diterima',
         'ticket_status_changed' => 'Status permohonan berubah',
+        'disposition_requested' => 'Permohonan menunggu disposisi (ke Kepala Madrasah/Kepala TU)',
         'disposition_assigned' => 'Disposisi untuk petugas',
         'ticket_completed' => 'Permohonan selesai',
         'ticket_rejected' => 'Permohonan ditolak',
@@ -28,6 +29,8 @@ class NotificationTemplates
         'catatan' => 'Catatan petugas / alasan',
         'tautan' => 'Tautan pelacakan atau detail',
         'instansi' => 'Nama madrasah',
+        'pemohon' => 'Nama pemohon',
+        'peran' => 'Peran yang dipakai untuk mendisposisi (mis. Kepala Madrasah)',
         'nomor_laporan' => 'Nomor pengaduan / saran / WBS',
         'jenis_laporan' => 'Jenis laporan (Pengaduan, Saran, Whistleblowing)',
         'judul' => 'Perihal laporan (dirahasiakan untuk WBS)',
@@ -44,6 +47,10 @@ class NotificationTemplates
             'ticket_status_changed' => [
                 'subject' => 'Status permohonan {nomor_tiket}: {status}',
                 'body' => "Yth. {nama},\nStatus permohonan {nomor_tiket} ({layanan}) kini: {status}.\n{catatan}\nDetail: {tautan}\n\n{instansi}",
+            ],
+            'disposition_requested' => [
+                'subject' => 'Mohon disposisi: {nomor_tiket} ({layanan})',
+                'body' => "Yth. {nama},\nAda permohonan layanan yang menunggu disposisi Anda.\nNomor: {nomor_tiket}\nLayanan: {layanan}\nPemohon: {pemohon}\n\nCara mendisposisi:\n1. Buka tautan ini dan masuk ke akun Anda: {tautan}\n2. Pastikan peran aktif di kanan atas adalah {peran}. Bila belum, klik penanda \"Peran aktif\" lalu pilih peran itu.\n3. Periksa berkas pemohon, lalu klik tombol \"Disposisikan\".\n4. Centang unit tujuan di \"Diteruskan kepada\", tulis instruksi (dan catatan bila perlu), lalu pilih model tanda tangan.\n5. Klik \"Kirim\". Bila memakai TTD/TTE, cetak lembar disposisi, tanda tangani, lalu unggah hasilnya.\nSemua permohonan yang menunggu ada di menu Pimpinan > Disposisi Masuk.\n\n{instansi}",
             ],
             'disposition_assigned' => [
                 'subject' => 'Disposisi baru: {nomor_tiket}',

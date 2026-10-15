@@ -45,12 +45,9 @@ class ComplaintPolicy
      */
     public function update(User $user, Complaint $complaint): bool
     {
-        if ($user->hasAnyRole(RoleAccess::COMPLAINT_HANDLERS)) {
-            return true;
-        }
-        
-        // Pengguna hanya bisa mengupdate komplain milik mereka sendiri
-        return $user->id === $complaint->user_id && $complaint->status === 'submitted';
+        // Tindak lanjut (tahap, penangan, tanggapan, merahasiakan identitas)
+        // hanya oleh penangan pengaduan, tidak oleh pelapornya sendiri.
+        return $user->hasAnyRole(RoleAccess::COMPLAINT_HANDLERS);
     }
 
     /**

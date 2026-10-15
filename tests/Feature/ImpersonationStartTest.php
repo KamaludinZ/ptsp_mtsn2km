@@ -95,6 +95,18 @@ class ImpersonationStartTest extends TestCase
         $this->assertSame('Ganti akun hanya dari peran aktif Administrator.', collect(session('filament.notifications'))->last()['body']);
     }
 
+    public function test_an_admin_cannot_take_over_another_admins_account(): void
+    {
+        $other = User::factory()->create();
+        $other->assignRole('admin');
+
+        $this->actingAs($this->admin())->post(route('ganti-akun.mulai', $other), ['alasan' => 'Memeriksa akun admin lain'])->assertRedirect();
+
+        $this->assertAuthenticatedAs($this->admin());
+        $this->assertSame(0, ImpersonationSession::count());
+        $this->assertSame('Akun administrator lain tidak dapat dimasuki.', collect(session('filament.notifications'))->last()['body']);
+    }
+
     public function test_no_nested_sessions(): void
     {
         $this->actingAs($this->admin())->post(route('ganti-akun.mulai', $this->applicant()), ['alasan' => 'Meninjau keluhan unggah berkas']);

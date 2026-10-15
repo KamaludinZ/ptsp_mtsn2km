@@ -187,40 +187,24 @@ class SurveyController extends Controller
      */
     public function results()
     {
-        // Calculate IKM
-        $skmResponses = SurveyAnswer::whereHas('question', function ($query) {
-            $query->where('type', 'skm');
-        })->get();
+        // A public page: counted in SQL per answer option (not every answer
+        // loaded into PHP) and cached for a while.
+        $results = \Illuminate\Support\Facades\Cache::remember('survey_public_results', now()->addMinutes(15), function () {
+            [$skmScore, $skmCount] = $this->scoreTotals('skm');
+            [$spakScore, $spakCount] = $this->scoreTotals('spak');
 
-        $totalSkmScore = 0;
-        $totalSkmCount = 0;
+            return [
+                'ikm' => $skmCount > 0 ? ($skmScore / $skmCount) * 25 : 0,
+                'ipak' => $spakCount > 0 ? ($spakScore / ($spakCount * 4)) * 100 : 0,
+                'totalResponses' => SurveyResponse::count(),
+            ];
+        });
 
-        foreach ($skmResponses as $answer) {
-            $value = $this->getAnswerValue($answer->selected_option);
-            $totalSkmScore += $value;
-            $totalSkmCount++;
-        }
-
-        $ikm = $totalSkmCount > 0 ? ($totalSkmScore / $totalSkmCount) * 25 : 0;
+        $ikm = $results['ikm'];
         $ikmCategory = $this->getIKMCategory($ikm);
-
-        // Calculate IPAK
-        $spakResponses = SurveyAnswer::whereHas('question', function ($query) {
-            $query->where('type', 'spak');
-        })->get();
-
-        $totalSpakScore = 0;
-        $maxSpakScore = $spakResponses->count() * 4;
-
-        foreach ($spakResponses as $answer) {
-            $value = $this->getAnswerValue($answer->selected_option);
-            $totalSpakScore += $value;
-        }
-
-        $ipak = $maxSpakScore > 0 ? ($totalSpakScore / $maxSpakScore) * 100 : 0;
+        $ipak = $results['ipak'];
         $ipakCategory = $this->getIPAKCategory($ipak);
-
-        $totalResponses = SurveyResponse::count();
+        $totalResponses = $results['totalResponses'];
 
         return view('survey.results', compact(
             'ikm',
@@ -229,6 +213,26 @@ class SurveyController extends Controller
             'ipakCategory',
             'totalResponses'
         ));
+    }
+
+    /**
+     * Sum of answer values and number of answers for one question type.
+     *
+     * @return array{0: int, 1: int}
+     */
+    private function scoreTotals(string $type): array
+    {
+        $perOption = SurveyAnswer::whereHas('question', fn ($query) => $query->where('type', $type))
+            ->groupBy('selected_option')
+            ->selectRaw('selected_option, count(*) as total')
+            ->pluck('total', 'selected_option');
+
+        $score = 0;
+        foreach ($perOption as $option => $total) {
+            $score += $this->getAnswerValue($option) * (int) $total;
+        }
+
+        return [$score, (int) $perOption->sum()];
     }
 
     /**

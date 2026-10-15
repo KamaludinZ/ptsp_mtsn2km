@@ -31,7 +31,10 @@ class TicketHistoryController extends Controller
         $staff = $user->isStaff();
         $auditor = $user->hasRole('admin') || $user->can('supervision.access');
 
-        $logs = $ticket->logs()->with(['performer:id,name', 'file'])->oldest()->oldest('id')->get();
+        // Applicants see only their own milestones, never staff-only entries such as internal notes.
+        $logs = $ticket->logs()->with(['performer:id,name', 'file'])
+            ->when(! $staff, fn ($q) => $q->whereIn('action', TicketLog::APPLICANT_VISIBLE))
+            ->oldest()->oldest('id')->get();
 
         return response()->json([
             'nomor_tiket' => $ticket->ticket_number,
@@ -138,10 +141,13 @@ class TicketHistoryController extends Controller
 
         $filters = $this->filters($request);
         $query = $this->historyQuery($filters);
+        $rows = (clone $query)->count();
+
+        abort_if($rows > ServiceHistoryExport::$maxRows, 422, ServiceHistoryExport::tooLargeMessage($rows));
 
         activity('audit')
             ->causedBy($request->user())
-            ->withProperties(['rows' => (clone $query)->count(), 'filters' => $filters, 'via' => 'api'])
+            ->withProperties(['rows' => $rows, 'filters' => $filters, 'via' => 'api'])
             ->log('Mengekspor riwayat layanan');
 
         return Excel::download(new ServiceHistoryExport($query), 'riwayat-layanan-' . now()->format('Ymd-His') . '.xlsx');

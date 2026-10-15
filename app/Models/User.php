@@ -191,7 +191,8 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 
         return match ($panel->getId()) {
             'admin' => $this->isStaff(),
-            'portal' => ! $this->isStaff(),
+            // Staff who are also applicants (e.g. a waka who is a guru) may apply in the portal too.
+            'portal' => ! $this->isStaff() || \App\Support\ActiveRoles::portalRolesFor($this)->isNotEmpty(),
             default => false,
         };
     }
@@ -225,6 +226,13 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
             if ($user->isDirty('password') && ! $user->isDirty('password_changed_at')) {
                 $user->password_changed_at = now();
                 $user->must_change_password = false;
+            }
+        });
+
+        // A deactivated account loses its API access at once, wherever it was switched off.
+        static::updated(function (User $user) {
+            if ($user->wasChanged('is_active') && $user->is_active === false) {
+                $user->tokens()->delete();
             }
         });
     }

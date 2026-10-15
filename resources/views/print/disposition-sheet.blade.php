@@ -1,15 +1,24 @@
 @php
     use App\Support\Persuratan;
+    use App\Support\RoleAccess;
     use App\Support\ServiceDisposition;
 
-    $preset = $ticket->service?->disposition_roles ?? [];
-    // A reprint after the leader decided ticks the chosen instruction, even one typed by hand.
-    $chosenInstruction = \App\Models\DispositionLog::where('ticket_id', $ticket->id)->whereNotNull('instruction')->latest('id')->value('instruction');
+    // The leader's decision, once made: a reprint shows what was really decided, by whom and when.
+    $log = \App\Models\DispositionLog::with('actor:id,name')
+        ->where('ticket_id', $ticket->id)
+        ->whereIn('action', [\App\Enums\DispositionAction::Disposisi, \App\Enums\DispositionAction::Acknowledge])
+        ->latest('id')
+        ->first();
+    $ticked = $log?->recipients ?? $ticket->disposition_recipients ?? $ticket->service?->disposition_roles ?? [];
+    $chosenInstruction = $log?->instruction;
     $instructions = collect(Persuratan::options('instruksi_disposisi'))->push($chosenInstruction)->filter()->unique()->values();
-    $leader = match ($ticket->service?->disposition_mode) {
-        'tu' => 'Kepala Tata Usaha',
-        default => 'Kepala Madrasah',
-    };
+
+    // Signed by the role the leader decided in; before that, the leader printing it (active role), else the service's mode.
+    $actingRole = \App\Support\ActiveRoles::inContext(auth()->user());
+    $signerRole = $log?->role ?? (in_array($actingRole, ['kepala_sekolah', 'kepala_tu'], true) ? $actingRole : null)
+        ?? ($ticket->service?->disposition_mode === 'tu' ? 'kepala_tu' : 'kepala_sekolah');
+    $leader = RoleAccess::roleLabel($signerRole);
+    $signer = $log ? ($log->acknowledged_by_name ?: $log->actor?->name) : null;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -47,7 +56,7 @@
                 <td>
                     <ul class="boxes">
                         @foreach (ServiceDisposition::RECIPIENTS as $key => $label)
-                            <li><span class="box">{{ in_array($key, $preset, true) ? '✓' : '' }}</span>{{ $label }}</li>
+                            <li><span class="box">{{ in_array($key, $ticked, true) ? '✓' : '' }}</span>{{ $label }}</li>
                         @endforeach
                     </ul>
                 </td>
@@ -62,16 +71,28 @@
                     </ul>
                 </td>
             </tr>
-            <tr><td class="label">Catatan</td><td><div class="lines"></div></td></tr>
+            <tr>
+                <td class="label">Catatan</td>
+                <td>
+                    @if (filled($log?->note))
+                        {{ $log->note }}
+                    @else
+                        <div class="lines"></div>
+                    @endif
+                </td>
+            </tr>
+            @if ($log)
+                <tr><td class="label">Tanggal disposisi</td><td>{{ \App\Support\Formats::date($log->created_at) }} · oleh {{ $signer }} ({{ $leader }})</td></tr>
+            @endif
             @if ($ticket->service?->signature_recommendation)
                 <tr><td class="label">Anjuran tanda tangan</td><td>{{ ServiceDisposition::signature($ticket->service->signature_recommendation) }}</td></tr>
             @endif
         </table>
         <div class="sign">
-            <p>Malang, ....................................</p>
+            <p>Malang, {{ $log ? \App\Support\Formats::date($log->created_at) : '....................................' }}</p>
             <p>{{ $leader }}</p>
             <div class="space"></div>
-            <p>(......................................................)</p>
+            <p>({{ $signer ?: '......................................................' }})</p>
         </div>
     </div>
     <p class="no-print"><button onclick="window.print()">Cetak / Simpan PDF</button></p>

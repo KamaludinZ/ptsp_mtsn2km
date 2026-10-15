@@ -64,7 +64,8 @@ Salin `.env.production.example` menjadi `.env` di folder aplikasi, lalu isi mini
 | `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Akun PostgreSQL dari langkah 2 (`DB_CONNECTION=pgsql`) |
 | `ADMIN_PASSWORD` | Password admin awal (`ptsp@mtsn2malang.sch.id`). Jika kosong, password acak dicetak sekali saat seeding. |
 | `TINYMCE_API_KEY` | Kunci TinyMCE Cloud untuk editor teks. Daftarkan domain di tiny.cloud → *Approved Domains*. |
-| `TRUSTED_PROXIES` | Kosongkan di hosting biasa; isi `*` hanya bila di belakang Cloudflare/reverse proxy. |
+| `TRUSTED_PROXIES` | Kosongkan di hosting biasa. Di belakang Cloudflare/reverse proxy, isi rentang IP (CIDR) proxy tersebut, dipisah koma, supaya IP pengunjung terbaca benar. `*` hanya membaca HTTPS/host dari proxy, tidak IP pengunjung (header IP bisa dipalsukan siapa saja). |
+| `QUEUE_CONNECTION` | `sync` (bawaan): email & WhatsApp dikirim langsung. Bila hosting mengizinkan proses latar, pakai `database` dan jalankan `php artisan queue:work` terus-menerus supaya pengguna tidak menunggu gateway yang lambat. |
 
 Email dan WhatsApp **diatur di panel** (Manajemen Sistem → Integrasi Notifikasi). Nilai `MAIL_*`
 dan `WHATSAPP_*` di `.env` hanya dipakai sampai pengaturan di panel disimpan.

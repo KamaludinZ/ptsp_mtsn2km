@@ -42,17 +42,19 @@ class RoleSwitchActivityLogTest extends TestCase
         $this->assertNotEmpty($entry->properties['ip']);
     }
 
-    public function test_choosing_after_sign_in_is_recorded_even_for_the_same_role(): void
+    public function test_the_role_active_at_sign_in_is_recorded(): void
     {
         $user = $this->staff();
         $user->forceFill(['active_role_id' => Role::findByName('kepala_tu', 'web')->id])->save();
 
+        // No picker any more: the last role is active straight away, and that is recorded once.
         $this->withSession(['captcha_value' => 'ABCDE'])->post('/login', ['email' => $user->email, 'password' => 'password', 'captcha' => 'ABCDE']);
         $this->post('/peran-aktif/ganti', ['peran' => 'kepala_tu']);
 
         $entry = Activity::inLog('role')->sole();
-        $this->assertSame('chosen', $entry->event);
-        $this->assertSame('Memilih peran Kepala Tata Usaha saat masuk', $entry->description);
+        $this->assertSame('signed_in', $entry->event);
+        $this->assertSame('Masuk dengan peran Kepala Tata Usaha', $entry->description);
+        $this->assertSame('kepala_tu', $entry->properties['ke']);
     }
 
     public function test_reselecting_the_active_role_is_not_recorded_again(): void

@@ -206,6 +206,7 @@ class ServiceResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('requirements_count')
                     ->label('Syarat')
+                    ->state(fn (Service $record): int => $record->requirementCount())
                     ->alignCenter()
                     ->color(fn (int $state) => $state ? null : 'gray')
                     ->toggleable(),

@@ -130,9 +130,14 @@ Route::middleware('auth')->get('/tiket/{ticket}/tanda-terima', fn (\App\Models\T
     ->name('tickets.receipt');
 
 // Printable disposition sheet: printed and signed (TTD) or saved as PDF and signed electronically (TTE)
-Route::middleware('auth')->get('/tiket/{ticket}/lembar-disposisi', fn (\App\Models\Ticket $ticket) => view('print.disposition-sheet', ['ticket' => $ticket->load(['user', 'service'])]))
-    ->can('approve', 'ticket')
-    ->name('tickets.disposition-sheet');
+// Leaders who may dispose it print it; once disposed, staff who may see the ticket (e.g. the receiving units) can open it as proof.
+Route::middleware('auth')->get('/tiket/{ticket}/lembar-disposisi', function (\App\Models\Ticket $ticket) {
+    $disposed = \App\Models\DispositionLog::where('ticket_id', $ticket->id)->whereIn('action', ['disposisi', 'acknowledge'])->exists();
+    abort_unless(\Illuminate\Support\Facades\Gate::allows('approve', $ticket)
+        || ($disposed && auth()->user()->isStaff() && \Illuminate\Support\Facades\Gate::allows('view', $ticket)), 403);
+
+    return view('print.disposition-sheet', ['ticket' => $ticket->load(['user', 'service'])]);
+})->name('tickets.disposition-sheet');
 
 // Evidence attached to complaint/whistleblowing reports: private files for complaint handlers
 Route::middleware('auth')->get('/pengaduan/{complaint}/bukti/{index}', function (\App\Models\Complaint $complaint, int $index) {
@@ -140,6 +145,15 @@ Route::middleware('auth')->get('/pengaduan/{complaint}/bukti/{index}', function 
 
     return \Illuminate\Support\Facades\Storage::disk('local')->response($path);
 })->can('view', 'complaint')->whereNumber('index')->name('complaints.evidence');
+
+// Guest photos from the visitor book (faces): private files for the front desk
+Route::middleware('auth')->get('/buku-tamu/{visitor}/foto', function (\App\Models\Visitor $visitor) {
+    $path = $visitor->photo_path ?: abort(404);
+    $disk = \Illuminate\Support\Facades\Storage::disk('local');
+    abort_unless($disk->exists($path), 404);
+
+    return $disk->response($path, null, ['Cache-Control' => 'private, no-store']);
+})->can('view', 'visitor')->name('visitors.photo');
 
 // Outgoing-letter attachments: private files for the back office keeping the register
 Route::middleware('auth')->get('/surat-keluar/{suratKeluar}/lampiran/{index}', function (\App\Models\SuratKeluar $suratKeluar, int $index) {

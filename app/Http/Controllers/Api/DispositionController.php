@@ -25,6 +25,9 @@ class DispositionController extends Controller
     /** GET /api/disposisi/antrean: requests waiting for this leader's disposition, oldest first. */
     public function queue(Request $request): JsonResponse
     {
+        // Applicants and other non-staff never have a queue: do not load every pending request for them.
+        abort_unless($request->user()->isStaff(), 403);
+
         $tickets = Ticket::approvableBy($request->user());
 
         $active = \App\Support\ActiveRoles::inContext($request->user());

@@ -51,7 +51,8 @@ services:
       - SESSION_ENCRYPT=true
       # true behind HTTPS (Coolify). Set false only to test over plain http://.
       - SESSION_SECURE_COOKIE=${SESSION_SECURE_COOKIE:-true}
-      - QUEUE_CONNECTION=sync
+      # database: email & WhatsApp dikirim proses queue (docker/supervisord.conf)
+      - QUEUE_CONNECTION=${QUEUE_CONNECTION:-database}
       - FILESYSTEM_DISK=local
       - TRUSTED_PROXIES=${TRUSTED_PROXIES:-*}
       - AUTO_MIGRATE=${AUTO_MIGRATE:-true}

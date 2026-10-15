@@ -86,7 +86,8 @@ class UpdateService
      */
     public function isNewer(string $tag, string $current): ?bool
     {
-        $number = fn (string $v) => preg_match('/^v?(\d+(?:\.\d+)*)/', $v, $m) ? $m[1] : null;
+        // At least "major.minor": a bare commit hash from git describe ("9439a21") is no version.
+        $number = fn (string $v) => preg_match('/^v?(\d+(?:\.\d+)+)/', $v, $m) ? $m[1] : null;
         [$release, $running] = [$number($tag), $number($current)];
 
         return $release && $running ? version_compare($release, $running, '>') : null;

@@ -20,27 +20,26 @@ class ActiveRoles
     /** Peran aktif yang ditetapkan middleware untuk request ini. */
     public const REQUEST_ATTRIBUTE = 'active_role';
 
-    /** Sesi baru petugas multi-peran: wajib memilih peran sebelum membuka /cp. */
+    /** Penanda lama "wajib memilih peran" di sesi; tidak dipakai lagi, hanya dibersihkan. */
     public const PICK_FLAG = 'active_role_pick';
 
     /**
-     * Saat masuk: petugas yang memegang lebih dari satu peran staf memilih
-     * peran aktif dulu (pilihan terakhirnya tetap ditandai). True bila ia
-     * harus diarahkan ke halaman Pilih Peran Aktif.
+     * Saat masuk: peran aktif langsung ditetapkan tanpa harus memilih dulu,
+     * yaitu pilihan terakhir user bila masih dipegang, selain itu peran
+     * staf pertama yang ia pegang. Ia tetap bisa berganti peran di header.
      */
-    public static function startSession(User $user, \Illuminate\Contracts\Session\Session $session): bool
+    public static function startSession(User $user, \Illuminate\Contracts\Session\Session $session): void
     {
-        $session->forget(self::SESSION_KEY);
+        $session->forget([self::SESSION_KEY, self::PICK_FLAG]);
 
-        if (! $user->isStaff() || self::for($user)->count() < 2) {
-            $session->forget(self::PICK_FLAG);
+        if ($user->isStaff() && ($role = self::current($user)) !== null) {
+            $session->put(self::SESSION_KEY, $role);
 
-            return false;
+            // Jejak audit: dengan peran apa petugas multi-peran mulai bekerja.
+            if ($user->roles->whereIn('name', User::STAFF_ROLES)->count() > 1) {
+                self::record($user, null, $role, 'signed_in');
+            }
         }
-
-        $session->put(self::PICK_FLAG, true);
-
-        return true;
     }
 
     /** Penjelasan singkat konteks kerja tiap peran yang bisa dipilih. */
@@ -87,19 +86,46 @@ class ActiveRoles
     }
 
     /**
-     * Nama peran aktif user, atau null bila belum memilih / peran itu
-     * sudah tidak dipegang lagi. Satu-satunya peran staf otomatis aktif.
+     * Nama peran aktif user: pilihan terakhirnya bila masih dipegang,
+     * selain itu peran pimpinan yang dipegang, lalu peran staf pertama
+     * (urutan User::STAFF_ROLES).
+     * Null hanya bila ia tidak memegang peran staf sama sekali.
      */
     public static function current(User $user): ?string
     {
         $held = collect(User::STAFF_ROLES)->filter(fn (string $role) => $user->hasRole($role))->values();
         $chosen = $user->activeRole?->name;
 
-        return match (true) {
-            $chosen !== null && $held->contains($chosen) => $chosen,
-            $held->count() === 1 => $held->first(),
-            default => null,
-        };
+        if ($chosen !== null && $held->contains($chosen)) {
+            return $chosen;
+        }
+
+        // Belum pernah memilih: peran pimpinan lebih dulu, lalu urutan User::STAFF_ROLES.
+        return $held->sortBy(fn (string $role) => array_search($role, User::LEADERSHIP_ROLES, true) === false ? 1 : 0)->first();
+    }
+
+    /**
+     * Peran pemohon (mis. Guru, Pegawai) yang juga dipegang petugas. Peran
+     * ini tidak menjadi konteks kerja di /cp; memilihnya membuka portal
+     * pemohon untuk mengajukan dan memantau permohonan sendiri.
+     *
+     * @return Collection<int, array{name: string, label: string, description: string, icon: string, areas: list<string>, active: bool, last_used: null, portal: true}>
+     */
+    public static function portalRolesFor(User $user): Collection
+    {
+        return $user->getRoleNames()
+            ->filter(fn (string $role) => ! in_array($role, User::STAFF_ROLES, true) && array_key_exists($role, RoleAccess::SYSTEM_ROLES))
+            ->map(fn (string $role) => [
+                'name' => $role,
+                'label' => RoleAccess::roleLabel($role),
+                'description' => 'Ajukan dan pantau permohonan layanan Anda sendiri sebagai ' . RoleAccess::roleLabel($role) . ' lewat portal pemohon.',
+                'icon' => 'heroicon-o-user',
+                'areas' => ['Portal Pemohon'],
+                'active' => false,
+                'last_used' => null,
+                'portal' => true,
+            ])
+            ->values();
     }
 
     /**
@@ -164,9 +190,11 @@ class ActiveRoles
                 'ip' => $request->ip(),
                 'perangkat' => mb_substr((string) $request->userAgent(), 0, 200) ?: null,
             ], fn ($v) => $v !== null))
-            ->log($event === 'chosen'
-                ? 'Memilih peran ' . RoleAccess::roleLabel($to) . ' saat masuk'
-                : 'Berpindah peran ' . ($from ? RoleAccess::roleLabel($from) . ' → ' : '') . RoleAccess::roleLabel($to));
+            ->log(match ($event) {
+                'chosen' => 'Memilih peran ' . RoleAccess::roleLabel($to) . ' saat masuk',
+                'signed_in' => 'Masuk dengan peran ' . RoleAccess::roleLabel($to),
+                default => 'Berpindah peran ' . ($from ? RoleAccess::roleLabel($from) . ' → ' : '') . RoleAccess::roleLabel($to),
+            });
     }
 
     /**
@@ -204,8 +232,7 @@ class ActiveRoles
 
     /**
      * Wewenang mengikuti peran aktif: hanya peran aktif (bukan semua peran
-     * yang dipegang) yang dihitung. Petugas multi-peran yang belum memilih
-     * belum berwenang apa pun; petugas satu peran tidak berubah.
+     * yang dipegang) yang dihitung.
      */
     public static function hasRole(User $user, string|array $roles): bool
     {
@@ -242,10 +269,10 @@ class ActiveRoles
             || rescue(fn () => $user->hasDirectPermission($permission), false, report: false);
     }
 
-    /** Petugas multi-peran yang belum punya peran aktif harus memilih dulu. */
+    /** Peran aktif kini selalu ditetapkan otomatis, jadi tidak ada lagi yang wajib memilih. */
     public static function needsChoice(User $user): bool
     {
-        return self::current($user) === null && self::for($user)->count() > 1;
+        return self::current($user) === null && self::for($user)->isNotEmpty();
     }
 
     /** Area kerja yang dibuka sebuah peran, dalam bahasa menu panel. */

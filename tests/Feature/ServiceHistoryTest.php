@@ -295,6 +295,24 @@ class ServiceHistoryTest extends TestCase
         $this->assertSame('10.0.0.7', $entry['ip']);
     }
 
+    public function test_applicants_never_see_internal_notes_in_the_history(): void
+    {
+        $ticket = Ticket::whereHas('user', fn ($q) => $q->whereDoesntHave('roles', fn ($r) => $r->whereIn('name', User::STAFF_ROLES)))->firstOrFail();
+        $this->writeLog([
+            'ticket_id' => $ticket->id,
+            'action' => 'note_added',
+            'performed_by' => $this->user('staff1@mtsn2malang.sch.id')->id,
+            'notes' => 'Catatan internal: cek ulang ke wali kelas.',
+        ]);
+        $url = '/api/tiket/' . $ticket->ticket_number . '/riwayat';
+
+        Sanctum::actingAs($ticket->user);
+        $this->assertNull(collect($this->getJson($url)->assertOk()->json('riwayat'))->firstWhere('kegiatan', 'note_added'));
+
+        Sanctum::actingAs($this->user('staff1@mtsn2malang.sch.id'));
+        $this->assertNotNull(collect($this->getJson($url)->json('riwayat'))->firstWhere('kegiatan', 'note_added'));
+    }
+
     public function test_other_applicants_cannot_read_a_tickets_history(): void
     {
         $ticket = Ticket::firstOrFail();
@@ -358,6 +376,20 @@ class ServiceHistoryTest extends TestCase
 
         Excel::assertDownloaded('riwayat-layanan-' . now()->format('Ymd-His') . '.xlsx', fn (ServiceHistoryExport $export) => $export->query()->get()->every(fn ($log) => $log->action === 'status_changed'));
         $this->assertDatabaseHas('activity_log', ['description' => 'Mengekspor riwayat layanan']);
+    }
+
+    public function test_oversized_history_exports_are_refused(): void
+    {
+        Excel::fake();
+        $this->logStep();
+        ServiceHistoryExport::$maxRows = 0;
+
+        try {
+            Sanctum::actingAs($this->user('pengawas@mtsn2malang.sch.id'));
+            $this->getJson('/api/riwayat/ekspor')->assertStatus(422)->assertJsonPath('message', fn ($message) => str_contains($message, 'Persempit'));
+        } finally {
+            ServiceHistoryExport::$maxRows = 20000;
+        }
     }
 
     public function test_history_entries_cannot_be_changed_or_removed(): void

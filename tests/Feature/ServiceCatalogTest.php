@@ -117,6 +117,40 @@ class ServiceCatalogTest extends TestCase
         $this->assertNotEmpty($service->slug);
     }
 
+    public function test_requirements_written_in_the_form_are_counted_in_the_list(): void
+    {
+        Livewire::test(\App\Filament\Resources\ServiceResource\Pages\CreateService::class)
+            ->fillForm([
+                'name' => 'Surat Keterangan Pindah',
+                'code' => 'SKP',
+                'mode' => 'online',
+                'requirements' => '<ol><li>Formulir permohonan</li><li>Fotokopi KK</li><li>&nbsp;</li><li>Pas foto 3x4</li></ol>',
+                'disposition_mode' => 'none',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $service = Service::where('code', 'SKP')->firstOrFail();
+        $this->assertSame(0, $service->requirements()->count());
+
+        Livewire::test(ListServices::class)
+            ->searchTable('Surat Keterangan Pindah')
+            ->assertTableColumnStateSet('requirements_count', 3, (string) $service->getKey());
+
+        // Berkas persyaratan terstruktur (seeder/API) tetap yang dihitung bila ada.
+        $sksa = Service::where('code', 'SKSA-001')->firstOrFail();
+        $this->assertSame($sksa->requirements()->count(), $sksa->requirementCount());
+    }
+
+    public function test_requirement_items_are_read_from_lists_lines_and_numbering(): void
+    {
+        $this->assertSame(['Formulir', 'Fotokopi KK'], Service::requirementItemsFrom('<ul><li>Formulir</li><li>Fotokopi KK</li></ul>'));
+        $this->assertSame(['KTP', 'Rapor'], Service::requirementItemsFrom('<p>- KTP</p><p>&nbsp;</p><p>- Rapor</p>'));
+        $this->assertSame(['Formulir', 'Fotokopi KK', 'Pas foto 3x4'], Service::requirementItemsFrom('1. Formulir 2. Fotokopi KK; 3. Pas foto 3x4'));
+        $this->assertSame(['Biaya Rp 1.000'], Service::requirementItemsFrom('<p>Biaya Rp 1.000</p>'));
+        $this->assertSame([], Service::requirementItemsFrom(null));
+    }
+
     public function test_service_code_must_be_unique_and_mode_none_needs_no_disposition(): void
     {
         $existing = Service::firstOrFail();
