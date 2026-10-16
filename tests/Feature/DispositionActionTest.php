@@ -169,6 +169,44 @@ class DispositionActionTest extends TestCase
         $this->get(route('tickets.disposition-sheet', $this->ticket))->assertOk()->assertSee('Kepala Madrasah')->assertSee('Untuk diproses');
     }
 
+    public function test_ticket_page_offers_view_and_print_disposition_buttons(): void
+    {
+        $this->actingAs($this->headmaster);
+
+        Livewire::test(ViewTicket::class, ['record' => $this->ticket->id])
+            ->assertActionVisible('viewDisposition')
+            ->assertActionVisible('printDisposition')
+            ->assertActionEnabled('printDisposition')
+            ->assertActionHasUrl('printDisposition', route('tickets.disposition-sheet', $this->ticket));
+    }
+
+    public function test_receiving_units_print_the_disposition_only_after_it_is_disposed(): void
+    {
+        $unit = tap(User::factory()->create())->assignRole('tata_usaha');
+        $this->actingAs($unit);
+
+        Livewire::test(ViewTicket::class, ['record' => $this->ticket->id])
+            ->assertActionVisible('viewDisposition')
+            ->assertActionDisabled('printDisposition');
+
+        app(TicketService::class)->dispose($this->ticket, $this->headmaster, 'acknowledged_by', ['tata_usaha'], 'Untuk diproses');
+
+        Livewire::test(ViewTicket::class, ['record' => $this->ticket->id])
+            ->mountAction('viewDisposition')
+            ->assertSee('Untuk diproses')
+            ->assertActionEnabled('printDisposition');
+    }
+
+    public function test_services_without_disposition_hide_the_disposition_buttons(): void
+    {
+        $this->ticket->update(['approval_required' => false, 'approval_status' => 'approved']);
+        $this->actingAs($this->headmaster);
+
+        Livewire::test(ViewTicket::class, ['record' => $this->ticket->id])
+            ->assertActionHidden('viewDisposition')
+            ->assertActionHidden('printDisposition');
+    }
+
     public function test_front_desk_cannot_print_the_disposition_sheet(): void
     {
         $this->actingAs(User::where('email', 'loket1@mtsn2malang.sch.id')->firstOrFail())

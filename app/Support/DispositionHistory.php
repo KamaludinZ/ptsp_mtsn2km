@@ -7,6 +7,7 @@ use App\Enums\SignatureModel;
 use App\Models\DispositionLog;
 use App\Models\Ticket;
 use App\Models\TicketLog;
+use App\Models\User;
 
 /**
  * Riwayat disposisi & tanda tangan for one ticket, read from disposition_logs
@@ -54,6 +55,29 @@ class DispositionHistory
                 ];
             })
             ->all();
+    }
+
+    /** Whether the leader has disposed the ticket (a decision that produces a disposition sheet). */
+    public static function disposed(Ticket $ticket): bool
+    {
+        return DispositionLog::where('ticket_id', $ticket->id)
+            ->whereIn('action', [DispositionAction::Disposisi, DispositionAction::Acknowledge])
+            ->exists();
+    }
+
+    /**
+     * Who may open the printable disposition sheet: leaders who may dispose the
+     * ticket, and once it is disposed, staff who may see the ticket (e.g. the
+     * receiving units) as proof.
+     */
+    public static function canPrintSheet(Ticket $ticket, ?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        return $user->can('approve', $ticket)
+            || ($user->isStaff() && $user->can('view', $ticket) && self::disposed($ticket));
     }
 
     public static function action(?string $action): string
