@@ -9,6 +9,7 @@ use App\Filament\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Services\TicketService;
+use App\Support\DispositionHistory;
 use App\Support\IncomingCategory;
 use App\Support\TicketDocuments;
 use App\Support\TicketLabels;
@@ -132,8 +133,45 @@ class ViewTicket extends ViewRecord
                 ->color('gray')
                 ->url(fn () => route('tickets.receipt', $this->getRecord()))
                 ->openUrlInNewTab(),
+            $this->viewDispositionAction(),
+            $this->printDispositionAction(),
             Actions\DeleteAction::make()->successRedirectUrl(TicketResource::getUrl('index')),
         ];
+    }
+
+    /** Services with a disposition step: the leader's decisions on this ticket, read-only. */
+    private function viewDispositionAction(): Actions\Action
+    {
+        return Actions\Action::make('viewDisposition')
+            ->label('Lihat disposisi')
+            ->icon('heroicon-m-eye')
+            ->color('gray')
+            ->visible(fn () => (bool) $this->getRecord()->approval_required)
+            ->modalHeading(fn () => 'Disposisi tiket ' . $this->getRecord()->ticket_number)
+            ->modalWidth('5xl')
+            ->modalContent(fn () => view('filament.infolists.disposition-history', ['getRecord' => fn () => $this->getRecord()]))
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Tutup');
+    }
+
+    /** The printable disposition sheet: for leaders to sign, and for staff as proof once disposed. */
+    private function printDispositionAction(): Actions\Action
+    {
+        return Actions\Action::make('printDisposition')
+            ->label('Cetak disposisi')
+            ->icon('heroicon-m-printer')
+            ->color('gray')
+            ->visible(fn () => (bool) $this->getRecord()->approval_required)
+            ->disabled(fn () => ! DispositionHistory::canPrintSheet($this->getRecord(), auth()->user()))
+            ->tooltip(fn () => DispositionHistory::canPrintSheet($this->getRecord(), auth()->user())
+                ? null
+                : (DispositionHistory::disposed($this->getRecord())
+                    ? 'Lembar disposisi hanya untuk pimpinan dan unit yang berwenang atas tiket ini.'
+                    : 'Lembar disposisi bisa dicetak setelah pimpinan mendisposisi permohonan ini.'))
+            ->url(fn () => DispositionHistory::canPrintSheet($this->getRecord(), auth()->user())
+                ? route('tickets.disposition-sheet', $this->getRecord())
+                : null)
+            ->openUrlInNewTab();
     }
 
     private function assignAction(): Actions\Action
