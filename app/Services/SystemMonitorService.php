@@ -94,12 +94,27 @@ class SystemMonitorService
         ];
     }
 
-    /** @return array{ok: bool, last_run: ?string} */
+    /**
+     * The scheduler runs when its heartbeat (every minute, in the cache) or its
+     * health snapshot (monitor:collect every 5 minutes, in the database) is
+     * recent. The snapshot still counts when the cache does not outlive a
+     * process (array store), where the heartbeat is never seen.
+     *
+     * @return array{ok: bool, last_run: ?string}
+     */
     public function scheduler(): array
     {
-        $last = Cache::get(self::HEARTBEAT_KEY);
+        $beat = Cache::get(self::HEARTBEAT_KEY);
+        try {
+            $snapshot = SystemMetric::max('recorded_at');
+        } catch (Throwable) {
+            $snapshot = null; // no table yet
+        }
 
-        return ['ok' => $last && now()->diffInMinutes($last, true) <= 5, 'last_run' => $last];
+        $ok = ($beat && now()->diffInMinutes($beat, true) <= 5) || ($snapshot && now()->diffInMinutes($snapshot, true) <= 10);
+        $last = collect([$beat, $snapshot])->filter()->map(fn ($at) => \Illuminate\Support\Carbon::parse($at))->max();
+
+        return ['ok' => $ok, 'last_run' => $last?->toIso8601String()];
     }
 
     /** @return array{free: ?int, total: ?int, used_percent: ?float} */
@@ -227,6 +242,9 @@ class SystemMonitorService
         }
         if (! $this->scheduler()['ok']) {
             $add('warning', 'Scheduler tidak terdeteksi', 'Tugas berkala (arsip survei triwulan, detak monitoring) tidak berjalan.');
+        }
+        if (config('cache.default') === 'array' && $production) {
+            $add('warning', 'Cache tidak permanen', 'Driver cache array hilang setiap kali permintaan selesai: batas percobaan masuk dan kunci tugas terjadwal tidak bekerja. Setel CACHE_DRIVER=database.');
         }
         foreach ($lastScan['checks'] ?? [] as $name => $check) {
             if (in_array($check['status'] ?? null, ['fail', 'warning'], true)) {

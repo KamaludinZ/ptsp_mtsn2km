@@ -79,6 +79,25 @@ class SystemMonitorTest extends TestCase
         $this->assertTrue($monitor->scheduler()['ok']);
     }
 
+    public function test_scheduler_is_detected_from_its_snapshot_when_the_cache_forgets_the_heartbeat(): void
+    {
+        $monitor = app(SystemMonitorService::class);
+        $snapshot = fn (int $minutesAgo) => SystemMetric::create(['recorded_at' => now()->subMinutes($minutesAgo), 'app_up' => true, 'database_ok' => true, 'scheduler_ok' => true, 'status' => 'success']);
+
+        // An old snapshot: the scheduler stopped.
+        $snapshot(30);
+        $this->assertFalse($monitor->scheduler()['ok']);
+        $this->assertNotNull($monitor->scheduler()['last_run']);
+
+        // monitor:collect ran a few minutes ago (array cache: no heartbeat).
+        $snapshot(4);
+        $this->assertTrue($monitor->scheduler()['ok']);
+
+        config(['cache.default' => 'array']);
+        $this->app->detectEnvironment(fn () => 'production');
+        $this->assertContains('Cache tidak permanen', array_column($monitor->findings(), 'title'));
+    }
+
     public function test_helpers_format_sizes_and_durations(): void
     {
         $this->assertSame('1,5 GB', SystemMonitorService::bytes(1610612736));

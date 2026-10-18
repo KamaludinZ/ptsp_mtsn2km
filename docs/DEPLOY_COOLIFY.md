@@ -257,6 +257,7 @@ Pilih cara ini jika ingin fitur backup terjadwal Coolify ke S3.
 | Unggah berkas gagal (413) | Batas unggah 20 MB per berkas. Kompres dokumen yang lebih besar. |
 | Editor teks tidak muncul / *This domain is not registered* | Isi `TINYMCE_API_KEY` dan daftarkan domain di tiny.cloud → *Approved Domains*. |
 | Login gagal terus tanpa pesan (uji via `http://`) | Cookie aman butuh HTTPS: pakai domain HTTPS, atau isi `SESSION_SECURE_COOKIE=false` sementara. |
+| Monitoring: Scheduler "Tidak terdeteksi" | Tab Logs service `app` harus berisi baris `Running [scheduler-heartbeat]` tiap menit. Bila ada, cache tidak tersimpan: isi `CACHE_DRIVER=database` (atau hapus `CACHE_DRIVER=array`), lalu Redeploy. Bila tidak ada, buka Terminal service `app` dan jalankan `supervisorctl status`; program `scheduler` harus `RUNNING`. |
 | Monitoring: versi "tidak diketahui" | Isi `APP_VERSION`, atau aktifkan *Include Source Commit in Build* di Coolify. |
 | Lupa password admin | Terminal service `app`: `php artisan tinker`, lalu `App\Models\User::where('email','ptsp@mtsn2malang.sch.id')->first()->update(['password'=>bcrypt('PasswordBaru123!')]);` |
 

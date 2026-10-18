@@ -8,7 +8,9 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'default' => env('CACHE_DRIVER', 'array'),
+    // Shared by every process (web, scheduler, queue). CACHE_STORE is the
+    // Laravel 12 name; "array" would lose everything at the end of a request.
+    'default' => env('CACHE_STORE', env('CACHE_DRIVER', 'database')),
 
     /*
     |--------------------------------------------------------------------------
