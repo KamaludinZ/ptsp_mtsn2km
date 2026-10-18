@@ -1023,10 +1023,10 @@
     "summary": "Skema database lengkap PTSP: diagram tabel (users, tickets, services, complaints, visitors, surveys, dll), kolom penting, foreign keys, index, dan relasi antar tabel."
   },
   "docs/DEPLOYMENT.md": {
-    "summary": "Panduan deploy hosting tanpa Docker (cPanel/VPS): syarat (PHP, PostgreSQL), database dan pg_trgm, pasang via paket rilis atau git, konfigurasi .env termasuk TRUSTED_PROXIES berupa rentang IP proxy dan QUEUE_CONNECTION (sync atau database dengan queue:work), post-deploy, cron scheduler, web root dan symlink storage, update, backup, checklist, dan troubleshooting."
+    "summary": "Panduan deploy hosting tanpa Docker (cPanel/VPS): syarat (PHP, PostgreSQL), database dan pg_trgm, pasang via paket rilis atau git, konfigurasi .env termasuk TRUSTED_PROXIES dan QUEUE_CONNECTION, catatan bahwa Email/WhatsApp diatur di panel per jalur (MAIL_*/WHATSAPP_* hanya cadangan jalur pelayanan), post-deploy, cron scheduler, web root dan symlink storage, update, backup, checklist, dan troubleshooting."
   },
   "docs/DEPLOY_COOLIFY.md": {
-    "summary": "Panduan deploy Coolify/Docker: cara kerja container, persiapan dan APP_KEY, resource Docker Compose, variabel lingkungan, deploy, update, letak data dan keamanan redeploy (volume ptsp-postgres dan ptsp-storage, larangan mengganti nama volume, hapus volume, ganti APP_KEY, migrate:fresh), backup, VPS tanpa Coolify, migrasi data, opsi Dockerfile dengan database Coolify, troubleshooting (502 karena Ports Exposes bukan 8080, database tidak terjangkau, bug redirect www, branch master, zona waktu UTC) dan perintah berguna."
+    "summary": "Panduan deploy Coolify/Docker: cara kerja container, persiapan dan APP_KEY, resource Docker Compose, variabel lingkungan (Email/WhatsApp diatur di panel per jalur pelayanan dan pengaduan, MAIL_*/WHATSAPP_* hanya cadangan jalur pelayanan), deploy, update, letak data dan keamanan redeploy (volume ptsp-postgres dan ptsp-storage), backup, VPS tanpa Coolify, migrasi data, opsi Dockerfile dengan database Coolify, troubleshooting dan perintah berguna."
   },
   ".ngodingpakeaiignore": {
     "summary": "Daftar path tambahan yang dikecualikan dari sync NgodingPakeAI (sintaks .gitignore): folder tooling agen lokal .claude/ dan .codex/, aset vendor Filament/awcodes hasil build di public/js dan public/css, lockfile composer/npm, serta berkas placeholder .gitignore."
@@ -1071,13 +1071,13 @@
     "summary": "Panel aksi disposisi (antrean dan halaman tiket): Didisposisi sebagai peran aktif, penerima unit, pilihan cepat instruksi dari master, model tanda tangan TTD/TTE/telah didisposisi oleh (bawaan peran aktif dan nama), unggah berkas tanda tangan, catatan; submit() memanggil TicketService::dispose."
   },
   "app/Filament/Forms/PersuratanFields.php": {
-    "summary": "Komponen form persuratan dari Master Persuratan yang tetap menerima isian manual: tujuan(), jenis() (datalist), klasifikasi() (Select bisa dicari, label 'kode — nama', kode ketikan baru diterima), tembusan() (TagsInput per baris), instruksi() disposisi."
+    "summary": "Komponen form persuratan dari Master Persuratan yang tetap menerima isian manual: tujuan(), jenis() (datalist), klasifikasi() (Select bisa dicari, label 'kode \u2014 nama', kode ketikan baru diterima), tembusan() (TagsInput per baris), instruksi() disposisi."
   },
   "app/Filament/Pages/Content/ContentManagement.php": {
     "summary": "Halaman Manajemen Konten di panel staf: ringkasan pengumuman dan FAQ beserta hal yang perlu perhatian (summary), akses dibatasi pengelola konten."
   },
   "app/Filament/Pages/FrontDesk/RegisterService.php": {
-    "summary": "Halaman Filament /cp/loket/registrasi-layanan (RegisterService) untuk mendaftarkan permohonan walk-in mode offline. Petugas memilih status pemohon: Belum terdaftar (nama, WhatsApp, email diisi; hasil pencarian akun lewat FrontDeskService::findApplicant ditampilkan, termasuk penolakan akun nonaktif/terhapus/petugas) atau Sudah terdaftar (filter tipe pengguna dari Applicants::options, pilih akun lewat Applicants::lookup, nama/WhatsApp/email terisi otomatis dan terkunci, panel ringkasan pemohon dengan tautan perbaikan ke Pengguna › Pemohon untuk admin). Layanan disaring per tipe (serviceOptions, availableFor) dan divalidasi server; submit memanggil FrontDeskService::registerWalkInLinked dan menampilkan nomor permohonan beserta hasil penautan akun, atau pesan gagal tanpa nomor.",
+    "summary": "Halaman Filament /cp/loket/registrasi-layanan (RegisterService) untuk mendaftarkan permohonan walk-in mode offline. Petugas memilih status pemohon: Belum terdaftar (nama, WhatsApp, email diisi; hasil pencarian akun lewat FrontDeskService::findApplicant ditampilkan, termasuk penolakan akun nonaktif/terhapus/petugas) atau Sudah terdaftar (filter tipe pengguna dari Applicants::options, pilih akun lewat Applicants::lookup, nama/WhatsApp/email terisi otomatis dan terkunci, panel ringkasan pemohon dengan tautan perbaikan ke Pengguna \u203a Pemohon untuk admin). Layanan disaring per tipe (serviceOptions, availableFor) dan divalidasi server; submit memanggil FrontDeskService::registerWalkInLinked dan menampilkan nomor permohonan beserta hasil penautan akun, atau pesan gagal tanpa nomor.",
     "sections": [
       {
         "symbol": "RegisterService::form",
@@ -1124,7 +1124,7 @@
     "summary": "Halaman Layanan Masuk berkategori (back office): permohonan yang sudah didisposisi atau tanpa disposisi, dikelompokkan per tab disposisi/tembusan/koordinasi/arahan, filter unit saya dan layanan, pencarian."
   },
   "app/Filament/Pages/System/NotificationIntegrations.php": {
-    "summary": "Halaman Integrasi Email & WhatsApp (admin): konfigurasi SMTP, pilihan gateway WhatsApp (custom/Fonnte/Wablas, URL default otomatis, ID pengirim hanya untuk custom), saklar kanal, rahasia terenkripsi; aksi uji email dan uji WhatsApp lewat NotificationGateway."
+    "summary": "Halaman Integrasi Email & WhatsApp (/cp/integrasi-notifikasi, admin) dengan dua tab jalur: Jalur Pelayanan dan Jalur Pengaduan, Saran & WBS; tiap jalur punya konfigurasi SMTP dan gateway WhatsApp sendiri (custom/Fonnte/Wablas/BalesOtomatis, URL default otomatis, ID pengirim hanya bila perlu) dengan saklar kanal dan rahasia terenkripsi. Jalur pelayanan berawal dari .env, jalur pengaduan tidak; aksi uji email dan uji WhatsApp memilih jalur lalu memanggil NotificationGateway."
   },
   "app/Filament/Pages/System/ProcessorRoleList.php": {
     "summary": "Halaman Peran Pemroses Naskah (admin): enam unit back office penerima disposisi (Waka, TU, penjamin mutu), pemegang dan layanan yang memakainya; assignAction mengatur staf pemegang via ProcessorRoles::assign."
@@ -1169,7 +1169,7 @@
     "summary": "Halaman daftar slide hero beranda dengan penjelasan urutan (seret untuk mengurutkan, tanpa slide aktif beranda memakai hero bawaan) dan tombol Tambah slide."
   },
   "app/Filament/Resources/HeroSliderResource.php": {
-    "summary": "Resource Hero Slider Beranda (admin): gambar komputer dipotong 16:5 dan diperkecil 1920×600 di browser sebelum unggah, gambar HP opsional 2:3 (1080×1620), judul/subjudul/deskripsi, dua tombol dengan validasi tautan, warna teks (input warna bawaan) dan preset lapisan gelap (OVERLAYS), toggle tampil; tabel bisa diurutkan."
+    "summary": "Resource Hero Slider Beranda (admin): gambar komputer dipotong 16:5 dan diperkecil 1920\u00d7600 di browser sebelum unggah, gambar HP opsional 2:3 (1080\u00d71620), judul/subjudul/deskripsi, dua tombol dengan validasi tautan, warna teks (input warna bawaan) dan preset lapisan gelap (OVERLAYS), toggle tampil; tabel bisa diurutkan."
   },
   "app/Filament/Resources/NotificationDeliveryResource/Pages/ListNotificationDeliveries.php": {
     "summary": "Halaman daftar Riwayat Notifikasi dengan ringkasan terkirim/gagal dan tab per status."
@@ -1181,10 +1181,10 @@
     "summary": "Halaman ubah template notifikasi: aksi header Uji kirim (NotificationTemplateResource::testSendAction), mencatat updated_by saat simpan dan kembali ke daftar."
   },
   "app/Filament/Resources/NotificationTemplateResource/Pages/ListNotificationTemplates.php": {
-    "summary": "Halaman daftar Template Notifikasi dengan aksi header 'Atur kanal & pemicu': satu modal untuk menyalakan/mematikan kanal email/WhatsApp (NotificationSetting) dan memilih pemicu aktif per kanal (NotificationTemplate.is_active, template dibuat dari default bila belum ada)."
+    "summary": "Halaman daftar Template Notifikasi dengan aksi header 'Atur kanal & pemicu': satu modal per kanal email/WhatsApp berisi saklar aktif untuk tiap jalur (pelayanan dan pengaduan, NotificationSetting::LINES) serta pilihan pemicu aktif per kanal (NotificationTemplate.is_active, template dibuat dari default bila belum ada)."
   },
   "app/Filament/Resources/NotificationTemplateResource.php": {
-    "summary": "Resource Template Notifikasi (admin): isi per pemicu dan kanal, subjek email, toggle kirim, placeholder yang bisa disisipkan, pratinjau dengan data SAMPLE; testSendAction() 'Uji kirim' mengirim template tersimpan dengan data contoh bertanda [UJI] ke email/nomor WhatsApp yang diisi lewat NotificationGateway::testTemplate, juga saat kanal/template nonaktif."
+    "summary": "Resource Template Notifikasi (admin): isi per pemicu dan kanal, subjek email, toggle kirim, placeholder yang bisa disisipkan, pratinjau dengan data SAMPLE; kolom kanal menandai 'Kanal nonaktif' sesuai jalur pemicunya (NotificationSetting::forEvent). testSendAction() 'Uji kirim' mengirim template tersimpan dengan data contoh bertanda [UJI] lewat NotificationGateway::testTemplate pada jalur pemicunya, juga saat kanal/template nonaktif."
   },
   "app/Filament/Resources/PengumumanResource/Pages/CreatePengumuman.php": {
     "summary": "Halaman buat pengumuman: mengisi pembuat (user) sebelum simpan dan kembali ke daftar."
@@ -1304,10 +1304,10 @@
     "summary": "API layanan masuk berkategori untuk back office: GET /api/layanan-masuk dengan filter kategori, unit saya, layanan, pencarian dan jumlah per kategori."
   },
   "app/Http/Controllers/Api/IntegrationController.php": {
-    "summary": "API integrasi Email & WhatsApp (admin): GET/PUT /api/integrasi/{kanal} (rahasia hanya tulis; provider WhatsApp custom/fonnte/wablas/balesotomatis, sender_id wajib untuk custom dan balesotomatis), PATCH /api/integrasi/{kanal}/aktif dengan cek kelengkapan, POST /api/integrasi/{kanal}/uji kirim uji."
+    "summary": "API integrasi Email & WhatsApp (admin) per jalur lewat parameter ?jalur=pelayanan (bawaan) atau ?jalur=pengaduan: GET/PUT /api/integrasi/{kanal} (rahasia hanya tulis; provider WhatsApp custom/fonnte/wablas/balesotomatis, sender_id wajib untuk custom dan balesotomatis), PATCH /api/integrasi/{kanal}/aktif dengan cek kelengkapan, POST /api/integrasi/{kanal}/uji kirim uji. Respons memuat field jalur; audit mencatat jalur non-pelayanan."
   },
   "app/Http/Controllers/Api/MonitoringController.php": {
-    "summary": "API Monitoring Sistem (peran aktif Administrator): aplikasi, server, metrik, keamanan, integrasi notifikasi, IP diblokir (daftar, blokir, buka blokir dengan audit), log aplikasi/akses/audit dengan filter, informasi, riwayat, unggah dan terapkan pembaruan."
+    "summary": "API Monitoring Sistem (peran aktif Administrator): aplikasi, server, metrik, keamanan, integrasi notifikasi per kanal dan jalur (field kanal, jalur, aktif, terkirim/gagal 24 jam), IP diblokir (daftar, blokir, buka blokir dengan audit), log aplikasi/akses/audit dengan filter, informasi, riwayat, unggah dan terapkan pembaruan."
   },
   "app/Http/Controllers/Api/NotificationController.php": {
     "summary": "API notifikasi in-app pengguna: GET /api/notifikasi dengan filter, GET /api/notifikasi/jumlah (badge), PATCH /api/notifikasi/{id}/dibaca, POST /api/notifikasi/dibaca untuk menandai banyak sekaligus."
@@ -1316,7 +1316,7 @@
     "summary": "API riwayat pengiriman notifikasi (admin): GET /api/riwayat-notifikasi dengan filter kanal, status, pemicu, tanggal, pencarian penerima/nomor tiket/nomor laporan; field tiket dan laporan; GET detail berisi subjek dan isi; POST /api/riwayat-notifikasi/{id}/kirim-ulang untuk email/WhatsApp gagal via NotificationDispatcher::deliver."
   },
   "app/Http/Controllers/Api/NotificationTemplateController.php": {
-    "summary": "API template notifikasi (admin): GET /api/template-notifikasi dengan filter, GET/PUT /api/template-notifikasi/{id} subjek dan isi, PATCH /api/template-notifikasi/{id}/aktif saklar pemicu."
+    "summary": "API template notifikasi (admin): GET /api/template-notifikasi dengan filter, GET/PUT /api/template-notifikasi/{id} subjek dan isi, PATCH /api/template-notifikasi/{id}/aktif saklar pemicu. Setiap template menampilkan jalur pemicunya dan kanal_aktif menurut jalur itu."
   },
   "app/Http/Controllers/Api/PengumumanController.php": {
     "summary": "API pengumuman untuk admin konten: daftar dengan filter status/kategori/pencarian/tanggal/urutan, detail, buat (lampiran multipart), ubah sebagian, hapus beserta lampiran, aksi tayangkan/draf/akhiri; URL lampiran dari host request."
@@ -1438,16 +1438,16 @@
     "summary": "Model FAQ (tabel faqs): scopePublished urut kelompok lalu urutan, scopeInCategory, daftar kategori, nextSort, label 'Umum', safeAnswer() merender jawaban rich text yang disanitasi lewat RichText."
   },
   "app/Models/HeroSlider.php": {
-    "summary": "Model slide hero beranda (hero_sliders): gambar komputer (16:5, 1920×600) dan gambar HP opsional image_mobile (2:3, 1080×1620) di disk public, konstanta rasio/ukuran, teks, tombol, warna, aktif, urutan; scopeActive, imageUrl/mobileImageUrl relatif /storage, berkas lama dihapus saat diganti atau dihapus."
+    "summary": "Model slide hero beranda (hero_sliders): gambar komputer (16:5, 1920\u00d7600) dan gambar HP opsional image_mobile (2:3, 1080\u00d71620) di disk public, konstanta rasio/ukuran, teks, tombol, warna, aktif, urutan; scopeActive, imageUrl/mobileImageUrl relatif /storage, berkas lama dihapus saat diganti atau dihapus."
   },
   "app/Models/Notification.php": {
     "summary": "Model notifikasi in-app (kanal database Laravel) dengan ticket_id diisi dari nomor tiket di data notifikasi; relasi ticket, judul, isi, scopeForTicket."
   },
   "app/Models/NotificationDelivery.php": {
-    "summary": "Model riwayat pengiriman notifikasi (notification_deliveries): pemicu, kanal email/whatsapp/database, relasi ticket dan complaint, penerima, subjek, isi, status dalam antrean/terkirim/gagal dengan warna badge, galat, dan jumlah percobaan (bawaan 0)."
+    "summary": "Model riwayat pengiriman notifikasi (notification_deliveries): pemicu, kanal email/whatsapp/database, relasi ticket dan complaint, penerima, subjek, isi, status dalam antrean/terkirim/gagal dengan warna badge, galat, jumlah percobaan (bawaan 0), serta scope onLine() untuk memilah pesan jalur pengaduan (COMPLAINT_EVENTS) dan jalur pelayanan."
   },
   "app/Models/NotificationSetting.php": {
-    "summary": "Model pengaturan kanal notifikasi (notification_settings) dengan config terenkripsi: for(kanal), value(), hasSecret(), store() yang mempertahankan rahasia bila dikosongkan, publicConfig() tanpa rahasia (termasuk provider WhatsApp)."
+    "summary": "Model pengaturan kanal notifikasi (notification_settings) per jalur dengan config terenkripsi: LINES pelayanan dan pengaduan (Pengaduan, Saran & WBS), for(kanal, jalur), forEvent() memilih jalur dari pemicu, value(), hasSecret(), store() yang mempertahankan rahasia bila dikosongkan, publicConfig() tanpa rahasia (termasuk provider WhatsApp)."
   },
   "app/Models/NotificationTemplate.php": {
     "summary": "Model template notifikasi per pemicu dan kanal (notification_templates) dengan subjek, isi, aktif; setiap perubahan menyimpan versi sebelumnya ke revisions()."
@@ -1516,10 +1516,10 @@
     "summary": "Kewenangan disposisi: roles() peran yang boleh mendisposisi per layanan, canDispose() berdasarkan kepemilikan peran (untuk pemberitahuan), canDisposeInActiveRole() berdasarkan peran aktif (untuk keputusan), disposers() daftar pimpinan."
   },
   "app/Services/NotificationDispatcher.php": {
-    "summary": "Pengirim notifikasi berbasis template: send() mengisi placeholder dari tiket dan penerima akun; sendTo() mengirim pemicu ke alamat email/WhatsApp mana pun dengan konteks ticket_id/complaint_id/user_id, hanya pada kanal dan template aktif. Pesan disimpan berstatus dalam antrean lalu dikirim job DeliverNotification setelah commit (tetap langsung bila QUEUE_CONNECTION=sync); deliver() mengirim satu pesan tersimpan dan mencatat hasil serta percobaan di notification_deliveries."
+    "summary": "Pengirim notifikasi berbasis template: send() mengisi placeholder dari tiket dan penerima akun; sendTo() mengirim pemicu ke alamat email/WhatsApp mana pun dengan konteks ticket_id/complaint_id/user_id, hanya pada kanal yang aktif di jalur pemicunya (pengaduan untuk complaint_*, selain itu pelayanan) dan template aktif. Pesan disimpan berstatus dalam antrean lalu dikirim job DeliverNotification setelah commit; deliver() mengirim lewat mailer dan WhatsAppService jalur tersebut dan mencatat hasil serta percobaan di notification_deliveries."
   },
   "app/Services/NotificationGateway.php": {
-    "summary": "Gateway notifikasi sesuai Integrasi Notifikasi (fallback .env): mailer() SMTP, testEmail() dan testWhatsApp() (pesan kustom opsional, gateway custom/Fonnte/Wablas, penolakan gateway dilaporkan), testTemplate() mengirim template yang dirender dengan data contoh bertanda [UJI], readable() menyamarkan galat."
+    "summary": "Gateway notifikasi sesuai Integrasi Notifikasi per jalur: smtpConfig() konfigurasi SMTP beserta pengirim (fallback .env hanya untuk jalur pelayanan), mailer(), testEmail() dan testWhatsApp() pada jalur yang dipilih (cek kelengkapan, gateway custom/Fonnte/Wablas/BalesOtomatis, penolakan gateway dilaporkan), testTemplate() mengirim template bertanda [UJI] pada jalur pemicunya, readable() menyamarkan galat."
   },
   "app/Services/ServiceTemplateStorage.php": {
     "summary": "Unggah dan penyimpanan berkas template layanan: cek isi berkas (PDF/Word/Excel, batas ukuran), simpan privat di service-templates/{service}/acak.ext beserta nama, wajib, urutan dan petunjuk; replace() ganti berkas, cleanName() nama aman."
@@ -1531,13 +1531,13 @@
     "summary": "Validasi dan penyimpanan survei SKM & SPAK untuk form web bertahap dan API: identityRules, ratingRules (jawaban harus salah satu opsi), only() menyaring pertanyaan aktif, save() menyimpan untuk edisi aktif dengan skor 1..n sesuai Permenpan RB 14/2017."
   },
   "app/Services/SystemMonitorService.php": {
-    "summary": "Monitoring Sistem: versi (APP_VERSION, RELEASE, atau git describe lewat Process tanpa shell), kesehatan aplikasi dan server, temuan konfigurasi berisiko, integrations() status kanal Email/WhatsApp dan pengiriman 24 jam, ringkasan keamanan, snapshot metrik."
+    "summary": "Monitoring Sistem: versi (APP_VERSION, RELEASE, atau git describe lewat Process tanpa shell), kesehatan aplikasi dan server, temuan konfigurasi berisiko, integrations() status kanal Email/WhatsApp untuk jalur pelayanan dan jalur pengaduan beserta pengiriman 24 jam per jalur, ringkasan keamanan, snapshot metrik."
   },
   "app/Services/UpdateService.php": {
     "summary": "Pembaruan aplikasi: cek rilis terbaru di GitHub (cache 10 menit), isNewer yang hanya menganggap versi minimal major.minor (hash commit bukan versi), riwayat pembaruan termasuk redeploy, storePackage untuk ZIP unggahan, apply() dengan mode maintenance, backup, salin, migrate dan restore otomatis bila gagal."
   },
   "app/Services/WhatsAppService.php": {
-    "summary": "Layanan kirim WhatsApp: membaca pengaturan Integrasi Notifikasi (fallback .env) termasuk provider gateway, menghormati saklar nonaktif, sendMessage() lewat WhatsAppGateways::send dan hanya dianggap terkirim bila gateway menerima."
+    "summary": "Layanan kirim WhatsApp per jalur (pelayanan bawaan, atau pengaduan): membaca pengaturan Integrasi Notifikasi jalur itu termasuk provider gateway, fallback .env hanya untuk jalur pelayanan, jalur pengaduan mati sampai disimpan dan diaktifkan; sendMessage() lewat WhatsAppGateways::send dan hanya dianggap terkirim bila gateway menerima."
   },
   "app/Support/ComplaintNumber.php": {
     "summary": "Penomoran laporan bulanan PEM (pengaduan), SRN (saran), WSB (whistleblowing), mis. PEM-202610-0007; satu pernyataan atomik di complaint_sequences agar laporan bersamaan tidak bentrok."
@@ -1564,7 +1564,7 @@
     "summary": "Kategori layanan masuk (disposisi, tembusan, koordinasi, arahan): label, warna, ikon; of() kategori efektif tiket, derived() dari instruksi disposisi, forInstruction(), history() riwayat kategori, scope() dan EFFECTIVE_SQL untuk query."
   },
   "app/Support/IntegrationRuntime.php": {
-    "summary": "Menerapkan pengaturan Integrasi Notifikasi (SMTP, WhatsApp) ke konfigurasi aplikasi yang berjalan pada setiap request tanpa mengubah .env."
+    "summary": "Menerapkan pengaturan email jalur pelayanan dari Integrasi Notifikasi ke mailer bawaan aplikasi pada setiap request dan job tanpa mengubah .env; mailer() menyiapkan mailer terpisah bernama sesuai jalur (mis. 'pengaduan') dari pengaturan jalur itu saat pesan dikirim."
   },
   "app/Support/Letterhead.php": {
     "summary": "Kop instansi untuk dokumen cetak: baris kementerian, nama lengkap madrasah, kontak dan logo dari Pengaturan, serta signatory() kepala madrasah penanda tangan laporan."
@@ -1576,10 +1576,10 @@
     "summary": "Laporan bulanan kinerja layanan: volume, penyelesaian, ketepatan waktu, status, kanal, permohonan harian, kepuasan, pengaduan dan kunjungan satu bulan; perbandingan dengan bulan lalu, rekap per jenis layanan, rekap tahunan per bulan."
   },
   "app/Support/NotificationTemplates.php": {
-    "summary": "Daftar pemicu notifikasi (EVENTS tiket termasuk disposition_requested ke Kepala Madrasah/Kepala TU, survey_reminder, complaint_received, complaint_new, complaint_updated) dan placeholder yang boleh dipakai (termasuk pemohon dan peran untuk disposisi), defaults() isi bawaan per pemicu (disposisi berisi langkah mendisposisi), render() mengganti placeholder, unknownPlaceholders dan placeholderRule untuk validasi."
+    "summary": "Daftar pemicu notifikasi (EVENTS tiket termasuk disposition_requested ke Kepala Madrasah/Kepala TU, survey_reminder, complaint_received, complaint_new, complaint_updated), COMPLAINT_EVENTS dan line() yang menentukan jalur sambungan (pengaduan atau pelayanan) tiap pemicu, placeholder yang boleh dipakai, defaults() isi bawaan per pemicu, render() mengganti placeholder, unknownPlaceholders dan placeholderRule untuk validasi."
   },
   "app/Support/Persuratan.php": {
-    "summary": "Pilihan rutin persuratan: konstanta isi awal master, options() pilihan aktif, klasifikasiOptions() 'kode — nama', rememberManual() menyimpan isian manual (tujuan, jenis, tembusan, instruksi) sebagai pilihan nonaktif di persuratan_masters untuk ditinjau TU."
+    "summary": "Pilihan rutin persuratan: konstanta isi awal master, options() pilihan aktif, klasifikasiOptions() 'kode \u2014 nama', rememberManual() menyimpan isian manual (tujuan, jenis, tembusan, instruksi) sebagai pilihan nonaktif di persuratan_masters untuk ditinjau TU."
   },
   "app/Support/ProcessorRoles.php": {
     "summary": "Peran pemroses naskah (unit penerima disposisi): deskripsi dan ikon, overview() per unit dengan pemegang (dimuat per peran agar aman untuk guard sanctum) dan jumlah layanan, eligibleStaff(), assign() menetapkan pemegang, unitsOf(), scopeTicketsFor()."
@@ -1597,7 +1597,7 @@
     "summary": "Satu tempat penentu label, warna dan ikon status untuk komponen x-status-badge, halaman publik dan API."
   },
   "app/Support/SuratKeluarNumber.php": {
-    "summary": "Konstanta batas nomor urut tahunan surat keluar (9999) dan kunci pengaturan kode satker; kodeSatker() membaca singkatan unit kerja untuk token {S}; ranges() menulis daftar nomor urut sebagai rentang ringkas (mis. 3, 7–9) untuk pratinjau, notifikasi, log dan riwayat permintaan. Perangkaian nomor ada di SuratKeluarService."
+    "summary": "Konstanta batas nomor urut tahunan surat keluar (9999) dan kunci pengaturan kode satker; kodeSatker() membaca singkatan unit kerja untuk token {S}; ranges() menulis daftar nomor urut sebagai rentang ringkas (mis. 3, 7\u20139) untuk pratinjau, notifikasi, log dan riwayat permintaan. Perangkaian nomor ada di SuratKeluarService."
   },
   "app/Support/SurveyReminders.php": {
     "summary": "Pengingat survei: unrated() permohonan selesai tanpa respons survei, remind() mengirim survey_reminder lewat kanal aktif maksimal sekali per 24 jam (petugas atau otomatis oleh penjadwal) dan mencatat audit, lastSentAt()."
@@ -1867,7 +1867,7 @@
     "summary": "View halaman Responden Survei: tab Sudah mengisi dan Belum mengisi (badge jumlah) di atas tabel."
   },
   "resources/views/filament/pages/system-monitor/aplikasi.blade.php": {
-    "summary": "Partial tab Aplikasi Monitoring Sistem: versi, database, antrean, scheduler, storage, sesi aktif, dan bagian Integrasi notifikasi (kanal aktif, terkirim/gagal 24 jam, gagal terakhir, tautan atur integrasi)."
+    "summary": "Partial tab Aplikasi Monitoring Sistem: versi, database, antrean, scheduler, storage, sesi aktif, dan bagian Integrasi notifikasi berisi kartu kanal Email/WhatsApp per jalur pelayanan dan pengaduan (status aktif, terkirim/gagal 24 jam, gagal terakhir, tautan atur integrasi)."
   },
   "resources/views/filament/pages/system-monitor/keamanan.blade.php": {
     "summary": "Partial tab Keamanan di Monitoring Sistem: login gagal, akun terkunci, IP diblokir, sesi, HTTPS dan temuan konfigurasi berisiko."
@@ -1969,7 +1969,7 @@
     "summary": "Halaman survei berhasil terkirim dengan ucapan terima kasih dan tautan hasil survei."
   },
   "routes/api.php": {
-    "summary": "Route API Sanctum: layanan, tiket staf, riwayat, disposisi, surat keluar, persuratan dan penomoran otomatis, publik, permohonan pemohon, loket (POST /loket/permohonan, GET /loket/tipe-pemohon, GET /loket/pemohon dan /loket/pemohon/{user}), pengaduan, survei, notifikasi, auth, peran aktif, rekam jejak, log ganti akun, monitoring, pengguna, peran, pengaturan, konten."
+    "summary": "Route API Sanctum: layanan, tiket staf, riwayat, disposisi, surat keluar, persuratan dan penomoran otomatis, publik, permohonan pemohon, loket (POST /loket/permohonan, GET /loket/tipe-pemohon, GET /loket/pemohon dan /loket/pemohon/{user}), pengaduan, survei, notifikasi, integrasi Email/WhatsApp per jalur (/integrasi/{kanal}?jalur=pengaduan), auth, peran aktif, rekam jejak, log ganti akun, monitoring, pengguna, peran, pengaturan, konten."
   },
   "routes/console.php": {
     "summary": "Jadwal Artisan: heartbeat dan snapshot monitoring, arsip survei triwulanan, pemangkasan notifikasi, pengingat survei otomatis surveys:remind pukul 08.00, pengingat permohonan tertunda tiap pagi kerja."
@@ -2056,13 +2056,13 @@
     "summary": "Feature test NotificationInboxTest: halaman Notifikasi in-app: tab dibaca/belum, buka dan tandai dibaca, tandai semua, hapus, badge, untuk staf dan pemohon."
   },
   "tests/Feature/NotificationIntegrationsTest.php": {
-    "summary": "Feature test NotificationIntegrationsTest: Integrasi Email & WhatsApp: hanya admin, rahasia terenkripsi dan dipertahankan bila kosong, pilihan gateway WhatsApp (Fonnte mengisi URL dan menyembunyikan ID pengirim), uji kirim, IntegrationRuntime, WhatsAppService mengikuti saklar, bentuk request Fonnte/Wablas dan penolakan status false, provider lewat API."
+    "summary": "Feature test NotificationIntegrationsTest: Integrasi Email & WhatsApp per jalur: hanya admin, rahasia terenkripsi dan dipertahankan bila kosong, jalur pengaduan disimpan terpisah tanpa fallback .env dan tidak mengirim apa pun sebelum diatur, pilihan gateway WhatsApp, uji kirim per jalur, IntegrationRuntime, WhatsAppService mengikuti saklar, bentuk request Fonnte/Wablas, API dengan ?jalur=pengaduan."
   },
   "tests/Feature/NotificationTableTest.php": {
     "summary": "Feature test NotificationTableTest: tabel notifikasi in-app: indeks, ticket_id dan pemangkasan notifikasi lama."
   },
   "tests/Feature/NotificationTemplateTest.php": {
-    "summary": "Feature test NotificationTemplateTest: template email dan WhatsApp per pemicu, panel 'Atur kanal & pemicu', uji kirim template dengan data contoh [UJI] (validasi nomor, request Fonnte, aksi di halaman ubah), daftar/filter, editor dengan pratinjau dan placeholder, revisi, seeder, API."
+    "summary": "Feature test NotificationTemplateTest: template email dan WhatsApp per pemicu, panel 'Atur kanal & pemicu' dengan saklar per jalur pelayanan/pengaduan, uji kirim template dengan data contoh [UJI], daftar/filter, editor dengan pratinjau dan placeholder, revisi, seeder, API."
   },
   "tests/Feature/PendingTicketReminderTest.php": {
     "summary": "Feature test PendingTicketReminderTest: scheduler pengingat permohonan tertunda: tiket lewat target, menunggu disposisi, satu pengingat per permohonan."
@@ -2299,7 +2299,7 @@
     "summary": "Halaman Arsip Survei Kuartalan (grup Pengawasan, akses sama dengan Laporan SKM & SPAK): tabel survey_archives triwulanan dengan periode, responden, nilai rata-rata, indeks berwarna sesuai mutu Permenpan RB 14/2017, saringan jenis dan tahun, serta rincian nilai per pertanyaan."
   },
   "app/Filament/Pages/System/ActivityTrail.php": {
-    "summary": "Halaman Rekam Jejak Aktivitas (/cp/rekam-jejak, administrator saja, tidak lewat akun pinjaman): linimasa per hari dari activity_log (perpindahan peran, ganti akun, aksi tiket) maksimal 200 terbaru, tab jenis dengan hitungan, saringan pengguna/peran/tanggal/aksi, rekap per pengguna–peran via agregasi DB, dan slide-over detail catatan."
+    "summary": "Halaman Rekam Jejak Aktivitas (/cp/rekam-jejak, administrator saja, tidak lewat akun pinjaman): linimasa per hari dari activity_log (perpindahan peran, ganti akun, aksi tiket) maksimal 200 terbaru, tab jenis dengan hitungan, saringan pengguna/peran/tanggal/aksi, rekap per pengguna\u2013peran via agregasi DB, dan slide-over detail catatan."
   },
   "app/Filament/Pages/System/Impersonation.php": {
     "summary": "Halaman Ganti Akun Sementara (/cp/pengguna/ganti-akun, peran aktif Administrator): tabel semua pengguna dengan peran, status, terakhir masuk, saringan peran/status, aksi Masuk sebagai (ImpersonateAction); blockedReason() menolak akun sendiri dan nonaktif; widget footer ImpersonationLog."
@@ -2323,7 +2323,7 @@
     "summary": "API peran aktif staf: GET /api/peran-aktif (peran staf yang dipegang, peran aktif, perlu_memilih, wewenang disposisi/proses/serah-terima/pengawasan, izin Spatie peran aktif) dan PUT /api/peran-aktif {peran} dengan validasi kepemilikan; pemohon 403."
   },
   "app/Http/Controllers/Api/ActivityTrailController.php": {
-    "summary": "API rekam jejak untuk peran aktif Administrator: GET /api/rekam-jejak (paginasi, saringan pengguna, peran, jenis role_switch/impersonation/ticket, aksi, tanggal) dan GET /api/rekam-jejak/rekap (ringkasan dan rekap per pengguna–peran 7 hari dari AuditPanelService)."
+    "summary": "API rekam jejak untuk peran aktif Administrator: GET /api/rekam-jejak (paginasi, saringan pengguna, peran, jenis role_switch/impersonation/ticket, aksi, tanggal) dan GET /api/rekam-jejak/rekap (ringkasan dan rekap per pengguna\u2013peran 7 hari dari AuditPanelService)."
   },
   "app/Http/Controllers/Api/ImpersonationLogController.php": {
     "summary": "API GET /api/ganti-akun/log untuk peran aktif Administrator: log impersonation_sessions dengan saringan admin, akun, cari, status, cara berakhir, rentang tanggal; data admin, akun dipakai, alasan, mulai/selesai, durasi, IP."
@@ -2347,7 +2347,7 @@
     "summary": "Model log sesi ganti akun (impersonation_sessions): admin dan akun dipakai dengan salinan nama, peran, alasan, IP, perangkat, mulai/berakhir dan cara berakhir (END_REASONS selesai/keluar/kedaluwarsa); tidak bisa dihapus dan hanya bisa ditutup sekali; scopeOpen, scopeFiltered untuk API dan tabel."
   },
   "app/Services/AuditPanelService.php": {
-    "summary": "Service bagian Perpindahan peran & ganti akun di tab Log & Audit: summary() (perpindahan hari ini, sesi berjalan, sesi 7 hari, aksi lewat ganti akun), latest() catatan role/impersonation terbaru, recap() agregasi per pengguna–peran aktif 7 hari, options() pilihan saringan; dari activity_log dan impersonation_sessions."
+    "summary": "Service bagian Perpindahan peran & ganti akun di tab Log & Audit: summary() (perpindahan hari ini, sesi berjalan, sesi 7 hari, aksi lewat ganti akun), latest() catatan role/impersonation terbaru, recap() agregasi per pengguna\u2013peran aktif 7 hari, options() pilihan saringan; dari activity_log dan impersonation_sessions."
   },
   "app/Support/ActiveRoles.php": {
     "summary": "Inti konteks peran aktif: for() peran staf yang dipegang (urut STAFF_ROLES) dengan area kerja, current()/resolve()/inContext() menentukan peran aktif dari sesi, atribut request, atau pilihan terakhir; switchTo() memvalidasi kepemilikan dan mencatat activity_log role; portalRolesFor() memakai daftar putih peran pemohon (Applicants) untuk petugas yang juga pemohon; startSession() saat login; hasRole()/can()/actsAsLeader()/actingRoleOf() untuk otorisasi berbasis peran aktif."
@@ -2431,7 +2431,7 @@
     "summary": "Feature test activity_log immutable: model dan trigger DB menolak ubah, hapus, dan TRUNCATE; entri baru tetap tercatat; sesi pemeliharaan dapat membuka kunci."
   },
   "tests/Feature/ActivityTrailApiTest.php": {
-    "summary": "Feature test /api/rekam-jejak dan /rekap: urutan terbaru, saringan pengguna/peran/jenis/aksi/tanggal, detail status tiket, rekap per pengguna–peran 7 hari, hanya peran aktif Administrator."
+    "summary": "Feature test /api/rekam-jejak dan /rekap: urutan terbaru, saringan pengguna/peran/jenis/aksi/tanggal, detail status tiket, rekap per pengguna\u2013peran 7 hari, hanya peran aktif Administrator."
   },
   "tests/Feature/ActivityTrailPageTest.php": {
     "summary": "Feature test halaman Rekam Jejak Aktivitas: linimasa per hari dari activity_log, tab jenis, saringan pengguna/peran/tanggal/aksi, rekap dan hitungan, detail catatan, hanya administrator di peran admin (juga Monitoring dan API)."
@@ -2440,7 +2440,7 @@
     "summary": "Feature test portal pemohon: unggah berkas susulan pada permohonan berjalan menambah berkas dan riwayat, tidak tersedia setelah permohonan ditutup."
   },
   "tests/Feature/AuditPanelLogTabTest.php": {
-    "summary": "Feature test bagian Perpindahan peran & ganti akun di tab Log & Audit: ringkasan dari rekam jejak, catatan terbaru, rekap per pengguna–peran, saringan dan pencarian, tersembunyi lewat akun pinjaman (ganti akun), tidak dimuat di tab lain."
+    "summary": "Feature test bagian Perpindahan peran & ganti akun di tab Log & Audit: ringkasan dari rekam jejak, catatan terbaru, rekap per pengguna\u2013peran, saringan dan pencarian, tersembunyi lewat akun pinjaman (ganti akun), tidak dimuat di tab lain."
   },
   "tests/Feature/ChooseActiveRoleTest.php": {
     "summary": "Feature test halaman Semua peran dan menu header: kartu peran sendiri, memilih menyimpan dan kembali ke halaman tujuan, penolakan peran lain, penanda di header /cp, menu ganti cepat yang tidak pernah kembali ke luar panel, petugas yang juga guru melihat peran guru dan bisa membuka portal serta kembali ke panel petugas, toast dan aksi Kembali ke, tidak tampil di portal."
@@ -2482,7 +2482,7 @@
     "summary": "Feature test POST /ganti-akun/{user}: admin masuk ke akun lain dan tercatat tanpa mengubah terakhir masuk target, peran aktif admin dilepas, penolakan (akun sendiri, nonaktif, tanpa alasan, bukan peran admin, akun administrator lain), tidak ada sesi bersarang."
   },
   "tests/Feature/MonitoringIntegrationsPanelTest.php": {
-    "summary": "Feature test status integrasi notifikasi: saklar kanal Email/WhatsApp dan pengiriman 24 jam di tab Aplikasi Monitoring, serta API /api/monitoring/integrasi khusus admin."
+    "summary": "Feature test status integrasi notifikasi: saklar kanal Email/WhatsApp per jalur pelayanan dan pengaduan serta pengiriman 24 jam per jalur di tab Aplikasi Monitoring, serta API /api/monitoring/integrasi (field kanal dan jalur) khusus admin."
   },
   "tests/Feature/OutsideActiveRoleMessageTest.php": {
     "summary": "Feature test pesan penolakan aksi di luar wewenang peran aktif: pimpinan diberi tahu peran yang perlu diaktifkan, staf tanpa peran pimpinan mendapat penolakan biasa, panel menampilkan toast dengan tombol ganti."
@@ -2590,30 +2590,30 @@
     "summary": "Feature test UserImport: baris valid menjadi akun dan baris tidak valid dilaporkan, kata sandi acak per akun dan nomor WhatsApp, template unduhan memuat daftar role dan bisa diimport ulang, kolom template wajib, serta batas jumlah baris."
   },
   "app/Services/ComplaintNotifier.php": {
-    "summary": "Layanan notifikasi pengaduan, saran & WBS (Modul 10) di atas NotificationDispatcher::sendTo: pelapor menerima complaint_received dan complaint_updated via email/WhatsApp (reporter_email/reporter_phone), petugas penanganan (RoleAccess::COMPLAINT_HANDLERS: admin, kepala_sekolah, kepala_tu yang aktif) menerima complaint_new dengan tautan ke ComplaintResource. Identitas pelapor tidak pernah dikirim ke petugas, perihal laporan rahasia/WBS disembunyikan, dan pelapor WBS anonim tidak dihubungi.",
+    "summary": "Layanan notifikasi pengaduan, saran & WBS (Modul 10) di atas NotificationDispatcher::sendTo: pelapor menerima complaint_received dan complaint_updated via email/WhatsApp (reporter_email/reporter_phone), petugas penanganan (RoleAccess::COMPLAINT_HANDLERS: admin, kepala_sekolah, kepala_tu yang aktif) menerima complaint_new dengan tautan ke ComplaintResource. Semua pesannya lewat gateway jalur pengaduan sendiri, tidak lewat jalur pelayanan. Identitas pelapor tidak pernah dikirim ke petugas, perihal laporan rahasia/WBS disembunyikan, dan pelapor WBS anonim tidak dihubungi.",
     "sections": [
       {
         "symbol": "ComplaintNotifier::received",
-        "startLine": 24,
-        "endLine": 34,
+        "startLine": 25,
+        "endLine": 35,
         "summary": "Laporan baru dari halaman publik: kirim complaint_received ke pelapor dan complaint_new ke setiap petugas penanganan, dicatat dengan complaint_id di notification_deliveries."
       },
       {
         "symbol": "ComplaintNotifier::updated",
-        "startLine": 36,
-        "endLine": 40,
+        "startLine": 37,
+        "endLine": 41,
         "summary": "Tahap atau tanggapan berubah: kirim complaint_updated ke pelapor dengan status terbaru dan tanggapan petugas pada placeholder catatan."
       },
       {
         "symbol": "ComplaintNotifier::handlers",
-        "startLine": 42,
-        "endLine": 46,
+        "startLine": 43,
+        "endLine": 47,
         "summary": "Daftar penerima petugas: pengguna aktif berperan admin, kepala madrasah, atau kepala TU."
       },
       {
         "symbol": "ComplaintNotifier::values",
-        "startLine": 64,
-        "endLine": 75,
+        "startLine": 65,
+        "endLine": 76,
         "summary": "Nilai placeholder laporan: nama, nomor_laporan, jenis_laporan, judul (dirahasiakan untuk WBS/rahasia), status, catatan, instansi."
       }
     ]
@@ -2622,7 +2622,7 @@
     "summary": "Migrasi notifikasi pengaduan: menambah kolom complaint_id (FK nullable ke complaints) di notification_deliveries dan menjalankan NotificationTemplateSeeder agar template email/WhatsApp complaint_received, complaint_new, complaint_updated tersedia di instalasi lama."
   },
   "tests/Feature/ComplaintNotificationTest.php": {
-    "summary": "Feature test notifikasi pengaduan: laporan baru terkirim ke pelapor dan hanya ke admin/kepala madrasah/kepala TU (bukan pengawas/back office) tanpa nama pelapor, tindak lanjut dan tanggapan dikirim ke pelapor, perihal WBS tidak bocor, saran tanpa kontak hanya ke petugas, serta bentuk request gateway BalesOtomatis.id (api_key, number_id, phone_no tanpa kode negara) dan penolakan kode 403."
+    "summary": "Feature test notifikasi pengaduan: laporan baru terkirim ke pelapor dan hanya ke admin/kepala madrasah/kepala TU tanpa nama pelapor, hanya lewat gateway WhatsApp dan mailer jalur pengaduan; tanpa jalur pengaduan aktif tidak ada email/WhatsApp walau jalur pelayanan aktif; tindak lanjut ke pelapor, perihal WBS tidak bocor, saran tanpa kontak hanya ke petugas, serta bentuk request gateway BalesOtomatis.id dan penolakan kode 403."
   },
   "app/Filament/Pages/Guide.php": {
     "summary": "Halaman Panduan Menu panel petugas (/cp/panduan, tidak di sidebar, khusus staf): daftar menu yang tersedia untuk peran aktif beserta ringkasan dan langkah pemakaiannya dari PanelGuide::sections; dibuka lewat tombol Panduan di header."
@@ -2761,7 +2761,7 @@
     "summary": "Migrasi idempoten yang memastikan ketujuh peran pemohon resmi ada beserta izin portalnya (RolePermissionSeeder::permissionsFor) setelah RoleAccess::sync, juga di basis data yang tidak menjalankan seeder; down tidak menghapus peran karena bisa sedang dipegang akun."
   },
   "resources/views/filament/pages/front-desk/applicant-summary.blade.php": {
-    "summary": "Partial Blade panel Ringkasan pemohon di Registrasi Layanan Loket: daftar keterangan akun terpilih (tipe pengguna, terdaftar sejak, permohonan sebelumnya) hanya baca, catatan bahwa data tidak bisa diubah di loket, dan tautan Perbaiki di Pengguna › Pemohon bagi admin atau arahan ke administrator."
+    "summary": "Partial Blade panel Ringkasan pemohon di Registrasi Layanan Loket: daftar keterangan akun terpilih (tipe pengguna, terdaftar sejak, permohonan sebelumnya) hanya baca, catatan bahwa data tidak bisa diubah di loket, dan tautan Perbaiki di Pengguna \u203a Pemohon bagi admin atau arahan ke administrator."
   },
   "tests/Feature/ApplicantRulesTest.php": {
     "summary": "Feature test aturan pemohon resmi (Applicants): tujuh peran resmi dan selaras dengan tipe pengguna serta status civitas, peran staf/pimpinan bukan pemohon, penilaian akun (guru merangkap waka, akun lama tanpa peran), migrasi peran dengan izin portal, normalisasi dan pencarian WhatsApp, penautan lintas format, scope User::applicants, profil API dan filter API pengguna."
@@ -2771,5 +2771,8 @@
   },
   "tests/Feature/WalkInApplicantStatusTest.php": {
     "summary": "Feature test halaman Registrasi Layanan Loket: pilihan status pemohon, form belum terdaftar dengan hasil pencarian akun, mode sudah terdaftar dengan filter tipe, pemilih akun, isian terkunci, ringkasan dan tautan perbaikan, layanan dipertahankan atau dilepas saat tipe berubah, pesan validasi, konfirmasi nomor permohonan, pesan gagal tanpa nomor, penautan akun lama, penolakan akun tak terpakai, dan pencegahan akun ganda."
+  },
+  "database/migrations/2026_10_18_100000_add_line_to_notification_settings_table.php": {
+    "summary": "Migrasi jalur sambungan notifikasi: menambah kolom line (bawaan 'pelayanan') pada notification_settings dan mengganti unik channel menjadi unik line+channel, sehingga jalur pengaduan, saran & WBS punya gateway Email/WhatsApp sendiri; down() menghapus baris jalur lain."
   }
 }
