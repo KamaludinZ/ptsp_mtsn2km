@@ -126,27 +126,33 @@ class SystemMonitorService
     }
 
     /**
-     * Integrasi notifikasi: each channel's switch (Integrasi Notifikasi page)
-     * and how its deliveries went in the last 24 hours.
+     * Integrasi notifikasi: each channel's switch per line (Integrasi
+     * Notifikasi page) and how its deliveries went in the last 24 hours. Keyed
+     * by channel for the pelayanan line, "{line}_{channel}" for the others.
      *
-     * @return array<string, array{label: string, enabled: bool, sent: int, failed: int, last_failure: ?array{at: \Illuminate\Support\Carbon, error: ?string}}>
+     * @return array<string, array{label: string, channel: string, line: string, enabled: bool, sent: int, failed: int, last_failure: ?array{at: \Illuminate\Support\Carbon, error: ?string}}>
      */
     public function integrations(): array
     {
         $since = now()->subDay();
 
-        return collect(['email' => 'Email', 'whatsapp' => 'WhatsApp'])->map(function (string $label, string $channel) use ($since) {
+        return collect(\App\Models\NotificationSetting::LINES)->flatMap(fn (string $lineLabel, string $line) => collect(\App\Models\NotificationSetting::CHANNELS)
+            ->mapWithKeys(fn (string $label, string $channel) => [($line === 'pelayanan' ? $channel : "{$line}_{$channel}") => [$channel, $line, "{$label} · {$lineLabel}"]])
+        )->map(function (array $entry) use ($since) {
+            [$channel, $line, $label] = $entry;
             try {
-                $enabled = (bool) \App\Models\NotificationSetting::where('channel', $channel)->value('is_enabled');
-                $counts = \App\Models\NotificationDelivery::where('channel', $channel)->where('created_at', '>=', $since)
+                $enabled = (bool) \App\Models\NotificationSetting::where('line', $line)->where('channel', $channel)->value('is_enabled');
+                $counts = \App\Models\NotificationDelivery::onLine($line)->where('channel', $channel)->where('created_at', '>=', $since)
                     ->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
-                $failure = \App\Models\NotificationDelivery::where('channel', $channel)->where('status', 'failed')->latest()->first(['created_at', 'error']);
+                $failure = \App\Models\NotificationDelivery::onLine($line)->where('channel', $channel)->where('status', 'failed')->latest()->first(['created_at', 'error']);
             } catch (Throwable) {
-                return ['label' => $label, 'enabled' => false, 'sent' => 0, 'failed' => 0, 'last_failure' => null];
+                return ['label' => $label, 'channel' => $channel, 'line' => $line, 'enabled' => false, 'sent' => 0, 'failed' => 0, 'last_failure' => null];
             }
 
             return [
                 'label' => $label,
+                'channel' => $channel,
+                'line' => $line,
                 'enabled' => $enabled,
                 'sent' => (int) ($counts['sent'] ?? 0),
                 'failed' => (int) ($counts['failed'] ?? 0),

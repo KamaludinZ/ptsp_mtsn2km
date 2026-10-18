@@ -96,7 +96,8 @@ Variabel opsional:
 | `APP_VERSION` | commit sumber | Versi yang tampil di Monitoring Sistem. Coolify mengisi `SOURCE_COMMIT` otomatis bila *Include Source Commit in Build* aktif. |
 
 Email dan WhatsApp sebaiknya diatur di panel (**Manajemen Sistem → Integrasi Notifikasi**, lengkap
-dengan pilihan gateway dan **Uji kirim**). Variabel `MAIL_*`/`WHATSAPP_*` hanya cadangan.
+dengan pilihan gateway dan **Uji kirim**), terpisah untuk jalur pelayanan dan jalur pengaduan, saran & WBS.
+Variabel `MAIL_*`/`WHATSAPP_*` hanya cadangan jalur pelayanan.
 
 ## 4. Deploy
 

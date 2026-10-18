@@ -42,19 +42,21 @@ class NotificationTemplateTest extends TestCase
 
         Livewire::test(ListNotificationTemplates::class)
             ->mountAction('toggles')
-            ->assertActionDataSet(['whatsapp.is_enabled' => true])
+            ->assertActionDataSet(['whatsapp.lines.pelayanan' => true, 'whatsapp.lines.pengaduan' => false])
             // setActionData merges lists by index, so clear the pre-filled triggers first.
             ->setActionData(['email' => ['events' => null]])
             ->setActionData([
-                'email' => ['is_enabled' => true, 'events' => ['ticket_created', 'ticket_completed']],
-                'whatsapp' => ['is_enabled' => false],
+                'email' => ['lines' => ['pelayanan' => true, 'pengaduan' => true], 'events' => ['ticket_created', 'ticket_completed']],
+                'whatsapp' => ['lines' => ['pelayanan' => false, 'pengaduan' => false]],
             ])
             ->callMountedAction()
             ->assertHasNoActionErrors()
             ->assertNotified('Kanal & pemicu notifikasi disimpan.');
 
         $this->assertTrue(\App\Models\NotificationSetting::for('email')->is_enabled);
+        $this->assertTrue(\App\Models\NotificationSetting::for('email', 'pengaduan')->is_enabled);
         $this->assertFalse(\App\Models\NotificationSetting::for('whatsapp')->is_enabled);
+        $this->assertFalse(\App\Models\NotificationSetting::for('whatsapp', 'pengaduan')->is_enabled);
         $this->assertEqualsCanonicalizing(['ticket_created', 'ticket_completed'], NotificationTemplate::where('channel', 'email')->where('is_active', true)->pluck('key')->all());
         // The switched-off channel keeps its triggers for when it is switched on again.
         $this->assertSame(count(NotificationTemplates::EVENTS), NotificationTemplate::where('channel', 'whatsapp')->where('is_active', true)->count());

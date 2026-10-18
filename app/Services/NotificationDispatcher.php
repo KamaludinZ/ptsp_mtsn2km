@@ -10,6 +10,7 @@ use App\Models\NotificationDelivery;
 use App\Models\NotificationTemplate;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Support\IntegrationRuntime;
 use App\Support\NotificationTemplates;
 use App\Support\TicketLabels;
 use Illuminate\Support\Facades\Log;
@@ -20,7 +21,9 @@ use Throwable;
  * Sends a notification by its templates: on each channel that is switched
  * on and whose template is active, the {placeholders} are filled from the
  * ticket (or complaint) and the message goes out. A failing gateway is logged and never
- * breaks the service flow that triggered it.
+ * breaks the service flow that triggered it. Pengaduan, saran & WBS go out on
+ * their own line's gateways, everything else on the pelayanan line's
+ * (NotificationTemplates::line()).
  */
 class NotificationDispatcher
 {
@@ -60,7 +63,7 @@ class NotificationDispatcher
         $channels = [];
 
         foreach (NotificationTemplate::where('key', $event)->where('is_active', true)->get() as $template) {
-            if (! NotificationSetting::for($template->channel)->is_enabled) {
+            if (! NotificationSetting::forEvent($template->channel, $event)->is_enabled) {
                 continue;
             }
 
@@ -104,10 +107,11 @@ class NotificationDispatcher
     public function deliver(NotificationDelivery $delivery): bool
     {
         $error = null;
+        $line = NotificationTemplates::line($delivery->event);
         try {
             $delivered = $delivery->channel === 'email'
-                ? $this->email($delivery->recipient, (string) $delivery->subject, $delivery->body, $delivery->event)
-                : (bool) app(WhatsAppService::class)->sendMessage($delivery->recipient, $delivery->body);
+                ? $this->email($delivery->recipient, (string) $delivery->subject, $delivery->body, $delivery->event, $line)
+                : (bool) app(WhatsAppService::class, ['line' => $line])->sendMessage($delivery->recipient, $delivery->body);
             $error = $delivered ? null : 'Layanan WhatsApp menolak pesan.';
         } catch (Throwable $e) {
             Log::warning("Notification {$delivery->event} via {$delivery->channel} failed: " . $e->getMessage(), ['ticket' => $delivery->ticket_id, 'complaint' => $delivery->complaint_id]);
@@ -140,9 +144,9 @@ class NotificationDispatcher
         ], $extra);
     }
 
-    private function email(string $to, string $subject, string $body, string $event): bool
+    private function email(string $to, string $subject, string $body, string $event, string $line): bool
     {
-        Mail::to($to)->send(new TemplateNotificationMail($subject, $body, $event));
+        Mail::mailer(IntegrationRuntime::mailer($line))->to($to)->send(new TemplateNotificationMail($subject, $body, $event));
 
         return true;
     }

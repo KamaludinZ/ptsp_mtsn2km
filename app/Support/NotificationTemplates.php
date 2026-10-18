@@ -21,6 +21,9 @@ class NotificationTemplates
         'complaint_updated' => 'Tindak lanjut pengaduan (ke pelapor)',
     ];
 
+    /** Pengaduan, saran & WBS: these go out on the pengaduan line's own gateways. */
+    public const COMPLAINT_EVENTS = ['complaint_received', 'complaint_new', 'complaint_updated'];
+
     public const PLACEHOLDERS = [
         'nama' => 'Nama penerima',
         'nomor_tiket' => 'Nomor tiket',
@@ -81,6 +84,12 @@ class NotificationTemplates
                 'body' => "Yth. {nama},\nStatus {jenis_laporan} {nomor_laporan} kini: {status}.\n{catatan}\nLacak di {tautan}.\n\n{instansi}",
             ],
         ];
+    }
+
+    /** The line (NotificationSetting::LINES) whose gateways send $event. */
+    public static function line(string $event): string
+    {
+        return in_array($event, self::COMPLAINT_EVENTS, true) ? 'pengaduan' : 'pelayanan';
     }
 
     /** Replace {placeholders}; unknown ones are left as typed. */

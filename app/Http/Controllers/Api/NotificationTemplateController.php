@@ -98,10 +98,11 @@ class NotificationTemplateController extends Controller
             'notifikasi' => $template->key,
             'notifikasi_label' => NotificationTemplates::EVENTS[$template->key] ?? $template->key,
             'kanal' => $template->channel,
+            'jalur' => NotificationTemplates::line($template->key),
             'subjek' => $template->subject,
             'isi' => $template->body,
             'aktif' => $template->is_active,
-            'kanal_aktif' => NotificationSetting::for($template->channel)->is_enabled,
+            'kanal_aktif' => NotificationSetting::forEvent($template->channel, $template->key)->is_enabled,
             'diperbarui' => $template->updated_at?->toIso8601String(),
         ];
     }

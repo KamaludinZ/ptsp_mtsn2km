@@ -20,7 +20,8 @@ use Tests\TestCase;
 /**
  * Notifikasi pengaduan, saran & WBS: the reporter and the complaint handlers
  * (admin, kepala madrasah, kepala TU only) hear of a report by e-mail and
- * WhatsApp; staff messages never leak a secret report's subject.
+ * WhatsApp through the pengaduan line's own gateways; staff messages never
+ * leak a secret report's subject.
  */
 class ComplaintNotificationTest extends TestCase
 {
@@ -35,7 +36,7 @@ class ComplaintNotificationTest extends TestCase
 
         Mail::fake();
         Http::swap(new HttpFactory());
-        Http::fake(['wa.test/*' => Http::response(['status' => true])]);
+        Http::fake(['wa.test/*' => Http::response(['status' => true]), 'wa-aduan.test/*' => Http::response(['status' => true])]);
         $this->seed(NotificationTemplateSeeder::class);
 
         foreach (['admin', 'kepala_sekolah', 'kepala_tu', 'supervisor', 'back_office'] as $i => $role) {
@@ -46,8 +47,11 @@ class ComplaintNotificationTest extends TestCase
             ]))->assignRole(Role::findOrCreate($role, 'web'));
         }
 
+        // Jalur pelayanan and jalur pengaduan each have their own gateways.
         NotificationSetting::store('email', true, ['host' => 'smtp.test', 'port' => 25, 'from_address' => 'ptsp@test']);
         NotificationSetting::store('whatsapp', true, ['api_url' => 'https://wa.test/send', 'api_token' => 't', 'sender_id' => '628000']);
+        NotificationSetting::store('email', true, ['host' => 'smtp-aduan.test', 'port' => 25, 'from_address' => 'aduan@test', 'from_name' => 'Pengaduan'], line: 'pengaduan');
+        NotificationSetting::store('whatsapp', true, ['api_url' => 'https://wa-aduan.test/send', 'api_token' => 'ta', 'sender_id' => '628999'], line: 'pengaduan');
     }
 
     private function complaint(): Complaint
@@ -83,6 +87,25 @@ class ComplaintNotificationTest extends TestCase
         }
 
         $this->assertSame(8, NotificationDelivery::where('complaint_id', $complaint->id)->where('status', 'sent')->count());
+
+        // Only the pengaduan line's gateways carried them.
+        Http::assertSent(fn ($request) => $request->url() === 'https://wa-aduan.test/send' && $request->hasHeader('Authorization', 'Bearer ta') && $request['sender'] === '628999');
+        Http::assertNotSent(fn ($request) => str_starts_with($request->url(), 'https://wa.test/'));
+        Mail::assertNotSent(TemplateNotificationMail::class, fn ($mail) => $mail->mailer !== 'pengaduan');
+        $this->assertSame('smtp-aduan.test', config('mail.mailers.pengaduan.host'));
+        $this->assertSame(['address' => 'aduan@test', 'name' => 'Pengaduan'], config('mail.mailers.pengaduan.from'));
+    }
+
+    public function test_complaints_never_fall_back_to_the_service_line(): void
+    {
+        NotificationSetting::store('email', false, [], line: 'pengaduan');
+        NotificationSetting::store('whatsapp', false, [], line: 'pengaduan');
+
+        $complaint = $this->complaint();
+
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+        $this->assertSame(0, NotificationDelivery::where('complaint_id', $complaint->id)->whereIn('channel', ['email', 'whatsapp'])->count());
     }
 
     public function test_the_reporter_hears_of_the_follow_up_and_the_reply(): void

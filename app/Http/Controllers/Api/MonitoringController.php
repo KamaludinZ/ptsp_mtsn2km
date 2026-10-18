@@ -109,8 +109,9 @@ class MonitoringController extends Controller
     {
         $this->authorizeAdmin();
 
-        return response()->json(['data' => collect($this->monitor->integrations())->map(fn (array $channel, string $key) => [
-            'kanal' => $key,
+        return response()->json(['data' => collect($this->monitor->integrations())->map(fn (array $channel) => [
+            'kanal' => $channel['channel'],
+            'jalur' => $channel['line'],
             'label' => $channel['label'],
             'aktif' => $channel['enabled'],
             'terkirim_24_jam' => $channel['sent'],

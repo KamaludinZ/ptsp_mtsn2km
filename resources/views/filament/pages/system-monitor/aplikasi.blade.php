@@ -37,7 +37,7 @@
 
 {{-- Integrasi notifikasi: saklar kanal dan hasil pengiriman 24 jam terakhir. --}}
 <x-filament::section heading="Integrasi notifikasi" icon="heroicon-o-bell-alert" data-integrations
-    description="Kanal Email dan WhatsApp beserta hasil pengiriman 24 jam terakhir.">
+    description="Kanal Email dan WhatsApp per jalur (pelayanan dan pengaduan) beserta hasil pengiriman 24 jam terakhir.">
     <x-slot name="headerEnd">
         <x-filament::link :href="\App\Filament\Pages\System\NotificationIntegrations::getUrl()" size="sm" icon="heroicon-m-cog-6-tooth">Atur integrasi</x-filament::link>
     </x-slot>

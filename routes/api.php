@@ -172,7 +172,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('riwayat-notifikasi'
     Route::post('/{delivery}/kirim-ulang', [\App\Http\Controllers\Api\NotificationDeliveryController::class, 'resend'])->whereNumber('delivery')->name('kirim-ulang');
 });
 
-// Pengaturan integrasi Email & WhatsApp (admin)
+// Pengaturan integrasi Email & WhatsApp (admin), per jalur: ?jalur=pelayanan (bawaan) atau ?jalur=pengaduan
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('integrasi')->name('api.integrasi.')->group(function () {
     Route::get('/{channel}', [\App\Http\Controllers\Api\IntegrationController::class, 'show'])->whereIn('channel', ['email', 'whatsapp'])->name('show');
     Route::put('/{channel}', [\App\Http\Controllers\Api\IntegrationController::class, 'update'])->whereIn('channel', ['email', 'whatsapp'])->name('update');

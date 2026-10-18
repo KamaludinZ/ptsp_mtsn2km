@@ -13,7 +13,8 @@ use Illuminate\Support\Collection;
  * report arrived and how it is followed up; the complaint handlers (admin,
  * kepala madrasah, kepala TU) hear of every new report. Messages to staff
  * never carry the reporter's identity, and a secret report's subject is
- * withheld from them too: WhatsApp and e-mail leave the application.
+ * withheld from them too: WhatsApp and e-mail leave the application. These
+ * events go out on the pengaduan line's own gateways, never the pelayanan's.
  */
 class ComplaintNotifier
 {

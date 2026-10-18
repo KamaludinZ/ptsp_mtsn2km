@@ -124,7 +124,7 @@ class NotificationTemplateResource extends Resource
                 Tables\Columns\TextColumn::make('channel')->label('Kanal')->badge()
                     ->formatStateUsing(fn (string $state) => NotificationSetting::CHANNELS[$state] ?? $state)
                     ->color(fn (string $state) => $state === 'whatsapp' ? 'success' : 'info')
-                    ->description(fn (NotificationTemplate $record) => NotificationSetting::for($record->channel)->is_enabled ? null : 'Kanal nonaktif'),
+                    ->description(fn (NotificationTemplate $record) => NotificationSetting::forEvent($record->channel, $record->key)->is_enabled ? null : 'Kanal nonaktif (jalur ' . NotificationTemplates::line($record->key) . ')'),
                 Tables\Columns\TextColumn::make('body')->label('Isi pesan')->searchable(['body', 'subject'])->limit(90)->wrap()->color('gray'),
                 Tables\Columns\ToggleColumn::make('is_active')->label('Kirim')
                     ->updateStateUsing(function (NotificationTemplate $record, bool $state) {

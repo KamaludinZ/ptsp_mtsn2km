@@ -67,8 +67,9 @@ Salin `.env.production.example` menjadi `.env` di folder aplikasi, lalu isi mini
 | `TRUSTED_PROXIES` | Kosongkan di hosting biasa. Di belakang Cloudflare/reverse proxy, isi rentang IP (CIDR) proxy tersebut, dipisah koma, supaya IP pengunjung terbaca benar. `*` hanya membaca HTTPS/host dari proxy, tidak IP pengunjung (header IP bisa dipalsukan siapa saja). |
 | `QUEUE_CONNECTION` | `sync` (bawaan): email & WhatsApp dikirim langsung. Bila hosting mengizinkan proses latar, pakai `database` dan jalankan `php artisan queue:work` terus-menerus supaya pengguna tidak menunggu gateway yang lambat. |
 
-Email dan WhatsApp **diatur di panel** (Manajemen Sistem → Integrasi Notifikasi). Nilai `MAIL_*`
-dan `WHATSAPP_*` di `.env` hanya dipakai sampai pengaturan di panel disimpan.
+Email dan WhatsApp **diatur di panel** (Manajemen Sistem → Integrasi Notifikasi), terpisah per jalur:
+jalur pelayanan dan jalur pengaduan, saran & WBS. Nilai `MAIL_*` dan `WHATSAPP_*` di `.env` hanya
+cadangan jalur pelayanan sampai pengaturannya disimpan; jalur pengaduan wajib diatur di panel.
 
 Lindungi berkas `.env`, misalnya dengan `chmod 600 .env`, dan jangan pernah menaruhnya di dalam `public_html`.
 

@@ -18,15 +18,19 @@ class WhatsAppService
     /** Whether the admin switched WhatsApp off on Integrasi Notifikasi. */
     protected bool $disabled = false;
 
-    public function __construct()
+    /** @param  string  $line  jalur (NotificationSetting::LINES) whose gateway sends */
+    public function __construct(string $line = 'pelayanan')
     {
         // Settings saved on Integrasi Notifikasi win over .env, read at send time.
-        $saved = NotificationSetting::where('channel', 'whatsapp')->first();
-        $this->disabled = $saved !== null && ! $saved->is_enabled;
+        // Only the pelayanan line falls back to .env: the pengaduan line has its
+        // own gateway and stays off until it is saved and switched on.
+        $saved = NotificationSetting::where('line', $line)->where('channel', 'whatsapp')->first();
+        $env = fn (string $key) => $line === 'pelayanan' ? config($key) : null;
+        $this->disabled = $line === 'pelayanan' ? $saved !== null && ! $saved->is_enabled : ! $saved?->is_enabled;
 
-        $this->apiUrl = $saved?->value('api_url') ?: config('whatsapp.api_url');
-        $this->apiToken = $saved?->value('api_token') ?: config('whatsapp.api_token');
-        $this->senderId = $saved?->value('sender_id') ?: config('whatsapp.sender_id');
+        $this->apiUrl = $saved?->value('api_url') ?: $env('whatsapp.api_url');
+        $this->apiToken = $saved?->value('api_token') ?: $env('whatsapp.api_token');
+        $this->senderId = $saved?->value('sender_id') ?: $env('whatsapp.sender_id');
         $this->provider = $saved?->value('provider') ?: 'custom';
     }
 

@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\NotificationSetting;
+use App\Services\NotificationGateway;
 use Throwable;
 
 /**
@@ -15,7 +16,7 @@ class IntegrationRuntime
     public static function apply(): void
     {
         try {
-            $email = NotificationSetting::where('channel', 'email')->first();
+            $email = NotificationSetting::where('line', 'pelayanan')->where('channel', 'email')->first();
         } catch (Throwable) {
             return; // no database or table yet (install, fresh deploy)
         }
@@ -38,5 +39,22 @@ class IntegrationRuntime
 
         // A mailer resolved earlier still holds the old transport.
         app('mail.manager')->purge('smtp');
+    }
+
+    /**
+     * The mailer (for Mail::mailer()) that sends a line's email. The pelayanan
+     * line is the app's default mailer set up by apply(); any other line gets
+     * a mailer of its own, built from its saved settings at send time.
+     */
+    public static function mailer(string $line): ?string
+    {
+        if ($line === 'pelayanan') {
+            return null;
+        }
+
+        config(["mail.mailers.{$line}" => NotificationGateway::smtpConfig($line)]);
+        app('mail.manager')->purge($line);
+
+        return $line;
     }
 }

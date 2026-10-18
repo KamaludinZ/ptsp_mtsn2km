@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\NotificationTemplates;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -31,6 +33,14 @@ class NotificationDelivery extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** Messages that went out on $line (NotificationSetting::LINES). */
+    public function scopeOnLine(Builder $query, string $line): Builder
+    {
+        return $line === 'pengaduan'
+            ? $query->whereIn('event', NotificationTemplates::COMPLAINT_EVENTS)
+            : $query->whereNotIn('event', NotificationTemplates::COMPLAINT_EVENTS);
     }
 
     public function statusColor(): string

@@ -17,9 +17,9 @@ class MonitoringIntegrationsPanelTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function delivery(string $channel, string $status, ?string $error = null, int $hoursAgo = 1): void
+    private function delivery(string $channel, string $status, ?string $error = null, int $hoursAgo = 1, string $event = 'ticket_created'): void
     {
-        $delivery = NotificationDelivery::create(['event' => 'ticket_created', 'channel' => $channel, 'recipient' => 'x', 'body' => 'Halo', 'status' => $status, 'error' => $error, 'attempts' => 1]);
+        $delivery = NotificationDelivery::create(['event' => $event, 'channel' => $channel, 'recipient' => 'x', 'body' => 'Halo', 'status' => $status, 'error' => $error, 'attempts' => 1]);
         $delivery->forceFill(['created_at' => now()->subHours($hoursAgo)])->saveQuietly();
     }
 
@@ -30,12 +30,20 @@ class MonitoringIntegrationsPanelTest extends TestCase
         $this->delivery('whatsapp', 'failed', 'HTTP 500 dari gateway');
         $this->delivery('whatsapp', 'sent', hoursAgo: 30); // older than a day
         $this->delivery('email', 'sent');
+        // Pengaduan messages count on their own line.
+        NotificationSetting::store('email', true, [], line: 'pengaduan');
+        $this->delivery('email', 'failed', 'SMTP aduan menolak', event: 'complaint_new');
 
         $integrations = app(SystemMonitorService::class)->integrations();
-        $this->assertSame(['label' => 'WhatsApp', 'enabled' => true, 'sent' => 1, 'failed' => 1], array_intersect_key($integrations['whatsapp'], array_flip(['label', 'enabled', 'sent', 'failed'])));
+        $this->assertSame(['email', 'whatsapp', 'pengaduan_email', 'pengaduan_whatsapp'], array_keys($integrations));
+        $this->assertSame(['label' => 'WhatsApp · Pelayanan', 'enabled' => true, 'sent' => 1, 'failed' => 1], array_intersect_key($integrations['whatsapp'], array_flip(['label', 'enabled', 'sent', 'failed'])));
         $this->assertSame('HTTP 500 dari gateway', $integrations['whatsapp']['last_failure']['error']);
         $this->assertFalse($integrations['email']['enabled']);
         $this->assertSame(1, $integrations['email']['sent']);
+        $this->assertSame(0, $integrations['email']['failed']);
+        $this->assertSame(['enabled' => true, 'sent' => 0, 'failed' => 1], array_intersect_key($integrations['pengaduan_email'], array_flip(['enabled', 'sent', 'failed'])));
+        $this->assertSame('SMTP aduan menolak', $integrations['pengaduan_email']['last_failure']['error']);
+        $this->assertFalse($integrations['pengaduan_whatsapp']['enabled']);
 
         $admin = User::factory()->create();
         $admin->assignRole(Role::findOrCreate('admin', 'web'));
@@ -61,8 +69,12 @@ class MonitoringIntegrationsPanelTest extends TestCase
             ->assertJsonPath('data.0.aktif', true)
             ->assertJsonPath('data.0.gagal_24_jam', 1)
             ->assertJsonPath('data.0.gagal_terakhir.galat', 'SMTP menolak')
+            ->assertJsonPath('data.0.jalur', 'pelayanan')
             ->assertJsonPath('data.1.kanal', 'whatsapp')
-            ->assertJsonPath('data.1.gagal_terakhir', null);
+            ->assertJsonPath('data.1.gagal_terakhir', null)
+            ->assertJsonPath('data.2.kanal', 'email')
+            ->assertJsonPath('data.2.jalur', 'pengaduan')
+            ->assertJsonPath('data.2.aktif', false);
 
         $officer = User::factory()->create();
         $officer->assignRole(Role::findOrCreate('front_desk', 'web'));

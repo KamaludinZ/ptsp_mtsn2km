@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Support\NotificationTemplates;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Integration settings of one notification channel. The gateway config
- * holds credentials and is encrypted at rest.
+ * Integration settings of one notification channel on one line (jalur). The
+ * gateway config holds credentials and is encrypted at rest.
  */
 class NotificationSetting extends Model
 {
@@ -15,22 +16,40 @@ class NotificationSetting extends Model
         'whatsapp' => 'WhatsApp',
     ];
 
+    /**
+     * Jalur sambungan: each line has its own Email and WhatsApp gateway while
+     * the templates stay shared. The line a message takes follows its event
+     * (NotificationTemplates::line()).
+     */
+    public const LINES = [
+        'pelayanan' => 'Pelayanan',
+        'pengaduan' => 'Pengaduan, Saran & WBS',
+    ];
+
     /** Config keys that are secrets: never sent back to the browser. */
     public const SECRETS = ['password', 'api_token'];
 
     /** The secret each channel holds. */
     public const CHANNEL_SECRETS = ['email' => ['password'], 'whatsapp' => ['api_token']];
 
-    protected $fillable = ['channel', 'is_enabled', 'config', 'updated_by'];
+    protected $fillable = ['line', 'channel', 'is_enabled', 'config', 'updated_by'];
+
+    protected $attributes = ['line' => 'pelayanan'];
 
     protected $casts = [
         'is_enabled' => 'boolean',
         'config' => 'encrypted:array',
     ];
 
-    public static function for(string $channel): self
+    public static function for(string $channel, string $line = 'pelayanan'): self
     {
-        return static::firstOrNew(['channel' => $channel], ['is_enabled' => false, 'config' => []]);
+        return static::firstOrNew(['line' => $line, 'channel' => $channel], ['is_enabled' => false, 'config' => []]);
+    }
+
+    /** The settings a message for $event goes out with on $channel. */
+    public static function forEvent(string $channel, string $event): self
+    {
+        return static::for($channel, NotificationTemplates::line($event));
     }
 
     public function value(string $key, mixed $default = null): mixed
@@ -47,9 +66,9 @@ class NotificationSetting extends Model
      * Save a channel's settings. A blank secret keeps the stored one, so a
      * form or API client never has to send credentials back.
      */
-    public static function store(string $channel, bool $enabled, array $values, ?int $userId = null): self
+    public static function store(string $channel, bool $enabled, array $values, ?int $userId = null, string $line = 'pelayanan'): self
     {
-        $setting = static::for($channel);
+        $setting = static::for($channel, $line);
         $values = collect($values)->except('is_enabled');
 
         $setting->fill([

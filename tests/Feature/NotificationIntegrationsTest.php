@@ -17,7 +17,7 @@ use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/** Pengaturan integrasi Email & WhatsApp (admin only). */
+/** Pengaturan integrasi Email & WhatsApp per jalur (admin only). */
 class NotificationIntegrationsTest extends TestCase
 {
     use RefreshDatabase;
@@ -39,8 +39,14 @@ class NotificationIntegrationsTest extends TestCase
     private function form(array $overrides = []): array
     {
         return array_replace_recursive([
-            'email' => ['is_enabled' => true, 'host' => 'smtp.example.test', 'port' => 587, 'encryption' => 'tls', 'username' => 'ptsp', 'password' => 'rahasia-smtp', 'from_address' => 'ptsp@example.test', 'from_name' => 'PTSP'],
-            'whatsapp' => ['is_enabled' => false, 'api_url' => 'https://wa.example.test/send', 'api_token' => 'token-wa', 'sender_id' => '628111'],
+            'pelayanan' => [
+                'email' => ['is_enabled' => true, 'host' => 'smtp.example.test', 'port' => 587, 'encryption' => 'tls', 'username' => 'ptsp', 'password' => 'rahasia-smtp', 'from_address' => 'ptsp@example.test', 'from_name' => 'PTSP'],
+                'whatsapp' => ['is_enabled' => false, 'api_url' => 'https://wa.example.test/send', 'api_token' => 'token-wa', 'sender_id' => '628111'],
+            ],
+            'pengaduan' => [
+                'email' => ['is_enabled' => false, 'encryption' => 'tls'],
+                'whatsapp' => ['is_enabled' => false],
+            ],
         ], $overrides);
     }
 
@@ -63,15 +69,16 @@ class NotificationIntegrationsTest extends TestCase
             ->call('submit')
             ->assertHasNoFormErrors()
             ->assertNotified('Pengaturan integrasi disimpan.')
-            ->assertFormSet(['email.password' => null]);
+            ->assertFormSet(['pelayanan.email.password' => null]);
 
         $email = NotificationSetting::for('email');
         $this->assertTrue($email->is_enabled);
         $this->assertSame('smtp.example.test', $email->value('host'));
         $this->assertSame('rahasia-smtp', $email->value('password'));
         $this->assertFalse(NotificationSetting::for('whatsapp')->is_enabled);
+        $this->assertFalse(NotificationSetting::for('email', 'pengaduan')->is_enabled);
 
-        $raw = DB::table('notification_settings')->where('channel', 'email')->value('config');
+        $raw = DB::table('notification_settings')->where('line', 'pelayanan')->where('channel', 'email')->value('config');
         $this->assertStringNotContainsString('rahasia-smtp', $raw);
         $this->assertStringNotContainsString('smtp.example.test', $raw);
     }
@@ -81,10 +88,10 @@ class NotificationIntegrationsTest extends TestCase
         $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
 
         Livewire::test(NotificationIntegrations::class)
-            ->fillForm($this->form(['whatsapp' => ['is_enabled' => true, 'sender_id' => null]]))
-            ->set('data.whatsapp.provider', 'fonnte')
-            ->assertFormSet(['whatsapp.api_url' => 'https://api.fonnte.com/send'])
-            ->assertFormFieldIsHidden('whatsapp.sender_id')
+            ->fillForm($this->form(['pelayanan' => ['whatsapp' => ['is_enabled' => true, 'sender_id' => null]]]))
+            ->set('data.pelayanan.whatsapp.provider', 'fonnte')
+            ->assertFormSet(['pelayanan.whatsapp.api_url' => 'https://api.fonnte.com/send'])
+            ->assertFormFieldIsHidden('pelayanan.whatsapp.sender_id')
             ->call('submit')
             ->assertHasNoFormErrors();
 
@@ -94,9 +101,9 @@ class NotificationIntegrationsTest extends TestCase
 
         // A custom gateway still needs the sender id.
         Livewire::test(NotificationIntegrations::class)
-            ->fillForm($this->form(['whatsapp' => ['is_enabled' => true, 'provider' => 'custom', 'sender_id' => null]]))
+            ->fillForm($this->form(['pelayanan' => ['whatsapp' => ['is_enabled' => true, 'provider' => 'custom', 'sender_id' => null]]]))
             ->call('submit')
-            ->assertHasFormErrors(['whatsapp.sender_id' => 'required']);
+            ->assertHasFormErrors(['pelayanan.whatsapp.sender_id' => 'required']);
     }
 
     public function test_blank_secret_keeps_the_saved_one(): void
@@ -106,7 +113,7 @@ class NotificationIntegrationsTest extends TestCase
 
         Livewire::test(NotificationIntegrations::class)
             ->assertDontSee('rahasia-smtp')
-            ->fillForm($this->form(['email' => ['password' => null, 'host' => 'smtp2.example.test'], 'whatsapp' => ['api_token' => '']]))
+            ->fillForm($this->form(['pelayanan' => ['email' => ['password' => null, 'host' => 'smtp2.example.test'], 'whatsapp' => ['api_token' => '']]]))
             ->call('submit')
             ->assertHasNoFormErrors();
 
@@ -120,9 +127,62 @@ class NotificationIntegrationsTest extends TestCase
         $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
 
         Livewire::test(NotificationIntegrations::class)
-            ->fillForm($this->form(['whatsapp' => ['is_enabled' => true, 'api_url' => null]]))
+            ->fillForm($this->form(['pelayanan' => ['whatsapp' => ['is_enabled' => true, 'api_url' => null]]]))
             ->call('submit')
-            ->assertHasFormErrors(['whatsapp.api_url' => 'required']);
+            ->assertHasFormErrors(['pelayanan.whatsapp.api_url' => 'required']);
+
+        Livewire::test(NotificationIntegrations::class)
+            ->fillForm($this->form(['pengaduan' => ['email' => ['is_enabled' => true]]]))
+            ->call('submit')
+            ->assertHasFormErrors(['pengaduan.email.host' => 'required', 'pengaduan.email.from_address' => 'required']);
+    }
+
+    public function test_the_complaint_line_has_its_own_gateways(): void
+    {
+        $this->actingAs($this->user('ptsp@mtsn2malang.sch.id'));
+        config(['whatsapp.api_url' => 'https://wa.env.test/send', 'mail.mailers.smtp.host' => 'smtp.env.test']);
+
+        // Nothing is borrowed from .env or the pelayanan line.
+        Livewire::test(NotificationIntegrations::class)
+            ->assertFormSet(['pelayanan.whatsapp.api_url' => 'https://wa.env.test/send', 'pelayanan.email.host' => 'smtp.env.test'])
+            ->assertFormSet(['pengaduan.whatsapp.api_url' => null, 'pengaduan.email.host' => null])
+            ->fillForm($this->form(['pengaduan' => [
+                'email' => ['is_enabled' => true, 'host' => 'smtp.aduan.test', 'port' => 465, 'encryption' => 'ssl', 'password' => 'rahasia-aduan', 'from_address' => 'aduan@example.test', 'from_name' => 'Pengaduan'],
+                'whatsapp' => ['is_enabled' => true, 'provider' => 'fonnte', 'api_url' => 'https://api.fonnte.com/send', 'api_token' => 'token-aduan'],
+            ]]))
+            ->call('submit')
+            ->assertHasNoFormErrors()
+            ->assertFormSet(['pengaduan.email.password' => null]);
+
+        $email = NotificationSetting::for('email', 'pengaduan');
+        $this->assertTrue($email->is_enabled);
+        $this->assertSame('smtp.aduan.test', $email->value('host'));
+        $this->assertSame('rahasia-aduan', $email->value('password'));
+        $this->assertSame('token-aduan', NotificationSetting::for('whatsapp', 'pengaduan')->value('api_token'));
+        $this->assertTrue(NotificationSetting::for('whatsapp', 'pengaduan')->is_enabled);
+
+        // The pelayanan line keeps its own settings.
+        $this->assertSame('smtp.example.test', NotificationSetting::for('email')->value('host'));
+        $this->assertSame('rahasia-smtp', NotificationSetting::for('email')->value('password'));
+        $this->assertFalse(NotificationSetting::for('whatsapp')->is_enabled);
+        $this->assertSame(4, NotificationSetting::count());
+    }
+
+    public function test_an_unsaved_complaint_line_sends_nothing(): void
+    {
+        Http::swap(new HttpFactory());
+        Http::fake();
+        config(['whatsapp.api_url' => 'https://wa.env.test/send', 'whatsapp.api_token' => 'env', 'whatsapp.sender_id' => '628']);
+
+        $this->assertFalse((new WhatsAppService('pengaduan'))->sendMessage('6281234567', 'Halo'));
+        $this->assertSame('URL API, token, dan ID pengirim WhatsApp belum lengkap.', app(NotificationGateway::class)->testWhatsApp('6281234567', 'pengaduan'));
+        $this->assertSame('Host SMTP dan alamat pengirim email belum lengkap.', app(NotificationGateway::class)->testEmail('admin@example.test', 'pengaduan'));
+        Http::assertNothingSent();
+
+        // Saved but switched off: still nothing.
+        NotificationSetting::store('whatsapp', false, ['api_url' => 'https://wa.aduan.test/send', 'api_token' => 't', 'sender_id' => '628'], line: 'pengaduan');
+        $this->assertFalse((new WhatsAppService('pengaduan'))->sendMessage('6281234567', 'Halo'));
+        Http::assertNothingSent();
     }
 
     public function test_test_email_reports_success_and_failure(): void
@@ -135,9 +195,15 @@ class NotificationIntegrationsTest extends TestCase
             ->callAction('testEmail', ['recipient' => 'admin@example.test'])
             ->assertNotified('Pengiriman uji gagal');
 
-        $this->mock(NotificationGateway::class)->shouldReceive('testEmail')->once()->with('admin@example.test')->andReturnNull();
+        $gateway = $this->mock(NotificationGateway::class);
+        $gateway->shouldReceive('testEmail')->once()->with('admin@example.test', 'pelayanan')->andReturnNull();
         Livewire::test(NotificationIntegrations::class)
             ->callAction('testEmail', ['recipient' => 'admin@example.test'])
+            ->assertNotified('Email uji terkirim ke admin@example.test.');
+
+        $gateway->shouldReceive('testEmail')->once()->with('admin@example.test', 'pengaduan')->andReturnNull();
+        Livewire::test(NotificationIntegrations::class)
+            ->callAction('testEmail', ['line' => 'pengaduan', 'recipient' => 'admin@example.test'])
             ->assertNotified('Email uji terkirim ke admin@example.test.');
     }
 
@@ -188,12 +254,14 @@ class NotificationIntegrationsTest extends TestCase
         Sanctum::actingAs($this->user('ptsp@mtsn2malang.sch.id'));
 
         $this->mock(NotificationGateway::class, function ($mock) {
-            $mock->shouldReceive('testEmail')->once()->with('admin@example.test')->andReturnNull();
-            $mock->shouldReceive('testWhatsApp')->once()->with('6281234567')->andReturn('Gateway menjawab HTTP 401.');
+            $mock->shouldReceive('testEmail')->once()->with('admin@example.test', 'pelayanan')->andReturnNull();
+            $mock->shouldReceive('testWhatsApp')->once()->with('6281234567', 'pelayanan')->andReturn('Gateway menjawab HTTP 401.');
+            $mock->shouldReceive('testWhatsApp')->once()->with('6281234567', 'pengaduan')->andReturnNull();
         });
 
         $this->postJson('/api/integrasi/email/uji', ['penerima' => 'admin@example.test'])->assertOk()->assertJsonPath('berhasil', true);
         $this->postJson('/api/integrasi/whatsapp/uji', ['nomor' => '6281234567'])->assertUnprocessable()->assertJsonPath('pesan', 'Gateway menjawab HTTP 401.');
+        $this->postJson('/api/integrasi/whatsapp/uji?jalur=pengaduan', ['nomor' => '6281234567'])->assertOk()->assertJsonPath('berhasil', true);
         $this->postJson('/api/integrasi/email/uji', [])->assertJsonValidationErrors('penerima');
     }
 
@@ -211,6 +279,31 @@ class NotificationIntegrationsTest extends TestCase
         $this->putJson('/api/integrasi/whatsapp', ['aktif' => true, 'api_url' => 'bukan-url'])->assertJsonValidationErrors(['api_url', 'sender_id']);
         $this->putJson('/api/integrasi/whatsapp', ['aktif' => false])->assertOk()->assertJsonPath('aktif', false);
         $this->assertSame('token-rahasia', NotificationSetting::for('whatsapp')->value('api_token'));
+    }
+
+    public function test_the_complaint_line_is_saved_through_the_api(): void
+    {
+        Sanctum::actingAs($this->user('ptsp@mtsn2malang.sch.id'));
+        NotificationSetting::store('whatsapp', true, ['api_url' => 'https://wa.example.test/send', 'api_token' => 'token-layanan', 'sender_id' => '628000']);
+
+        $this->getJson('/api/integrasi/whatsapp?jalur=pengaduan')->assertOk()
+            ->assertJsonPath('jalur', 'pengaduan')
+            ->assertJsonPath('aktif', false)
+            ->assertJsonPath('konfigurasi.api_token_tersimpan', false);
+
+        $this->putJson('/api/integrasi/whatsapp?jalur=pengaduan', ['aktif' => true, 'api_url' => 'https://wa.aduan.test/send', 'api_token' => 'token-aduan', 'sender_id' => '628999'])
+            ->assertOk()
+            ->assertJsonPath('jalur', 'pengaduan')
+            ->assertJsonPath('konfigurasi.sender_id', '628999');
+        $this->patchJson('/api/integrasi/whatsapp/aktif?jalur=pengaduan', ['aktif' => false])->assertOk()->assertJsonPath('aktif', false);
+
+        $this->assertSame('token-aduan', NotificationSetting::for('whatsapp', 'pengaduan')->value('api_token'));
+        $this->assertSame('token-layanan', NotificationSetting::for('whatsapp')->value('api_token'));
+        $this->assertTrue(NotificationSetting::for('whatsapp')->is_enabled);
+        $this->getJson('/api/integrasi/whatsapp')->assertJsonPath('jalur', 'pelayanan')->assertJsonPath('konfigurasi.sender_id', '628000');
+        $this->assertDatabaseHas('activity_log', ['description' => 'Menonaktifkan notifikasi whatsapp (jalur pengaduan)']);
+
+        $this->getJson('/api/integrasi/whatsapp?jalur=lain')->assertJsonValidationErrors('jalur');
     }
 
     public function test_channels_are_switched_on_only_when_configured(): void
