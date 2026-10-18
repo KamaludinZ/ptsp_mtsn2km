@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Services\FrontDeskService;
 use App\Support\CivitasRegistration;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -40,10 +40,16 @@ class RegisteredUserController extends Controller
         // Determine if this is a civitas registration
         $isCivitas = $request->has('is_civitas') && $request->is_civitas == '1';
 
-        // Base validation rules
+        // Base validation rules. An e-mail already in use is refused here, with
+        // the other errors, unless it belongs to an unclaimed counter account,
+        // which the registration then links instead of duplicating.
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', function (string $attribute, $value, \Closure $fail) {
+                if (FrontDeskService::emailTaken((string) $value)) {
+                    $fail(FrontDeskService::EMAIL_TAKEN);
+                }
+            }],
             'whatsapp_number' => ['required', 'string', 'max:20'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ];
@@ -78,19 +84,16 @@ class RegisteredUserController extends Controller
             $registrationCode = trim($request->registration_code);
         }
 
-        // Create user
-        $user = User::create([
+        // Penautan akun: pemohon yang sudah dicatat di loket (email atau WhatsApp
+        // sama, belum pernah dipakai) memakai akun itu beserta riwayat
+        // permohonannya, bukan akun ganda. Satu layanan dengan loket.
+        $link = app(FrontDeskService::class)->registerPortalApplicant([
             'name' => $request->name,
             'email' => $request->email,
             'whatsapp_number' => $request->whatsapp_number,
             'password' => Hash::make($request->password),
-            'user_type' => $userType,
-            'registration_code' => $registrationCode,
-            'is_active' => true,
-        ]);
-
-        // Assign role based on user type
-        $user->assignRole($userType);
+        ], $userType, $registrationCode);
+        $user = $link->user;
 
         // The WhatsApp welcome goes out only once the email is verified
         // (AppServiceProvider, Verified event), so a stranger's sign-up form
@@ -104,7 +107,9 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         // Redirect to verification notice
+        // Hasil penautan ditampilkan tanpa rincian riwayat: email belum terverifikasi.
         return redirect()->route('verification.notice')
-            ->with('status', 'Registrasi berhasil! Silakan cek email Anda untuk verifikasi akun.');
+            ->with('status', 'Registrasi berhasil! Silakan cek email Anda untuk verifikasi akun.')
+            ->with('account_linked', ! $link->isNew());
     }
 }

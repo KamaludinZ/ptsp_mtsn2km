@@ -103,7 +103,8 @@ class RoleResource extends Resource
                     ->state(fn (RoleModel $record) => collect(RoleAccess::AREA_PERMISSIONS)
                         ->filter(fn (string $permission) => $record->hasPermissionTo($permission))
                         ->map(fn (string $permission) => ['frontdesk.access' => 'Loket', 'backoffice.access' => 'Back Office', 'supervision.access' => 'Pengawasan'][$permission])
-                        ->values()->all() ?: ['Portal pemohon'])
+                        // Tanpa area petugas: portal hanya untuk peran pemohon resmi.
+                        ->values()->all() ?: [\App\Support\Applicants::isApplicantRole($record->name) ? 'Portal pemohon' : 'Belum ada akses'])
                     ->color(fn (string $state) => match ($state) {
                         'Loket' => 'warning',
                         'Back Office' => 'primary',

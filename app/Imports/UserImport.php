@@ -3,7 +3,7 @@
 namespace App\Imports;
 
 use App\Models\User;
-use App\Services\FrontDeskService;
+use App\Support\Applicants;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -107,7 +107,7 @@ class UserImport implements ToCollection, WithHeadingRow, WithMultipleSheets
             'nama' => ['required', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'nomor_whatsapp' => ['nullable', 'regex:/^(\+?62|0)8[0-9]{6,14}$/', 'max:20'],
-            'tipe_pengguna' => ['required', 'in:' . implode(',', array_keys(FrontDeskService::APPLICANT_TYPES))],
+            'tipe_pengguna' => ['required', 'in:' . implode(',', Applicants::ROLES)],
             'kode_registrasi' => ['nullable', 'max:255'],
         ], [
             'nama.required' => 'Nama wajib diisi.',

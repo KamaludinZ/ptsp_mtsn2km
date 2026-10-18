@@ -130,6 +130,8 @@ class RoleController extends Controller
             'nama' => $role->name,
             'label' => RoleAccess::roleLabel($role->name),
             'bawaan' => RoleAccess::isSystemRole($role->name),
+            // Aturan pemohon resmi: hanya tujuh peran pemohon; staf, pimpinan, dan peran kustom bukan pemohon.
+            'pemohon' => \App\Support\Applicants::isApplicantRole($role->name),
             'jumlah_pengguna' => self::holders($role),
             'izin' => $role->permissions->pluck('name')->sort()->values(),
             'izin_wajib' => RoleAccess::requiredPermissions($role->name),

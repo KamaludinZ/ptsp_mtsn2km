@@ -66,12 +66,15 @@ return [
     \App\Filament\Pages\FrontDesk\RegisterService::class => [
         'ringkas' => 'Formulir petugas loket (front desk) untuk mendaftarkan permohonan pemohon yang datang langsung ke PTSP.',
         'langkah' => [
-            'Isi bagian "Pemohon": Nama lengkap, Kategori pemohon, Nomor WhatsApp, dan Email (opsional). Bila email atau nomor WhatsApp sudah terdaftar, permohonan masuk ke akun tersebut.',
-            'Di bagian "Permohonan", pilih "Layanan"; ringkasan "Standar pelayanan" dan "Template berkas" layanan itu akan tampil.',
+            'Di bagian "Pemohon", pilih "Status pemohon": "Belum terdaftar" untuk pemohon baru atau yang belum tahu, "Sudah terdaftar" bila pemohon sudah punya akun.',
+            'Belum terdaftar: isi Kategori pemohon, Nama lengkap, Nomor WhatsApp, dan Email (opsional). Kotak "Hasil pencarian akun" memberi tahu bila email atau nomor itu sudah terdaftar (permohonan masuk ke akun tersebut) atau akun baru akan dibuat.',
+            'Sudah terdaftar: pilih "Tipe pengguna", lalu cari dan pilih nama di "Akun pemohon". Nama, WhatsApp, dan email terisi otomatis dan terkunci; periksa "Ringkasan pemohon". Data yang keliru diperbaiki administrator di menu Pengguna, tab Pemohon.',
+            'Di bagian "Permohonan", pilih "Layanan" (hanya layanan yang terbuka untuk tipe pemohon itu); ringkasan "Standar pelayanan" dan "Template berkas" layanan itu akan tampil.',
             'Tulis "Keperluan / keterangan" dan pilih "Prioritas".',
             'Unggah "Berkas persyaratan" yang dibawa pemohon (hasil pindai atau foto).',
-            'Klik "Daftarkan permohonan". Setelah tersimpan, klik "Cetak tanda terima" pada pemberitahuan untuk diberikan kepada pemohon.',
+            'Klik "Daftarkan permohonan". Pemberitahuan menampilkan nomor permohonan dan akun yang dipakai; klik "Cetak tanda terima" untuk diberikan kepada pemohon. Bila gagal, alasannya tampil dan isian tetap ada untuk diperbaiki.',
         ],
+        'tips' => 'Berganti status pemohon tidak menghapus isian bagian Permohonan. Akun yang dinonaktifkan atau milik petugas tidak bisa dipakai untuk permohonan loket.',
     ],
 
     \App\Filament\Resources\VisitorResource::class => [
@@ -316,7 +319,8 @@ return [
     \App\Filament\Resources\UserResource::class => [
         'ringkas' => 'Akun petugas dan pemohon. Peran menentukan menu yang bisa dibuka; akun nonaktif tidak bisa masuk. Dikelola administrator.',
         'langkah' => [
-            'Pakai tab Semua, Petugas, Pemohon, atau Nonaktif dan saringan (Tipe User, Peran, Hanya Aktif, Belum pernah masuk, Email Terverifikasi).',
+            'Pakai tab Semua, Petugas, Pemohon, atau Nonaktif dan saringan (Tipe User, Peran pemohon, Peran, Hanya Aktif, Belum pernah masuk, Email Terverifikasi). Tab Pemohon berisi akun berperan Siswa, Wali Murid, Alumni, Masyarakat Umum, Instansi, Guru, atau Pegawai.',
+            'Untuk memperbaiki data pemohon yang dipakai loket, buka tab Pemohon, cari nama/email/WhatsApp-nya, lalu klik barisnya dan simpan perubahan.',
             'Klik "Tambah pengguna", isi "Informasi Pengguna" (Nama Lengkap, Email, Nomor WhatsApp, Kategori, sakelar "Aktif (boleh masuk)").',
             'Isi "Password" dan "Ulangi password", lalu pilih "Role" di bagian "Role & Permission". Simpan.',
             'Untuk banyak akun sekaligus, klik "Unggah berkas akun", klik "Unduh template", isi, lalu unggah di "Berkas Excel/CSV".',

@@ -40,6 +40,23 @@ class RoleListTest extends TestCase
             ->assertSee(UserResource::getUrl('index', ['tableFilters[roles][values][0]' => $backOffice->id]), false);
     }
 
+    public function test_only_applicant_roles_are_labelled_as_the_applicant_portal(): void
+    {
+        $custom = Role::findOrCreate('tamu_khusus', 'web');
+
+        Livewire::test(ListRoles::class)
+            ->assertTableColumnStateSet('areas', ['Portal pemohon'], (string) Role::findByName('siswa')->getKey())
+            ->assertTableColumnStateSet('areas', ['Portal pemohon'], (string) Role::findByName('pegawai')->getKey())
+            // Peran kustom tanpa area petugas bukan peran pemohon.
+            ->assertTableColumnStateSet('areas', ['Belum ada akses'], (string) $custom->getKey());
+
+        \Laravel\Sanctum\Sanctum::actingAs(User::where('email', 'ptsp@mtsn2malang.sch.id')->firstOrFail());
+        $this->getJson('/api/peran')->assertOk()
+            ->assertJsonFragment(['nama' => 'walimurid', 'pemohon' => true])
+            ->assertJsonFragment(['nama' => 'waka_humas', 'pemohon' => false])
+            ->assertJsonFragment(['nama' => 'tamu_khusus', 'pemohon' => false]);
+    }
+
     public function test_permission_matrix_lists_roles_against_permissions(): void
     {
         Livewire::test(ListRoles::class)

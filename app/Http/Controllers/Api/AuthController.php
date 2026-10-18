@@ -188,6 +188,8 @@ class AuthController extends Controller
             'peran' => $user->getRoleNames()->values(),
             'peran_label' => RoleAccess::userRoleLabel($user),
             'petugas' => $user->isStaff(),
+            // Aturan pemohon resmi (memegang peran pemohon); guru yang juga waka: petugas sekaligus pemohon.
+            'pemohon' => $user->isApplicant(),
             'area' => collect(['frontdesk.access' => 'loket', 'backoffice.access' => 'back_office', 'supervision.access' => 'pengawasan'])
                 ->filter(fn ($area, $permission) => $user->can($permission))->values(),
             'email_terverifikasi' => $user->hasVerifiedEmail(),

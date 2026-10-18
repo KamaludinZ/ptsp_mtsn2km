@@ -179,6 +179,21 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     }
 
     /**
+     * Pemohon: memegang salah satu peran pemohon resmi (daftar putih di
+     * App\Support\Applicants). Peran staf dan pimpinan bukan pemohon.
+     */
+    public function isApplicant(): bool
+    {
+        return \App\Support\Applicants::isApplicant($this);
+    }
+
+    /** Akun pemohon (aturan pemohon resmi); dengan $type, hanya pemohon bertipe itu. */
+    public function scopeApplicants($query, ?string $type = null)
+    {
+        return \App\Support\Applicants::scope($query, $type);
+    }
+
+    /**
      * Staff work in the control panel (/cp), each role seeing its own menus;
      * applicants follow their requests in the portal panel (/portal).
      */

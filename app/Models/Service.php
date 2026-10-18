@@ -218,8 +218,8 @@ class Service extends Model
     /**
      * Services a request can be opened for right now: active, and online
      * only when served online (online/hybrid) and open to the applicant's
-     * type. At the counter the officer judges eligibility, so any active
-     * service may be registered there.
+     * type. Offline any active service qualifies here; the counter itself
+     * narrows it to the applicant's type (availableFor, FrontDeskService).
      */
     public function scopeRequestable($query, ?string $userType, string $channel = 'online')
     {

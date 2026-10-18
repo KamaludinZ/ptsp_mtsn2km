@@ -391,6 +391,10 @@
                                 <i class="fas fa-info-circle me-2"></i>
                                 <strong>Pendaftar Umum:</strong> Untuk masyarakat umum yang ingin mengakses layanan PTSP MTsN 2 Kota Malang.
                             </p>
+                            <p class="mb-0 mt-2" style="color: #1e40af; font-size: 14px;">
+                                <i class="fas fa-link me-2"></i>
+                                Pernah dilayani di loket? Pakai email atau nomor WhatsApp yang sama agar riwayat permohonan Anda tersambung otomatis.
+                            </p>
                         </div>
 
                         <form method="POST" action="{{ route('register') }}" id="form-umum">
@@ -486,6 +490,10 @@
                             <p class="mb-0" style="color: #1e40af; font-size: 14px;">
                                 <i class="fas fa-info-circle me-2"></i>
                                 <strong>Civitas Internal:</strong> Untuk siswa, guru, pegawai, wali murid, alumni, dan mitra MTsN 2 Kota Malang. Memerlukan kode registrasi dari madrasah.
+                            </p>
+                            <p class="mb-0 mt-2" style="color: #1e40af; font-size: 14px;">
+                                <i class="fas fa-link me-2"></i>
+                                Pernah dilayani di loket? Pakai email atau nomor WhatsApp yang sama agar riwayat permohonan Anda tersambung otomatis.
                             </p>
                         </div>
 

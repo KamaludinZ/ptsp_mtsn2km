@@ -40,6 +40,105 @@ class UserListTest extends TestCase
             ->set('activeTab', 'nonaktif')->assertCanSeeTableRecords([$inactive])->assertCanNotSeeTableRecords([$staff, $applicant]);
     }
 
+    public function test_applicant_tab_explains_the_applicant_roles_and_drops_the_legacy_type_column(): void
+    {
+        Livewire::test(ListUsers::class)
+            ->assertTableColumnVisible('user_type')
+            ->assertDontSee('Pemohon adalah akun berperan')
+            ->set('activeTab', 'pemohon')
+            ->assertSee('Pemohon adalah akun berperan Siswa, Wali Murid, Alumni, Masyarakat Umum, Instansi/Perusahaan, Guru, atau Pegawai.')
+            ->assertTableColumnHidden('user_type')
+            ->assertTableColumnVisible('roles.name');
+    }
+
+    public function test_applicant_tab_lists_accounts_by_applicant_role(): void
+    {
+        $teacherWaka = User::factory()->create(['name' => 'Guru Merangkap Waka', 'user_type' => 'guru']);
+        $teacherWaka->syncRoles(['waka_humas', 'guru']);
+        $walkIn = User::factory()->create(['name' => 'Walk-in Lama', 'user_type' => 'alumni']);
+        \Spatie\Permission\Models\Role::findOrCreate('tamu_khusus');
+        $otherRole = User::factory()->create(['name' => 'Peran Lain', 'user_type' => 'umum']);
+        $otherRole->assignRole('tamu_khusus');
+        $staff = User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail();
+
+        $ids = Livewire::test(ListUsers::class)->set('activeTab', 'pemohon')->instance()->getFilteredTableQuery()->pluck('id');
+
+        $this->assertTrue($ids->contains($teacherWaka->id) && $ids->contains($walkIn->id));
+        $this->assertFalse($ids->contains($otherRole->id) || $ids->contains($staff->id));
+
+        $this->assertSame(User::applicants()->count(), (new ListUsers)->getTabs()['pemohon']->getBadge());
+    }
+
+    public function test_applicant_role_filter_follows_the_official_rule(): void
+    {
+        $student = User::factory()->create(['name' => 'Filter Siswa', 'user_type' => 'umum']);
+        $student->assignRole('siswa');
+        $legacy = User::factory()->create(['name' => 'Filter Walk-in', 'user_type' => 'siswa']);
+        $staff = User::factory()->create(['name' => 'Filter Petugas', 'user_type' => 'siswa']);
+        $staff->assignRole('back_office');
+
+        $ids = Livewire::test(ListUsers::class)
+            ->set('activeTab', 'pemohon')
+            ->filterTable('applicant_role', 'siswa')
+            ->instance()->getFilteredTableQuery()->pluck('id');
+
+        $this->assertTrue($ids->contains($student->id) && $ids->contains($legacy->id));
+        $this->assertFalse($ids->contains($staff->id));
+        $this->assertTrue($ids->every(fn (int $id) => User::find($id)->isApplicant()));
+    }
+
+    public function test_applicant_tab_shows_identity_columns_and_finds_numbers_in_any_format(): void
+    {
+        $walkIn = User::factory()->create(['name' => 'Identitas Loket', 'email' => '081255557777@walkin.local', 'whatsapp_number' => '0812-5555-7777', 'user_type' => 'umum']);
+        $walkIn->assignRole('umum');
+        \App\Models\Ticket::factory()->count(2)->create(['user_id' => $walkIn->id]);
+        $staff = User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail();
+
+        $page = Livewire::test(ListUsers::class)
+            ->set('activeTab', 'pemohon')
+            ->assertTableColumnVisible('tickets_count')
+            ->searchTable('6281255557777')
+            ->assertCanSeeTableRecords([$walkIn])
+            ->assertSee('Akun loket, belum ada email')
+            ->assertDontSee('081255557777@walkin.local');
+        $this->assertSame(2, (int) $page->instance()->getTableRecords()->firstWhere('id', $walkIn->id)->tickets_count);
+
+        $page->searchTable('5555-77')->assertCanSeeTableRecords([$walkIn]);
+
+        // Kolom permohonan khusus tab Pemohon; pencarian nomor tetap berlaku untuk petugas.
+        Livewire::test(ListUsers::class)
+            ->set('activeTab', 'petugas')
+            ->assertTableColumnHidden('tickets_count')
+            ->searchTable((string) $staff->whatsapp_number ?: $staff->name)
+            ->assertCanSeeTableRecords([$staff]);
+    }
+
+    public function test_applicant_account_opens_for_fixing_from_the_applicant_tab(): void
+    {
+        $applicant = User::factory()->create(['name' => 'Perlu Diperbaiki', 'user_type' => 'umum', 'whatsapp_number' => '081200001234']);
+        $applicant->assignRole('umum');
+        $staff = User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail();
+
+        // Baris tab Pemohon membuka halaman ubah akun.
+        Livewire::test(ListUsers::class)
+            ->set('activeTab', 'pemohon')
+            ->searchTable('Perlu Diperbaiki')
+            ->assertSee(UserResource::getUrl('edit', ['record' => $applicant]), false);
+
+        $this->get(UserResource::getUrl('edit', ['record' => $applicant]))->assertOk()
+            ->assertSee('perbaikan di sini langsung berlaku di loket')
+            ->assertSee('Kembali ke tab Pemohon');
+        $this->get(UserResource::getUrl('edit', ['record' => $staff]))->assertOk()
+            ->assertDontSee('Kembali ke tab Pemohon');
+
+        Livewire::test(\App\Filament\Resources\UserResource\Pages\EditUser::class, ['record' => $applicant->getKey()])
+            ->fillForm(['whatsapp_number' => '081200009999'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame('081200009999', $applicant->fresh()->whatsapp_number);
+        $this->assertTrue($applicant->fresh()->isApplicant());
+    }
+
     public function test_import_action_opens_upload_modal_and_requires_a_file(): void
     {
         $this->get(UserResource::getUrl())->assertOk()->assertSee('Unggah berkas akun');

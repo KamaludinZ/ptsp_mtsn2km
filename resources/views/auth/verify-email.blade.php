@@ -158,6 +158,14 @@
                         </div>
                     @endif
 
+                    @if (session('account_linked'))
+                        <div class="alert-success" role="status">
+                            <i class="fas fa-link me-2"></i>
+                            <strong>Akun Anda tersambung dengan data pemohon yang sudah dicatat di loket PTSP.</strong><br>
+                            Tidak ada akun ganda: setelah email diverifikasi, riwayat permohonan dari loket tampil di portal Anda.
+                        </div>
+                    @endif
+
                     <div class="mt-4 mb-4">
                         <p class="mb-2" style="color: var(--bs-secondary-text); font-size: 14px;">
                             <i class="fas fa-question-circle me-2"></i>

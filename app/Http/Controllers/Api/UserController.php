@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\FrontDeskService;
+use App\Support\Applicants;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,14 +21,14 @@ use Spatie\Permission\Models\Role;
  */
 class UserController extends Controller
 {
-    /** GET /api/pengguna?q=&peran=&kategori=&aktif=&jenis=petugas|pemohon&per_halaman= */
+    /** GET /api/pengguna?q=&peran=&kategori=&aktif=&jenis=petugas|pemohon&per_halaman= (pemohon: User::applicants()) */
     public function index(Request $request): JsonResponse
     {
         $this->authorizeAdmin($request);
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
             'peran' => ['nullable', 'string', 'exists:roles,name'],
-            'kategori' => ['nullable', Rule::in(array_keys(FrontDeskService::APPLICANT_TYPES))],
+            'kategori' => ['nullable', Rule::in(Applicants::ROLES)],
             'aktif' => ['nullable', 'boolean'],
             'jenis' => ['nullable', 'in:petugas,pemohon'],
             'per_halaman' => ['nullable', 'integer', 'min:1', 'max:100'],
@@ -44,7 +44,8 @@ class UserController extends Controller
             ->when($filters['kategori'] ?? null, fn (Builder $q, string $type) => $q->where('user_type', $type))
             ->when(isset($filters['aktif']), fn (Builder $q) => $q->where('is_active', (bool) $filters['aktif']))
             ->when(($filters['jenis'] ?? null) === 'petugas', fn (Builder $q) => $q->whereHas('roles', $staff))
-            ->when(($filters['jenis'] ?? null) === 'pemohon', fn (Builder $q) => $q->whereDoesntHave('roles', $staff))
+            // Pemohon: aturan pemohon resmi (peran pemohon), bukan sekadar "bukan petugas".
+            ->when(($filters['jenis'] ?? null) === 'pemohon', fn (Builder $q) => $q->applicants())
             ->orderBy('name')
             ->paginate($filters['per_halaman'] ?? 20)
             ->withQueryString();
@@ -174,7 +175,7 @@ class UserController extends Controller
             'nama' => [$required, 'string', 'max:255'],
             'email' => [$required, 'email', 'max:255', Rule::unique('users', 'email')->ignore($user?->id)],
             'password' => [$user ? 'sometimes' : 'required', 'string', Password::min(8)->letters()->numbers()],
-            'kategori' => [$required, Rule::in(array_keys(FrontDeskService::APPLICANT_TYPES))],
+            'kategori' => [$required, Rule::in(Applicants::ROLES)],
             'whatsapp' => ['sometimes', 'nullable', 'regex:/^(\+?62|0)\s?8[0-9][0-9\s-]{6,14}$/'],
             'peran' => ['sometimes', 'array'],
             'peran.*' => ['string', Rule::exists('roles', 'name')->where('guard_name', 'web')],

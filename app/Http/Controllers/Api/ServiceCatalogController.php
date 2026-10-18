@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\ServiceCategory;
-use App\Services\FrontDeskService;
+use App\Support\Applicants;
 use App\Support\ServiceDisposition;
 use App\Support\TicketLabels;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,7 +30,7 @@ class ServiceCatalogController extends Controller
             'kategori' => ['nullable', 'integer'],
             'jalur' => ['nullable', Rule::in(array_keys(TicketLabels::MODES))],
             'aktif' => ['nullable', 'boolean'],
-            'untuk' => ['nullable', Rule::in(array_keys(FrontDeskService::APPLICANT_TYPES))],
+            'untuk' => ['nullable', Rule::in(Applicants::ROLES)],
             'template' => ['nullable', 'boolean'],
             'per_halaman' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
@@ -166,7 +166,7 @@ class ServiceCatalogController extends Controller
             'produk' => ['sometimes', 'nullable', 'string', 'max:20000'],
             'penanganan_pengaduan' => ['sometimes', 'nullable', 'string', 'max:20000'],
             'untuk' => ['sometimes', 'nullable', 'array'],
-            'untuk.*' => [Rule::in(array_keys(FrontDeskService::APPLICANT_TYPES))],
+            'untuk.*' => [Rule::in(Applicants::ROLES)],
             'disposisi' => ['sometimes', 'array'],
             'disposisi.mode' => ['required_with:disposisi', Rule::in(array_keys(ServiceDisposition::MODES))],
             'disposisi.unit_tujuan' => ['sometimes', 'array'],

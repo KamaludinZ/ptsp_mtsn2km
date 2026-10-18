@@ -161,6 +161,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('survei')->name('api
 
 // Pendaftaran walk-in di loket (front desk)
 Route::middleware(['auth:sanctum', 'throttle:api'])->post('/loket/permohonan', [\App\Http\Controllers\Api\WalkInController::class, 'store'])->name('api.loket.permohonan');
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/loket/tipe-pemohon', [\App\Http\Controllers\Api\WalkInController::class, 'applicantTypes'])->name('api.loket.tipe-pemohon');
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/loket/pemohon', [\App\Http\Controllers\Api\WalkInController::class, 'applicants'])->name('api.loket.pemohon');
+Route::middleware(['auth:sanctum', 'throttle:api'])->get('/loket/pemohon/{user}', [\App\Http\Controllers\Api\WalkInController::class, 'applicant'])->whereNumber('user')->name('api.loket.pemohon.detail');
 
 // Riwayat pengiriman notifikasi (admin): filter, detail, kirim ulang yang gagal
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('riwayat-notifikasi')->name('api.riwayat-notifikasi.')->group(function () {

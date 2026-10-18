@@ -123,7 +123,8 @@ class UserResource extends Resource
                     ->weight('semibold')
                     ->searchable()
                     ->sortable()
-                    ->description(fn (User $record) => $record->email),
+                    // Email buatan loket (…@walkin.local) bukan email pemohon.
+                    ->description(fn (User $record) => str_ends_with((string) $record->email, '@walkin.local') ? 'Akun loket, belum ada email' : $record->email),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
@@ -132,10 +133,19 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('whatsapp_number')
                     ->label('WhatsApp')
                     ->placeholder('–')
-                    ->searchable()
+                    // Nomor dicari tanpa memedulikan tanda baca; awalan 62 sama dengan 0.
+                    ->searchable(query: fn (Builder $query, string $search) => \App\Support\Applicants::wherePhoneContains($query, $search))
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('tickets_count')
+                    ->label('Permohonan')
+                    ->counts('tickets')
+                    ->sortable()
+                    ->alignEnd()
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? null) === 'pemohon'),
                 Tables\Columns\TextColumn::make('user_type')
                     ->label('Tipe User')
+                    // Tab Pemohon memakai peran pemohon (kolom Role), bukan penanda lama ini.
+                    ->hidden(fn ($livewire) => ($livewire->activeTab ?? null) === 'pemohon')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'guru' => 'success',
@@ -158,6 +168,7 @@ class UserResource extends Resource
                     }),
                 Tables\Columns\TextColumn::make('roles.name')
                     ->label('Role')
+                    ->placeholder('Belum punya peran')
                     ->formatStateUsing(fn (string $state) => RoleAccess::SYSTEM_ROLES[$state] ?? $state)
                     ->badge()
                     ->separator(','),
@@ -202,6 +213,11 @@ class UserResource extends Resource
                         'instansi' => 'Instansi',
                         'umum' => 'Umum',
                     ]),
+                // Aturan pemohon resmi: peran pemohon, termasuk akun walk-in lama yang belum punya peran.
+                Tables\Filters\SelectFilter::make('applicant_role')
+                    ->label('Peran pemohon')
+                    ->options(\App\Support\Applicants::options())
+                    ->query(fn (Builder $query, array $data): Builder => filled($data['value'] ?? null) ? $query->applicants($data['value']) : $query),
                 Tables\Filters\SelectFilter::make('roles')
                     ->label('Peran')
                     ->relationship('roles', 'name')

@@ -114,7 +114,7 @@ class ActiveRoles
     public static function portalRolesFor(User $user): Collection
     {
         return $user->getRoleNames()
-            ->filter(fn (string $role) => ! in_array($role, User::STAFF_ROLES, true) && array_key_exists($role, RoleAccess::SYSTEM_ROLES))
+            ->filter(fn (string $role) => Applicants::isApplicantRole($role))
             ->map(fn (string $role) => [
                 'name' => $role,
                 'label' => RoleAccess::roleLabel($role),

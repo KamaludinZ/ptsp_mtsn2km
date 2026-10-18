@@ -8,6 +8,7 @@ use App\Filament\Resources\UserResource;
 use App\Imports\UserImport;
 use App\Models\User;
 use App\Services\FrontDeskService;
+use App\Support\Applicants;
 use App\Support\RoleAccess;
 use App\Support\UserAccountAudit;
 use Filament\Actions;
@@ -31,6 +32,11 @@ class ListUsers extends ListRecords
 
     public function getSubheading(): ?string
     {
+        if ($this->activeTab === 'pemohon') {
+            return 'Pemohon adalah akun berperan ' . collect(Applicants::options())->join(', ', ', atau ')
+                . '. Data di sini yang dipakai loket untuk pemohon terdaftar; perbaiki di sini bila keliru.';
+        }
+
         return 'Akun petugas dan pemohon. Peran menentukan menu yang bisa dibuka; akun nonaktif tidak bisa masuk.';
     }
 
@@ -184,9 +190,10 @@ class ListUsers extends ListRecords
             'petugas' => Tab::make('Petugas')->icon('heroicon-m-briefcase')
                 ->badge($staff(User::query())->count())
                 ->modifyQueryUsing($staff),
+            // Aturan pemohon resmi (peran pemohon), sama seperti loket dan penautan akun.
             'pemohon' => Tab::make('Pemohon')->icon('heroicon-m-user')
-                ->badge(User::whereDoesntHave('roles', fn (Builder $r) => $r->whereIn('name', User::STAFF_ROLES))->count())
-                ->modifyQueryUsing(fn (Builder $query) => $query->whereDoesntHave('roles', fn (Builder $r) => $r->whereIn('name', User::STAFF_ROLES))),
+                ->badge(User::applicants()->count())
+                ->modifyQueryUsing(fn (Builder $query) => $query->applicants()),
             'nonaktif' => Tab::make('Nonaktif')->icon('heroicon-m-no-symbol')
                 ->badge(User::where('is_active', false)->count() ?: null)->badgeColor('danger')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('is_active', false)),
