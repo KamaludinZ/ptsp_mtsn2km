@@ -63,6 +63,7 @@ class Settings extends Page implements HasForms
         'document_date_format' => ['numbering', 'text', 'Format tanggal dokumen'],
         'letterhead_line_1' => ['letterhead', 'text', 'Baris kop 1'],
         'letterhead_line_2' => ['letterhead', 'text', 'Baris kop 2'],
+        'letterhead_image' => ['letterhead', 'image', 'Gambar kop surat'],
         'footer_description' => ['general', 'textarea', 'Deskripsi footer'],
         'copyright_text' => ['general', 'text', 'Teks hak cipta'],
         'enable_maintenance' => ['general', 'boolean', 'Mode perawatan'],
@@ -176,10 +177,16 @@ class Settings extends Page implements HasForms
                         ->columnSpanFull(),
                 ]),
                 Forms\Components\Tabs\Tab::make('Kop Surat')->icon('heroicon-m-document-text')->schema([
-                    $text('letterhead_line_1')->placeholder('Kementerian Agama Republik Indonesia'),
-                    $text('letterhead_line_2')->placeholder('Kantor Kementerian Agama Kota Malang'),
+                    Forms\Components\FileUpload::make('letterhead_image')
+                        ->label('Gambar kop surat')
+                        ->acceptedFileTypes(['image/png'])
+                        ->validationMessages(['mimetypes' => 'Kop surat harus berupa gambar PNG.'])
+                        ->disk('public')
+                        ->directory(\App\Support\SettingsStore::LOGO_DIRECTORY)
+                        ->maxSize(2048)
+                        ->helperText('Hanya PNG, maks. 2 MB. Unggah kop utuh (logo, nama instansi, alamat, dan garis bawah) selebar halaman, mis. 2480×400 piksel.'),
                     Forms\Components\Placeholder::make('kop_hint')->hiddenLabel()
-                        ->content('Kop dipakai pada laporan bulanan, lembar disposisi, dan dokumen cetak lain; di bawahnya tampil nama lengkap instansi dan kontak.'),
+                        ->content('Kop dipakai pada laporan bulanan, lembar disposisi, tanda terima, dan dokumen cetak lain. Selama belum ada gambar, dokumen memakai kop teks dari nama lengkap instansi dan kontak.'),
                 ]),
                 Forms\Components\Tabs\Tab::make('Situs')->icon('heroicon-m-globe-alt')->schema([
                     Forms\Components\Textarea::make('footer_description')->label('Deskripsi footer')->rows(2),
@@ -206,15 +213,25 @@ class Settings extends Page implements HasForms
         $values = [];
         foreach (self::FIELDS as $key => [, $type]) {
             if (array_key_exists($key, $state)) {
-                $values[$key] = $type === 'image' ? (filled($state[$key]) ? 'storage/' . $state[$key] : ($this->currentLogo ?: null)) : $state[$key];
+                $values[$key] = match (true) {
+                    $type !== 'image' => $state[$key],
+                    filled($state[$key]) => 'storage/' . $state[$key],
+                    // A bundled logo never shows in the upload field, so an empty field keeps it.
+                    $key === 'app_logo' => $this->currentLogo ?: null,
+                    default => null,
+                };
             }
         }
 
         $previousLogo = $this->currentLogo;
+        $previousKop = AppSetting::get('letterhead_image');
         $changed = \App\Support\SettingsStore::save($values);
         $this->currentLogo = AppSetting::get('app_logo');
         if ($previousLogo !== $this->currentLogo) {
             \App\Support\SettingsStore::deleteUploadedLogo($previousLogo);
+        }
+        if ($previousKop !== AppSetting::get('letterhead_image')) {
+            \App\Support\SettingsStore::deleteUploadedLogo($previousKop);
         }
 
         if (! $changed) {

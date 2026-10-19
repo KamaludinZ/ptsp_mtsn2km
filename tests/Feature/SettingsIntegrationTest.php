@@ -70,6 +70,18 @@ class SettingsIntegrationTest extends TestCase
         $this->assertStringContainsString('05/10/2026', $report);
     }
 
+    public function test_an_uploaded_kop_image_replaces_the_text_kop(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        AppSetting::set('letterhead_image', 'storage/branding/kop.png');
+
+        $ticket = Ticket::orderBy('id')->firstOrFail();
+        $this->actingAs(User::where('email', 'kepsek@mtsn2malang.sch.id')->firstOrFail())
+            ->get(route('tickets.receipt', $ticket))->assertOk()
+            ->assertSee('class="kop-image" src="' . asset('storage/branding/kop.png') . '"', false)
+            ->assertDontSee('Kankemenag Kota Malang');
+    }
+
     public function test_new_ticket_numbers_use_the_prefix(): void
     {
         $this->assertMatchesRegularExpression('/^MTS-202610-\d{4}$/', TicketService::nextTicketNumber());

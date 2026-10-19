@@ -48,14 +48,14 @@ class SettingsPageTest extends TestCase
                 'app_name_full' => 'MTsN 2 Kota Malang',
                 'contact_email' => 'ptsp@mtsn2malang.sch.id',
                 'operating_hours_friday' => '07.00–11.00',
-                'letterhead_line_2' => 'Kantor Kemenag Kota Malang',
                 'enable_maintenance' => false,
                 'app_logo' => UploadedFile::fake()->image('logo.png', 200, 200),
+                'letterhead_image' => UploadedFile::fake()->image('kop.png', 1200, 200),
             ])
             ->call('save')
             ->assertHasNoFormErrors()
             ->assertNotified('Pengaturan disimpan');
-        $this->assertDatabaseHas('activity_log', ['description' => 'Mengubah pengaturan aplikasi: Nama singkat, Nama lengkap instansi, Logo, Email, Jumat, Baris kop 2']);
+        $this->assertDatabaseHas('activity_log', ['description' => 'Mengubah pengaturan aplikasi: Nama singkat, Nama lengkap instansi, Logo, Email, Jumat, Gambar kop surat']);
 
         $this->assertSame('07.00–11.00', AppSetting::get('operating_hours_friday'));
         $this->assertFalse(filter_var(AppSetting::where('key', 'enable_maintenance')->value('value'), FILTER_VALIDATE_BOOLEAN));
@@ -63,9 +63,40 @@ class SettingsPageTest extends TestCase
         $this->assertStringStartsWith('storage/branding/', $logo);
         Storage::disk('public')->assertExists(substr($logo, 8));
 
-        $this->assertContains('Kantor Kemenag Kota Malang', \App\Support\Letterhead::data()['lines']);
+        $kop = AppSetting::where('key', 'letterhead_image')->value('value');
+        $this->assertStringStartsWith('storage/branding/', $kop);
+        Storage::disk('public')->assertExists(substr($kop, 8));
+        $this->assertSame(asset($kop), \App\Support\Letterhead::data()['image']);
         auth()->logout();
         $this->getJson('/api/publik/profil')->assertOk()->assertJsonPath('jam_layanan.jumat', '07.00–11.00');
+    }
+
+    public function test_kop_surat_takes_a_png_only_and_clearing_it_brings_back_the_text_kop(): void
+    {
+        Storage::fake('public');
+        AppSetting::set('app_name', 'PTSP MTsN 2 MALANG');
+        AppSetting::set('app_name_full', 'MTsN 2 Kota Malang');
+
+        Livewire::test(Settings::class)
+            ->fillForm(['letterhead_image' => UploadedFile::fake()->image('kop.jpg', 1200, 200)])
+            ->call('save')
+            ->assertHasFormErrors(['letterhead_image']);
+        $this->assertNull(AppSetting::get('letterhead_image'));
+
+        Livewire::test(Settings::class)
+            ->fillForm(['letterhead_image' => UploadedFile::fake()->image('kop.png', 1200, 200)])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $kop = substr(AppSetting::get('letterhead_image'), 8);
+        Storage::disk('public')->assertExists($kop);
+
+        Livewire::test(Settings::class)
+            ->fillForm(['letterhead_image' => null])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertNull(AppSetting::get('letterhead_image'));
+        Storage::disk('public')->assertMissing($kop);
+        $this->assertNull(\App\Support\Letterhead::data()['image']);
     }
 
     public function test_invalid_values_are_refused_and_page_is_admin_only(): void

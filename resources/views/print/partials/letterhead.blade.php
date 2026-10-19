@@ -1,12 +1,25 @@
-{{-- Kop instansi for printed documents and PDFs (table layout: DomPDF has no flexbox). --}}
+{{-- Kop instansi for printed documents and PDFs: the uploaded kop image, else a
+     text kop (table layout: DomPDF has no flexbox). --}}
 @php
     $kop = \App\Support\Letterhead::data();
-    $logo = $kop['logo'];
-    if (($pdf ?? false) && $logo && str_starts_with($logo, url('/'))) {
-        $local = public_path(ltrim(parse_url($logo, PHP_URL_PATH), '/'));
-        $logo = is_file($local) ? $local : null;
-    }
+    // DomPDF reads images from disk, not over HTTP.
+    $isPdf = $pdf ?? false;
+    $local = function (?string $url) use ($isPdf) {
+        if (! ($isPdf && $url && str_starts_with($url, url('/')))) {
+            return $url;
+        }
+        $path = public_path(ltrim(parse_url($url, PHP_URL_PATH), '/'));
+
+        return is_file($path) ? $path : null;
+    };
+    $image = $local($kop['image']);
+    $logo = $local($kop['logo']);
 @endphp
+@if ($image)
+<div class="kop-image-wrap">
+    <img class="kop-image" src="{{ $image }}" alt="Kop {{ $kop['name'] }}">
+</div>
+@else
 <table class="kop" role="presentation">
     <tr>
         <td class="kop-logo-cell">
@@ -26,7 +39,10 @@
         <td class="kop-logo-cell"></td>
     </tr>
 </table>
+@endif
 <style>
+    .kop-image-wrap { margin-bottom: 16px; }
+    .kop-image { display: block; width: 100%; height: auto; }
     table.kop { width: 100%; border-collapse: collapse; border-bottom: 4px double #111827; margin-bottom: 16px; }
     table.kop td { border: none; padding: 0 0 10px; vertical-align: middle; background: none; }
     .kop-logo-cell { width: 80px; }

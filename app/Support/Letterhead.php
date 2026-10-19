@@ -6,14 +6,15 @@ use App\Models\AppSetting;
 use App\Models\User;
 
 /**
- * Kop instansi for printed documents: the ministry lines, the madrasah's
- * full name, contact line and logo (from Pengaturan Aplikasi), plus the
- * headmaster who signs reports.
+ * Kop instansi for printed documents: the PNG kop uploaded in Pengaturan
+ * Aplikasi or, until there is one, a text kop from the ministry lines, the
+ * madrasah's full name, contact line and logo; plus the headmaster who
+ * signs reports.
  */
 class Letterhead
 {
     /**
-     * @return array{lines: array<int, string>, name: string, contact: string, logo: ?string}
+     * @return array{image: ?string, lines: array<int, string>, name: string, contact: string, logo: ?string}
      */
     public static function data(): array
     {
@@ -26,8 +27,10 @@ class Letterhead
             $setting('contact_website'),
         ]);
         $logo = $setting('app_logo');
+        $image = $setting('letterhead_image');
 
         return [
+            'image' => $image ? asset($image) : null,
             'lines' => array_values(array_filter([
                 $setting('letterhead_line_1', 'Kementerian Agama Republik Indonesia'),
                 $setting('letterhead_line_2', 'Kantor Kementerian Agama Kota Malang'),
