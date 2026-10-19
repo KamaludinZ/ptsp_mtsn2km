@@ -376,16 +376,17 @@
                     <div class="register-form-wrapper">
                         <!-- Tabs -->
                         <div class="tab-buttons">
-                        <button class="tab-button active" onclick="switchTab('umum')">
+                        @php($civitasTabActive = old('is_civitas') === '1')
+                        <button class="tab-button @unless ($civitasTabActive) active @endunless" onclick="switchTab('umum')">
                             <i class="fas fa-user me-2"></i>Pendaftar Umum
                         </button>
-                        <button class="tab-button" onclick="switchTab('civitas')">
+                        <button class="tab-button @if ($civitasTabActive) active @endif" onclick="switchTab('civitas')">
                             <i class="fas fa-id-card me-2"></i>Civitas Internal
                         </button>
                     </div>
 
                     <!-- Tab Content: Pendaftar Umum -->
-                    <div id="tab-umum" class="tab-content active">
+                    <div id="tab-umum" class="tab-content @unless ($civitasTabActive) active @endunless">
                         <div class="info-box">
                             <p class="mb-0" style="color: #1e40af; font-size: 14px;">
                                 <i class="fas fa-info-circle me-2"></i>
@@ -485,11 +486,11 @@
                     </div>
 
                     <!-- Tab Content: Civitas Internal -->
-                    <div id="tab-civitas" class="tab-content">
+                    <div id="tab-civitas" class="tab-content @if ($civitasTabActive) active @endif">
                         <div class="info-box">
                             <p class="mb-0" style="color: #1e40af; font-size: 14px;">
                                 <i class="fas fa-info-circle me-2"></i>
-                                <strong>Civitas Internal:</strong> Untuk siswa, guru, pegawai, wali murid, alumni, dan mitra MTsN 2 Kota Malang. Memerlukan kode registrasi dari madrasah.
+                                <strong>Civitas Internal:</strong> Untuk siswa, guru, pegawai, wali murid, alumni, dan mitra MTsN 2 Kota Malang.@if ($civitasCodeRequired) Memerlukan kode registrasi dari madrasah.@endif
                             </p>
                             <p class="mb-0 mt-2" style="color: #1e40af; font-size: 14px;">
                                 <i class="fas fa-link me-2"></i>
@@ -499,14 +500,20 @@
 
                         @unless ($civitasOpen)
                             <div class="alert alert-warning" role="status" style="font-size: 14px;">
-                                <i class="fas fa-lock me-2"></i>Pendaftaran civitas sedang ditutup. Hubungi admin madrasah untuk mendapatkan kode registrasi.
+                                <i class="fas fa-lock me-2"></i>Pendaftaran civitas sedang ditutup. Hubungi admin madrasah untuk informasi lebih lanjut.
                             </div>
-                        @endunless
-
+                            @error('registration_code')
+                                <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
+                            @enderror
+                            @error('civitas_type')
+                                <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
+                            @enderror
+                        @else
                         <form method="POST" action="{{ route('register') }}" id="form-civitas">
                             @csrf
                             <input type="hidden" name="is_civitas" value="1">
 
+                            @if ($civitasCodeRequired)
                             <div class="form-group">
                                 <label for="registration_code" class="form-label">
                                     Kode Registrasi <span class="text-danger">*</span>
@@ -523,6 +530,7 @@
                                     <div class="text-danger mt-1" style="font-size: 14px;">{{ $message }}</div>
                                 @enderror
                             </div>
+                            @endif
 
                             <div class="form-group">
                                 <label for="civitas_type" class="form-label">
@@ -621,6 +629,7 @@
                                 </button>
                             </div>
                         </form>
+                        @endunless
                     </div>
 
                         <!-- Bottom Links -->

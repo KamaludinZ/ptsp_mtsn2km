@@ -96,6 +96,50 @@ class ApplicationTest extends TestCase
         $this->assertTrue($user->hasRole('guru'));
     }
 
+    public function test_civitas_registers_without_a_code_when_the_admin_turns_it_off(): void
+    {
+        Role::findOrCreate('siswa');
+        $form = [
+            'is_civitas' => '1',
+            'name' => 'Siswa Baru',
+            'email' => 'siswa@example.com',
+            'whatsapp_number' => '081234567891',
+            'civitas_type' => 'siswa',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ];
+
+        \App\Support\CivitasRegistration::setFormEnabled(true);
+        \App\Support\CivitasRegistration::setCodeRequired(false);
+
+        $this->get('/register')->assertOk()->assertDontSee('id="registration_code"', false);
+        $this->post('/register', $form)->assertSessionHasNoErrors();
+
+        $user = User::where('email', 'siswa@example.com')->first();
+        $this->assertSame('siswa', $user->user_type);
+        $this->assertNull($user->registration_code);
+    }
+
+    public function test_closed_civitas_form_rejects_sign_ups_even_with_the_code(): void
+    {
+        Role::findOrCreate('guru');
+        \App\Support\CivitasRegistration::setCode('MTSN2-2026');
+        \App\Support\CivitasRegistration::setFormEnabled(false);
+
+        $this->get('/register')->assertOk()->assertDontSee('id="form-civitas"', false);
+        $this->post('/register', [
+            'is_civitas' => '1',
+            'name' => 'Bu Guru',
+            'email' => 'guru@example.com',
+            'whatsapp_number' => '081234567890',
+            'civitas_type' => 'guru',
+            'registration_code' => 'MTSN2-2026',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])->assertSessionHasErrors('registration_code');
+        $this->assertGuest();
+    }
+
     public function test_service_catalog_lists_services_for_the_user_type(): void
     {
         $public = Service::factory()->create(['name' => 'Legalisir Ijazah', 'user_types_allowed' => ['umum', 'alumni']]);

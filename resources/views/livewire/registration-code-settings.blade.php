@@ -9,6 +9,9 @@
 
         @if ($isOpen)
             <x-filament::badge color="success" icon="heroicon-m-lock-open">Pendaftaran civitas dibuka</x-filament::badge>
+            <x-filament::badge :color="$codeRequired ? 'info' : 'warning'" icon="heroicon-m-key">
+                {{ $codeRequired ? 'Wajib kode registrasi' : 'Tanpa kode registrasi' }}
+            </x-filament::badge>
         @else
             <x-filament::badge color="gray" icon="heroicon-m-lock-closed">Pendaftaran civitas ditutup</x-filament::badge>
         @endif

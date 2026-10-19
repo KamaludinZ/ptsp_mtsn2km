@@ -130,6 +130,9 @@ class FilamentMasterDataTest extends TestCase
         $this->actingAsRole('admin');
 
         Livewire::test(\App\Livewire\RegistrationCodeSettings::class)
+            ->assertSet('data.open', false)
+            ->assertSet('data.code_required', true)
+            ->set('data.open', true)
             ->set('data.code', 'MTSN2-2026')
             ->call('save')
             ->assertHasNoErrors();
@@ -140,10 +143,27 @@ class FilamentMasterDataTest extends TestCase
             ->call('save')
             ->assertHasErrors('data.code');
 
+        // Code still required: an open form needs a code.
         Livewire::test(\App\Livewire\RegistrationCodeSettings::class)
             ->set('data.code', '')
-            ->call('save');
+            ->call('save')
+            ->assertHasErrors('data.code');
+
+        Livewire::test(\App\Livewire\RegistrationCodeSettings::class)
+            ->assertSet('data.open', true)
+            ->set('data.code_required', false)
+            ->set('data.code', '')
+            ->call('save')
+            ->assertHasNoErrors();
         $this->assertNull(\App\Support\CivitasRegistration::code());
+        $this->assertFalse(\App\Support\CivitasRegistration::codeRequired());
+        $this->assertTrue(\App\Support\CivitasRegistration::isOpen());
+
+        Livewire::test(\App\Livewire\RegistrationCodeSettings::class)
+            ->set('data.open', false)
+            ->call('save')
+            ->assertHasNoErrors();
+        $this->assertFalse(\App\Support\CivitasRegistration::isOpen());
     }
 
     public function test_admin_manages_service_categories(): void

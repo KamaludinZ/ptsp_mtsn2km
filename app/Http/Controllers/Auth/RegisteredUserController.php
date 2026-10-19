@@ -23,7 +23,8 @@ class RegisteredUserController extends Controller
     {
         return view('auth.register', [
             'civitasTypes' => CivitasRegistration::USER_TYPES,
-            'civitasOpen' => CivitasRegistration::code() !== null,
+            'civitasOpen' => CivitasRegistration::isOpen(),
+            'civitasCodeRequired' => CivitasRegistration::codeRequired(),
         ]);
     }
 
@@ -56,7 +57,7 @@ class RegisteredUserController extends Controller
 
         // Additional validation for civitas
         if ($isCivitas) {
-            $rules['registration_code'] = ['required', 'string', 'max:64'];
+            $rules['registration_code'] = [CivitasRegistration::codeRequired() ? 'required' : 'nullable', 'string', 'max:64'];
             $rules['civitas_type'] = ['required', 'in:' . implode(',', array_keys(CivitasRegistration::USER_TYPES))];
         } else {
             $rules['user_type'] = ['required', 'in:umum'];
@@ -67,21 +68,27 @@ class RegisteredUserController extends Controller
             'civitas_type.in' => 'Status yang dipilih tidak valid.',
         ]);
 
-        // Civitas: the shared code proves membership, the chosen status sets the account type
+        // Civitas: the admin opens the form; when required, the shared code proves
+        // membership. The chosen status sets the account type.
         $userType = 'umum';
         $registrationCode = null;
 
         if ($isCivitas) {
-            if (! CivitasRegistration::matches($request->registration_code)) {
+            if (! CivitasRegistration::isOpen()) {
                 throw ValidationException::withMessages([
-                    'registration_code' => CivitasRegistration::code() === null
-                        ? 'Pendaftaran civitas sedang ditutup. Hubungi admin madrasah.'
-                        : 'Kode registrasi tidak valid.',
+                    CivitasRegistration::codeRequired() ? 'registration_code' : 'civitas_type' => 'Pendaftaran civitas sedang ditutup. Hubungi admin madrasah.',
                 ]);
             }
 
+            if (CivitasRegistration::codeRequired()) {
+                if (! CivitasRegistration::matches($request->registration_code)) {
+                    throw ValidationException::withMessages(['registration_code' => 'Kode registrasi tidak valid.']);
+                }
+
+                $registrationCode = trim($request->registration_code);
+            }
+
             $userType = $request->civitas_type;
-            $registrationCode = trim($request->registration_code);
         }
 
         // Penautan akun: pemohon yang sudah dicatat di loket (email atau WhatsApp
