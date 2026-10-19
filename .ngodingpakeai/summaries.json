@@ -33,7 +33,7 @@
     "summary": "Konfigurasi autentikasi Laravel: guard web menggunakan session driver dengan provider users (model User), guard api menggunakan token sanctum, konfigurasi reset password via tabel password_reset_tokens."
   },
   "config/cache.php": {
-    "summary": "Konfigurasi cache Laravel: default store dari env CACHE_STORE (database), konfigurasi store database (tabel cache, lock), file, redis, dan array. Digunakan untuk cache blocked IPs, app_settings, dan statistik dashboard."
+    "summary": "Konfigurasi cache Laravel: default store dari env CACHE_STORE atau CACHE_DRIVER dengan bawaan database agar dipakai bersama web, scheduler, dan antrean; store database (tabel cache, lock), file, redis, dan array. Dipakai untuk blocked IPs, app_settings, heartbeat scheduler, dan statistik dashboard."
   },
   "config/maintenance.php": {
     "summary": "Konfigurasi maintenance mode Laravel: driver file, template view errors.503, redirect URL saat maintenance. Digunakan oleh SecurityMonitor saat admin mengaktifkan mode pemeliharaan melalui panel /cp."
@@ -165,7 +165,7 @@
     "summary": "Helper statistik situs publik: total tiket, layanan aktif, pengunjung, dan IKM untuk ditampilkan di homepage. Data di-cache untuk performa."
   },
   "app/Support/CivitasRegistration.php": {
-    "summary": "Helper untuk kode registrasi warga sekolah (civitas): setCode()/getCode() menyimpan kode ke tabel app_settings, validateCode() memvalidasi kode yang dimasukkan saat registrasi. Memungkinkan guru/pegawai/siswa mendaftar dengan kode khusus sekolah."
+    "summary": "Pengaturan pendaftaran civitas internal di app_settings: kode bersama (civitas_registration_code), sakelar form dibuka (civitas_registration_open, bawaan mengikuti ada tidaknya kode) dan sakelar wajib kode (civitas_registration_code_required, bawaan wajib). isOpen() benar bila form dibuka dan, saat kode diwajibkan, kode sudah diisi; matches() membandingkan kode dengan hash_equals; USER_TYPES daftar status civitas yang boleh dipilih."
   },
   "app/Providers/AppSettingsServiceProvider.php": {
     "summary": "Service provider untuk memuat pengaturan aplikasi dari tabel app_settings ke konfigurasi Laravel saat boot: app_name, tema panel, pengaturan registrasi. Cache ke cache key app_settings_all."
@@ -237,7 +237,7 @@
     "summary": "Mailable ucapan terima kasih survei: dikirim ke email pemohon setelah survei terkait tiket selesai diisi. Template di resources/views/emails/thank-you-survey.blade.php."
   },
   "app/Livewire/RegistrationCodeSettings.php": {
-    "summary": "Komponen Livewire untuk pengaturan kode registrasi civitas di panel admin: menampilkan dan mengupdate kode via AppSetting. Dirender di halaman pengaturan sistem."
+    "summary": "Komponen Livewire tab Kode Registrasi di /cp/roles?bagian=kode-registrasi (khusus admin): toggle buka/tutup form pendaftaran civitas, toggle wajibkan kode registrasi, dan isian kode (min. 6 karakter tanpa spasi, tombol buat kode acak; wajib diisi bila form dibuka dan kode diwajibkan). save() menyimpan ketiganya lewat CivitasRegistration dan memberi notifikasi status pendaftaran."
   },
   "app/Helpers/helpers.php": {
     "summary": "Helper global PHP yang di-autoload: fungsi app_brand_name() mengembalikan nama aplikasi dari AppSetting atau APP_NAME config, digunakan brandName() di AdminPanelProvider dan PortalPanelProvider."
@@ -819,7 +819,7 @@
     "summary": "Layout guest Breeze: wrapper sederhana untuk halaman auth Breeze (login, register), digunakan GuestLayout component."
   },
   "resources/views/auth/register.blade.php": {
-    "summary": "View form registrasi portal dua jalur (Pendaftar Umum dan Civitas Internal dengan kode registrasi): nama, email, WhatsApp, status civitas, kata sandi, dengan petunjuk agar pemohon yang pernah dilayani di loket memakai email atau nomor WhatsApp yang sama supaya riwayat permohonan tersambung otomatis."
+    "summary": "View form registrasi portal dua tab (Pendaftar Umum dan Civitas Internal): nama, email, WhatsApp, kata sandi, status civitas. Isian kode registrasi hanya tampil bila diwajibkan; saat pendaftaran civitas ditutup form civitas diganti pesan tertutup. Tab civitas tetap terbuka setelah pengiriman civitas gagal agar galatnya terlihat; ada petunjuk memakai email atau WhatsApp yang sama dengan loket agar riwayat tersambung."
   },
   "resources/views/auth/verify-email.blade.php": {
     "summary": "View halaman verifikasi email: instruksi cek inbox, pesan status, pemberitahuan bahwa akun tersambung dengan data pemohon dari loket bila pendaftaran ditautkan (tanpa rincian riwayat sebelum verifikasi), tombol kirim ulang email verifikasi, dan tombol keluar."
@@ -915,7 +915,7 @@
     "summary": "View heading widget 'Manajemen Buku Tamu' di dashboard admin: judul dan link ke VisitorResource."
   },
   "resources/views/livewire/registration-code-settings.blade.php": {
-    "summary": "View komponen Livewire RegistrationCodeSettings: form input kode registrasi civitas dengan tombol simpan."
+    "summary": "View komponen RegistrationCodeSettings: form toggle pendaftaran civitas, toggle wajib kode dan isian kode, tombol simpan, serta lencana status (dibuka/ditutup, wajib kode/tanpa kode)."
   },
   "resources/views/components/application-logo.blade.php": {
     "summary": "Blade component logo aplikasi: menampilkan logo MTsN 2 Kota Malang (SVG atau img) dengan alt text."
@@ -1026,7 +1026,7 @@
     "summary": "Panduan deploy hosting tanpa Docker (cPanel/VPS): syarat (PHP, PostgreSQL), database dan pg_trgm, pasang via paket rilis atau git, konfigurasi .env termasuk TRUSTED_PROXIES dan QUEUE_CONNECTION, catatan bahwa Email/WhatsApp diatur di panel per jalur (MAIL_*/WHATSAPP_* hanya cadangan jalur pelayanan), post-deploy, cron scheduler, web root dan symlink storage, update, backup, checklist, dan troubleshooting."
   },
   "docs/DEPLOY_COOLIFY.md": {
-    "summary": "Panduan deploy Coolify/Docker: cara kerja container, persiapan dan APP_KEY, resource Docker Compose, variabel lingkungan (Email/WhatsApp diatur di panel per jalur pelayanan dan pengaduan, MAIL_*/WHATSAPP_* hanya cadangan jalur pelayanan), deploy, update, letak data dan keamanan redeploy (volume ptsp-postgres dan ptsp-storage), backup, VPS tanpa Coolify, migrasi data, opsi Dockerfile dengan database Coolify, troubleshooting dan perintah berguna."
+    "summary": "Panduan deploy Coolify/Docker: cara kerja container, persiapan dan APP_KEY, resource Docker Compose, variabel lingkungan, deploy, update, letak data dan volume permanen, backup, VPS tanpa Coolify, migrasi data, opsi Dockerfile, troubleshooting termasuk scheduler tidak terdeteksi karena cache tidak permanen, dan perintah berguna."
   },
   ".ngodingpakeaiignore": {
     "summary": "Daftar path tambahan yang dikecualikan dari sync NgodingPakeAI (sintaks .gitignore): folder tooling agen lokal .claude/ dan .codex/, aset vendor Filament/awcodes hasil build di public/js dan public/css, lockfile composer/npm, serta berkas placeholder .gitignore."
@@ -1071,13 +1071,13 @@
     "summary": "Panel aksi disposisi (antrean dan halaman tiket): Didisposisi sebagai peran aktif, penerima unit, pilihan cepat instruksi dari master, model tanda tangan TTD/TTE/telah didisposisi oleh (bawaan peran aktif dan nama), unggah berkas tanda tangan, catatan; submit() memanggil TicketService::dispose."
   },
   "app/Filament/Forms/PersuratanFields.php": {
-    "summary": "Komponen form persuratan dari Master Persuratan yang tetap menerima isian manual: tujuan(), jenis() (datalist), klasifikasi() (Select bisa dicari, label 'kode \u2014 nama', kode ketikan baru diterima), tembusan() (TagsInput per baris), instruksi() disposisi."
+    "summary": "Komponen form persuratan dari Master Persuratan yang tetap menerima isian manual: tujuan(), jenis() (datalist), klasifikasi() (Select bisa dicari, label 'kode — nama', kode ketikan baru diterima), tembusan() (TagsInput per baris), instruksi() disposisi."
   },
   "app/Filament/Pages/Content/ContentManagement.php": {
     "summary": "Halaman Manajemen Konten di panel staf: ringkasan pengumuman dan FAQ beserta hal yang perlu perhatian (summary), akses dibatasi pengelola konten."
   },
   "app/Filament/Pages/FrontDesk/RegisterService.php": {
-    "summary": "Halaman Filament /cp/loket/registrasi-layanan (RegisterService) untuk mendaftarkan permohonan walk-in mode offline. Petugas memilih status pemohon: Belum terdaftar (nama, WhatsApp, email diisi; hasil pencarian akun lewat FrontDeskService::findApplicant ditampilkan, termasuk penolakan akun nonaktif/terhapus/petugas) atau Sudah terdaftar (filter tipe pengguna dari Applicants::options, pilih akun lewat Applicants::lookup, nama/WhatsApp/email terisi otomatis dan terkunci, panel ringkasan pemohon dengan tautan perbaikan ke Pengguna \u203a Pemohon untuk admin). Layanan disaring per tipe (serviceOptions, availableFor) dan divalidasi server; submit memanggil FrontDeskService::registerWalkInLinked dan menampilkan nomor permohonan beserta hasil penautan akun, atau pesan gagal tanpa nomor.",
+    "summary": "Halaman Filament /cp/loket/registrasi-layanan (RegisterService) untuk mendaftarkan permohonan walk-in mode offline. Petugas memilih status pemohon: Belum terdaftar (nama, WhatsApp, email diisi; hasil pencarian akun lewat FrontDeskService::findApplicant ditampilkan, termasuk penolakan akun nonaktif/terhapus/petugas) atau Sudah terdaftar (filter tipe pengguna dari Applicants::options, pilih akun lewat Applicants::lookup, nama/WhatsApp/email terisi otomatis dan terkunci, panel ringkasan pemohon dengan tautan perbaikan ke Pengguna › Pemohon untuk admin). Layanan disaring per tipe (serviceOptions, availableFor) dan divalidasi server; submit memanggil FrontDeskService::registerWalkInLinked dan menampilkan nomor permohonan beserta hasil penautan akun, atau pesan gagal tanpa nomor.",
     "sections": [
       {
         "symbol": "RegisterService::form",
@@ -1130,7 +1130,7 @@
     "summary": "Halaman Peran Pemroses Naskah (admin): enam unit back office penerima disposisi (Waka, TU, penjamin mutu), pemegang dan layanan yang memakainya; assignAction mengatur staf pemegang via ProcessorRoles::assign."
   },
   "app/Filament/Pages/System/Settings.php": {
-    "summary": "Halaman Pengaturan aplikasi dalam beberapa bagian (identitas, kontak, tautan, kop surat, situs) yang menulis pengaturan yang sama yang dibaca situs (SettingsStore/AppSetting)."
+    "summary": "Halaman Filament Pengaturan (/cp/pengaturan, tab via query bagian): identitas dan logo, kontak dan jam layanan, media sosial dan tautan, format dan penomoran, kop surat, situs; menulis AppSetting lewat SettingsStore. Tab Kop Surat hanya menerima unggahan gambar PNG (letterhead_image, maks. 2 MB, disk public folder branding); mengganti atau mengosongkan gambar menghapus berkas lama, sedangkan logo bawaan tetap bila isian logo kosong."
   },
   "app/Filament/Pages/System/SystemMonitor.php": {
     "summary": "Halaman Monitoring Sistem (peran aktif Administrator): tab ringkasan, aplikasi (termasuk status integrasi notifikasi), server, keamanan, Log & Audit (log aplikasi, audit trail, dan bagian Perpindahan peran & ganti akun dari AuditPanelService dengan saringan; canSeeRoleAudit menolak akun pinjaman), dan pembaruan aplikasi."
@@ -1169,7 +1169,7 @@
     "summary": "Halaman daftar slide hero beranda dengan penjelasan urutan (seret untuk mengurutkan, tanpa slide aktif beranda memakai hero bawaan) dan tombol Tambah slide."
   },
   "app/Filament/Resources/HeroSliderResource.php": {
-    "summary": "Resource Hero Slider Beranda (admin): gambar komputer dipotong 16:5 dan diperkecil 1920\u00d7600 di browser sebelum unggah, gambar HP opsional 2:3 (1080\u00d71620), judul/subjudul/deskripsi, dua tombol dengan validasi tautan, warna teks (input warna bawaan) dan preset lapisan gelap (OVERLAYS), toggle tampil; tabel bisa diurutkan."
+    "summary": "Resource Hero Slider Beranda (admin): gambar komputer dipotong 16:5 dan diperkecil 1920×600 di browser sebelum unggah, gambar HP opsional 2:3 (1080×1620), judul/subjudul/deskripsi, dua tombol dengan validasi tautan, warna teks (input warna bawaan) dan preset lapisan gelap (OVERLAYS), toggle tampil; tabel bisa diurutkan."
   },
   "app/Filament/Resources/NotificationDeliveryResource/Pages/ListNotificationDeliveries.php": {
     "summary": "Halaman daftar Riwayat Notifikasi dengan ringkasan terkirim/gagal dan tab per status."
@@ -1438,7 +1438,7 @@
     "summary": "Model FAQ (tabel faqs): scopePublished urut kelompok lalu urutan, scopeInCategory, daftar kategori, nextSort, label 'Umum', safeAnswer() merender jawaban rich text yang disanitasi lewat RichText."
   },
   "app/Models/HeroSlider.php": {
-    "summary": "Model slide hero beranda (hero_sliders): gambar komputer (16:5, 1920\u00d7600) dan gambar HP opsional image_mobile (2:3, 1080\u00d71620) di disk public, konstanta rasio/ukuran, teks, tombol, warna, aktif, urutan; scopeActive, imageUrl/mobileImageUrl relatif /storage, berkas lama dihapus saat diganti atau dihapus."
+    "summary": "Model slide hero beranda (hero_sliders): gambar komputer (16:5, 1920×600) dan gambar HP opsional image_mobile (2:3, 1080×1620) di disk public, konstanta rasio/ukuran, teks, tombol, warna, aktif, urutan; scopeActive, imageUrl/mobileImageUrl relatif /storage, berkas lama dihapus saat diganti atau dihapus."
   },
   "app/Models/Notification.php": {
     "summary": "Model notifikasi in-app (kanal database Laravel) dengan ticket_id diisi dari nomor tiket di data notifikasi; relasi ticket, judul, isi, scopeForTicket."
@@ -1531,7 +1531,7 @@
     "summary": "Validasi dan penyimpanan survei SKM & SPAK untuk form web bertahap dan API: identityRules, ratingRules (jawaban harus salah satu opsi), only() menyaring pertanyaan aktif, save() menyimpan untuk edisi aktif dengan skor 1..n sesuai Permenpan RB 14/2017."
   },
   "app/Services/SystemMonitorService.php": {
-    "summary": "Monitoring Sistem: versi (APP_VERSION, RELEASE, atau git describe lewat Process tanpa shell), kesehatan aplikasi dan server, temuan konfigurasi berisiko, integrations() status kanal Email/WhatsApp untuk jalur pelayanan dan jalur pengaduan beserta pengiriman 24 jam per jalur, ringkasan keamanan, snapshot metrik."
+    "summary": "Monitoring Sistem: versi (APP_VERSION, RELEASE, atau git describe lewat Process tanpa shell), kesehatan aplikasi dan server, scheduler() terdeteksi dari heartbeat cache atau snapshot metrik monitor:collect terbaru, temuan konfigurasi berisiko termasuk cache array di produksi, integrations() status kanal Email/WhatsApp per jalur pelayanan dan pengaduan, ringkasan keamanan, snapshot metrik."
   },
   "app/Services/UpdateService.php": {
     "summary": "Pembaruan aplikasi: cek rilis terbaru di GitHub (cache 10 menit), isNewer yang hanya menganggap versi minimal major.minor (hash commit bukan versi), riwayat pembaruan termasuk redeploy, storePackage untuk ZIP unggahan, apply() dengan mode maintenance, backup, salin, migrate dan restore otomatis bila gagal."
@@ -1567,7 +1567,7 @@
     "summary": "Menerapkan pengaturan email jalur pelayanan dari Integrasi Notifikasi ke mailer bawaan aplikasi pada setiap request dan job tanpa mengubah .env; mailer() menyiapkan mailer terpisah bernama sesuai jalur (mis. 'pengaduan') dari pengaturan jalur itu saat pesan dikirim."
   },
   "app/Support/Letterhead.php": {
-    "summary": "Kop instansi untuk dokumen cetak: baris kementerian, nama lengkap madrasah, kontak dan logo dari Pengaturan, serta signatory() kepala madrasah penanda tangan laporan."
+    "summary": "Kop instansi untuk dokumen cetak: data() memberi gambar kop PNG yang diunggah di Pengaturan (letterhead_image) dan, sebagai cadangan kop teks, baris kementerian, nama lengkap madrasah, kontak dan logo; signatory() kepala madrasah penanda tangan laporan (nama dan NIP dari pengaturan atau akun kepala_sekolah)."
   },
   "app/Support/LogReader.php": {
     "summary": "Pembaca log aplikasi untuk halaman monitoring: entri terbaru dari laravel.log harian, hanya pesan tanpa stack trace, dibatasi ukurannya, dengan warna per level."
@@ -1579,7 +1579,7 @@
     "summary": "Daftar pemicu notifikasi (EVENTS tiket termasuk disposition_requested ke Kepala Madrasah/Kepala TU, survey_reminder, complaint_received, complaint_new, complaint_updated), COMPLAINT_EVENTS dan line() yang menentukan jalur sambungan (pengaduan atau pelayanan) tiap pemicu, placeholder yang boleh dipakai, defaults() isi bawaan per pemicu, render() mengganti placeholder, unknownPlaceholders dan placeholderRule untuk validasi."
   },
   "app/Support/Persuratan.php": {
-    "summary": "Pilihan rutin persuratan: konstanta isi awal master, options() pilihan aktif, klasifikasiOptions() 'kode \u2014 nama', rememberManual() menyimpan isian manual (tujuan, jenis, tembusan, instruksi) sebagai pilihan nonaktif di persuratan_masters untuk ditinjau TU."
+    "summary": "Pilihan rutin persuratan: konstanta isi awal master, options() pilihan aktif, klasifikasiOptions() 'kode — nama', rememberManual() menyimpan isian manual (tujuan, jenis, tembusan, instruksi) sebagai pilihan nonaktif di persuratan_masters untuk ditinjau TU."
   },
   "app/Support/ProcessorRoles.php": {
     "summary": "Peran pemroses naskah (unit penerima disposisi): deskripsi dan ikon, overview() per unit dengan pemegang (dimuat per peran agar aman untuk guard sanctum) dan jumlah layanan, eligibleStaff(), assign() menetapkan pemegang, unitsOf(), scopeTicketsFor()."
@@ -1588,7 +1588,7 @@
     "summary": "Pengaturan disposisi per layanan: MODES (kepsek_tu, kepsek, tu, none), RECIPIENTS unit back office, model dan tipe tanda tangan, instruksi bawaan; modeFor, usesDefault, recommendationHint, apply() menyimpan mode, penerima dan anjuran tanda tangan."
   },
   "app/Support/ServiceSummary.php": {
-    "summary": "Standar pelayanan untuk form permohonan (persyaratan dan produk sebagai rich text aman, waktu, biaya, disposisi) dan templates() tautan unduh template aktif dengan label wajib dan petunjuk pengisian."
+    "summary": "Standar pelayanan dan template berkas untuk form permohonan: html() merender view filament.components.service-standard (fakta, persyaratan, langkah, dan komponen lain seperti halaman publik layanan), templates() tautan unduh template aktif dengan label wajib dan petunjuk pengisian."
   },
   "app/Support/SettingsStore.php": {
     "summary": "Penyimpan Pengaturan Aplikasi untuk halaman Pengaturan dan API /api/pengaturan: normalisasi nilai, hanya menyimpan perubahan nyata, values(), hapus logo unggahan."
@@ -1597,7 +1597,7 @@
     "summary": "Satu tempat penentu label, warna dan ikon status untuk komponen x-status-badge, halaman publik dan API."
   },
   "app/Support/SuratKeluarNumber.php": {
-    "summary": "Konstanta batas nomor urut tahunan surat keluar (9999) dan kunci pengaturan kode satker; kodeSatker() membaca singkatan unit kerja untuk token {S}; ranges() menulis daftar nomor urut sebagai rentang ringkas (mis. 3, 7\u20139) untuk pratinjau, notifikasi, log dan riwayat permintaan. Perangkaian nomor ada di SuratKeluarService."
+    "summary": "Konstanta batas nomor urut tahunan surat keluar (9999) dan kunci pengaturan kode satker; kodeSatker() membaca singkatan unit kerja untuk token {S}; ranges() menulis daftar nomor urut sebagai rentang ringkas (mis. 3, 7–9) untuk pratinjau, notifikasi, log dan riwayat permintaan. Perangkaian nomor ada di SuratKeluarService."
   },
   "app/Support/SurveyReminders.php": {
     "summary": "Pengingat survei: unrated() permohonan selesai tanpa respons survei, remind() mengirim survey_reminder lewat kanal aktif maksimal sekali per 24 jam (petugas atau otomatis oleh penjadwal) dan mencatat audit, lastSentAt()."
@@ -1906,7 +1906,7 @@
     "summary": "Halaman publik Katalog Layanan (/services): filter kategori dan pencarian, kartu layanan dengan deskripsi ringkas dan enam komponen utama (persyaratan, alur, produk, pengaduan) sebagai rich text, tautan Lihat 14 komponen standar pelayanan ke halaman detail, modal detail, tautan ajukan."
   },
   "resources/views/onlineportal/service-detail.blade.php": {
-    "summary": "Halaman publik detail layanan: deskripsi dan 14 komponen standar pelayanan sebagai rich text aman (kolom di tabel services diutamakan, sisanya dari service_components yang diisi di tab Standar Pelayanan), template berkas aktif dengan unduh tunggal/ZIP, tombol ajukan, tautan survei dan pengaduan."
+    "summary": "Halaman publik detail layanan: deskripsi dan 14 komponen standar pelayanan dari ServiceStandard::items (sama dengan form permohonan) sebagai rich text aman, mode layanan, template berkas aktif dengan unduh tunggal/ZIP, tombol ajukan, tautan survei dan pengaduan."
   },
   "resources/views/onlineportal/track-ticket-form.blade.php": {
     "summary": "Halaman publik Lacak Tiket: form nomor tiket (dan email untuk detail), hasil progres, badge status dan tahapan tanpa membocorkan catatan internal."
@@ -1930,7 +1930,7 @@
     "summary": "Template cetak/PDF laporan bulanan kinerja layanan: kop, ringkasan, rekap jenis layanan, status, kepuasan/pengaduan/kunjungan dan tanda tangan kepala madrasah."
   },
   "resources/views/print/partials/letterhead.blade.php": {
-    "summary": "Partial kop instansi untuk dokumen cetak dan PDF (layout tabel untuk DomPDF) dari Letterhead::data dengan logo."
+    "summary": "Partial kop instansi untuk dokumen cetak dan PDF dari Letterhead::data: menampilkan gambar kop PNG selebar halaman bila sudah diunggah, selain itu kop teks berlayout tabel (DomPDF tanpa flexbox) dengan logo; untuk PDF gambar dibaca dari path lokal public."
   },
   "resources/views/print/ticket-receipt.blade.php": {
     "summary": "Tanda terima permohonan layanan (route tickets.receipt) dengan kop, nomor tiket, data pemohon dan tautan pelacakan."
@@ -2017,13 +2017,13 @@
     "summary": "Test proses disposisi: model tanda tangan dan berkas, lembar disposisi cetak (instruksi tercentang, cetak ulang menampilkan keputusan sebenarnya dan pelakunya), unit penerima hanya membuka/mencetak lembar setelah didisposisi, tombol Lihat dan Cetak di halaman tiket (tersembunyi untuk layanan tanpa disposisi), riwayat, penerusan ke unit, mode per layanan, immutable disposition_logs, antrean dan keputusan lewat API, unggah TTD susulan."
   },
   "tests/Feature/DispositionSettingsTest.php": {
-    "summary": "Test pengaturan disposisi per layanan: akses admin, pemetaan mode ke field persetujuan, simpan mode/penerima/anjuran, tampilan di katalog dan dokumen, filter, API baca dan simpan."
+    "summary": "Test pengaturan disposisi per layanan: akses admin, pemetaan mode ke field persetujuan, simpan mode/penerima/anjuran, tampilan di katalog dan dokumen, ringkasan standar pelayanan di form permohonan (fakta, langkah, produk, tautan halaman publik hanya bila boleh dibuka), filter, API baca dan simpan."
   },
   "tests/Feature/FaqApiTest.php": {
     "summary": "Test API FAQ admin: hanya administrator, buat/ubah/filter/hapus, urutan tampil dan penyusunan ulang, naik/turun dalam kelompok."
   },
   "tests/Feature/FilamentMasterDataTest.php": {
-    "summary": "Feature test FilamentMasterDataTest: panel Filament /cp sebagai satu-satunya UI master data: hanya admin mengelola, pengguna dan peran lewat form, peran bawaan dilindungi, kode registrasi civitas, kategori layanan, buku tamu, pengumuman, pengaturan, dan semua daftar resource tampil dengan data."
+    "summary": "Feature test FilamentMasterDataTest: panel /cp sebagai UI master data khusus admin: pengguna dan peran lewat form, peran bawaan dilindungi, pengaturan pendaftaran civitas (buka/tutup form, wajib atau tanpa kode, validasi kode), kategori layanan, buku tamu, pengumuman, pengaturan, dan semua daftar resource tampil dengan data."
   },
   "tests/Feature/FilamentPanelsTest.php": {
     "summary": "Feature test FilamentPanelsTest: setiap peran masuk ke panelnya sendiri dan hanya membuka halaman yang boleh: staf di /cp, pemohon di /portal, tamu diarahkan login, akun nonaktif terkunci."
@@ -2137,10 +2137,10 @@
     "summary": "Feature test SettingsAuthorizationTest: Pengaturan Aplikasi hanya dibaca dan diubah admin aktif."
   },
   "tests/Feature/SettingsIntegrationTest.php": {
-    "summary": "Feature test SettingsIntegrationTest: pengaturan sampai ke dokumen: kop surat, format tanggal dan prefiks nomor tiket."
+    "summary": "Feature test SettingsIntegrationTest: pengaturan sampai ke dokumen: kop teks dan gambar kop PNG yang menggantikannya pada tanda terima, lembar disposisi, register dan laporan PDF, format tanggal, serta prefiks nomor tiket."
   },
   "tests/Feature/SettingsPageTest.php": {
-    "summary": "Feature test SettingsPageTest: halaman Pengaturan dengan bagian identitas, kontak, tautan, kop surat dan situs; kode satker dari pengaturan dipakai pada nomor surat keluar yang dirangkai SuratKeluarService."
+    "summary": "Feature test SettingsPageTest: halaman Pengaturan bertab (identitas, kontak, tautan, kop surat, situs), simpan dengan audit, unggah logo dan gambar kop surat PNG (JPG ditolak, mengosongkan menghapus berkas dan kembali ke kop teks), validasi, pola nomor dan format tanggal, serta akses per peran."
   },
   "tests/Feature/SidebarByRoleTest.php": {
     "summary": "Feature test SidebarByRoleTest: setiap item sidebar yang terlihat suatu peran dapat dibuka dan item terlarang tidak tampil."
@@ -2170,7 +2170,7 @@
     "summary": "Feature test Responden Survei dan pengingat: template ada, akses pengawas, pengingat manual sekali sehari dengan tautan survei, penjadwal surveys:remind pada hari ke-1 dan ke-7, tiket yang dinilai keluar dari daftar, API."
   },
   "tests/Feature/SystemMonitorTest.php": {
-    "summary": "Feature test Monitoring Sistem (admin): kesehatan aplikasi/server, metrik, keamanan, log dan audit trail termasuk rincian import/ekspor akun, pembaruan (hash commit bukan versi rilis) dan API terkait."
+    "summary": "Feature test Monitoring Sistem (admin): kesehatan aplikasi/server, scheduler terdeteksi dari snapshot saat cache kehilangan heartbeat dan peringatan cache tidak permanen, metrik, keamanan, log dan audit trail termasuk import/ekspor akun, pembaruan, dan API terkait."
   },
   "tests/Feature/TicketAssignApiTest.php": {
     "summary": "Feature test TicketAssignApiTest: API aksi petugas: penugasan petugas (hanya staf aktif), unggah hasil layanan menyelesaikan tiket, serah terima produk oleh loket."
@@ -2299,7 +2299,7 @@
     "summary": "Halaman Arsip Survei Kuartalan (grup Pengawasan, akses sama dengan Laporan SKM & SPAK): tabel survey_archives triwulanan dengan periode, responden, nilai rata-rata, indeks berwarna sesuai mutu Permenpan RB 14/2017, saringan jenis dan tahun, serta rincian nilai per pertanyaan."
   },
   "app/Filament/Pages/System/ActivityTrail.php": {
-    "summary": "Halaman Rekam Jejak Aktivitas (/cp/rekam-jejak, administrator saja, tidak lewat akun pinjaman): linimasa per hari dari activity_log (perpindahan peran, ganti akun, aksi tiket) maksimal 200 terbaru, tab jenis dengan hitungan, saringan pengguna/peran/tanggal/aksi, rekap per pengguna\u2013peran via agregasi DB, dan slide-over detail catatan."
+    "summary": "Halaman Rekam Jejak Aktivitas (/cp/rekam-jejak, administrator saja, tidak lewat akun pinjaman): linimasa per hari dari activity_log (perpindahan peran, ganti akun, aksi tiket) maksimal 200 terbaru, tab jenis dengan hitungan, saringan pengguna/peran/tanggal/aksi, rekap per pengguna–peran via agregasi DB, dan slide-over detail catatan."
   },
   "app/Filament/Pages/System/Impersonation.php": {
     "summary": "Halaman Ganti Akun Sementara (/cp/pengguna/ganti-akun, peran aktif Administrator): tabel semua pengguna dengan peran, status, terakhir masuk, saringan peran/status, aksi Masuk sebagai (ImpersonateAction); blockedReason() menolak akun sendiri dan nonaktif; widget footer ImpersonationLog."
@@ -2323,7 +2323,7 @@
     "summary": "API peran aktif staf: GET /api/peran-aktif (peran staf yang dipegang, peran aktif, perlu_memilih, wewenang disposisi/proses/serah-terima/pengawasan, izin Spatie peran aktif) dan PUT /api/peran-aktif {peran} dengan validasi kepemilikan; pemohon 403."
   },
   "app/Http/Controllers/Api/ActivityTrailController.php": {
-    "summary": "API rekam jejak untuk peran aktif Administrator: GET /api/rekam-jejak (paginasi, saringan pengguna, peran, jenis role_switch/impersonation/ticket, aksi, tanggal) dan GET /api/rekam-jejak/rekap (ringkasan dan rekap per pengguna\u2013peran 7 hari dari AuditPanelService)."
+    "summary": "API rekam jejak untuk peran aktif Administrator: GET /api/rekam-jejak (paginasi, saringan pengguna, peran, jenis role_switch/impersonation/ticket, aksi, tanggal) dan GET /api/rekam-jejak/rekap (ringkasan dan rekap per pengguna–peran 7 hari dari AuditPanelService)."
   },
   "app/Http/Controllers/Api/ImpersonationLogController.php": {
     "summary": "API GET /api/ganti-akun/log untuk peran aktif Administrator: log impersonation_sessions dengan saringan admin, akun, cari, status, cara berakhir, rentang tanggal; data admin, akun dipakai, alasan, mulai/selesai, durasi, IP."
@@ -2347,7 +2347,7 @@
     "summary": "Model log sesi ganti akun (impersonation_sessions): admin dan akun dipakai dengan salinan nama, peran, alasan, IP, perangkat, mulai/berakhir dan cara berakhir (END_REASONS selesai/keluar/kedaluwarsa); tidak bisa dihapus dan hanya bisa ditutup sekali; scopeOpen, scopeFiltered untuk API dan tabel."
   },
   "app/Services/AuditPanelService.php": {
-    "summary": "Service bagian Perpindahan peran & ganti akun di tab Log & Audit: summary() (perpindahan hari ini, sesi berjalan, sesi 7 hari, aksi lewat ganti akun), latest() catatan role/impersonation terbaru, recap() agregasi per pengguna\u2013peran aktif 7 hari, options() pilihan saringan; dari activity_log dan impersonation_sessions."
+    "summary": "Service bagian Perpindahan peran & ganti akun di tab Log & Audit: summary() (perpindahan hari ini, sesi berjalan, sesi 7 hari, aksi lewat ganti akun), latest() catatan role/impersonation terbaru, recap() agregasi per pengguna–peran aktif 7 hari, options() pilihan saringan; dari activity_log dan impersonation_sessions."
   },
   "app/Support/ActiveRoles.php": {
     "summary": "Inti konteks peran aktif: for() peran staf yang dipegang (urut STAFF_ROLES) dengan area kerja, current()/resolve()/inContext() menentukan peran aktif dari sesi, atribut request, atau pilihan terakhir; switchTo() memvalidasi kepemilikan dan mencatat activity_log role; portalRolesFor() memakai daftar putih peran pemohon (Applicants) untuk petugas yang juga pemohon; startSession() saat login; hasRole()/can()/actsAsLeader()/actingRoleOf() untuk otorisasi berbasis peran aktif."
@@ -2431,7 +2431,7 @@
     "summary": "Feature test activity_log immutable: model dan trigger DB menolak ubah, hapus, dan TRUNCATE; entri baru tetap tercatat; sesi pemeliharaan dapat membuka kunci."
   },
   "tests/Feature/ActivityTrailApiTest.php": {
-    "summary": "Feature test /api/rekam-jejak dan /rekap: urutan terbaru, saringan pengguna/peran/jenis/aksi/tanggal, detail status tiket, rekap per pengguna\u2013peran 7 hari, hanya peran aktif Administrator."
+    "summary": "Feature test /api/rekam-jejak dan /rekap: urutan terbaru, saringan pengguna/peran/jenis/aksi/tanggal, detail status tiket, rekap per pengguna–peran 7 hari, hanya peran aktif Administrator."
   },
   "tests/Feature/ActivityTrailPageTest.php": {
     "summary": "Feature test halaman Rekam Jejak Aktivitas: linimasa per hari dari activity_log, tab jenis, saringan pengguna/peran/tanggal/aksi, rekap dan hitungan, detail catatan, hanya administrator di peran admin (juga Monitoring dan API)."
@@ -2440,7 +2440,7 @@
     "summary": "Feature test portal pemohon: unggah berkas susulan pada permohonan berjalan menambah berkas dan riwayat, tidak tersedia setelah permohonan ditutup."
   },
   "tests/Feature/AuditPanelLogTabTest.php": {
-    "summary": "Feature test bagian Perpindahan peran & ganti akun di tab Log & Audit: ringkasan dari rekam jejak, catatan terbaru, rekap per pengguna\u2013peran, saringan dan pencarian, tersembunyi lewat akun pinjaman (ganti akun), tidak dimuat di tab lain."
+    "summary": "Feature test bagian Perpindahan peran & ganti akun di tab Log & Audit: ringkasan dari rekam jejak, catatan terbaru, rekap per pengguna–peran, saringan dan pencarian, tersembunyi lewat akun pinjaman (ganti akun), tidak dimuat di tab lain."
   },
   "tests/Feature/ChooseActiveRoleTest.php": {
     "summary": "Feature test halaman Semua peran dan menu header: kartu peran sendiri, memilih menyimpan dan kembali ke halaman tujuan, penolakan peran lain, penanda di header /cp, menu ganti cepat yang tidak pernah kembali ke luar panel, petugas yang juga guru melihat peran guru dan bisa membuka portal serta kembali ke panel petugas, toast dan aksi Kembali ke, tidak tampil di portal."
@@ -2717,7 +2717,7 @@
     "summary": "Resource Filament pengguna (admin): form akun (nama, email unik, WhatsApp, tipe, peran, status aktif) dan tabel dengan nama (email bayangan loket ditampilkan sebagai Akun loket, belum ada email), WhatsApp yang dicari tanpa memedulikan tanda baca/awalan 62 (Applicants::wherePhoneContains), kolom Permohonan khusus tab Pemohon, Tipe User lama disembunyikan di tab Pemohon, Role, status, dan login terakhir. Filter Peran pemohon (aturan pemohon resmi, termasuk akun walk-in lama tanpa peran), Peran, aktif, belum pernah masuk, email terverifikasi; aksi lihat, ubah, ganti akun sementara."
   },
   "app/Http/Controllers/Auth/RegisteredUserController.php": {
-    "summary": "Controller pendaftaran portal (GET/POST /register): form umum atau civitas (kode registrasi + status civitas). Validasi menolak email milik akun yang sudah dipakai bersama galat field lain (FrontDeskService::emailTaken), kecuali email akun loket yang belum diklaim. Registrasi memanggil registerPortalApplicant sehingga akun loket yang cocok (email sama, atau WhatsApp sama tanpa email asli) disambungkan alih-alih membuat akun ganda; lalu event Registered (email verifikasi), login, dan redirect ke halaman verifikasi dengan penanda account_linked."
+    "summary": "Controller pendaftaran portal (GET/POST /register): form umum atau civitas. Civitas mengikuti CivitasRegistration: ditolak bila form ditutup admin, kode registrasi hanya divalidasi (hash_equals) bila diwajibkan, lalu status civitas menjadi user_type. Email milik akun terpakai ditolak (FrontDeskService::emailTaken) kecuali akun loket belum diklaim; registerPortalApplicant menautkan akun loket yang cocok, lalu event Registered, login, dan redirect ke verifikasi dengan penanda account_linked."
   },
   "app/Models/Service.php": {
     "summary": "Model layanan PTSP (Service): komponen standar pelayanan, user_types_allowed (jsonb), mode online/offline/hybrid, template berkas, disposisi; scopeAvailableFor menyaring layanan yang terbuka untuk tipe pemohon (kosong/umum berarti semua), scopeRequestable untuk layanan yang bisa diajukan saat ini (online juga menyaring tipe; di loket penyaringan tipe dilakukan FrontDeskService), acceptsRequests, slug unik, dan hitungan SLA hari kerja."
@@ -2761,7 +2761,7 @@
     "summary": "Migrasi idempoten yang memastikan ketujuh peran pemohon resmi ada beserta izin portalnya (RolePermissionSeeder::permissionsFor) setelah RoleAccess::sync, juga di basis data yang tidak menjalankan seeder; down tidak menghapus peran karena bisa sedang dipegang akun."
   },
   "resources/views/filament/pages/front-desk/applicant-summary.blade.php": {
-    "summary": "Partial Blade panel Ringkasan pemohon di Registrasi Layanan Loket: daftar keterangan akun terpilih (tipe pengguna, terdaftar sejak, permohonan sebelumnya) hanya baca, catatan bahwa data tidak bisa diubah di loket, dan tautan Perbaiki di Pengguna \u203a Pemohon bagi admin atau arahan ke administrator."
+    "summary": "Partial Blade panel Ringkasan pemohon di Registrasi Layanan Loket: daftar keterangan akun terpilih (tipe pengguna, terdaftar sejak, permohonan sebelumnya) hanya baca, catatan bahwa data tidak bisa diubah di loket, dan tautan Perbaiki di Pengguna › Pemohon bagi admin atau arahan ke administrator."
   },
   "tests/Feature/ApplicantRulesTest.php": {
     "summary": "Feature test aturan pemohon resmi (Applicants): tujuh peran resmi dan selaras dengan tipe pengguna serta status civitas, peran staf/pimpinan bukan pemohon, penilaian akun (guru merangkap waka, akun lama tanpa peran), migrasi peran dengan izin portal, normalisasi dan pencarian WhatsApp, penautan lintas format, scope User::applicants, profil API dan filter API pengguna."
@@ -2774,5 +2774,14 @@
   },
   "database/migrations/2026_10_18_100000_add_line_to_notification_settings_table.php": {
     "summary": "Migrasi jalur sambungan notifikasi: menambah kolom line (bawaan 'pelayanan') pada notification_settings dan mengganti unik channel menjadi unik line+channel, sehingga jalur pengaduan, saran & WBS punya gateway Email/WhatsApp sendiri; down() menghapus baris jalur lain."
+  },
+  "app/Support/ServiceStandard.php": {
+    "summary": "Sumber tunggal standar pelayanan sebuah layanan: items() 14 komponen Permen PANRB 15/2014 (kolom tabel services yang diisi di /cp diutamakan, baris service_components mengisi bila kolom kosong; persyaratan berupa daftar bila JSON), facts() fakta utama (waktu, biaya, jalur, disposisi, pemohon), requirementRows(), fee(), applicants(). Dipakai halaman publik layanan dan form permohonan portal serta loket."
+  },
+  "resources/views/filament/components/service-standard.blade.php": {
+    "summary": "Komponen Blade standar pelayanan di form permohonan (portal Ajukan dan loket): fakta utama, komponen penting (persyaratan, mekanisme, produk, pengaduan) dan komponen lain yang terisi dalam lipatan, baris persyaratan berkas, serta tautan ke halaman publik layanan bila pemohon boleh membukanya; gaya inline mendukung mode gelap panel Filament."
+  },
+  "tests/Feature/ApplicationTest.php": {
+    "summary": "Feature test alur utama aplikasi: registrasi umum dan civitas (kode bersama, tanpa kode saat dimatikan admin, form civitas ditutup menolak pendaftaran), katalog dan pengajuan layanan, pengaduan/saran/WBS anonim, survei tiga langkah dan edisi aktif, buku tamu, layanan loket, proses tiket back office, pembatasan area petugas, dan pelacakan tiket tanpa membuka data pemohon."
   }
 }
