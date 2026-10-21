@@ -259,6 +259,37 @@
         color: white;
         border-color: #c82333 #c82333 #1f2937; /* Dark mode background for bottom border */
     }
+    /* Pengaduan Masyarakat: yellow tab (dark text for contrast) */
+    .nav-tabs-visitor .nav-link#dumas-alt-tab {
+        background: #ffc107; /* Bootstrap yellow */
+        color: #212529;
+        border-color: #ffc107;
+    }
+
+    .nav-tabs-visitor .nav-link#dumas-alt-tab:hover {
+        background: #ffca2c;
+        color: #212529;
+        border-color: #ffca2c;
+    }
+
+    .nav-tabs-visitor .nav-link#dumas-alt-tab.active {
+        background: #e0a800;
+        color: #212529;
+        border-color: #e0a800 #e0a800 white;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link#dumas-alt-tab {
+        background: #ffc107;
+        color: #212529;
+        border-color: #ffc107;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link#dumas-alt-tab.active {
+        background: #e0a800;
+        color: #212529;
+        border-color: #e0a800 #e0a800 #1f2937;
+    }
+
     /* Saran: green tab, like the red Whistleblowing tab */
     .nav-tabs-visitor .nav-link#saran-alt-tab {
         background: #198754; /* Bootstrap green */

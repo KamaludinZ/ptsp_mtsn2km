@@ -37,11 +37,13 @@ class SuggestionFollowUpTest extends TestCase
         return $user;
     }
 
-    public function test_the_saran_tab_is_green_and_takes_a_phone_number(): void
+    public function test_tabs_are_coloured_and_saran_takes_a_phone_number(): void
     {
         $this->get('/complaints?tab=saran')->assertOk()
             ->assertSee('.nav-tabs-visitor .nav-link#saran-alt-tab', false)
             ->assertSee('#198754', false)
+            ->assertSee('.nav-tabs-visitor .nav-link#dumas-alt-tab', false)
+            ->assertSee('#ffc107', false)
             ->assertSee('name="reporter_phone"', false);
 
         $this->post('/complaints/saran', ['suggestion' => 'Perpanjang jam layanan loket.', 'reporter_phone' => 'nomor saya'])
