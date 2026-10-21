@@ -271,7 +271,7 @@
                 </div>
                 <div class="col-md-6 mb-3 mb-md-0">
                     <p class="text-muted mb-1" style="font-size: 0.875rem; color: var(--bs-secondary-text);">Status</p>
-                    <x-status-badge :status="$complaint->status" type="complaint" />
+                    <x-status-badge :status="$complaint->status" :type="$complaint->complaint_type === 'suggestion' ? 'suggestion' : 'complaint'" />
                 </div>
                 <div class="col-md-6">
                     <p class="text-muted mb-1" style="font-size: 0.875rem; color: var(--bs-secondary-text);">Tanggal Pengajuan</p>
@@ -298,13 +298,16 @@
         @endif
 
         <!-- Status Timeline -->
-        @php $reached = array_search($complaint->status, array_keys(\App\Models\Complaint::STATUSES), true); @endphp
+        @php
+            $stages = $complaint->stages();
+            $reached = array_search($complaint->status, array_keys($stages), true);
+        @endphp
         <div class="detail-card mb-4">
-            <h3 class="h5 fw-bold mb-3" style="color: var(--bs-text);">Tahapan Tindak Lanjut</h3>
+            <h3 class="h5 fw-bold mb-3" style="color: var(--bs-text);">{{ $complaint->complaint_type === 'suggestion' ? 'Tahapan Saran' : 'Tahapan Tindak Lanjut' }}</h3>
             <ol class="list-unstyled mb-0">
-                @foreach (\App\Models\Complaint::STATUSES as $status => $label)
-                    @continue($status === 'closed' && $complaint->status !== 'closed')
-                    @php $done = $loop->index <= $reached; @endphp
+                @foreach ($stages as $status => $label)
+                    @continue($complaint->complaint_type !== 'suggestion' && $status === 'closed' && $complaint->status !== 'closed')
+                    @php $done = $reached !== false && $loop->index <= $reached; @endphp
                     <li class="timeline-step">
                         <div class="timeline-icon" style="background-color: {{ $done ? 'rgba(16, 185, 129, 0.1)' : 'rgba(148, 163, 184, 0.15)' }}; color: {{ $done ? '#10b981' : '#94a3b8' }};">
                             <i class="fas {{ $done ? 'fa-check' : 'fa-circle' }} text-xs" aria-hidden="true"></i>

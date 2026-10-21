@@ -61,6 +61,34 @@ class ComplaintService
     }
 
     /**
+     * Saran: save the answer shown to the sender on the tracking page and/or
+     * the staff-only note. An answer marks the suggestion "Ditanggapi" (and
+     * notifies the sender through followUp); a note alone changes no stage.
+     */
+    public function answerSuggestion(Complaint $suggestion, array $data, User $actor): void
+    {
+        $response = filled($data['response'] ?? null) ? trim($data['response']) : $suggestion->response;
+        $note = trim((string) ($data['resolution_notes'] ?? ''));
+
+        // A note alone: for saran "closed" only means read, so skip the
+        // complaint rule that a closed report needs a reply.
+        if (blank($response)) {
+            $suggestion->update(['resolution_notes' => $note !== '' ? $note : null]);
+
+            return;
+        }
+
+        $this->followUp($suggestion, [
+            'status' => 'resolved',
+            'priority' => $suggestion->priority ?? 'normal',
+            'assigned_to' => $suggestion->assigned_to,
+            'response' => $response,
+            // Always pass the note so clearing it in the form clears it here.
+            'resolution_notes' => $note,
+        ], $actor);
+    }
+
+    /**
      * Rahasiakan identitas: a handler protects a reporter who did not ask for it
      * (e.g. the report turns out sensitive). One way only, so an identity once
      * hidden is never exposed again by a later click; the reason stays in the log.
@@ -89,6 +117,7 @@ class ComplaintService
             'suggestion' => [
                 'reporter_name' => 'nullable|string|max:255',
                 'reporter_email' => 'nullable|email|max:255',
+                'reporter_phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s().]{8,20}$/'],
                 'suggestion' => 'required|string|max:2000',
             ],
             'whistleblowing' => [
@@ -129,6 +158,7 @@ class ComplaintService
                 'description' => $data['suggestion'],
                 'reporter_name' => $data['reporter_name'] ?? null,
                 'reporter_email' => $data['reporter_email'] ?? null,
+                'reporter_phone' => $data['reporter_phone'] ?? null,
                 'status' => 'submitted',
                 'anonymous' => empty($data['reporter_name']),
             ]),

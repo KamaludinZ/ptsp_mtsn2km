@@ -22,6 +22,53 @@ class Complaint extends Model
         'closed' => 'Ditutup',
     ];
 
+    /**
+     * Saran has no follow-up workflow: it is read, then (optionally)
+     * answered. The answer is what the sender sees when tracking it.
+     */
+    public const SUGGESTION_STATUSES = [
+        'submitted' => 'Diterima',
+        'closed' => 'Dibaca petugas',
+        'resolved' => 'Ditanggapi',
+    ];
+
+    /**
+     * Whether $contact (the e-mail or phone number typed on the tracking page)
+     * is the one the reporter left. Phone numbers match in any common form
+     * (08…, 628…, +62 8…, with spaces or dashes).
+     */
+    public function isReporterContact(?string $contact): bool
+    {
+        $contact = trim((string) $contact);
+        if ($contact === '') {
+            return false;
+        }
+
+        if (str_contains($contact, '@')) {
+            return collect([$this->reporter_email, $this->complainant_email])->filter()
+                ->contains(fn (string $email) => strcasecmp($email, $contact) === 0);
+        }
+
+        $phone = self::normalizePhone($contact);
+
+        return strlen($phone) >= 8 && collect([$this->reporter_phone, $this->complainant_contact])->filter()
+            ->contains(fn (string $saved) => self::normalizePhone($saved) === $phone);
+    }
+
+    /** Digits only, Indonesian numbers in the 08… form. */
+    public static function normalizePhone(?string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $phone);
+
+        return str_starts_with($digits, '62') ? '0' . substr($digits, 2) : $digits;
+    }
+
+    /** Stage labels for this report's kind (tracking page, staff lists). */
+    public function stages(): array
+    {
+        return $this->complaint_type === 'suggestion' ? self::SUGGESTION_STATUSES : self::STATUSES;
+    }
+
     public const TYPES = [
         'complaint' => 'Pengaduan',
         'suggestion' => 'Saran',
@@ -37,7 +84,7 @@ class Complaint extends Model
 
     public function statusLabel(): string
     {
-        return self::STATUSES[$this->status] ?? ucfirst((string) $this->status);
+        return $this->stages()[$this->status] ?? ucfirst((string) $this->status);
     }
 
     public function typeLabel(): string

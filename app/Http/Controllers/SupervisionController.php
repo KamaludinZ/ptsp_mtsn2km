@@ -51,12 +51,15 @@ class SupervisionController extends Controller
     {
         $validated = $request->validate(ComplaintService::rulesFor('suggestion'), [
             'suggestion.required' => 'Tuliskan saran Anda.',
+            'reporter_phone.regex' => 'Nomor telepon hanya boleh berisi angka, spasi, +, -, dan tanda kurung (8–20 karakter).',
         ]);
 
-        app(ComplaintService::class)->submit('suggestion', $validated);
+        $suggestion = app(ComplaintService::class)->submit('suggestion', $validated);
 
         return redirect()->route('supervision.complaints.dashboard', ['tab' => 'saran'])
-            ->with('suggestion_success', 'Terima kasih! Saran Anda sudah kami terima.');
+            ->with('suggestion_success', 'Terima kasih! Saran Anda sudah kami terima.')
+            ->with('suggestion_number', $suggestion->complaint_number)
+            ->with('suggestion_trackable', filled($suggestion->reporter_email) || filled($suggestion->reporter_phone));
     }
 
     /**
@@ -81,19 +84,20 @@ class SupervisionController extends Controller
      */
     public function trackComplaint(Request $request)
     {
+        // "contact" is the e-mail or phone number given when sending; older
+        // links still post it as reporter_email.
+        $request->merge(['contact' => $request->input('contact', $request->input('reporter_email'))]);
         $validated = $request->validate([
-            'complaint_number' => 'required|string',
-            'reporter_email' => 'required|email',
+            'complaint_number' => 'required|string|max:50',
+            'contact' => 'required|string|max:255',
+        ], [
+            'contact.required' => 'Isi email atau nomor telepon yang Anda cantumkan saat mengirim.',
         ]);
 
-        // Ownership must always be verified by the reporter's own email —
-        // never look up a complaint (especially whistleblowing) by number alone.
-        $complaint = Complaint::where('complaint_number', $validated['complaint_number'])
-            ->where(function ($q) use ($validated) {
-                $q->where('reporter_email', $validated['reporter_email'])
-                  ->orWhere('complainant_email', $validated['reporter_email']);
-            })
-            ->firstOrFail();
+        // Ownership must always be verified by the reporter's own e-mail or
+        // phone: never look up a report (especially whistleblowing) by number alone.
+        $complaint = Complaint::where('complaint_number', trim($validated['complaint_number']))->first();
+        abort_unless($complaint?->isReporterContact($validated['contact']), 404);
 
         return view('supervision.complaint-track-result', compact('complaint'));
     }

@@ -28,7 +28,8 @@ class ImpersonationStartTest extends TestCase
 
     private function admin(): User
     {
-        return User::role('admin')->firstOrFail();
+        // The seeded admin; ordered so a second admin made by a test is never picked.
+        return User::role('admin')->orderBy('id')->firstOrFail();
     }
 
     private function applicant(): User

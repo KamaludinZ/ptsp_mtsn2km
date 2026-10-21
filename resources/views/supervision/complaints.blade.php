@@ -259,6 +259,80 @@
         color: white;
         border-color: #c82333 #c82333 #1f2937; /* Dark mode background for bottom border */
     }
+    /* Pengaduan Masyarakat: yellow tab (dark text for contrast) */
+    .nav-tabs-visitor .nav-link#dumas-alt-tab {
+        background: #ffc107; /* Bootstrap yellow */
+        color: #212529;
+        border-color: #ffc107;
+    }
+
+    .nav-tabs-visitor .nav-link#dumas-alt-tab:hover {
+        background: #ffca2c;
+        color: #212529;
+        border-color: #ffca2c;
+    }
+
+    .nav-tabs-visitor .nav-link#dumas-alt-tab.active {
+        background: #e0a800;
+        color: #212529;
+        border-color: #e0a800 #e0a800 white;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link#dumas-alt-tab {
+        background: #ffc107;
+        color: #212529;
+        border-color: #ffc107;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link#dumas-alt-tab.active {
+        background: #e0a800;
+        color: #212529;
+        border-color: #e0a800 #e0a800 #1f2937;
+    }
+
+    /* Saran: green tab, like the red Whistleblowing tab */
+    .nav-tabs-visitor .nav-link#saran-alt-tab {
+        background: #198754; /* Bootstrap green */
+        color: white;
+        border-color: #198754;
+    }
+
+    .nav-tabs-visitor .nav-link#saran-alt-tab:hover {
+        background: #157347;
+        color: white;
+        border-color: #157347;
+    }
+
+    .nav-tabs-visitor .nav-link#saran-alt-tab.active {
+        background: #146c43;
+        color: white;
+        border-color: #146c43 #146c43 white;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link#saran-alt-tab {
+        background: #198754;
+        color: white;
+        border-color: #198754;
+    }
+
+    [data-theme="dark"] .nav-tabs-visitor .nav-link#saran-alt-tab.active {
+        background: #146c43;
+        color: white;
+        border-color: #146c43 #146c43 #1f2937;
+    }
+
+    #saran-alt .btn-saran {
+        background: #198754;
+        border-color: #198754;
+        color: white;
+    }
+
+    #saran-alt .btn-saran:hover,
+    #saran-alt .btn-saran:focus-visible {
+        background: #157347;
+        border-color: #146c43;
+        color: white;
+    }
 </style>
 @endpush
 
@@ -507,11 +581,22 @@
                     @if (session('suggestion_success'))
                         <div class="alert alert-success mb-4" role="status">
                             <i class="fas fa-check-circle me-2"></i>{{ session('suggestion_success') }}
+                            @if (session('suggestion_number'))
+                                <div class="mt-2">
+                                    Nomor saran Anda: <strong class="font-monospace">{{ session('suggestion_number') }}</strong>.
+                                    @if (session('suggestion_trackable'))
+                                        Simpan nomor ini untuk <a href="{{ route('supervision.complaint.track.form') }}" class="alert-link">melacak tanggapan</a> bersama email atau nomor telepon yang Anda isi.
+                                    @else
+                                        Karena tanpa email atau nomor telepon, tanggapan tidak dapat dilacak.
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     @endif
 
                     <p class="text-muted mb-4">
-                        Punya ide untuk membuat layanan kami lebih baik? Tuliskan di sini. Nama dan email boleh dikosongkan.
+                        Punya ide untuk membuat layanan kami lebih baik? Tuliskan di sini. Nama dan kontak boleh dikosongkan,
+                        tetapi isi email atau nomor telepon bila ingin melacak tanggapan kami lewat nomor saran.
                     </p>
 
                     <form action="{{ route('supervision.suggestion.submit') }}" method="POST">
@@ -521,24 +606,33 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="suggestion_name" class="form-label fw-semibold">
-                                    <i class="fas fa-user me-2 text-primary"></i>Nama <span class="text-muted fw-normal">(opsional)</span>
+                                    <i class="fas fa-user me-2 text-success"></i>Nama <span class="text-muted fw-normal">(opsional)</span>
                                 </label>
                                 <input type="text" class="form-control" id="suggestion_name" name="reporter_name" maxlength="255" value="{{ $activeTab === 'saran' ? old('reporter_name') : '' }}">
                             </div>
                             <div class="col-md-6">
                                 <label for="suggestion_email" class="form-label fw-semibold">
-                                    <i class="fas fa-envelope me-2 text-primary"></i>Email <span class="text-muted fw-normal">(opsional)</span>
+                                    <i class="fas fa-envelope me-2 text-success"></i>Email <span class="text-muted fw-normal">(opsional)</span>
                                 </label>
                                 <input type="email" class="form-control" id="suggestion_email" name="reporter_email" maxlength="255" value="{{ $activeTab === 'saran' ? old('reporter_email') : '' }}">
                             </div>
+                            <div class="col-md-6">
+                                <label for="suggestion_phone" class="form-label fw-semibold">
+                                    <i class="fas fa-phone me-2 text-success"></i>Nomor telepon / WhatsApp <span class="text-muted fw-normal">(opsional)</span>
+                                </label>
+                                <input type="tel" class="form-control @error('reporter_phone') is-invalid @enderror" id="suggestion_phone" name="reporter_phone" maxlength="20" inputmode="tel" autocomplete="tel" placeholder="mis. 0812 3456 7890" value="{{ $activeTab === 'saran' ? old('reporter_phone') : '' }}">
+                                @if ($activeTab === 'saran')
+                                    @error('reporter_phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                @endif
+                            </div>
                             <div class="col-12">
                                 <label for="suggestion_text" class="form-label fw-semibold">
-                                    <i class="fas fa-lightbulb me-2 text-primary"></i>Saran <span class="text-danger">*</span>
+                                    <i class="fas fa-lightbulb me-2 text-success"></i>Saran <span class="text-danger">*</span>
                                 </label>
                                 <textarea class="form-control" id="suggestion_text" name="suggestion" rows="5" maxlength="2000" required placeholder="Tuliskan saran Anda...">{{ $activeTab === 'saran' ? old('suggestion') : '' }}</textarea>
                             </div>
                             <div class="col-12 d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg">
+                                <button type="submit" class="btn btn-saran btn-lg">
                                     <i class="fas fa-paper-plane me-2"></i> Kirim Saran
                                 </button>
                             </div>
@@ -612,8 +706,8 @@
             <!-- Tracking Section -->
             <div class="card mb-4 bg-success-subtle">
                 <div class="card-body">
-                    <h2 class="h3 fw-bold mb-4 text-center">Lacak Status Pengaduan Anda</h2>
-                    <p class="text-muted mb-4 text-center">Ketahui status terkini dari pengaduan yang telah Anda sampaikan</p>
+                    <h2 class="h3 fw-bold mb-4 text-center">Lacak Pengaduan atau Saran Anda</h2>
+                    <p class="text-muted mb-4 text-center">Ketahui status terkini dan tanggapan atas pengaduan atau saran yang telah Anda sampaikan</p>
                     
                     <div class="row justify-content-center">
                         <div class="col-md-8">
@@ -621,7 +715,7 @@
                                 @csrf
                                 <div class="form-group mb-3">
                                     <label for="complaint_number" class="form-label fw-semibold">
-                                        <i class="fas fa-ticket-alt me-2 text-primary"></i>Nomor Tiket Pengaduan
+                                        <i class="fas fa-ticket-alt me-2 text-primary"></i>Nomor Pengaduan atau Saran
                                     </label>
                                     <input type="text" 
                                            id="complaint_number" 
@@ -632,15 +726,16 @@
                                 </div>
                                 
                                 <div class="form-group mb-4">
-                                    <label for="reporter_email" class="form-label fw-semibold">
-                                        <i class="fas fa-envelope me-2 text-primary"></i>Email Pelapor
+                                    <label for="track_contact" class="form-label fw-semibold">
+                                        <i class="fas fa-address-card me-2 text-primary"></i>Email atau Nomor Telepon
                                     </label>
-                                    <input type="email" 
-                                           id="reporter_email" 
-                                           name="reporter_email" 
+                                    <input type="text"
+                                           id="track_contact"
+                                           name="contact"
                                            required
+                                           maxlength="255"
                                            class="form-control"
-                                           placeholder="Email yang digunakan saat pengiriman">
+                                           placeholder="Email atau nomor telepon yang diisi saat pengiriman">
                                 </div>
                                 
                                 <div class="d-grid">

@@ -12,7 +12,7 @@ use App\Models\Complaint;
  */
 class StatusBadge
 {
-    public const TYPES = ['ticket', 'complaint', 'approval', 'update'];
+    public const TYPES = ['ticket', 'complaint', 'suggestion', 'approval', 'update'];
 
     public const ICONS = [
         'gray' => 'clock',
@@ -34,6 +34,10 @@ class StatusBadge
                     'resolved', 'closed' => 'success',
                     default => 'gray',
                 },
+            ],
+            'suggestion' => [
+                Complaint::SUGGESTION_STATUSES[$status] ?? 'Dibaca petugas',
+                ['submitted' => 'warning', 'resolved' => 'success'][$status] ?? 'info',
             ],
             'approval' => [
                 ['pending' => 'Menunggu', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'][$status] ?? ucfirst((string) $status),
