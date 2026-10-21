@@ -254,26 +254,32 @@
                        name="complaint_number" 
                        required
                        class="form-control"
-                       placeholder="Contoh: PEM-202609-0001">
+                       value="{{ old('complaint_number') }}"
+                       placeholder="Contoh: PEM-202609-0001 atau SRN-202609-0001">
                 <p class="mt-2 text-muted" style="font-size: 0.875rem; color: var(--bs-secondary-text);">
                     Nomor tiket pengaduan biasanya berupa kombinasi huruf dan angka yang dikirim saat pengaduan berhasil dikirim
                 </p>
             </div>
             
             <div class="form-group">
-                <label for="reporter_email" class="form-label">
-                    Email Pelapor (Opsional)
+                <label for="contact" class="form-label">
+                    Email atau Nomor Telepon Pelapor <span class="text-danger">*</span>
                 </label>
-                <input type="email" 
-                       id="reporter_email" 
-                       name="reporter_email" 
-                       class="form-control"
-                       placeholder="Email yang digunakan saat pengiriman pengaduan">
+                <input type="text"
+                       id="contact"
+                       name="contact"
+                       required
+                       maxlength="255"
+                       autocomplete="email"
+                       value="{{ old('contact') }}"
+                       class="form-control @error('contact') is-invalid @enderror"
+                       placeholder="Email atau nomor telepon yang diisi saat pengiriman">
+                @error('contact')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 <p class="mt-2 text-muted" style="font-size: 0.875rem; color: var(--bs-secondary-text);">
-                    Wajib diisi jika pengaduan dikirimkan dengan identitas pelapor
+                    Untuk menjaga kerahasiaan, laporan dan saran hanya dapat dilacak dengan kontak yang Anda cantumkan saat mengirim.
                 </p>
             </div>
-            
+
             <div class="pt-4">
                 <button type="submit" 
                         class="btn btn-primary w-100">
