@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Service;
-use App\Models\ServiceCategory;
 use App\Models\ServiceTemplate;
 use App\Models\Ticket;
 use App\Support\TicketTracking;
@@ -22,14 +21,20 @@ class OnlinePortalController extends Controller
         $userType = $user ? $user->user_type : 'umum';
 
         try {
-            $categories = ServiceCategory::orderBy('name')->get();
-
             // Services allowed for this user type (user_types_allowed is a jsonb array)
             $services = Service::where('is_active', true)
                 ->availableFor($userType)
-                ->with(['categories'])
+                ->with(['categories' => fn ($query) => $query->orderBy('name')])
                 ->orderBy('name')
                 ->get();
+
+            // Offer every category a listed service belongs to (a service may have
+            // several), with how many listed services carry it.
+            $categories = $services->flatMap->categories
+                ->groupBy('id')
+                ->map(fn ($group) => $group->first()->setAttribute('services_count', $group->count()))
+                ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+                ->values();
             $loadError = false;
         } catch (\Illuminate\Database\QueryException $e) {
             // Show a friendly "gagal dimuat, coba lagi" instead of an error page.
