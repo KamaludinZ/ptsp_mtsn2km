@@ -48,6 +48,13 @@ jobs:
           docker compose logs app
           exit 1
 
+      - name: PHP carries the PHP2Shell fixes
+        run: |
+          docker compose exec -T app php /usr/local/bin/php-security-check.php
+          docker compose exec -T app php -r 'exit(ini_get("session.upload_progress.enabled") ? 1 : 0);'
+          # PHP must not announce itself in response headers
+          ! curl -sI http://localhost:8080/ | grep -qi '^x-powered-by'
+
       - name: Smoke test pages
         run: |
           fail=0

@@ -5,7 +5,9 @@
 # Build:  docker build -t ptsp .
 # Deploy: see docs/DEPLOY_COOLIFY.md
 
-ARG PHP_VERSION=8.3
+# Pin the patch release: 8.3.36 carries the PHP2Shell fixes
+# (CVE-2026-109618/109619). A bare "8.3" could reuse an older cached base.
+ARG PHP_VERSION=8.3.36
 ARG NODE_VERSION=22
 
 ############################################
@@ -73,6 +75,9 @@ COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-app.conf
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
+COPY docker/php-security-check.php /usr/local/bin/php-security-check.php
+# Fail the build on a PHP without the 21 October 2026 security fixes.
+RUN php /usr/local/bin/php-security-check.php
 
 COPY --chown=www-data:www-data . .
 COPY --chown=www-data:www-data --from=vendor /app/vendor ./vendor
