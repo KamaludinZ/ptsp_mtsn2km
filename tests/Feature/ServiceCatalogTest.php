@@ -288,6 +288,33 @@ class ServiceCatalogTest extends TestCase
             ->assertDontSee('Katalog layanan gagal dimuat');
     }
 
+    public function test_public_catalog_filters_by_every_category_a_service_has(): void
+    {
+        $administrasi = \App\Models\ServiceCategory::create(['name' => 'Administrasi Uji', 'is_active' => true]);
+        $kesiswaan = \App\Models\ServiceCategory::create(['name' => 'Kesiswaan Uji', 'is_active' => true]);
+        \App\Models\ServiceCategory::create(['name' => 'Kosong Uji', 'is_active' => true]);
+
+        $both = Service::factory()->create(['name' => 'Legalisir Rapor Uji', 'is_active' => true, 'user_types_allowed' => ['umum']]);
+        $both->categories()->attach([$administrasi->id, $kesiswaan->id]);
+        $single = Service::factory()->create(['name' => 'Mutasi Siswa Uji', 'is_active' => true, 'user_types_allowed' => ['umum']]);
+        $single->categories()->attach($kesiswaan->id);
+
+        auth()->logout();
+
+        $response = $this->get(route('onlineportal.service.catalog'))->assertOk();
+        $html = $response->getContent();
+
+        // Each card carries all its category ids, so filtering by either one finds it.
+        $this->assertSame(2, substr_count($html, 'data-categories="'.collect([$administrasi->id, $kesiswaan->id])->sort()->join(',').'"'));
+        $this->assertSame(2, substr_count($html, 'data-categories="'.$kesiswaan->id.'"'));
+        $response->assertSee('<option value="'.$administrasi->id.'">Administrasi Uji (1)</option>', false)
+            ->assertSee('<option value="'.$kesiswaan->id.'">Kesiswaan Uji (2)</option>', false)
+            ->assertSee('Administrasi Uji, Kesiswaan Uji')
+            ->assertDontSee('Kosong Uji')
+            ->assertSee('cats.includes(category)', false)
+            ->assertSee('klik <strong>nama/judul layanan</strong>', false);
+    }
+
     public function test_public_catalog_explains_when_no_service_is_available(): void
     {
         auth()->logout();

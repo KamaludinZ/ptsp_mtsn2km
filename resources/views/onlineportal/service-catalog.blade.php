@@ -414,7 +414,7 @@
                     <select id="categoryFilter" onchange="filterServices()">
                         <option value="">Semua kategori</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->name }}">{{ $category->name }}</option>
+                            <option value="{{ $category->id }}">{{ $category->name }} ({{ $category->services_count }})</option>
                         @endforeach
                     </select>
                 </div>
@@ -433,6 +433,11 @@
         <div class="ann-filter__meta">
             <span>Menampilkan <strong id="serviceCount">{{ $services->count() }}</strong> dari {{ $services->count() }} layanan</span>
         </div>
+        <p class="small mt-3 mb-0" id="detailHint">
+            <i class="fas fa-hand-pointer me-1" style="color: var(--bs-primary);" aria-hidden="true"></i>
+            Untuk melihat detail lengkap layanan (14 komponen standar pelayanan, persyaratan, dan template berkas),
+            klik <strong>nama/judul layanan</strong>.
+        </p>
         @guest
             <p class="small text-muted mt-3 mb-0">
                 <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
@@ -448,7 +453,7 @@
         @foreach($services as $service)
         <div class="col-md-6 col-lg-4 service-item"
              data-name="{{ strtolower($service->name) }}"
-             data-category="{{ $service->categories->first()->name ?? '' }}"
+             data-categories="{{ $service->categories->pluck('id')->join(',') }}"
              data-aos="fade-up"
              data-aos-delay="{{ $loop->index * 50 }}">
             <div class="card shadow-sm service-card-modern w-100">
@@ -472,10 +477,10 @@
                             </span>
                         @endif
                     </div>
-                    <h5 class="card-title mb-2 fw-bold"><a href="{{ route('onlineportal.service.detail', $service->slug) }}" class="text-white stretched-link-title">{{ $service->name }}</a></h5>
-                    @if($service->categories->first())
+                    <h5 class="card-title mb-2 fw-bold"><a href="{{ route('onlineportal.service.detail', $service->slug) }}" class="text-white stretched-link-title" title="Lihat detail lengkap layanan">{{ $service->name }}</a></h5>
+                    @if($service->categories->isNotEmpty())
                         <small class="text-white-50">
-                            <i class="fas fa-tag me-1"></i> {{ $service->categories->first()->name }}
+                            <i class="fas fa-tag me-1"></i> {{ $service->categories->pluck('name')->join(', ') }}
                         </small>
                     @endif
                 </div>
@@ -620,7 +625,7 @@
         @foreach($services as $service)
         <div class="card shadow-sm service-card-modern mb-4 service-item"
              data-name="{{ strtolower($service->name) }}"
-             data-category="{{ $service->categories->first()->name ?? '' }}">
+             data-categories="{{ $service->categories->pluck('id')->join(',') }}">
             <div class="card-body p-4">
                 <div class="row align-items-center">
                     <div class="col-md-8">
@@ -633,7 +638,7 @@
                             </div>
                             <div class="flex-grow-1">
                                 <div class="d-flex align-items-center mb-2">
-                                    <h5 class="fw-bold mb-0 me-3"><a href="{{ route('onlineportal.service.detail', $service->slug) }}" class="text-reset">{{ $service->name }}</a></h5>
+                                    <h5 class="fw-bold mb-0 me-3"><a href="{{ route('onlineportal.service.detail', $service->slug) }}" class="text-reset" title="Lihat detail lengkap layanan">{{ $service->name }}</a></h5>
                                     @if($service->mode === 'online')
                                         <span class="badge badge-mode badge-online">Online</span>
                                     @elseif($service->mode === 'offline')
@@ -647,9 +652,9 @@
                                     <small class="text-muted">
                                         <i class="fas fa-hashtag me-1"></i> {{ $service->code }}
                                     </small>
-                                    @if($service->categories->first())
+                                    @if($service->categories->isNotEmpty())
                                         <small class="text-muted">
-                                            <i class="fas fa-tag me-1"></i> {{ $service->categories->first()->name }}
+                                            <i class="fas fa-tag me-1"></i> {{ $service->categories->pluck('name')->join(', ') }}
                                         </small>
                                     @endif
                                 </div>
@@ -847,8 +852,8 @@ function filterServices() {
     // Each service has a card in the grid and in the list view; count the grid only.
     document.querySelectorAll('.service-item').forEach(item => {
         const name = item.getAttribute('data-name') || '';
-        const cat = item.getAttribute('data-category');
-        const visible = (!search || name.includes(search)) && (!category || cat === category);
+        const cats = (item.getAttribute('data-categories') || '').split(',');
+        const visible = (!search || name.includes(search)) && (!category || cats.includes(category));
 
         item.classList.toggle('d-none', !visible);
         if (visible && item.closest('#gridView')) {
