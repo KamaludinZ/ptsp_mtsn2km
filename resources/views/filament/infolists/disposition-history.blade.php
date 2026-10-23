@@ -3,7 +3,30 @@
     use App\Support\ServiceDisposition;
 
     $entries = DispositionHistory::forTicket($getRecord());
+    $statuses = DispositionHistory::statuses($getRecord());
 @endphp
+
+@if ($statuses)
+    {{-- Status disposisi digital per pejabat (Kepala Madrasah + Kepala TU: keduanya) --}}
+    <div data-disposition-statuses style="display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); margin-bottom: 1rem;">
+        @foreach ($statuses as $status)
+            <div class="rounded-lg border border-gray-200 dark:border-white/10" style="padding: 0.75rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                    <span class="text-sm font-semibold text-gray-950 dark:text-white">Status disposisi {{ $status['jabatan'] }}</span>
+                    <x-filament::badge :color="$status['color']" size="sm">{{ $status['label'] }}</x-filament::badge>
+                </div>
+                <dl class="text-sm" style="display: grid; grid-template-columns: 5rem 1fr; gap: 0.25rem 0.5rem; margin-top: 0.5rem;">
+                    <dt class="text-gray-500 dark:text-gray-400">Nama</dt>
+                    <dd class="text-gray-950 dark:text-white">{{ $status['name'] ?? '–' }}</dd>
+                    <dt class="text-gray-500 dark:text-gray-400">Jabatan</dt>
+                    <dd class="text-gray-950 dark:text-white">{{ $status['jabatan'] }}</dd>
+                    <dt class="text-gray-500 dark:text-gray-400">Waktu</dt>
+                    <dd class="text-gray-950 dark:text-white">{{ $status['at'] ? $status['at']->translatedFormat('j M Y · H:i') . ' WIB' : '–' }}</dd>
+                </dl>
+            </div>
+        @endforeach
+    </div>
+@endif
 
 @if (! $entries)
     <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada disposisi pada tiket ini.</p>

@@ -110,8 +110,8 @@ class TicketSeeder extends Seeder
 
         match ($action) {
             'verify' => $this->tickets->changeStatus($ticket, 'verified', 'Berkas persyaratan lengkap.', $officer),
-            // The leader this service's disposition rule allows (Kepala Madrasah and/or Kepala TU).
-            'dispose' => $this->tickets->dispose($ticket, app(\App\Services\DispositionAuthority::class)->disposers($ticket)->first() ?? $headmaster, 'acknowledged_by', explode(',', (string) $units), $detail),
+            // The leaders this service's disposition rule asks for (Kepala Madrasah and/or Kepala TU).
+            'dispose' => $this->disposeByEveryLeader($ticket, $headmaster, explode(',', (string) $units), $detail),
             'assign' => $this->tickets->assign($ticket, $assignee, $officer),
             'process' => $this->tickets->changeStatus($ticket, 'in_process', 'Mulai diproses unit.', $officer),
             'note' => $this->tickets->addNote($ticket, $detail, $officer, 'contact_applicant', true),
@@ -123,6 +123,17 @@ class TicketSeeder extends Seeder
             // Target date already passed while still in process.
             'overdue' => $ticket->update(['estimated_completion_date' => now()->subDays(3)->toDateString()]),
         };
+    }
+
+    /** Kepala Madrasah + Kepala TU each dispose; other modes need one leader. */
+    private function disposeByEveryLeader(Ticket $ticket, User $headmaster, array $units, ?string $instruction): void
+    {
+        $rounds = 0;
+        do {
+            $leader = app(\App\Services\DispositionAuthority::class)->disposers($ticket)->first() ?? $headmaster;
+            $this->tickets->dispose($ticket, $leader, 'acknowledged_by', $units, $instruction);
+            $ticket->refresh();
+        } while ($ticket->needsApproval() && $ticket->approval_status !== 'rejected' && ++$rounds < 3);
     }
 
     /** Pretend the next action happens $daysAgo days ago at $hour o'clock. */

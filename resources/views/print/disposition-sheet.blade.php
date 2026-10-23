@@ -1,24 +1,22 @@
 @php
+    use App\Support\DispositionHistory;
     use App\Support\Persuratan;
-    use App\Support\RoleAccess;
     use App\Support\ServiceDisposition;
 
-    // The leader's decision, once made: a reprint shows what was really decided, by whom and when.
-    $log = \App\Models\DispositionLog::with('actor:id,name')
-        ->where('ticket_id', $ticket->id)
+    // Every disposition so far (Kepala Madrasah + Kepala TU each dispose): a reprint shows what was really decided, by whom and when.
+    $logs = \App\Models\DispositionLog::where('ticket_id', $ticket->id)
         ->whereIn('action', [\App\Enums\DispositionAction::Disposisi, \App\Enums\DispositionAction::Acknowledge])
-        ->latest('id')
-        ->first();
-    $ticked = $log?->recipients ?? $ticket->disposition_recipients ?? $ticket->service?->disposition_roles ?? [];
-    $chosenInstruction = $log?->instruction;
-    $instructions = collect(Persuratan::options('instruksi_disposisi'))->push($chosenInstruction)->filter()->unique()->values();
-
-    // Signed by the role the leader decided in; before that, the leader printing it (active role), else the service's mode.
-    $actingRole = \App\Support\ActiveRoles::inContext(auth()->user());
-    $signerRole = $log?->role ?? (in_array($actingRole, ['kepala_sekolah', 'kepala_tu'], true) ? $actingRole : null)
-        ?? ($ticket->service?->disposition_mode === 'tu' ? 'kepala_tu' : 'kepala_sekolah');
-    $leader = RoleAccess::roleLabel($signerRole);
-    $signer = $log ? ($log->acknowledged_by_name ?: $log->actor?->name) : null;
+        ->oldest('id')
+        ->get();
+    $ticked = $ticket->disposition_recipients
+        ?? ($logs->pluck('recipients')->flatten()->filter()->unique()->values()->all() ?: ($ticket->service?->disposition_roles ?? []));
+    $chosenInstructions = $logs->pluck('instruction')->filter()->unique()->values()->all();
+    $instructions = collect(Persuratan::options('instruksi_disposisi'))->merge($chosenInstructions)->filter()->unique()->values();
+    $statuses = DispositionHistory::statuses($ticket);
+    $notes = $logs->filter(fn ($log) => filled($log->note))
+        ->map(fn ($log) => ($log->role ? \App\Support\RoleAccess::roleLabel($log->role) . ': ' : '') . $log->note);
+    $final = $ticket->approval_status === 'approved';
+    $waiting = collect($statuses)->where('status', 'pending')->pluck('jabatan');
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -36,8 +34,16 @@
         .boxes li { margin: 3px 0; }
         .box { display: inline-block; width: 11px; height: 11px; border: 1px solid #111827; margin-right: 6px; text-align: center; line-height: 10px; font-size: 10px; }
         .lines { height: 90px; background: repeating-linear-gradient(transparent, transparent 21px, #9ca3af 22px); }
-        .sign { margin-top: 16px; margin-left: auto; width: 260px; text-align: center; }
-        .sign .space { height: 70px; }
+        .status th { background: #f3f4f6; font-size: 12px; }
+        .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+        .badge-disposed { background: #dcfce7; color: #166534; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-rejected { background: #fee2e2; color: #991b1b; }
+        .badge-skipped { background: #e5e7eb; color: #374151; }
+        h3 { font-size: 13px; margin: 18px 0 6px; }
+        .legal { margin-top: 18px; padding: 10px 12px; border: 1px dashed #166534; background: #f0fdf4; font-size: 12px; font-style: italic; text-align: center; }
+        .legal.pending { border-color: #92400e; background: #fffbeb; }
+        .meta { margin-top: 6px; font-size: 11px; color: #6b7280; text-align: center; }
         @media print { .no-print { display: none; } body { padding: 0; } }
     </style>
 </head>
@@ -66,7 +72,7 @@
                 <td>
                     <ul class="boxes">
                         @foreach ($instructions as $instruction)
-                            <li><span class="box">{{ $instruction === $chosenInstruction ? '✓' : '' }}</span>{{ $instruction }}</li>
+                            <li><span class="box">{{ in_array($instruction, $chosenInstructions, true) ? '✓' : '' }}</span>{{ $instruction }}</li>
                         @endforeach
                     </ul>
                 </td>
@@ -74,26 +80,40 @@
             <tr>
                 <td class="label">Catatan</td>
                 <td>
-                    @if (filled($log?->note))
-                        {{ $log->note }}
+                    @if ($notes->isNotEmpty())
+                        @foreach ($notes as $note)
+                            <div>{{ $note }}</div>
+                        @endforeach
                     @else
                         <div class="lines"></div>
                     @endif
                 </td>
             </tr>
-            @if ($log)
-                <tr><td class="label">Tanggal disposisi</td><td>{{ \App\Support\Formats::date($log->created_at) }} · oleh {{ $signer }} ({{ $leader }})</td></tr>
-            @endif
-            @if ($ticket->service?->signature_recommendation)
-                <tr><td class="label">Anjuran tanda tangan</td><td>{{ ServiceDisposition::signature($ticket->service->signature_recommendation) }}</td></tr>
-            @endif
         </table>
-        <div class="sign">
-            <p>Malang, {{ $log ? \App\Support\Formats::date($log->created_at) : '....................................' }}</p>
-            <p>{{ $leader }}</p>
-            <div class="space"></div>
-            <p>({{ $signer ?: '......................................................' }})</p>
-        </div>
+
+        <h3>Status Disposisi</h3>
+        <table class="status">
+            <thead>
+                <tr><th>Jabatan</th><th>Nama</th><th>Status disposisi</th><th>Waktu disposisi</th></tr>
+            </thead>
+            <tbody>
+                @foreach ($statuses as $row)
+                    <tr>
+                        <td>{{ $row['jabatan'] }}</td>
+                        <td>{{ $row['name'] ?? '–' }}</td>
+                        <td><span class="badge badge-{{ $row['status'] }}">{{ $row['label'] }}</span></td>
+                        <td>{{ $row['at'] ? $row['at']->timezone(config('app.timezone'))->translatedFormat('j F Y, H:i') . ' WIB' : '–' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        @if ($final)
+            <div class="legal">Dokumen ini sah dan telah didisposisi secara elektronik melalui Aplikasi PTSP, tidak memerlukan tanda tangan basah.</div>
+        @else
+            <div class="legal pending">Disposisi belum lengkap{{ $waiting->isNotEmpty() ? ': menunggu disposisi ' . $waiting->join(' dan ') : '' }}. Dokumen ini belum berlaku sebagai disposisi final.</div>
+        @endif
+        <p class="meta">{{ $ticket->ticket_number }} · dicetak {{ now()->translatedFormat('j F Y, H:i') }} WIB melalui Aplikasi PTSP</p>
     </div>
     <p class="no-print"><button onclick="window.print()">Cetak / Simpan PDF</button></p>
     <script>window.addEventListener('load', () => window.print());</script>

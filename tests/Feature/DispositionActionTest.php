@@ -53,8 +53,15 @@ class DispositionActionTest extends TestCase
         $this->ticket->update(['status' => 'verified', 'approval_required' => true, 'approval_status' => 'pending']);
     }
 
+    /** One decision settles it: only the Kepala Madrasah disposes this service. */
+    private function singleLeader(): void
+    {
+        ServiceDisposition::apply($this->ticket->service, 'kepsek');
+    }
+
     public function test_acknowledged_disposition_needs_no_file(): void
     {
+        $this->singleLeader();
         app(TicketService::class)->dispose($this->ticket, $this->headmaster, 'acknowledged_by', [], 'Untuk diketahui');
 
         $this->ticket->refresh();
@@ -69,6 +76,7 @@ class DispositionActionTest extends TestCase
 
     public function test_signed_sheet_is_attached_to_the_ticket(): void
     {
+        $this->singleLeader();
         Storage::fake('local');
         Storage::disk('local')->put('ticket-files/disposisi.pdf', '%PDF-1.4');
 
@@ -118,6 +126,7 @@ class DispositionActionTest extends TestCase
 
     public function test_disposition_can_be_marked_on_behalf_of_a_leader(): void
     {
+        $this->singleLeader();
         app(TicketService::class)->dispose($this->ticket, $this->headmaster, 'acknowledged_by', ['tata_usaha'], 'Untuk diproses', 'Arahan lewat telepon', acknowledgedBy: '  Kepala Madrasah  Drs. Ahmad ');
 
         $log = DispositionLog::where('ticket_id', $this->ticket->id)->firstOrFail();
@@ -147,15 +156,154 @@ class DispositionActionTest extends TestCase
 
         app(TicketService::class)->dispose($this->ticket->fresh(), $headOfAdmin, 'ttd_upload', ['tata_usaha'], 'Segera diproses', 'Lampirkan arsip lama');
 
+        // Only the head of admin has disposed so far: the headmaster's row still waits.
         $this->get(route('tickets.disposition-sheet', $this->ticket))
             ->assertOk()
             ->assertSee('<span class="box">✓</span>Tata Usaha', false)
             ->assertDontSee('<span class="box">✓</span>Waka Sarpras', false)
             ->assertSee('Lampirkan arsip lama')
-            ->assertSee('Tanggal disposisi')
-            ->assertSee('Kepala Tata Usaha')
-            ->assertDontSee('Kepala Madrasah')
-            ->assertSee('(' . $headOfAdmin->name . ')', false);
+            ->assertSee('Status Disposisi')
+            ->assertSeeInOrder(['Kepala Madrasah', 'Menunggu disposisi', 'Kepala Tata Usaha', $headOfAdmin->name, 'Sudah didisposisi'])
+            ->assertSee('Disposisi belum lengkap: menunggu disposisi Kepala Madrasah')
+            ->assertDontSee('tidak memerlukan tanda tangan basah')
+            ->assertDontSee('Tanggal disposisi');
+
+        app(TicketService::class)->dispose($this->ticket->fresh(), $this->headmaster, 'acknowledged_by', [], 'Untuk diproses');
+
+        // Both leaders disposed: valid electronically, no signature block.
+        $this->get(route('tickets.disposition-sheet', $this->ticket))
+            ->assertOk()
+            ->assertSeeInOrder(['Kepala Madrasah', $this->headmaster->name, 'Sudah didisposisi', 'Kepala Tata Usaha', $headOfAdmin->name, 'Sudah didisposisi'])
+            ->assertSee('Dokumen ini sah dan telah didisposisi secara elektronik melalui Aplikasi PTSP, tidak memerlukan tanda tangan basah')
+            ->assertDontSee('Disposisi belum lengkap')
+            ->assertDontSee('......................................................');
+    }
+
+    public function test_kepsek_and_tu_mode_waits_for_both_leaders(): void
+    {
+        ServiceDisposition::apply($this->ticket->service, 'kepsek_tu', ['tata_usaha']);
+        $headOfAdmin = User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail();
+        $unit = tap(User::factory()->create())->assignRole('tata_usaha');
+
+        $this->actingAs($this->headmaster);
+        Livewire::test(Approvals::class)
+            ->callTableAction('approve', $this->ticket, ['signature_model' => 'acknowledged_by', 'instruction' => 'Untuk diproses'])
+            ->assertHasNoTableActionErrors();
+
+        // The first disposition is recorded, but the ticket still waits for the Kepala TU.
+        $ticket = $this->ticket->fresh();
+        $this->assertSame('verified', $ticket->status);
+        $this->assertSame('pending', $ticket->approval_status);
+        $this->assertNull($ticket->disposition_recipients);
+        $this->assertSame(['kepala_tu'], app(DispositionAuthority::class)->pendingRoles($ticket));
+        $this->assertDatabaseHas('ticket_logs', ['ticket_id' => $ticket->id, 'action' => 'approved', 'to_status' => 'verified']);
+
+        // The headmaster cannot dispose twice; the queue moves on.
+        $this->assertFalse($this->headmaster->can('approve', $ticket));
+        $this->assertStringContainsString('Menunggu disposisi Kepala Tata Usaha', (string) \Illuminate\Support\Facades\Gate::forUser($this->headmaster)->inspect('approve', $ticket)->message());
+        Livewire::test(Approvals::class)->assertCanNotSeeTableRecords([$ticket]);
+        $this->assertFalse(app(DispositionAuthority::class)->disposers($ticket)->contains($this->headmaster));
+
+        // Units only see it once both leaders have disposed.
+        $this->actingAs($unit);
+        Livewire::test(ListTickets::class, ['activeTab' => 'disposisi-unit'])->assertCanNotSeeTableRecords([$ticket]);
+
+        [$kepsek, $tu] = DispositionHistory::statuses($ticket);
+        $this->assertSame(['Kepala Madrasah', 'disposed', $this->headmaster->name], [$kepsek['jabatan'], $kepsek['status'], $kepsek['name']]);
+        $this->assertNotNull($kepsek['at']);
+        $this->assertSame(['Kepala Tata Usaha', 'pending', null, null], [$tu['jabatan'], $tu['status'], $tu['name'], $tu['at']]);
+
+        $this->actingAs($headOfAdmin);
+        Livewire::test(Approvals::class)
+            ->assertCanSeeTableRecords([$ticket])
+            ->assertSee('Kepala Madrasah: Sudah didisposisi')
+            ->callTableAction('approve', $ticket, ['signature_model' => 'acknowledged_by'])
+            ->assertHasNoTableActionErrors();
+
+        $ticket->refresh();
+        $this->assertSame('approved', $ticket->status);
+        $this->assertSame('approved', $ticket->approval_status);
+        $this->assertSame($headOfAdmin->id, $ticket->approved_by);
+        $this->assertSame(['tata_usaha'], $ticket->disposition_recipients);
+        $this->assertSame(['disposed', 'disposed'], array_column(DispositionHistory::statuses($ticket), 'status'));
+
+        $this->get(TicketResource::getUrl('view', ['record' => $ticket]))
+            ->assertOk()
+            ->assertSee('Status disposisi Kepala Madrasah')
+            ->assertSee('Status disposisi Kepala Tata Usaha')
+            ->assertSee($this->headmaster->name)
+            ->assertSee($headOfAdmin->name);
+
+        $this->actingAs($unit);
+        Livewire::test(ListTickets::class, ['activeTab' => 'disposisi-unit'])->assertCanSeeTableRecords([$ticket]);
+    }
+
+    public function test_either_leader_can_still_reject_in_kepsek_and_tu_mode(): void
+    {
+        ServiceDisposition::apply($this->ticket->service, 'kepsek_tu');
+        $headOfAdmin = User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail();
+
+        app(TicketService::class)->dispose($this->ticket, $this->headmaster, 'acknowledged_by');
+        app(TicketService::class)->decide($this->ticket->fresh(), false, $headOfAdmin, notes: 'Berkas tidak sesuai.');
+
+        $ticket = $this->ticket->fresh();
+        $this->assertSame('rejected', $ticket->status);
+        $this->assertSame(['disposed', 'rejected'], array_column(DispositionHistory::statuses($ticket), 'status'));
+    }
+
+    /** @return array<string, array{string, string, string}> mode, the leader who disposes, the one who may not */
+    public static function singleLeaderModes(): array
+    {
+        return [
+            'Kepala Madrasah saja' => ['kepsek', 'kepsek@mtsn2malang.sch.id', 'katu@mtsn2malang.sch.id', 'Kepala Madrasah'],
+            'Kepala TU saja' => ['tu', 'katu@mtsn2malang.sch.id', 'kepsek@mtsn2malang.sch.id', 'Kepala Tata Usaha'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('singleLeaderModes')]
+    public function test_single_leader_modes_are_settled_by_that_leader_alone(string $mode, string $leaderEmail, string $otherEmail, string $jabatan): void
+    {
+        ServiceDisposition::apply($this->ticket->service, $mode, ['tata_usaha']);
+        $leader = User::where('email', $leaderEmail)->firstOrFail();
+        $other = User::where('email', $otherEmail)->firstOrFail();
+        $ticket = $this->ticket->fresh();
+
+        $this->assertSame([], app(DispositionAuthority::class)->requiredRoles($ticket));
+        $this->assertFalse($other->can('approve', $ticket));
+        $this->assertTrue($leader->can('approve', $ticket));
+
+        // Before the decision: one row, waiting for that leader.
+        $this->assertSame([[$jabatan, 'pending']], array_map(fn (array $row) => [$row['jabatan'], $row['status']], DispositionHistory::statuses($ticket)));
+
+        app(TicketService::class)->dispose($ticket, $leader, 'acknowledged_by', [], 'Untuk diproses');
+
+        $ticket->refresh();
+        $this->assertSame('approved', $ticket->status);
+        $this->assertSame(['tata_usaha'], $ticket->disposition_recipients);
+        $this->assertSame([[$jabatan, 'disposed', $leader->name]], array_map(fn (array $row) => [$row['jabatan'], $row['status'], $row['name']], DispositionHistory::statuses($ticket)));
+
+        $this->actingAs($leader)->get(route('tickets.disposition-sheet', $ticket))
+            ->assertOk()
+            ->assertSeeInOrder([$jabatan, $leader->name, 'Sudah didisposisi'])
+            ->assertSee('Dokumen ini sah dan telah didisposisi secara elektronik melalui Aplikasi PTSP, tidak memerlukan tanda tangan basah');
+    }
+
+    public function test_services_without_disposition_go_straight_to_the_officers(): void
+    {
+        ServiceDisposition::apply($this->ticket->service, 'none');
+        $ticket = app(TicketService::class)->open($this->ticket->service->fresh(), $this->ticket->user, User::where('email', 'loket1@mtsn2malang.sch.id')->firstOrFail(), 'offline', 'Tanpa disposisi');
+
+        $this->assertFalse($ticket->approval_required);
+        $this->assertSame([], DispositionHistory::statuses($ticket));
+        $this->assertCount(0, app(DispositionAuthority::class)->disposers($ticket));
+        $this->assertFalse($this->headmaster->can('approve', $ticket));
+
+        // The officers verify and finish it without waiting for a leader.
+        $officer = User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail();
+        app(TicketService::class)->changeStatus($ticket, 'verified', 'Berkas lengkap.', $officer);
+        app(TicketService::class)->changeStatus($ticket->fresh(), 'in_process', 'Diproses.', $officer);
+        app(TicketService::class)->changeStatus($ticket->fresh(), 'completed', 'Selesai.', $officer);
+        $this->assertSame('completed', $ticket->fresh()->status);
     }
 
     public function test_receiving_units_open_the_sheet_as_proof_only_after_the_disposition(): void
@@ -274,6 +422,7 @@ class DispositionActionTest extends TestCase
 
     public function test_quick_instruction_fills_the_instruction_field(): void
     {
+        $this->singleLeader();
         $this->actingAs($this->headmaster);
 
         Livewire::test(ViewTicket::class, ['record' => $this->ticket->id])
@@ -289,6 +438,7 @@ class DispositionActionTest extends TestCase
 
     public function test_typed_instruction_is_kept_without_quick_choice(): void
     {
+        $this->singleLeader();
         $this->actingAs($this->headmaster);
 
         Livewire::test(ViewTicket::class, ['record' => $this->ticket->id])
@@ -365,6 +515,7 @@ class DispositionActionTest extends TestCase
 
     public function test_disposition_is_forwarded_to_the_chosen_back_office_units(): void
     {
+        $this->singleLeader();
         $kurikulum = tap(User::factory()->create(['name' => 'Waka Kurikulum Uji']))->assignRole('waka_kurikulum');
         $sarpras = tap(User::factory()->create())->assignRole('waka_sarpras');
 
@@ -388,6 +539,7 @@ class DispositionActionTest extends TestCase
 
     public function test_without_a_choice_the_services_usual_units_receive_it(): void
     {
+        $this->singleLeader();
         $this->ticket->service->update(['disposition_roles' => ['penjamin_mutu']]);
 
         app(TicketService::class)->dispose($this->ticket, $this->headmaster, 'acknowledged_by');
@@ -546,6 +698,7 @@ class DispositionActionTest extends TestCase
 
     public function test_leaders_dispose_or_reject_through_the_api(): void
     {
+        $this->singleLeader();
         $url = '/api/disposisi/' . $this->ticket->ticket_number;
 
         Sanctum::actingAs(User::where('email', 'staff1@mtsn2malang.sch.id')->firstOrFail());

@@ -8,6 +8,7 @@ use App\Models\DispositionLog;
 use App\Models\Ticket;
 use App\Models\TicketLog;
 use App\Models\User;
+use App\Services\DispositionAuthority;
 
 /**
  * Riwayat disposisi & tanda tangan for one ticket, read from disposition_logs
@@ -55,6 +56,61 @@ class DispositionHistory
                 ];
             })
             ->all();
+    }
+
+    /**
+     * Status disposisi digital per pejabat: one row per leader who must
+     * dispose (Kepala Madrasah + Kepala TU each get their own row), with the
+     * status, name, title (jabatan) and time of their disposition.
+     *
+     * @return array<int, array{role: ?string, jabatan: string, status: string, label: string, color: string, name: ?string, at: ?\Illuminate\Support\Carbon}>
+     */
+    public static function statuses(Ticket $ticket): array
+    {
+        if (! $ticket->approval_required) {
+            return [];
+        }
+
+        $authority = app(DispositionAuthority::class);
+        $logs = DispositionLog::where('ticket_id', $ticket->id)->with('actor:id,name')->oldest('id')->get();
+        $row = fn (?DispositionLog $log, ?string $role, ?string $jabatan = null) => [
+            'role' => $role,
+            'jabatan' => $jabatan ?? ($role ? RoleAccess::roleLabel($role) : 'Pimpinan'),
+            'status' => $status = match (true) {
+                $log === null => $ticket->approval_status === 'rejected' ? 'skipped' : 'pending',
+                $log->action === DispositionAction::Reject => 'rejected',
+                default => 'disposed',
+            },
+            'label' => [
+                'disposed' => 'Sudah didisposisi',
+                'rejected' => 'Ditolak',
+                'pending' => 'Menunggu disposisi',
+                'skipped' => 'Tidak dilanjutkan',
+            ][$status],
+            'color' => ['disposed' => 'success', 'rejected' => 'danger', 'pending' => 'warning', 'skipped' => 'gray'][$status],
+            'name' => $log?->actor?->name,
+            'at' => $log?->created_at,
+        ];
+
+        // Kepala Madrasah + Kepala TU: both rows, filled in as each leader decides.
+        if ($required = $authority->requiredRoles($ticket)) {
+            $rows = collect($required)->map(fn (string $role) => $row($logs->where('role', $role)->last(), $role));
+
+            // A decision taken in another role (e.g. admin) settles the ticket on its own.
+            $others = $logs->reject(fn (DispositionLog $log) => in_array($log->role, $required, true));
+
+            return $rows->concat($others->map(fn (DispositionLog $log) => $row($log, $log->role)))->values()->all();
+        }
+
+        if ($logs->isNotEmpty()) {
+            return $logs->map(fn (DispositionLog $log) => $row($log, $log->role))->all();
+        }
+
+        $roles = array_intersect($authority->roles($ticket->service), ['kepala_sekolah', 'kepala_tu']);
+
+        return [$row(null, count($roles) === 1 ? reset($roles) : null, $roles
+            ? collect($roles)->map(fn (string $role) => RoleAccess::roleLabel($role))->join(' / ')
+            : 'Pimpinan')];
     }
 
     /** Whether the leader has disposed the ticket (a decision that produces a disposition sheet). */

@@ -18,11 +18,14 @@ class ServiceDisposition
     ];
 
     public const MODE_DESCRIPTIONS = [
-        'kepsek_tu' => 'Kepala Madrasah atau Kepala TU dapat mendisposisi permohonan.',
+        'kepsek_tu' => 'Kepala Madrasah dan Kepala TU masing-masing mendisposisi; permohonan diteruskan setelah keduanya mendisposisi.',
         'kepsek' => 'Hanya Kepala Madrasah yang mendisposisi.',
         'tu' => 'Hanya Kepala TU yang mendisposisi.',
         'none' => 'Permohonan langsung diproses petugas tanpa menunggu disposisi.',
     ];
+
+    /** Mode in which every one of its roles disposes (not just one of them). */
+    public const JOINT_MODE = 'kepsek_tu';
 
     /** Mode => the approval_roles it stands for. */
     public const MODE_ROLES = [

@@ -115,6 +115,11 @@ class NotificationDispatchTest extends TestCase
 
         app(TicketService::class)->dispose($this->ticket->fresh(), $headmaster, 'acknowledged_by', ['waka_kurikulum'], 'Untuk ditindaklanjuti');
 
+        // Kepala Madrasah + Kepala TU: the units hear of it once both have disposed.
+        Mail::assertNotSent(TemplateNotificationMail::class, fn ($mail) => $mail->event === 'disposition_assigned');
+
+        app(TicketService::class)->dispose($this->ticket->fresh(), User::where('email', 'katu@mtsn2malang.sch.id')->firstOrFail(), 'acknowledged_by');
+
         Mail::assertSent(TemplateNotificationMail::class, fn ($mail) => $mail->event === 'disposition_assigned' && $mail->hasTo('waka@example.test') && str_contains($mail->body, 'Untuk ditindaklanjuti'));
         Mail::assertSent(TemplateNotificationMail::class, fn ($mail) => $mail->event === 'ticket_status_changed' && $mail->hasTo('siti@example.test'));
     }

@@ -51,7 +51,7 @@ class ServiceWorkflowTest extends TestCase
 
     public function test_leader_approves_a_verified_ticket_and_back_office_completes_it(): void
     {
-        $service = Service::factory()->create(['approval_roles' => null, 'approval_users' => null]);
+        $service = Service::factory()->create(['approval_roles' => ['kepala_sekolah'], 'approval_users' => null]);
         $ticket = Ticket::factory()->create([
             'service_id' => $service->id,
             'status' => 'submitted',

@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Services\DispositionAuthority;
+use App\Support\RoleAccess;
 use App\Support\ActiveRoles;
 use Illuminate\Auth\Access\Response;
 
@@ -77,6 +78,12 @@ class TicketPolicy
         $authority = app(DispositionAuthority::class);
 
         if ($authority->canDisposeInActiveRole($user, $ticket)) {
+            // Kepala Madrasah + Kepala TU: each leader disposes once, then waits for the other.
+            if ($authority->disposedInActiveRole($user, $ticket)) {
+                return Response::deny('Anda sudah mendisposisi permohonan ini. Menunggu disposisi '
+                    .collect($authority->pendingRoles($ticket))->map(fn (string $role) => RoleAccess::roleLabel($role))->join(' dan ').'.');
+            }
+
             return Response::allow();
         }
 
