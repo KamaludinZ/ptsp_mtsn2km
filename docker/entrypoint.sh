@@ -20,6 +20,13 @@ if [ -z "${APP_KEY:-}" ]; then
     exit 1
 fi
 
+# Never serve requests on a PHP without the PHP2Shell fixes.
+if ! php /usr/local/bin/php-security-check.php; then
+    log "ERROR: versi PHP di image ini belum ditambal. Di Coolify: Redeploy dengan"
+    log "       'Disable build cache' agar image PHP terbaru diunduh ulang."
+    exit 1
+fi
+
 # Uploaded documents live in storage/: without a volume they vanish on the
 # next redeploy (Coolify's Dockerfile build pack adds none by itself).
 if ! grep -q " /var/www/html/storage " /proc/mounts; then

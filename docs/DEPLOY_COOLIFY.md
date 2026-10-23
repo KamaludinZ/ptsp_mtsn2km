@@ -127,6 +127,25 @@ Cukup push atau merge ke branch `master`. Coolify akan:
 
 Data di volume tetap aman.
 
+### Pembaruan keamanan PHP (mis. PHP2Shell, Oktober 2026)
+
+Image memakai versi PHP yang dikunci di `Dockerfile` (`ARG PHP_VERSION`, saat ini `8.3.36`, sudah
+memuat tambalan CVE-2026-109618 dan CVE-2026-109619). Fitur `session.upload_progress` dimatikan di
+`docker/php.ini` karena Laravel tidak memakainya. Build dan start container **gagal dengan sengaja**
+bila versi PHP masih rentan.
+
+Saat ada rilis keamanan PHP baru:
+
+1. Naikkan `ARG PHP_VERSION` dan daftar versi minimum di `docker/php-security-check.php`, lalu merge.
+2. Di Coolify, klik **Redeploy** dan centang **Disable build cache** (*Force rebuild without
+   cache*) agar image PHP terbaru benar-benar diunduh.
+3. Periksa di tab Terminal service `app`: `php -v` harus menampilkan versi baru, dan
+   `php /usr/local/bin/php-security-check.php` harus menampilkan "sudah memuat tambalan".
+
+Langkah tambahan di luar aplikasi: perbarui paket server (VPS) secara rutin, tutup port SSH (22)
+dari internet atau batasi ke IP tertentu, dan bila memakai Cloudflare aktifkan *managed rules* WAF
+serta pastikan IP server tidak bisa diakses langsung tanpa melewati Cloudflare.
+
 ## Letak data dan keamanan redeploy
 
 Setiap deploy membuat **image baru** dan **container baru**. Isi container lama dibuang. Yang
@@ -251,6 +270,7 @@ Pilih cara ini jika ingin fitur backup terjadwal Coolify ke S3.
 | `invalid interpolation format ... redirectregex.replacement=${1}://${2}` | Bug Coolify pada redirect www ↔ non-www. Isi satu domain saja dan set *Direction* ke **Allow www & non-www**. |
 | Branch `main` tidak ditemukan saat clone | Branch repo ini `master`. Ganti *Git Branch* di Configuration. |
 | Jam di log scheduler mundur 7 jam (UTC) | Image lama tanpa `APP_TIMEZONE`. Redeploy versi terbaru (bawaan `Asia/Jakarta`) atau isi `APP_TIMEZONE=Asia/Jakarta`. |
+| Log: `PHP ... rentan PHP2Shell` lalu container berhenti | Image dibangun dari cache PHP lama. **Redeploy** dengan *Disable build cache* (lihat bagian Pembaruan keamanan PHP). |
 | Halaman error 500 | Isi `LOG_LEVEL=debug`, lalu deploy ulang dan lihat tab Logs. Jangan menyalakan `APP_DEBUG` di produksi. |
 | Tampilan tanpa CSS atau tautan `http://` | Pastikan `APP_URL` memakai `https://` dan sama persis dengan domain. |
 | Error 419 (page expired) saat login | Buka situs lewat domain yang sama dengan `APP_URL`, lalu hapus cookie browser. |
