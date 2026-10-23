@@ -70,7 +70,7 @@ class Approvals extends Page implements HasTable
     {
         return $table
             ->query(fn () => Ticket::query()
-                ->with(['service:id,name,signature_recommendation,approval_required,approval_roles,approval_users', 'user:id,name,user_type'])
+                ->with(['service:id,name,signature_recommendation,approval_required,approval_roles,approval_users,disposition_roles', 'user:id,name,user_type'])
                 ->whereIn('id', Ticket::approvableBy(auth()->user())->pluck('id')))
             ->defaultSort('created_at')
             ->poll('30s')
@@ -78,7 +78,12 @@ class Approvals extends Page implements HasTable
                 Tables\Columns\TextColumn::make('ticket_number')->label('No. Tiket')->weight('semibold')->searchable()
                     ->description(fn (Ticket $record) => $record->isOverdue() ? 'Melewati target' : null),
                 Tables\Columns\TextColumn::make('service.name')->label('Layanan')->wrap()
-                    ->description(fn (Ticket $record) => $record->service ? 'Disposisi: ' . ServiceDisposition::mode($record->service->disposition_mode) : null),
+                    ->description(fn (Ticket $record) => $record->service ? 'Disposisi: ' . ServiceDisposition::mode($record->service->disposition_mode)
+                        // Kepala Madrasah + Kepala TU: who has disposed so far.
+                        . collect(\App\Support\DispositionHistory::statuses($record))
+                            ->filter(fn (array $status) => $status['role'] && count(app(\App\Services\DispositionAuthority::class)->requiredRoles($record)) > 1)
+                            ->map(fn (array $status) => ' · ' . $status['jabatan'] . ': ' . $status['label'])
+                            ->join('') : null),
                 Tables\Columns\TextColumn::make('user.name')->label('Pemohon')->searchable()
                     ->description(fn (Ticket $record) => CivitasRegistration::USER_TYPES[$record->user?->user_type] ?? ($record->user?->user_type === 'umum' ? 'Umum' : null)),
                 Tables\Columns\TextColumn::make('status')->label('Status')->badge()

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\DispositionAction;
+use App\Models\DispositionLog;
 use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\User;
@@ -69,6 +71,51 @@ class DispositionAuthority
         return ActiveRoles::hasRole($user, $this->roles($service));
     }
 
+    /**
+     * Roles that must EACH dispose the ticket before it moves on: the
+     * "Kepala Madrasah + Kepala TU" mode needs both leaders, every other
+     * mode is settled by one decision.
+     *
+     * @return array<int, string>
+     */
+    public function requiredRoles(Ticket $ticket): array
+    {
+        return $ticket->approval_required && $ticket->service?->disposition_mode === ServiceDisposition::JOINT_MODE
+            ? ServiceDisposition::MODE_ROLES[ServiceDisposition::JOINT_MODE]
+            : [];
+    }
+
+    /** @return array<int, string> required roles that have disposed the ticket so far */
+    public function disposedRoles(Ticket $ticket): array
+    {
+        $required = $this->requiredRoles($ticket);
+
+        if (! $required) {
+            return [];
+        }
+
+        return DispositionLog::where('ticket_id', $ticket->id)
+            ->where('action', DispositionAction::Disposisi)
+            ->whereIn('role', $required)
+            ->distinct()
+            ->pluck('role')
+            ->all();
+    }
+
+    /** @return array<int, string> required roles still to dispose the ticket */
+    public function pendingRoles(Ticket $ticket): array
+    {
+        return array_values(array_diff($this->requiredRoles($ticket), $this->disposedRoles($ticket)));
+    }
+
+    /** The leader already disposed this ticket in the role they are working in now. */
+    public function disposedInActiveRole(User $user, Ticket $ticket): bool
+    {
+        $role = ActiveRoles::actingRoleOf($user);
+
+        return $role !== null && in_array($role, $this->disposedRoles($ticket), true);
+    }
+
     /** @return Collection<int, User> the leaders who may dispose this ticket */
     public function disposers(Ticket $ticket): Collection
     {
@@ -77,7 +124,8 @@ class DispositionAuthority
             return collect();
         }
 
-        $roles = $this->roles($service);
+        // Kepala Madrasah + Kepala TU: a leader who has disposed is no longer waited on.
+        $roles = array_values(array_diff($this->roles($service), $this->disposedRoles($ticket)));
 
         return User::query()
             ->where('is_active', true)

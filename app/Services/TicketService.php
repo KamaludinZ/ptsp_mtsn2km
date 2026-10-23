@@ -384,31 +384,50 @@ class TicketService
         }
 
         $from = $ticket->status;
+        // The role the decision is taken in (active role); a leader named on the
+        // service may decide from any role, and that role is what gets recorded.
+        $role = ActiveRoles::actingRoleOf($leader)
+            ?? $leader->getRoleNames()->first(fn (string $role) => in_array($role, RoleAccess::LEADERSHIP, true));
 
-        $this->managed(fn () => $ticket->update([
-            'approval_status' => $approve ? 'approved' : 'rejected',
-            'is_approved' => $approve,
-            'approved_by' => $leader->id,
-            'approved_at' => now(),
-            'approval_notes' => $notes,
-            'signature_type' => $approve ? $signatureType : null,
-            'status' => $approve ? 'approved' : 'rejected',
-        ]), $leader);
+        // Kepala Madrasah + Kepala TU: the ticket moves on once both have disposed
+        // it; the first disposition is recorded and the ticket keeps waiting.
+        $authority = app(DispositionAuthority::class);
+        $stillWaiting = $approve && in_array($role, $authority->pendingRoles($ticket), true)
+            ? array_values(array_diff($authority->pendingRoles($ticket), [$role]))
+            : [];
 
-        $entry = $this->log($ticket, $leader, $approve ? 'approved' : 'rejected', $from, $ticket->status, $approve
-            ? trim('Didisposisi pimpinan (' . ServiceDisposition::signatureTypeLabel($signatureType) . '). ' . ($notes ?? ''))
-            : 'Ditolak pimpinan: ' . $notes, $metadata + array_filter(['signature_type' => $approve ? $signatureType : null]));
+        if ($stillWaiting) {
+            $this->managed(fn () => $ticket->update(['approval_status' => 'pending']), $leader);
 
-        $this->notify($approve ? 'ticket_status_changed' : 'ticket_rejected', $ticket, null, ['catatan' => $approve ? '' : (string) $notes]);
+            $entry = $this->log($ticket, $leader, 'approved', $from, $from, trim(sprintf(
+                'Didisposisi %s; menunggu disposisi %s. %s',
+                RoleAccess::roleLabel($role),
+                collect($stillWaiting)->map(fn (string $waiting) => RoleAccess::roleLabel($waiting))->join(' dan '),
+                $notes ?? '',
+            )), $metadata + array_filter(['signature_type' => $signatureType]));
+        } else {
+            $this->managed(fn () => $ticket->update([
+                'approval_status' => $approve ? 'approved' : 'rejected',
+                'is_approved' => $approve,
+                'approved_by' => $leader->id,
+                'approved_at' => now(),
+                'approval_notes' => $notes,
+                'signature_type' => $approve ? $signatureType : null,
+                'status' => $approve ? 'approved' : 'rejected',
+            ]), $leader);
+
+            $entry = $this->log($ticket, $leader, $approve ? 'approved' : 'rejected', $from, $ticket->status, $approve
+                ? trim('Didisposisi pimpinan (' . ServiceDisposition::signatureTypeLabel($signatureType) . '). ' . ($notes ?? ''))
+                : 'Ditolak pimpinan: ' . $notes, $metadata + array_filter(['signature_type' => $approve ? $signatureType : null]));
+
+            $this->notify($approve ? 'ticket_status_changed' : 'ticket_rejected', $ticket, null, ['catatan' => $approve ? '' : (string) $notes]);
+        }
 
         return DispositionLog::create([
             'ticket_id' => $ticket->id,
             'ticket_log_id' => $entry->id,
             'actor_id' => $leader->id,
-            // The role the decision was taken in (active role); a leader named on the
-            // service may decide from any role, and that role is what gets recorded.
-            'role' => ActiveRoles::actingRoleOf($leader)
-                ?? $leader->getRoleNames()->first(fn (string $role) => in_array($role, RoleAccess::LEADERSHIP, true)),
+            'role' => $role,
             'action' => $approve ? 'disposisi' : 'reject',
             'signature_model' => $approve ? ($metadata['signature_model'] ?? (array_search($signatureType, ServiceDisposition::SIGNATURE_TYPES, true) ?: null)) : null,
             'signature_file_id' => $signedSheet?->id,
@@ -454,15 +473,30 @@ class TicketService
             $sheet = $signatureFile ? $this->recordFile($ticket, $signatureFile, $signatureFileName ?: basename($signatureFile), $leader) : null;
 
             $disposition = $this->decide($ticket, true, $leader, $signatureType, $summary ?: null, $metadata, $sheet);
-            $this->managed(fn () => $ticket->update([
-                'disposition_recipients' => $units ?: null,
-                'disposition_category' => IncomingCategory::forInstruction($metadata['instruction'] ?? null),
-            ]), $leader);
+
+            // Kepala Madrasah + Kepala TU: the units hear of it once both leaders
+            // have disposed, and receive what either of them asked for.
+            $final = $ticket->approval_status === 'approved';
+            if ($final && count(app(DispositionAuthority::class)->requiredRoles($ticket)) > 1) {
+                $earlier = DispositionLog::where('ticket_id', $ticket->id)->where('action', \App\Enums\DispositionAction::Disposisi)->pluck('recipients')->flatten()->filter()->all();
+                $units = array_values(array_unique(array_merge($units, array_intersect($earlier, array_keys(ServiceDisposition::RECIPIENTS)))));
+            }
+
+            // The instruction given now, or the one the other leader gave.
+            $instruction = $metadata['instruction']
+                ?? DispositionLog::where('ticket_id', $ticket->id)->whereNotNull('instruction')->latest('id')->value('instruction');
+
+            if ($final) {
+                $this->managed(fn () => $ticket->update([
+                    'disposition_recipients' => $units ?: null,
+                    'disposition_category' => IncomingCategory::forInstruction($instruction),
+                ]), $leader);
+            }
 
             // The units' staff learn there is work for them.
-            if ($units) {
+            if ($final && $units) {
                 foreach (User::role($units)->where('is_active', true)->get() as $holder) {
-                    $this->notify('disposition_assigned', $ticket, $holder, ['catatan' => $metadata['instruction'] ?? '']);
+                    $this->notify('disposition_assigned', $ticket, $holder, ['catatan' => $instruction ?? '']);
                 }
             }
 

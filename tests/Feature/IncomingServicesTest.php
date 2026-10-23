@@ -33,7 +33,8 @@ class IncomingServicesTest extends TestCase
 
     private function disposed(Ticket $ticket, ?string $instruction): Ticket
     {
-        $ticket->service->update(['approval_required' => true, 'approval_roles' => null, 'approval_users' => null]);
+        // One leader settles it (Kepala Madrasah saja).
+        $ticket->service->update(['approval_required' => true, 'approval_roles' => ['kepala_sekolah'], 'approval_users' => null]);
         $ticket->update(['status' => 'verified', 'approval_required' => true, 'approval_status' => 'pending']);
         app(TicketService::class)->dispose($ticket, $this->headmaster, 'acknowledged_by', ['tata_usaha'], $instruction);
 
