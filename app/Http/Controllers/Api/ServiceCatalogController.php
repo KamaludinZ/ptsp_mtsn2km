@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Support\Applicants;
+use App\Support\RichText;
 use App\Support\ServiceDisposition;
 use App\Support\TicketLabels;
 use Illuminate\Database\Eloquent\Builder;
@@ -184,7 +185,8 @@ class ServiceCatalogController extends Controller
 
     private function save(Service $service, array $data): Service
     {
-        $html = fn (?string $value) => filled($value) ? (string) str($value)->sanitizeHtml() : null;
+        // The same rules as the panel's editor and the public pages (RichText).
+        $html = fn (?string $value) => RichText::sanitize($value);
         $map = [
             'nama' => ['name', fn ($v) => trim($v)],
             'kode' => ['code', fn ($v) => trim($v)],

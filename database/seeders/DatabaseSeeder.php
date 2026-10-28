@@ -38,8 +38,16 @@ class DatabaseSeeder extends Seeder
                 ComplaintSeeder::class,
                 PengumumanSeeder::class,
                 SuratKeluarSeeder::class,
+                SuratKeputusanSeeder::class,
                 NotificationSeeder::class,
             ]);
+
+            // Contoh berkas tiket (files on the private disk) and layanan
+            // berisi rich text: tests seed them when they need them, so
+            // their counts of tickets and services stay as they were.
+            if (! app()->runningUnitTests()) {
+                $this->call([TicketDocumentSeeder::class, ServiceRichTextSeeder::class]);
+            }
         }
     }
 }

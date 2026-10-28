@@ -43,8 +43,22 @@ return Application::configure(basePath: dirname(__DIR__))
             'izin' => \App\Http\Middleware\RequirePermission::class,
             // Konteks peran aktif petugas (ActiveRoles::inContext) di luar panel /cp
             'peran.aktif' => \App\Http\Middleware\SetActiveRoleContext::class,
+            // Izin per route menurut peran aktif: izin.aktif:backoffice.access,backoffice.sk.register
+            'izin.aktif' => \App\Http\Middleware\RequireActivePermission::class,
+            // Kemampuan token API (Sanctum): ability = salah satu, abilities = semuanya
+            'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
+            'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // A token issued for less (AuthController::TOKEN_ABILITIES) than the endpoint asks;
+        // Laravel turns the authorization error into a 403 first, the cause stays as "previous".
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            $missing = $e->getPrevious();
+
+            return $missing instanceof \Laravel\Sanctum\Exceptions\MissingAbilityException ? response()->json([
+                'message' => 'Token ini tidak memiliki kemampuan untuk aksi ini. Masuk ulang dan minta kemampuan yang sesuai.',
+                'kemampuan_dibutuhkan' => array_values($missing->abilities()),
+            ], 403) : null;
+        });
     })->create();

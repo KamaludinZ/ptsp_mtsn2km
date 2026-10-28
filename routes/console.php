@@ -36,6 +36,9 @@ Schedule::call(function () {
 // Notifikasi in-app: drop old notifications every night.
 Schedule::command('notifications:prune')->dailyAt('02:30')->name('notifications-prune');
 
+// Arsip scan SK: missing or changed scans show up in the log (and the command's exit code) every week.
+Schedule::command('sk:periksa-arsip')->weeklyOn(1, '03:00')->name('sk-periksa-arsip')->withoutOverlapping();
+
 // Pengingat survei: applicants who have not rated a finished request (day 1 and day 7), every morning.
 Schedule::command('surveys:remind')->dailyAt('08:00')->name('surveys-remind')->withoutOverlapping();
 

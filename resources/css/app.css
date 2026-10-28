@@ -7,6 +7,15 @@
 /* Tailwind CSS v4 - Import dengan @import tailwindcss */
 @import "tailwindcss";
 
+/*
+ * `collapse` is Bootstrap's: the accordions of /services and the FAQ.
+ * Tailwind's utility of that name (visibility: collapse) and daisyUI's
+ * collapse component (a grid with a 0fr row, overflow hidden) restyled
+ * those panels, and where `revert-layer` is unsupported they hid the
+ * detail outright. Neither is generated.
+ */
+@source not inline("collapse");
+
 /* Bootstrap Icons - Local */
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -14,7 +23,10 @@
 @import 'public-layout.css';
 
 /* DaisyUI Plugin */
-@plugin "daisyui";
+/* daisyUI's modal (visibility: hidden unless [open]) would likewise hide a Bootstrap modal. */
+@plugin "daisyui" {
+  exclude: collapse, modal;
+}
 
 /* Tailwind Theme Configuration */
 @theme {

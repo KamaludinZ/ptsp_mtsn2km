@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 /**
  * Masuk dan keluar lewat API (Sanctum token). Same rules as the website:
@@ -23,6 +24,17 @@ class AuthController extends Controller
 
     public const TOKEN_DAYS = 30;
 
+    /**
+     * Kemampuan a token may be limited to at login (kemampuan[]); without
+     * them the token can do whatever its account may ("*"). The account's
+     * role and active role still decide on every request.
+     */
+    public const TOKEN_ABILITIES = [
+        'penomoran-sk:baca' => 'Register Penomoran SK: lihat, cari, unduh laporan dan scan',
+        'penomoran-sk:tulis' => 'Register Penomoran SK: minta nomor, ubah, hapus, unggah dan hapus scan',
+        'jenis-sk:kelola' => 'Master Jenis SK: tambah, ubah, dan hapus jenis SK',
+    ];
+
     /** POST /api/auth/masuk {email, password, perangkat?} */
     public function login(Request $request): JsonResponse
     {
@@ -30,7 +42,9 @@ class AuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string'],
             'perangkat' => ['nullable', 'string', 'max:100'],
-        ]);
+            'kemampuan' => ['nullable', 'array', 'max:' . count(self::TOKEN_ABILITIES)],
+            'kemampuan.*' => ['distinct', Rule::in(array_keys(self::TOKEN_ABILITIES))],
+        ], ['kemampuan.*.in' => 'Kemampuan token yang tersedia: ' . implode(', ', array_keys(self::TOKEN_ABILITIES)) . '.']);
         $email = mb_strtolower(trim($data['email']));
         $key = 'api-login|' . $email . '|' . $request->ip();
 
@@ -68,20 +82,27 @@ class AuthController extends Controller
         activity('access')->causedBy($user)->withProperties(['ip' => $request->ip(), 'guard' => 'api'])->log('Masuk (API)');
 
         $device = $data['perangkat'] ?? Str::limit((string) $request->userAgent(), 100, '') ?: 'API';
-        $token = $user->createToken($device, ['*'], now()->addDays(self::TOKEN_DAYS));
+        $abilities = array_values($data['kemampuan'] ?? []) ?: ['*'];
+        $token = $user->createToken($device, $abilities, now()->addDays(self::TOKEN_DAYS));
 
         return response()->json([
             'token' => $token->plainTextToken,
             'jenis_token' => 'Bearer',
             'berlaku_sampai' => $token->accessToken->expires_at?->toIso8601String(),
+            'kemampuan' => $abilities,
             'pengguna' => self::profile($user),
         ]);
     }
 
-    /** GET /api/auth/saya */
+    /** GET /api/auth/saya: the account, and what the token in use may do. */
     public function me(Request $request): JsonResponse
     {
-        return response()->json(self::profile($request->user()));
+        $token = $request->user()->currentAccessToken();
+
+        return response()->json([
+            ...self::profile($request->user()),
+            'kemampuan_token' => $token instanceof \Laravel\Sanctum\PersonalAccessToken ? array_values($token->abilities ?? []) : ['*'],
+        ]);
     }
 
     /** GET /api/auth/pengingat-kata-sandi: apakah pengguna perlu diingatkan mengganti kata sandi. */

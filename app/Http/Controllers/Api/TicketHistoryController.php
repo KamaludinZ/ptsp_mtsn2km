@@ -9,6 +9,7 @@ use App\Models\Ticket;
 use App\Models\TicketLog;
 use App\Support\DispositionHistory;
 use App\Support\DocumentHistory;
+use App\Support\TicketDocuments;
 use App\Support\TicketLabels;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\Builder;
@@ -51,7 +52,7 @@ class TicketHistoryController extends Controller
                 'catatan' => $log->notes,
                 'pelaku' => $staff ? ($log->performer?->name ?? 'Sistem') : null,
                 'sebagai' => $staff && $log->acting_role ? \App\Support\RoleAccess::roleLabel($log->acting_role) : null,
-                'berkas' => $staff ? (collect($log->relatedDocuments())->map(fn ($url, $name) => ['nama' => $name, 'url' => $url])->values()->all() ?: null) : null,
+                'berkas' => $staff ? (collect($log->relatedDocuments())->map(fn ($url, $name) => ['nama' => $name, 'url' => $url, ...TicketDocuments::fileType($name, $url)])->values()->all() ?: null) : null,
                 'detail' => $staff ? $log->metadata : null,
                 'ip' => $auditor ? $log->ip_address : null,
             ], fn ($value) => $value !== null))->values(),

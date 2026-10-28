@@ -65,11 +65,13 @@ class ActiveRoleApiTest extends TestCase
         Sanctum::actingAs($this->staff('kepala_tu', 'front_desk'));
 
         $this->putJson('/api/peran-aktif', ['peran' => 'front_desk'])->assertOk()
-            ->assertJsonPath('wewenang', ['disposisi' => false, 'proses_tiket' => false, 'serah_terima' => true, 'pengawasan' => false])
+            ->assertJsonPath('wewenang', ['disposisi' => false, 'proses_tiket' => false, 'serah_terima' => true, 'pengawasan' => false,
+                'register_sk' => ['lihat' => false, 'minta_nomor' => false, 'ubah' => false, 'hapus' => false]])
             ->assertJsonPath('izin', ['frontdesk.access']);
 
         $this->putJson('/api/peran-aktif', ['peran' => 'kepala_tu'])->assertOk()
-            ->assertJsonPath('wewenang', ['disposisi' => true, 'proses_tiket' => true, 'serah_terima' => true, 'pengawasan' => true]);
+            ->assertJsonPath('wewenang', ['disposisi' => true, 'proses_tiket' => true, 'serah_terima' => true, 'pengawasan' => true,
+                'register_sk' => ['lihat' => true, 'minta_nomor' => true, 'ubah' => true, 'hapus' => false]]);
     }
 
     public function test_cannot_switch_to_a_role_not_held(): void

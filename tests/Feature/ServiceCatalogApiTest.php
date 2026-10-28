@@ -150,7 +150,11 @@ class ServiceCatalogApiTest extends TestCase
             ->assertJsonPath('message', "Layanan dinonaktifkan dan tidak bisa diajukan lagi. {$open} permohonan berjalan tetap diproses.");
         $this->assertFalse($service->fresh()->is_active);
         $this->assertDatabaseHas('activity_log', ['description' => 'Menonaktifkan layanan ' . $service->name]);
+        // Its page stays open to staff only, marked inactive.
+        $this->get(route('onlineportal.service.detail', $service->slug))->assertOk()->assertSee('Layanan ini sedang nonaktif');
+        $this->app['auth']->forgetGuards();
         $this->get(route('onlineportal.service.detail', $service->slug))->assertNotFound();
+        Sanctum::actingAs($this->admin());
 
         $this->patchJson("/api/layanan-ptsp/{$service->id}/aktif", ['aktif' => false])->assertOk()->assertJsonPath('berubah', false);
         $this->patchJson("/api/layanan-ptsp/{$service->id}/aktif", ['aktif' => true])->assertOk()

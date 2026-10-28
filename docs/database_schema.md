@@ -51,7 +51,8 @@
 - name (string) - Service name
 - code (string, unique) - Unique service code
 - description (text, nullable)
-- user_types_allowed (json) - Allowed user types: ["guru", "pegawai", "siswa", ...]
+- user_types_allowed (jsonb, nullable) - Applicant roles the service is open to (App\Support\Applicants::ROLES: siswa, walimurid, alumni, umum, instansi, guru, pegawai), each once in that order; NULL = every applicant. CHECK: NULL or a non-empty array of those roles. Service::applicantRoles() gives the spatie roles
+- jenis_sk_id (foreign key to persuratan_masters.id, nullable, null on delete) - Jenis SK bawaan for SK asked for from this service's tickets
 - is_active (boolean, default: true)
 - created_by (foreign key to users.id)
 - deleted_at (timestamp, nullable)
@@ -133,17 +134,35 @@
 ### 14. visitors
 - id (primary key)
 - name (string)
-- institution (string) - From/representing which institution
-- purpose (text) - Purpose of visit
+- guest_type (string: 'kunjungan', 'pemohon', default 'kunjungan', CHECK) - Visiting guest, or applicant come for a PTSP service
+- applicant_type (string, nullable, CHECK) - Applicant's status from the visitor book form: siswa, wali_murid, alumni, pegawai, umum, instansi_perusahaan
+- service_id (foreign key to services.id, nullable, null on delete) - The service an applicant came for (none for "Lainnya")
+- phone (string, nullable) - Also checked when the guest checks out from the public visitor book
+- email (string, nullable)
+- institution (string, nullable) - From/representing which institution
+- institution_category (string, nullable)
+- purpose (text) - Purpose of visit; for an applicant "Pemohon Layanan: <service>"
+- notes (text, nullable)
+- is_obscured (boolean, default: false) - Name masked on the public list
 - person_to_meet (string) - Who they want to meet
-- check_in_time (datetime)
+- check_in_time (datetime, indexed)
 - check_out_time (datetime, nullable)
 - photo_path (string, nullable) - Path to visitor photo
 - visitor_card_number (string, unique, nullable)
-- status (enum: 'active', 'checked_out', default: 'active')
+- status (enum: 'active', 'checked_out', default: 'active') - Follows check_out_time (model hook); CHECK: checked_out exactly when check_out_time is set, and check_out_time >= check_in_time
 - created_by (foreign key to users.id) - Staff who registered the visitor
 - created_at (timestamp)
 - updated_at (timestamp)
+
+### 14a. visitor_checkouts
+Riwayat checkout tamu (insert only, trigger `visitor_checkouts_immutable`): the visit records a checkout the same way whoever does it; this says how.
+- id (primary key)
+- visitor_id (foreign key to visitors.id, cascade on delete)
+- method (string: 'petugas', 'mandiri', CHECK) - By an officer, or by the guest from the public visitor book
+- checked_out_by (foreign key to users.id, nullable, null on delete) - The officer; always null for 'mandiri' (CHECK)
+- ip_address (string, nullable) - Where a guest's own checkout came from
+- checked_out_at (timestamp) - Equals visitors.check_out_time
+- created_at (timestamp)
 
 ## Complaint and Feedback Tables
 
@@ -277,3 +296,39 @@
 - description (text, nullable)
 - created_at (timestamp)
 - updated_at (timestamp)
+
+## Register Penomoran SK Tables
+
+Nomor SK berformat `{N} TAHUN {YYYY}`, satu urutan per tahun (1–9999), terpisah dari nomor surat keluar.
+Migrasi: `2026_10_27_100000` s.d. `2026_10_28_180000`.
+
+### 27. surat_keputusan
+- id (primary key)
+- tahun (smallint) - Tahun register; CHECK sama dengan tahun tanggal_surat
+- nomor_urut (integer) - CHECK 1–9999; UNIQUE (tahun, nomor_urut)
+- nomor_sk (string 30, unique) - CHECK `nomor_urut || ' TAHUN ' || tahun`
+- tanggal_surat (date)
+- perihal (string) - Tanpa awalan "Tentang"
+- jenis_sk (string) - Jenis SK as written on the SK (kept after the master entry is renamed or deleted)
+- jenis_sk_id (foreign key to persuratan_masters.id, nullable, null on delete) - The Master Jenis SK entry behind it, for reports
+- nama_peminta (string)
+- ticket_id (foreign key to tickets.id, nullable, null on delete) - Permohonan terkait
+- keterangan (text, nullable)
+- berkas_scan (string, nullable) - Private disk path `surat-keputusan/<file>`; CHECK on the folder, partial UNIQUE (one SK per stored scan)
+- berkas_scan_nama, berkas_scan_mime (PDF/JPEG/PNG), berkas_scan_ukuran (1 B–10 MB), scan_diunggah_pada, scan_diunggah_oleh (users.id) - Arsip scan; CHECK all empty without a scan
+- pembuat_id (foreign key to users.id, nullable), peran_pembuat (string, nullable) - Petugas pencatat and their active role
+- kunci_permintaan (string 100, nullable) - Idempotency-Key of the API request; UNIQUE (pembuat_id, kunci_permintaan)
+- versi (integer, default 1) - Optimistic lock, +1 on every change
+- bulan (smallint, generated) - Month of tanggal_surat; index (tahun, bulan)
+- hari_sampai_terarsip (numeric, generated) - Days from the number to the signed scan
+- created_at, updated_at (timestamp)
+- Triggers: `surat_keputusan_guard` (tahun, nomor_urut, nomor_sk never change; rows leave only through "Hapus"), `surat_keputusan_no_truncate`
+
+### 28. surat_keputusan_sequences
+- tahun (primary key)
+- last_number (integer) - Last number given that year; CHECK 0–9999. Numbers are never given again, deleted SK included.
+
+### 29. persuratan_masters (type = jenis_sk)
+- Master Jenis SK lives in the Master Persuratan table: nama unique per jenis SK ignoring case and spaces, CHECK trimmed and at least 3 characters.
+- Changes are logged in activity_log (log `jenis_sk`); the SK register in log `surat_keputusan` (immutable, like every activity_log row).
+

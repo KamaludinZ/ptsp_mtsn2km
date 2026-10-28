@@ -29,7 +29,7 @@ class DispositionFormActiveRoleTest extends TestCase
 
     private function awaitingTicket(): Ticket
     {
-        $ticket = Ticket::query()->whereHas('service')->firstOrFail();
+        $ticket = $this->undisposedTicket();
         $ticket->service->forceFill(['approval_required' => true, 'approval_roles' => [], 'approval_users' => []])->save();
         $ticket->forceFill(['approval_required' => true, 'status' => 'verified', 'approval_status' => 'pending'])->save();
 

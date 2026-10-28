@@ -9,10 +9,13 @@ use App\Models\ComplaintStatusLog;
 use App\Models\Faq;
 use App\Models\Pengumuman;
 use App\Models\Service;
+use App\Models\Visitor;
 use App\Models\VisitorMaster;
 use App\Services\ComplaintService;
 use App\Services\FrontDeskService;
+use App\Services\TicketDownloadAttempts;
 use App\Models\ServiceTemplate;
+use App\Support\RichText;
 use App\Support\ServiceDisposition;
 use App\Support\TicketTracking;
 use Illuminate\Http\JsonResponse;
@@ -76,7 +79,7 @@ class PublicController extends Controller
             'data' => $services->map(fn (Service $service) => [
                 'nama' => $service->name,
                 'slug' => $service->slug,
-                'ringkasan' => Str::limit(strip_tags((string) $service->description), 200),
+                'ringkasan' => RichText::plain($service->description, 200),
                 'kategori' => $service->categories->pluck('name')->values(),
                 'waktu_penyelesaian' => $service->processing_time,
                 'biaya' => (float) $service->fee,
@@ -127,14 +130,14 @@ class PublicController extends Controller
             'nama' => $service->name,
             'slug' => $service->slug,
             'kode' => $service->code,
-            'deskripsi' => $service->description,
+            'deskripsi' => RichText::forApi($service->description),
             'kategori' => $service->categories->pluck('name')->values(),
-            'persyaratan' => $service->getAttribute('requirements'),
-            'mekanisme' => $service->mechanism,
+            'persyaratan' => RichText::forApi($service->getAttribute('requirements')),
+            'mekanisme' => RichText::forApi($service->mechanism),
             'waktu_penyelesaian' => $service->processing_time,
             'biaya' => (float) $service->fee,
-            'produk' => $service->product,
-            'penanganan_pengaduan' => $service->complaint_handling,
+            'produk' => RichText::forApi($service->product),
+            'penanganan_pengaduan' => RichText::forApi($service->complaint_handling),
             'mode' => $service->mode,
             'disposisi' => ServiceDisposition::mode($service->disposition_mode),
             'template_berkas' => $service->activeTemplates->map(fn (ServiceTemplate $template) => [
@@ -178,7 +181,7 @@ class PublicController extends Controller
                 'tanggal' => $item->publish_date?->toDateString(),
                 'berakhir' => $item->end_date?->toDateString(),
                 'penulis' => $item->authorName(),
-                'ringkasan' => Str::limit(trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags((string) str($item->content)->sanitizeHtml())))), 200),
+                'ringkasan' => RichText::plain($item->content, 200),
                 'ada_lampiran' => filled($item->attachment),
                 'detail' => route('api.publik.pengumuman.detail', $item),
                 'halaman' => route('pengumuman.show', $item),
@@ -205,7 +208,7 @@ class PublicController extends Controller
             'berakhir' => $item->end_date?->toDateString(),
             'penulis' => $item->authorName(),
             'dilihat' => (int) $item->view_count,
-            'isi' => (string) str($item->content)->sanitizeHtml(),
+            'isi' => RichText::forApi($item->content),
             'lampiran' => $item->attachment ? asset('storage/' . $item->attachment) : null,
             'tautan' => $item->url,
             'halaman' => route('pengumuman.show', $item),
@@ -265,14 +268,27 @@ class PublicController extends Controller
         return response()->json(TicketTracking::summary($ticket, TicketTracking::isOwner($ticket, $email)));
     }
 
-    /** POST /api/publik/buku-tamu: a guest signs the guest book (e.g. from a kiosk). */
+    /**
+     * POST /api/publik/lacak/{nomor}/unduh {kontak}: as on /tracking, the
+     * applicant without an account gives the e-mail or WhatsApp number of the
+     * finished request and gets a short-lived link to its product file. The
+     * tries count with the tracking page's (TicketDownloadAttempts::answer).
+     */
+    public function verifyOutputDownload(Request $request, string $number, TicketDownloadAttempts $attempts): JsonResponse
+    {
+        $contact = $request->validate(['kontak' => ['required', 'string', 'max:255']], [], ['kontak' => 'email atau nomor WhatsApp'])['kontak'];
+
+        return $attempts->answer(TicketTracking::find($number), $contact, $request->ip());
+    }
+
+    /** POST /api/publik/buku-tamu: a guest signs the guest book (e.g. from a kiosk); jenis=pemohon for an applicant. */
     public function signGuestBook(Request $request, FrontDeskService $frontDesk): JsonResponse
     {
-        $data = $request->validate(FrontDeskService::selfRegistrationRules(), [
-            'purpose_other.required_if' => 'Tuliskan tujuan kunjungan Anda.',
-        ]);
+        // jenis=pemohon: the visitor book's form for someone come for a PTSP service.
+        $applicant = ($request->validate(['jenis' => ['nullable', Rule::in(array_keys(Visitor::GUEST_TYPES))]])['jenis'] ?? null) === 'pemohon';
 
-        $visitor = $frontDesk->selfRegister($data);
+        $rules = $applicant ? FrontDeskService::serviceApplicantRules() : FrontDeskService::selfRegistrationRules();
+        $visitor = $frontDesk->register($applicant ? 'pemohon' : 'kunjungan', $request->validate($rules, FrontDeskService::GUEST_MESSAGES, FrontDeskService::GUEST_ATTRIBUTES));
 
         return response()->json([
             'pesan' => 'Selamat datang, ' . $visitor->name . '. Silakan menunggu di ruang tamu.',
@@ -287,6 +303,10 @@ class PublicController extends Controller
         return response()->json([
             'tujuan' => VisitorMaster::options('tujuan'),
             'keperluan' => VisitorMaster::options('keperluan'),
+            'jenis_tamu' => collect(Visitor::GUEST_TYPES)->map(fn ($label, $value) => ['nilai' => $value, 'label' => $label])->values(),
+            'status_pemohon' => collect(Visitor::APPLICANT_STATUSES)->map(fn ($label, $value) => ['nilai' => $value, 'label' => $label])->values(),
+            'kategori_instansi' => Visitor::institutionCategoryKeys(),
+            'layanan' => [...Service::where('is_active', true)->orderBy('name')->pluck('name'), VisitorMaster::OTHER],
         ])->setPublic()->setMaxAge(300);
     }
 

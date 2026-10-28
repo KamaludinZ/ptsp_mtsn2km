@@ -194,8 +194,9 @@ class FilamentMasterDataTest extends TestCase
         Livewire::test(VisitorPages\CreateVisitor::class)
             ->fillForm([
                 'name' => 'Tamu Uji',
+                'phone' => '081234567890',
                 'institution' => 'Dinas Pendidikan',
-                'purpose' => 'Koordinasi',
+                'purpose' => 'Waka Kurikulum',
                 'person_to_meet_id' => $host->id,
             ])
             ->call('create')

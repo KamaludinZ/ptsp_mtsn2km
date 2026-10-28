@@ -188,7 +188,11 @@ class SuratKeluarResource extends Resource
                     ->extraAttributes(['class' => 'whitespace-nowrap']),
                 Tables\Columns\TextColumn::make('tujuan_surat')->label('Tujuan')->searchable()->wrap()->placeholder('–')->visibleFrom('md'),
                 Tables\Columns\TextColumn::make('perihal')->label('Perihal')->searchable()->wrap()->limit(80)->placeholder('–'),
-                Tables\Columns\TextColumn::make('jenis_surat')->label('Jenis')->badge()->color('gray')->placeholder('–')->visibleFrom('lg'),
+                Tables\Columns\TextColumn::make('jenis_surat')->label('Jenis')->badge()->color('gray')->placeholder('–')->visibleFrom('lg')
+                    // An SK numbered here by mistake: SK have their own register.
+                    ->icon(fn (?string $state) => \App\Support\Persuratan::isSuratKeputusan($state) ? 'heroicon-m-exclamation-triangle' : null)
+                    ->iconColor('warning')
+                    ->tooltip(fn (?string $state) => \App\Support\Persuratan::isSuratKeputusan($state) ? 'SK bernomor sendiri di Register Penomoran SK, bukan nomor agenda surat keluar.' : null),
                 Tables\Columns\TextColumn::make('klasifikasi')->label('Klasifikasi')->searchable()->placeholder('–')->toggleable()->visibleFrom('lg'),
                 Tables\Columns\TextColumn::make('pembuat.name')->label('Pembuat')->toggleable()->visibleFrom('xl'),
             ])
@@ -201,6 +205,9 @@ class SuratKeluarResource extends Resource
                     ->default(now()->year),
                 Tables\Filters\SelectFilter::make('jenis_surat')->label('Jenis surat')
                     ->options(fn () => SuratKeluar::whereNotNull('jenis_surat')->distinct()->orderBy('jenis_surat')->pluck('jenis_surat', 'jenis_surat')),
+                Tables\Filters\Filter::make('tercatat_sebagai_sk')->label('Tercatat sebagai SK')
+                    ->toggle()
+                    ->query(fn (Builder $query) => $query->numberedAsSk()),
                 Tables\Filters\SelectFilter::make('klasifikasi')->label('Klasifikasi')
                     ->options(fn () => SuratKeluar::whereNotNull('klasifikasi')->distinct()->orderBy('klasifikasi')->pluck('klasifikasi', 'klasifikasi')),
                 Tables\Filters\SelectFilter::make('pembuat_id')->label('Pembuat')

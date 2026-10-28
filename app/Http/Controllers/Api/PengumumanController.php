@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Pengumuman;
 use App\Support\ContentStatus;
+use App\Support\RichText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -166,7 +167,8 @@ class PengumumanController extends Controller
         }
 
         if (array_key_exists('isi', $data)) {
-            $values['content'] = (string) str($data['isi'])->sanitizeHtml();
+            $values['content'] = RichText::sanitize($data['isi'])
+                ?? throw \Illuminate\Validation\ValidationException::withMessages(['isi' => 'Isi pengumuman tidak boleh kosong.']);
         }
         if (array_key_exists('kategori', $data)) {
             $values['category'] = filled($data['kategori']) ? Str::lower(trim($data['kategori'])) : null;

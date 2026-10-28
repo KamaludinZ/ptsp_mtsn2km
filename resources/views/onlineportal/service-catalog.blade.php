@@ -448,6 +448,9 @@
         @endguest
     </div>
 
+    {{-- Length of the description on a card; a longer one opens in full with the detail. --}}
+    @php([$gridExcerpt, $listExcerpt] = [100, 150])
+
     <!-- Grid View -->
     <div class="row g-4 align-items-start" id="gridView">
         @foreach($services as $service)
@@ -488,7 +491,7 @@
                 <!-- Card Body -->
                 <div class="card-body p-4">
                     <p class="text-muted mb-3" style="min-height: 60px;">
-                        {{ \App\Support\RichText::plain($service->description, 100) }}
+                        {{ \App\Support\RichText::plain($service->description, $gridExcerpt) }}
                     </p>
 
                     <!-- Service Meta -->
@@ -516,101 +519,12 @@
                     <div class="accordion" id="accordion{{ $service->id }}">
                         <div class="accordion-item border-0 shadow-sm">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $service->id }}">
+                                <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $service->id }}" aria-expanded="false" aria-controls="collapse{{ $service->id }}">
                                     <i class="fas fa-info-circle me-2"></i> Detail Layanan
                                 </button>
                             </h2>
                             <div id="collapse{{ $service->id }}" class="accordion-collapse collapse" data-bs-parent="#accordion{{ $service->id }}">
-                                <div class="accordion-body">
-                                    <a href="{{ route('onlineportal.service.detail', $service->slug) }}" class="d-inline-block mb-3 fw-semibold">Lihat 14 komponen standar pelayanan <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i></a>
-                                    <!-- Persyaratan -->
-                                    <div class="mb-4">
-                                        <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
-                                            <i class="fas fa-list-check me-2"></i> Persyaratan
-                                        </h6>
-                                        @if($service->requirements)
-                                            @php $requirements = json_decode($service->requirements, true); @endphp
-                                            @if(is_array($requirements))
-                                                <ul class="list-unstyled">
-                                                    @foreach($requirements as $req)
-                                                        <li class="mb-2">
-                                                            <i class="fas fa-check text-success me-2"></i> {{ $req }}
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            @else
-                                                <div class="text-muted rich-text">{{ \App\Support\RichText::render($service->requirements) }}</div>
-                                            @endif
-                                        @else
-                                            <p class="text-muted">-</p>
-                                        @endif
-                                    </div>
-
-                                    <!-- Mekanisme -->
-                                    <div class="mb-4">
-                                        <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
-                                            <i class="fas fa-cogs me-2"></i> Sistem & Prosedur
-                                        </h6>
-                                        <div class="text-muted rich-text">{{ filled($service->mechanism) ? \App\Support\RichText::render($service->mechanism) : '-' }}</div>
-                                    </div>
-
-                                    <!-- Produk Layanan -->
-                                    <div class="mb-4">
-                                        <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
-                                            <i class="fas fa-file-alt me-2"></i> Produk Layanan
-                                        </h6>
-                                        <div class="text-muted rich-text">{{ filled($service->product) ? \App\Support\RichText::render($service->product) : '-' }}</div>
-                                    </div>
-
-                                    <!-- Pengaduan -->
-                                    <div class="mb-3">
-                                        <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
-                                            <i class="fas fa-headset me-2"></i> Pengaduan
-                                        </h6>
-                                        <div class="text-muted rich-text mb-2">{{ filled($service->complaint_handling) ? \App\Support\RichText::render($service->complaint_handling) : 'Hubungi kami melalui halaman pengaduan' }}</div>
-                                        <a href="{{ route('supervision.complaints.dashboard') }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-comment-dots me-1"></i> Ajukan Pengaduan
-                                        </a>
-                                    </div>
-
-                                    @if($service->mode === 'online')
-                                        <hr class="my-4">
-                                        @auth
-                                            <a href="{{ route('onlineportal.service.apply', $service->slug) }}" class="btn btn-primary w-100">
-                                                <i class="fas fa-paper-plane me-2"></i> Ajukan Permohonan
-                                            </a>
-                                        @else
-                                            <div class="alert alert-info mb-0">
-                                                <i class="fas fa-info-circle me-2"></i>
-                                                <strong>Login diperlukan</strong> untuk mengajukan layanan online.
-                                                <div class="mt-2">
-                                                    <a href="{{ route('login') }}?redirect={{ urlencode(route('onlineportal.service.apply', $service->slug)) }}" class="btn btn-sm btn-primary me-2">
-                                                        <i class="fas fa-sign-in-alt me-1"></i> Login
-                                                    </a>
-                                                    <a href="{{ route('register') }}" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-user-plus me-1"></i> Daftar
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        @endauth
-                                    @elseif($service->mode === 'hybrid')
-                                        @if($service->external_link)
-                                            <a href="{{ $service->external_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary w-100 mb-2">
-                                                <i class="fas fa-external-link-alt me-2"></i> Akses Layanan Eksternal
-                                            </a>
-                                        @endif
-                                        
-                                        @auth
-                                            <a href="{{ route('onlineportal.service.apply', $service->slug) }}" class="btn btn-outline-primary w-100">
-                                                <i class="fas fa-paper-plane me-2"></i> Ajukan Permohonan Internal
-                                            </a>
-                                        @else
-                                            <a href="{{ route('login') }}?redirect={{ urlencode(route('onlineportal.service.apply', $service->slug)) }}" class="btn btn-outline-primary w-100">
-                                                <i class="fas fa-sign-in-alt me-2"></i> Login untuk Pengajuan Internal
-                                            </a>
-                                        @endauth
-                                    @endif
-                                </div>
+                                <x-service-detail :service="$service" :visitor="$visitor" :excerpt="$gridExcerpt" class="accordion-body" />
                             </div>
                         </div>
                     </div>
@@ -647,7 +561,7 @@
                                         <span class="badge badge-mode badge-hybrid">Hybrid</span>
                                     @endif
                                 </div>
-                                <p class="text-muted mb-2">{{ \App\Support\RichText::plain($service->description, 150) }}</p>
+                                <p class="text-muted mb-2">{{ \App\Support\RichText::plain($service->description, $listExcerpt) }}</p>
                                 <div class="d-flex gap-3">
                                     <small class="text-muted">
                                         <i class="fas fa-hashtag me-1"></i> {{ $service->code }}
@@ -683,7 +597,7 @@
                         </div>
                     </div>
                     <div class="col-md-4 text-md-end">
-                        <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#listCollapse{{ $service->id }}">
+                        <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#listCollapse{{ $service->id }}" aria-expanded="false" aria-controls="listCollapse{{ $service->id }}">
                             <i class="fas fa-chevron-down me-1"></i> Detail
                         </button>
                     </div>
@@ -691,94 +605,7 @@
 
                 <div class="collapse mt-3" id="listCollapse{{ $service->id }}">
                     <hr class="my-3">
-                    {{-- Katalog memuat 6 komponen utama; 14 komponen lengkap ada di halaman detail. --}}
-                    <a href="{{ route('onlineportal.service.detail', $service->slug) }}" class="d-inline-block mb-3 fw-semibold">Lihat 14 komponen standar pelayanan <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i></a>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <!-- Persyaratan -->
-                            <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">
-                                <i class="fas fa-list-check me-2"></i> Persyaratan
-                            </h6>
-                            @if($service->requirements)
-                                @php $requirements = json_decode($service->requirements, true); @endphp
-                                @if(is_array($requirements))
-                                    <ul class="list-unstyled">
-                                        @foreach($requirements as $req)
-                                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> {{ $req }}</li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <div class="text-muted rich-text">{{ \App\Support\RichText::render($service->requirements) }}</div>
-                                @endif
-                            @else
-                                <p class="text-muted">-</p>
-                            @endif
-
-                            <!-- Mekanisme -->
-                            <h6 class="fw-bold mb-3 mt-4" style="color: var(--bs-primary);">
-                                <i class="fas fa-cogs me-2"></i> Sistem & Prosedur
-                            </h6>
-                            <div class="text-muted rich-text">{{ filled($service->mechanism) ? \App\Support\RichText::render($service->mechanism) : '-' }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <!-- Informasi Biaya -->
-                            <h6 class="fw-bold mb-3" style="color: var(--bs-primary);">Informasi Biaya</h6>
-                            <p class="text-muted">{{ $service->fee > 0 ? 'Rp ' . number_format($service->fee, 0, ',', '.') : 'Gratis' }}</p>
-
-                            <!-- Produk Layanan -->
-                            <h6 class="fw-bold mb-3 mt-4" style="color: var(--bs-primary);">
-                                <i class="fas fa-file-alt me-2"></i> Produk Layanan
-                            </h6>
-                            <div class="text-muted rich-text">{{ filled($service->product) ? \App\Support\RichText::render($service->product) : '-' }}</div>
-
-                            <!-- Pengaduan -->
-                            <h6 class="fw-bold mb-3 mt-4" style="color: var(--bs-primary);">
-                                <i class="fas fa-headset me-2"></i> Pengaduan
-                            </h6>
-                            <div class="text-muted rich-text mb-2">{{ filled($service->complaint_handling) ? \App\Support\RichText::render($service->complaint_handling) : 'Hubungi kami melalui halaman pengaduan' }}</div>
-                            <a href="{{ route('supervision.complaints.dashboard') }}" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-comment-dots me-1"></i> Ajukan Pengaduan
-                            </a>
-
-                            <!-- Tombol Akses Layanan -->
-                            @if($service->mode === 'online')
-                                @auth
-                                    <a href="{{ route('onlineportal.service.apply', $service->slug) }}" class="btn btn-primary w-100 mt-3">
-                                        <i class="fas fa-paper-plane me-2"></i> Ajukan Permohonan
-                                    </a>
-                                @else
-                                    <div class="alert alert-info mt-3">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        <strong>Login diperlukan</strong> untuk mengajukan layanan online.
-                                        <div class="mt-2">
-                                            <a href="{{ route('login') }}?redirect={{ urlencode(route('onlineportal.service.apply', $service->slug)) }}" class="btn btn-sm btn-primary me-2">
-                                                <i class="fas fa-sign-in-alt me-1"></i> Login
-                                            </a>
-                                            <a href="{{ route('register') }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-user-plus me-1"></i> Daftar
-                                            </a>
-                                        </div>
-                                    </div>
-                                @endauth
-                            @elseif($service->mode === 'hybrid')
-                                @if($service->external_link)
-                                    <a href="{{ $service->external_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary w-100 mt-3">
-                                        <i class="fas fa-external-link-alt me-2"></i> Akses Layanan Eksternal
-                                    </a>
-                                @endif
-                                
-                                @auth
-                                    <a href="{{ route('onlineportal.service.apply', $service->slug) }}" class="btn btn-outline-primary w-100 mt-2">
-                                        <i class="fas fa-paper-plane me-2"></i> Ajukan Permohonan Internal
-                                    </a>
-                                @else
-                                    <a href="{{ route('login') }}?redirect={{ urlencode(route('onlineportal.service.apply', $service->slug)) }}" class="btn btn-outline-primary w-100 mt-2">
-                                        <i class="fas fa-sign-in-alt me-2"></i> Login untuk Pengajuan Internal
-                                    </a>
-                                @endauth
-                            @endif
-                        </div>
-                    </div>
+                    <x-service-detail :service="$service" :visitor="$visitor" :excerpt="$listExcerpt" columns />
                 </div>
             </div>
         </div>
@@ -856,6 +683,11 @@ function filterServices() {
         const visible = (!search || name.includes(search)) && (!category || cats.includes(category));
 
         item.classList.toggle('d-none', !visible);
+        // AOS measured each card's place on load: a card the filter moves up
+        // would stay invisible until its old place is scrolled to.
+        if (visible) {
+            item.classList.add('aos-animate');
+        }
         if (visible && item.closest('#gridView')) {
             count++;
         }
@@ -872,42 +704,18 @@ function resetFilter() {
     filterServices();
 }
 
-// Close other accordions when one opens (for both grid and list views)
+// One open detail per view. Opening one closes the others through Bootstrap,
+// which keeps their buttons (collapsed, aria-expanded) in step.
 document.addEventListener('DOMContentLoaded', function() {
-    // For grid view accordions
-    const gridAccordions = document.querySelectorAll('[id^="collapse"]');
-    gridAccordions.forEach(function(accordion) {
-        accordion.addEventListener('show.bs.collapse', function() {
-            // Close other grid accordions
-            gridAccordions.forEach(function(otherAccordion) {
-                if (otherAccordion !== accordion && otherAccordion.classList.contains('show')) {
-                    otherAccordion.classList.remove('show');
-                    const triggerButton = document.querySelector(`[data-bs-target="#${otherAccordion.id}"]`) ||
-                                          document.querySelector(`[aria-controls="${otherAccordion.id}"]`);
-                    if (triggerButton) {
-                        triggerButton.classList.remove('collapsed');
-                        triggerButton.setAttribute('aria-expanded', 'true');
+    ['#gridView .accordion-collapse', '#listView [id^="listCollapse"]'].forEach(function(selector) {
+        const details = document.querySelectorAll(selector);
+        details.forEach(function(detail) {
+            detail.addEventListener('show.bs.collapse', function() {
+                details.forEach(function(other) {
+                    if (other !== detail && other.classList.contains('show')) {
+                        bootstrap.Collapse.getOrCreateInstance(other, { toggle: false }).hide();
                     }
-                }
-            });
-        });
-    });
-
-    // For list view accordions
-    const listAccordions = document.querySelectorAll('[id^="listCollapse"]');
-    listAccordions.forEach(function(accordion) {
-        accordion.addEventListener('show.bs.collapse', function() {
-            // Close other list accordions
-            listAccordions.forEach(function(otherAccordion) {
-                if (otherAccordion !== accordion && otherAccordion.classList.contains('show')) {
-                    otherAccordion.classList.remove('show');
-                    const triggerButton = document.querySelector(`[data-bs-target="#${otherAccordion.id}"]`) ||
-                                          document.querySelector(`[aria-controls="${otherAccordion.id}"]`);
-                    if (triggerButton) {
-                        triggerButton.classList.remove('collapsed');
-                        triggerButton.setAttribute('aria-expanded', 'true');
-                    }
-                }
+                });
             });
         });
     });

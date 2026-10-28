@@ -111,7 +111,7 @@ class ServiceCatalogTest extends TestCase
 
         $service = Service::where('code', 'SKL')->firstOrFail();
         $this->assertSame([$category->id], $service->categories->pluck('id')->all());
-        $this->assertSame(['alumni', 'walimurid'], $service->user_types_allowed);
+        $this->assertSame(['walimurid', 'alumni'], $service->user_types_allowed); // in the official order of applicant roles
         $this->assertSame(['tu', ['tata_usaha'], 'tte'], [$service->disposition_mode, $service->disposition_roles, $service->signature_recommendation]);
         $this->assertTrue($service->approval_required);
         $this->assertNotEmpty($service->slug);

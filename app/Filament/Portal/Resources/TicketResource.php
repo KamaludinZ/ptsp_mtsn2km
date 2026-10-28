@@ -2,6 +2,7 @@
 
 namespace App\Filament\Portal\Resources;
 
+use App\Filament\Portal\Pages\ServiceCatalog;
 use App\Filament\Portal\Resources\TicketResource\Pages;
 use App\Models\Ticket;
 use App\Support\TicketLabels;
@@ -84,7 +85,7 @@ class TicketResource extends Resource
             ->emptyStateDescription('Pilih layanan di Katalog Layanan untuk mengajukan permohonan.')
             ->emptyStateIcon('heroicon-o-ticket')
             ->emptyStateActions([
-                Tables\Actions\Action::make('catalog')->label('Buka katalog layanan')->url(route('onlineportal.service.catalog')),
+                Tables\Actions\Action::make('catalog')->label('Buka katalog layanan')->url(ServiceCatalog::getUrl()),
             ]);
     }
 

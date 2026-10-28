@@ -6,6 +6,8 @@
     // 14 komponen standar pelayanan (Permen PANRB 15/2014), shared with the request forms.
     $standard = \App\Support\ServiceStandard::items($service);
     $modeLabel = \App\Support\ServiceStandard::MODES[$service->mode] ?? 'Online & Offline';
+    // Offline services are requested at the counter only (Service::scopeRequestable).
+    $onlineChannel = in_array($service->mode, ['online', 'hybrid'], true);
 @endphp
 
 @section('content')
@@ -38,12 +40,27 @@
                 @endif
 
                 <div class="d-flex flex-wrap align-items-center gap-3">
-                    <a href="{{ route('onlineportal.service.apply', $service->slug) }}" class="btn btn-light btn-lg fw-semibold">
-                        <i class="fas fa-file-circle-plus me-2" aria-hidden="true"></i>Ajukan Layanan Online
-                    </a>
-                    @guest
-                        <span class="small text-white-50">Anda akan diminta masuk atau mendaftar terlebih dahulu.</span>
-                    @endguest
+                    @if (! $service->is_active)
+                        {{-- Only staff open an inactive service's page. --}}
+                        <span class="fw-semibold" data-inactive-note><i class="fas fa-circle-pause me-2" aria-hidden="true"></i>Layanan ini sedang nonaktif: tidak tampil di katalog dan tidak menerima permohonan.</span>
+                    @elseif ($visitor->canApply($service))
+                        <a href="{{ route('onlineportal.service.apply', $service->slug) }}" class="btn btn-light btn-lg fw-semibold">
+                            <i class="fas fa-file-circle-plus me-2" aria-hidden="true"></i>Ajukan Layanan Online
+                        </a>
+                        @guest
+                            <span class="small text-white-50">Anda akan diminta masuk atau mendaftar terlebih dahulu.</span>
+                        @endguest
+                    @elseif ($onlineChannel)
+                        {{-- Staff: the portal is not theirs, or not for this service. --}}
+                        <span class="small" data-staff-note><i class="fas fa-id-badge me-2" aria-hidden="true"></i>Anda masuk sebagai petugas. Pemohon mengajukan layanan ini lewat portal; yang datang langsung didaftarkan di loket.</span>
+                        @if ($visitor->counter)
+                            <a href="{{ \App\Filament\Pages\FrontDesk\RegisterService::getUrl(panel: 'admin') }}" class="btn btn-light fw-semibold">
+                                <i class="fas fa-clipboard-list me-2" aria-hidden="true"></i>Daftarkan di Loket
+                            </a>
+                        @endif
+                    @else
+                        <span class="fw-semibold"><i class="fas fa-store me-2" aria-hidden="true"></i>Diajukan langsung di loket PTSP pada jam layanan.</span>
+                    @endif
                 </div>
             </div>
             <div class="card-body p-4">
@@ -96,7 +113,11 @@
                     <ol class="list-unstyled d-flex flex-wrap gap-3 small text-muted my-3" aria-label="Cara memakai template">
                         <li><span class="badge rounded-pill bg-primary me-1">1</span>Unduh template</li>
                         <li><span class="badge rounded-pill bg-primary me-1">2</span>Lengkapi dan tanda tangani bila perlu</li>
-                        <li><span class="badge rounded-pill bg-primary me-1">3</span>Unggah saat <a href="{{ route('onlineportal.service.apply', $service->slug) }}">mengajukan permohonan</a></li>
+                        @if ($onlineChannel)
+                            <li><span class="badge rounded-pill bg-primary me-1">3</span>Unggah saat <a href="{{ route('onlineportal.service.apply', $service->slug) }}">mengajukan permohonan</a></li>
+                        @else
+                            <li><span class="badge rounded-pill bg-primary me-1">3</span>Bawa ke loket PTSP saat mengajukan permohonan</li>
+                        @endif
                     </ol>
 
                     <ul class="list-group list-group-flush">

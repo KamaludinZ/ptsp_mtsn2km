@@ -363,12 +363,14 @@ class TicketService
     /** A leader approves or rejects a verified ticket (Modul 8). */
     public function decide(Ticket $ticket, bool $approve, User $leader, ?string $signatureType = null, ?string $notes = null, array $metadata = [], ?TicketFile $signedSheet = null): DispositionLog
     {
-        if (! $leader->can('approve', $ticket)) {
-            // A leader of this ticket working in another of their roles is told which one to switch to.
+        $decision = \Illuminate\Support\Facades\Gate::forUser($leader)->inspect('approve', $ticket);
+        if ($decision->denied()) {
+            // A leader of this ticket working in another of their roles is told which one to switch to;
+            // one who already disposed it (Kepala Madrasah + Kepala TU) is told whom it waits for.
             $authority = app(\App\Services\DispositionAuthority::class);
-            throw $authority->canDispose($leader, $ticket)
+            throw $authority->canDispose($leader, $ticket) && ! $authority->canDisposeInActiveRole($leader, $ticket)
                 ? \App\Exceptions\OutsideActiveRoleException::for($leader, 'memutuskan permohonan ini', $authority->roles($ticket->service))
-                : new TicketActionException('Anda tidak berwenang memutuskan permohonan ini.');
+                : new TicketActionException($decision->message() ?: 'Anda tidak berwenang memutuskan permohonan ini.');
         }
 
         if (! Ticket::whereKey($ticket->id)->awaitingApproval()->exists()) {

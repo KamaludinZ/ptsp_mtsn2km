@@ -347,7 +347,7 @@
                     <div class="stat-icon" style="background: linear-gradient(135deg, #15803d 0%, #166534 100%);">
                         <i class="fas fa-users text-white"></i>
                     </div>
-                    <div class="stat-value">{{ $visitors->total() }}</div>
+                    <div class="stat-value">{{ $totalCount }}</div>
                     <div class="stat-label">Total Tamu</div>
                 </div>
             </div>
@@ -664,6 +664,16 @@
                 <i class="fas fa-list me-2 text-primary"></i>Daftar Tamu
                 <span class="text-primary">{{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }}</span>
             </h2>
+            {{-- Every guest of the day, or one kind (?jenis=). --}}
+            <nav class="d-flex flex-wrap gap-2 mb-3" aria-label="Saring jenis tamu">
+                @foreach (['' => ['Semua', $totalCount], ...collect(\App\Models\Visitor::GUEST_TYPES)->map(fn ($label, $key) => [$label, $typeCounts[$key]])->all()] as $key => [$label, $count])
+                    <a href="{{ route('public.visitor.book', array_filter(['date' => $date, 'jenis' => $key])) }}"
+                       @class(['btn btn-sm', 'btn-primary' => ($type ?? '') === $key, 'btn-outline-primary' => ($type ?? '') !== $key])
+                       @if (($type ?? '') === $key) aria-current="page" @endif>
+                        {{ $label }} <span class="badge bg-light text-dark ms-1">{{ $count }}</span>
+                    </a>
+                @endforeach
+            </nav>
             @if ($visitors->isEmpty())
                 <div class="text-center py-5">
                     <i class="fas fa-users text-muted mb-3" style="font-size: 4rem; opacity: 0.3;" aria-hidden="true"></i>
@@ -706,8 +716,19 @@
                                     @if($visitor->check_out_time)
                                         <i class="fas fa-clock me-1 text-warning"></i>
                                         {{ \Carbon\Carbon::parse($visitor->check_out_time)->format('H:i') }}
+                                    @elseif ($visitor->canSelfCheckOut())
+                                        <button type="button" class="btn btn-sm btn-outline-primary text-nowrap"
+                                                data-bs-toggle="modal" data-bs-target="#checkoutModal"
+                                                data-checkout-visitor="{{ $visitor->id }}"
+                                                data-checkout-url="{{ route('public.visitor.checkout', $visitor) }}"
+                                                data-checkout-name="{{ $visitor->publicName() }}"
+                                                data-checkout-phone="{{ $visitor->maskedPhone() }}"
+                                                aria-label="Checkout {{ $visitor->publicName() }}">
+                                            <i class="fas fa-right-from-bracket me-1" aria-hidden="true"></i>Checkout
+                                        </button>
                                     @else
-                                        <span class="text-muted">-</span>
+                                        {{-- No phone to check against, or an earlier day: the counter checks them out. --}}
+                                        <span class="small text-muted" data-checkout-at-counter>Di loket</span>
                                     @endif
                                 </td>
                                 <td>
@@ -733,6 +754,44 @@
                     {{ $visitors->links() }}
                 </div>
             @endif
+        </div>
+    </div>
+
+    {{--
+        Checkout by the guest: filled from the row's button (data-checkout-*).
+        The phone typed here must be the one given on arrival. A refused
+        attempt comes back with the "checkout" error bag, and the modal opens
+        again for the same guest.
+    --}}
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalTitle" aria-hidden="true"
+         @if ($errors->checkout->any()) data-checkout-reopen="{{ old('visitor') }}" @endif>
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" method="POST" action="" data-checkout-form novalidate>
+                @csrf
+                <input type="hidden" name="visitor" value="{{ old('visitor') }}" data-checkout-field="visitor">
+                <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">
+                    <label>Situs web <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+                </div>
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="checkoutModalTitle"><i class="fas fa-right-from-bracket me-2 text-primary" aria-hidden="true"></i>Checkout tamu</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Checkout untuk <strong data-checkout-field="name"></strong>.</p>
+                    <label for="checkout_phone" class="form-label fw-semibold">
+                        <i class="fas fa-phone me-2 text-primary" aria-hidden="true"></i>Nomor telepon/HP saat mendaftar *
+                    </label>
+                    <input type="tel" name="phone" id="checkout_phone" inputmode="tel" autocomplete="off" maxlength="20" required
+                           class="form-control form-control-lg @error('phone', 'checkout') is-invalid @enderror"
+                           aria-describedby="checkout_phone_help checkout_phone_error">
+                    <div id="checkout_phone_help" class="form-text">Untuk memastikan yang checkout adalah tamu ini. Nomor yang terdaftar berakhiran <span data-checkout-field="phone"></span>.</div>
+                    <div id="checkout_phone_error" class="invalid-feedback d-block" role="alert">@error('phone', 'checkout'){{ $message }}@enderror</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary" data-checkout-submit><i class="fas fa-right-from-bracket me-2" aria-hidden="true"></i>Checkout</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -776,6 +835,80 @@
             preview.src = preview.dataset.url;
             preview.style.display = 'block';
         });
+    });
+
+    // The checkout modal is for the guest whose row's button opened it.
+    function fillCheckout(modal, button) {
+        var form = modal.querySelector('[data-checkout-form]');
+        var changed = form.querySelector('[data-checkout-field="visitor"]').value !== button.dataset.checkoutVisitor;
+        form.action = button.dataset.checkoutUrl;
+        form.querySelector('[data-checkout-field="visitor"]').value = button.dataset.checkoutVisitor;
+        modal.querySelector('[data-checkout-field="name"]').textContent = button.dataset.checkoutName;
+        modal.querySelector('[data-checkout-field="phone"]').textContent = button.dataset.checkoutPhone;
+        if (changed) {
+            // Another guest: the previous one's error does not apply.
+            form.querySelector('#checkout_phone').classList.remove('is-invalid');
+            form.querySelector('#checkout_phone_error').textContent = '';
+        }
+    }
+
+    document.addEventListener('show.bs.modal', function (event) {
+        if (event.target.id === 'checkoutModal' && event.relatedTarget) fillCheckout(event.target, event.relatedTarget);
+    });
+    document.addEventListener('shown.bs.modal', function (event) {
+        if (event.target.id === 'checkoutModal') event.target.querySelector('#checkout_phone').focus();
+    });
+
+    // The phone is matched on the server; here an empty, malformed, too short
+    // or too long number is caught first, and the form is sent once.
+    function checkoutPhoneProblem(value) {
+        var digits = value.replace(/\D/g, '');
+        if (value.trim() === '') return 'Masukkan nomor telepon yang Anda tulis saat mendaftar.';
+        if (!/^[0-9+\-\s().]+$/.test(value)) return 'Nomor telepon hanya boleh berisi angka (boleh dengan spasi, +, atau -).';
+        if (digits.length < 8) return 'Nomor telepon terlalu pendek. Periksa kembali nomornya.';
+        if (digits.length > 15) return 'Nomor telepon terlalu panjang. Periksa kembali nomornya.';
+        return null;
+    }
+
+    function showCheckoutPhoneProblem(input, problem) {
+        input.classList.toggle('is-invalid', problem !== null);
+        input.setAttribute('aria-invalid', problem !== null ? 'true' : 'false');
+        document.getElementById('checkout_phone_error').textContent = problem || '';
+    }
+
+    document.addEventListener('focusout', function (event) {
+        if (event.target.id === 'checkout_phone' && event.target.value !== '') {
+            showCheckoutPhoneProblem(event.target, checkoutPhoneProblem(event.target.value));
+        }
+    });
+
+    document.addEventListener('submit', function (event) {
+        var form = event.target.closest('[data-checkout-form]');
+        if (!form) return;
+        var input = form.querySelector('#checkout_phone');
+        var problem = checkoutPhoneProblem(input.value);
+        if (problem) {
+            event.preventDefault();
+            showCheckoutPhoneProblem(input, problem);
+            input.focus();
+            return;
+        }
+        var button = form.querySelector('[data-checkout-submit]');
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Memproses…';
+    });
+    document.addEventListener('input', function (event) {
+        if (event.target.id === 'checkout_phone') showCheckoutPhoneProblem(event.target, null);
+    });
+
+    // A refused checkout: open the modal again for that guest, with the message.
+    window.addEventListener('load', function () {
+        var modal = document.getElementById('checkoutModal');
+        var visitor = modal && modal.dataset.checkoutReopen;
+        var button = visitor && document.querySelector('[data-checkout-visitor="' + visitor + '"]');
+        if (!button || typeof bootstrap === 'undefined') return;
+        fillCheckout(modal, button);
+        bootstrap.Modal.getOrCreateInstance(modal).show();
     });
 
     // Initialize tabs and save active tab to localStorage

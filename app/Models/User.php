@@ -173,6 +173,27 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         return $this->hasAnyRole(['front_desk', 'back_office']);
     }
 
+    /** The counter's made-up e-mail of an applicant registered without one (…@walkin.local). */
+    public function hasCounterEmail(): bool
+    {
+        return str_ends_with((string) $this->email, '@walkin.local');
+    }
+
+    /**
+     * Does the applicant sign in to this account? true: their own e-mail,
+     * used to sign in before; false: none of their own (registered at the
+     * counter without one) or deactivated; null: an e-mail of their own not
+     * used yet (a password can be set through "Lupa password").
+     */
+    public function signsIn(): ?bool
+    {
+        if ($this->hasCounterEmail() || $this->is_active === false) {
+            return false;
+        }
+
+        return $this->last_login_at ? true : null;
+    }
+
     public function isStaff(): bool
     {
         return $this->hasAnyRole(self::STAFF_ROLES);

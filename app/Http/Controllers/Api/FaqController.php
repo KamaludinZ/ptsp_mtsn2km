@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Faq;
+use App\Support\RichText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -157,10 +158,8 @@ class FaqController extends Controller
             $values['question'] = trim($data['pertanyaan']);
         }
         if (array_key_exists('jawaban', $data)) {
-            $values['answer'] = (string) str($data['jawaban'])->sanitizeHtml();
-            if (blank(trim(strip_tags($values['answer'])))) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['jawaban' => 'Jawaban tidak boleh kosong.']);
-            }
+            $values['answer'] = RichText::sanitize($data['jawaban'])
+                ?? throw \Illuminate\Validation\ValidationException::withMessages(['jawaban' => 'Jawaban tidak boleh kosong.']);
         }
         if (array_key_exists('kelompok', $data)) {
             $values['category'] = filled($data['kelompok']) ? Str::lower(trim($data['kelompok'])) : null;

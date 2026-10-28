@@ -64,7 +64,7 @@ class DispositionActiveRoleAuthTest extends TestCase
     {
         $user = $this->staff('kepala_tu', 'kepala_tu', 'front_desk');
         $disposition = DispositionLog::create([
-            'ticket_id' => Ticket::query()->firstOrFail()->id,
+            'ticket_id' => Ticket::query()->orderBy('id')->firstOrFail()->id,
             'actor_id' => $user->id,
             'role' => 'kepala_tu',
             'action' => 'disposisi',

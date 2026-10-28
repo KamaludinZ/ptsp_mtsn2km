@@ -20,7 +20,7 @@
         <p class="label">Nama</p>
         <p>{{ $visitor->name }}</p>
         <p class="label">Institusi</p>
-        <p>{{ $visitor->institution }}</p>
+        <p>{{ $visitor->institution ?: '–' }}</p>
         <p class="label">Keperluan</p>
         <p>{{ $visitor->purpose }}</p>
         <p class="label">Bertemu Dengan</p>

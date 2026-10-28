@@ -357,19 +357,82 @@
                             </table>
                         </div>
 
-                        <!-- Action Buttons -->
-                        <div class="mt-4" id="actionButtons" style="display: none;">
-                            <div class="row">
-                                <div class="col-md-6 mb-2 mb-md-0">
-                                    <a href="#" class="action-button action-button-primary w-100" id="downloadButton">
-                                        <i class="fas fa-download me-2"></i>Unduh Produk Digital
-                                    </a>
+                        {{--
+                            Hasil layanan of a finished request (filled by showOutput()):
+                            a file to download, by signing in to the applicant's account or,
+                            without one, by proving the e-mail or WhatsApp number given on the
+                            request; or the product to collect at the counter.
+                        --}}
+                        <section class="mt-4" id="outputPanel" aria-labelledby="outputHeading" hidden>
+                            <h3 class="h5 fw-bold mb-3" id="outputHeading"><i class="fas fa-box-open me-2 text-primary" aria-hidden="true"></i>Hasil layanan</h3>
+
+                            <div id="outputDownload" hidden>
+                                <p class="text-muted mb-3">Permohonan selesai dan hasil layanannya berupa berkas yang dapat diunduh.</p>
+                                <div class="row g-3">
+                                    <div class="col-md-6" id="outputSignIn" hidden>
+                                        <div class="border rounded-3 p-3 h-100">
+                                            <h4 class="h6 fw-bold"><i class="fas fa-user-check me-2 text-primary" aria-hidden="true"></i>Punya akun pemohon?</h4>
+                                            <p class="small text-muted">Masuk ke akun yang mengajukan permohonan ini, lalu unduh tanpa verifikasi tambahan.</p>
+                                            <a href="#" class="action-button action-button-primary w-100" id="outputSignInLink">
+                                                <i class="fas fa-sign-in-alt me-2" aria-hidden="true"></i>Masuk untuk mengunduh
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6" id="outputVerify" hidden>
+                                        <div class="border rounded-3 p-3 h-100">
+                                            <h4 class="h6 fw-bold"><i class="fas fa-shield-alt me-2 text-primary" aria-hidden="true"></i>Tanpa akun</h4>
+                                            <p class="small text-muted">Tuliskan email atau nomor WhatsApp yang Anda berikan saat mengajukan permohonan.</p>
+                                            <button type="button" class="action-button action-button-outline w-100" id="outputVerifyButton">
+                                                <i class="fas fa-download me-2" aria-hidden="true"></i>Verifikasi lalu unduh
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <a href="#" class="action-button action-button-outline w-100" id="collectButton">
-                                        <i class="fas fa-file-alt me-2"></i>Ambil di Ruang PTSP
-                                    </a>
-                                </div>
+                            </div>
+
+                            <div id="outputNotYet" class="alert alert-light border mb-0" hidden>
+                                <i class="fas fa-hourglass-half me-2" aria-hidden="true"></i>Permohonan masih diproses. Bila hasil layanannya berupa berkas, berkas itu dapat diunduh di sini setelah permohonan selesai.
+                            </div>
+
+                            <div id="outputNone" class="alert alert-secondary mb-0" hidden>
+                                <i class="fas fa-ban me-2" aria-hidden="true"></i><span id="outputNoneText"></span>
+                            </div>
+
+                            <div id="outputPickup" class="alert alert-info mb-0" hidden>
+                                <i class="fas fa-store me-2" aria-hidden="true"></i><span id="outputPickupText">Hasil layanan dapat diambil di Ruang PTSP pada jam layanan.</span>
+                            </div>
+                        </section>
+
+                        {{--
+                            Verifikasi sebelum unduh, for an applicant without an account: the
+                            e-mail or WhatsApp number given on the request. A few wrong tries
+                            lock it for a while (the server counts them).
+                        --}}
+                        <div class="modal fade" id="verifyModal" tabindex="-1" aria-labelledby="verifyModalTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <form class="modal-content" id="verifyForm" novalidate>
+                                    <div class="modal-header">
+                                        <h2 class="modal-title h5" id="verifyModalTitle"><i class="fas fa-shield-alt me-2 text-primary" aria-hidden="true"></i>Verifikasi pemohon</h2>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="mb-3">Hasil layanan tiket <strong id="verifyTicket"></strong> hanya untuk pemohonnya.</p>
+                                        <label for="verify_contact" class="form-label fw-semibold">Email atau nomor WhatsApp saat mengajukan *</label>
+                                        <input type="text" class="form-control form-control-lg" id="verify_contact" name="kontak" autocomplete="off" maxlength="255" required
+                                               aria-describedby="verify_contact_help verify_contact_error">
+                                        <div id="verify_contact_help" class="form-text">Tulis salah satunya, persis seperti saat mengajukan permohonan.</div>
+                                        <div id="verify_contact_error" class="invalid-feedback d-block" role="alert"></div>
+                                        <p id="verifyAttempts" class="small text-muted mt-2 mb-0" aria-live="polite" hidden></p>
+                                        <div id="verifyLock" class="alert alert-warning mt-3 mb-0" role="status" hidden>
+                                            <i class="fas fa-lock me-2" aria-hidden="true"></i>Verifikasi dikunci sementara. Coba lagi dalam <strong id="verifyCountdown">--:--</strong>,
+                                            atau masuk ke akun pemohon / ambil di Ruang PTSP.
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-primary" id="verifySubmit"><i class="fas fa-download me-2" aria-hidden="true"></i>Verifikasi &amp; unduh</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -387,9 +450,6 @@
         const errorText = document.getElementById('errorText');
         const trackingResult = document.getElementById('trackingResult');
         const processTableBody = document.getElementById('processTableBody');
-        const actionButtons = document.getElementById('actionButtons');
-        const downloadButton = document.getElementById('downloadButton');
-        const collectButton = document.getElementById('collectButton');
 
         // Initialize the form submission
         form.addEventListener('submit', function(e) {
@@ -512,24 +572,9 @@
                         });
                     }
                     
-                    // Show action buttons based on service mode and status
-                    if (data.status === 'completed') {
-                        actionButtons.style.display = 'block';
-                        
-                        // Determine which button to show based on service mode
-                        if (data.service?.mode === 'online' && data.has_output_file) {
-                            downloadButton.style.display = 'inline-block';
-                            collectButton.style.display = 'none';
-                            downloadButton.href = '{{ url('/portal/permohonan') }}'; // sign in as the applicant to download
-                        } else {
-                            downloadButton.style.display = 'none';
-                            collectButton.style.display = 'inline-block';
-                            collectButton.href = '#'; // Or link to directions
-                        }
-                    } else {
-                        actionButtons.style.display = 'none';
-                    }
-                    
+                    trackedTicket = data.ticket_number;
+                    showOutput(data);
+
                     // Show the result section
                     trackingResult.style.display = 'block';
                 } else {
@@ -543,6 +588,130 @@
             });
         });
         
+        // The "Hasil layanan" panel, by the request's status: a download (or pickup) once it is
+        // finished, a word on when otherwise. data.hasil (berkas, akun, masuk_url) tells how the
+        // file is reached; until the server sends it, a file is assumed reachable both ways.
+        function showOutput(data) {
+            const output = data.hasil || { berkas: !!data.has_output_file, akun: null, masuk_url: '{{ url('/portal/permohonan') }}' };
+            const done = data.status === 'completed';
+            const closed = { rejected: 'Permohonan ditolak, sehingga tidak ada hasil layanan.', cancelled: 'Permohonan dibatalkan, sehingga tidak ada hasil layanan.' }[data.status];
+
+            document.getElementById('outputPanel').hidden = false;
+            document.getElementById('outputNotYet').hidden = done || !!closed;
+            document.getElementById('outputNone').hidden = !closed;
+            document.getElementById('outputNoneText').textContent = closed || '';
+            document.getElementById('outputDownload').hidden = !(done && output.berkas);
+            document.getElementById('outputPickup').hidden = !(done && !output.berkas);
+            document.getElementById('outputPickupText').textContent = data.ready_for_pickup
+                ? 'Hasil layanan sudah siap dan dapat diambil di Ruang PTSP pada jam layanan.'
+                : 'Hasil layanan diserahkan langsung oleh petugas PTSP.';
+            document.getElementById('outputSignIn').hidden = output.akun === false;
+            document.getElementById('outputVerify').hidden = output.akun === true;
+            document.getElementById('outputSignInLink').href = output.masuk_url || '#';
+        }
+
+        // Verifikasi sebelum unduh (#verifyModal), for the ticket last tracked.
+        let trackedTicket = null;
+        const verifyModal = document.getElementById('verifyModal');
+        const verifyForm = document.getElementById('verifyForm');
+        const verifyInput = document.getElementById('verify_contact');
+        const verifyError = document.getElementById('verify_contact_error');
+        const verifySubmit = document.getElementById('verifySubmit');
+
+        function verifyProblem(value) {
+            const contact = value.trim();
+            if (contact === '') return 'Tuliskan email atau nomor WhatsApp yang Anda berikan saat mengajukan.';
+            if (contact.includes('@')) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact) ? null : 'Alamat email belum lengkap.';
+            if (!/^[0-9+\-\s().]+$/.test(contact)) return 'Nomor WhatsApp hanya boleh berisi angka (boleh dengan spasi, +, atau -).';
+            const digits = contact.replace(/\D/g, '').length;
+            return digits < 8 ? 'Nomor WhatsApp terlalu pendek.' : (digits > 15 ? 'Nomor WhatsApp terlalu panjang.' : null);
+        }
+
+        function showVerifyProblem(problem) {
+            verifyInput.classList.toggle('is-invalid', !!problem);
+            verifyInput.setAttribute('aria-invalid', problem ? 'true' : 'false');
+            verifyError.textContent = problem || '';
+        }
+
+        // Wrong tries and the lock are the server's (it counts them); here they are shown,
+        // and a lock is remembered per ticket while the page stays open.
+        const VERIFY_ATTEMPTS = {{ \App\Services\TicketDownloadAttempts::ATTEMPTS }};
+        const lockedUntil = {};
+        let countdown = null;
+
+        function showAttempts(left) {
+            const attempts = document.getElementById('verifyAttempts');
+            attempts.hidden = left === null || left === undefined;
+            attempts.textContent = attempts.hidden ? '' : `Sisa percobaan: ${left} dari ${VERIFY_ATTEMPTS}.`;
+        }
+
+        function showLock() {
+            clearInterval(countdown);
+            const until = lockedUntil[trackedTicket] || 0;
+            const tick = () => {
+                const seconds = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+                const locked = seconds > 0;
+                document.getElementById('verifyLock').hidden = !locked;
+                verifyInput.disabled = locked;
+                verifySubmit.disabled = locked;
+                document.getElementById('verifyCountdown').textContent = String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
+                if (!locked) {
+                    clearInterval(countdown);
+                    if (until) { delete lockedUntil[trackedTicket]; showAttempts(null); showVerifyProblem(null); }
+                }
+            };
+            tick();
+            countdown = setInterval(tick, 1000);
+        }
+
+        document.getElementById('outputVerifyButton').addEventListener('click', function () {
+            document.getElementById('verifyTicket').textContent = trackedTicket;
+            verifyInput.value = '';
+            showVerifyProblem(null);
+            showAttempts(null);
+            showLock();
+            bootstrap.Modal.getOrCreateInstance(verifyModal).show();
+        });
+        verifyModal.addEventListener('hidden.bs.modal', () => clearInterval(countdown));
+        verifyModal.addEventListener('shown.bs.modal', () => verifyInput.focus());
+        verifyInput.addEventListener('input', () => showVerifyProblem(null));
+
+        verifyForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const problem = verifyProblem(verifyInput.value);
+            if (problem) {
+                showVerifyProblem(problem);
+                verifyInput.focus();
+                return;
+            }
+
+            verifySubmit.disabled = true;
+            fetch('{{ route('onlineportal.track.ticket.download') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value },
+                body: JSON.stringify({ ticket_number: trackedTicket, kontak: verifyInput.value.trim() }),
+            })
+                .then(response => response.json().catch(() => ({})).then(body => ({ status: response.status, body })))
+                .then(({ status, body }) => {
+                    if (status === 200 && body.unduh) {
+                        bootstrap.Modal.getOrCreateInstance(verifyModal).hide();
+                        window.location.href = body.unduh; // the file downloads; the page stays
+                        return;
+                    }
+                    if (status === 429) {
+                        // Locked: the lock box and its countdown say it.
+                        lockedUntil[trackedTicket] = Date.now() + (body.coba_lagi_detik || 60) * 1000;
+                        showVerifyProblem(null);
+                        showAttempts(null);
+                        return;
+                    }
+                    showVerifyProblem(body.message || 'Verifikasi belum berhasil. Coba lagi.');
+                    showAttempts(status === 422 ? body.sisa_percobaan : null);
+                })
+                .catch(() => showVerifyProblem('Terjadi kesalahan jaringan. Silakan coba lagi.'))
+                .finally(() => { verifySubmit.disabled = false; showLock(); });
+        });
+
         function showError(message) {
             errorMessage.style.display = 'block';
             errorText.textContent = message;

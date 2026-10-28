@@ -47,6 +47,25 @@ class Persuratan
         'Arsip',
     ];
 
+    /** Classifications of the SK register (Register Penomoran SK), kept apart from jenis surat. */
+    public const JENIS_SK = [
+        'Kepegawaian dan Pengangkatan',
+        'Pembagian Tugas dan Beban Kerja',
+        'Kepanitiaan dan Tim Pelaksana Kegiatan',
+        'Pembentukan Tim Khusus dan Regulasi Internal',
+        'Keuangan dan Operasional',
+    ];
+
+    /**
+     * A jenis surat typed into the buku surat keluar that is really an SK
+     * ("Surat Keputusan", "SK Panitia", ...): SK are numbered in their own
+     * register. SuratKeluar::scopeNumberedAsSk is the same rule in SQL.
+     */
+    public static function isSuratKeputusan(?string $jenis): bool
+    {
+        return (bool) preg_match('/\bkeputusan\b|^\s*sk\b/iu', (string) $jenis);
+    }
+
     /**
      * Active choices of one master list, as the values the forms store.
      *

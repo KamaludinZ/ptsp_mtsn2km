@@ -15,8 +15,12 @@ class ListVisitors extends ListRecords
 
     protected function getHeaderActions(): array
     {
+        // One button per kind of guest, each opening the form already set to it.
         return [
-            Actions\CreateAction::make()->label('Daftarkan tamu')->icon('heroicon-m-user-plus'),
+            Actions\CreateAction::make('pemohon')->label('Pemohon layanan offline')->icon('heroicon-m-document-text')->color('gray')
+                ->url(VisitorResource::getUrl('create', ['jenis' => 'pemohon'])),
+            Actions\CreateAction::make()->label('Tamu kunjungan')->icon('heroicon-m-user-plus')
+                ->url(VisitorResource::getUrl('create', ['jenis' => 'kunjungan'])),
         ];
     }
 

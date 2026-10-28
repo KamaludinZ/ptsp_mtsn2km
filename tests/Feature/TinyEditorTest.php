@@ -49,6 +49,8 @@ class TinyEditorTest extends TestCase
         $this->assertStringNotContainsString('javascript:', $clean);
         $this->assertStringNotContainsString('onerror', $clean);
         $this->assertNull(RichText::sanitize('<p>&nbsp;</p>'));
+        // Classes and ids of pasted text never reach a page (they hid sections or collided with its ids).
+        $this->assertSame('<div><p>Isi</p></div>', RichText::sanitize('<div class="collapse fade" id="gridView"><p class="MsoNormal">Isi</p></div>'));
         $this->assertSame('KTP KK', RichText::plain('<ol><li>KTP</li><li>KK</li></ol>'));
     }
 

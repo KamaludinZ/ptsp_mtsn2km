@@ -57,6 +57,12 @@ class SuratKeluar extends Model
         'berkas_lampiran_nama' => 'array',
     ];
 
+    /** Letters whose jenis surat is really an SK (Persuratan::isSuratKeputusan), numbered here by mistake. */
+    public function scopeNumberedAsSk(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where('jenis_surat', '~*', '\\mkeputusan\\M|^\\s*sk\\M');
+    }
+
     public function pembuat(): BelongsTo
     {
         return $this->belongsTo(User::class, 'pembuat_id');

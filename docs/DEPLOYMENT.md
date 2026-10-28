@@ -170,6 +170,78 @@ boleh ditimpa setiap update. Aturannya:
 - `scripts/post-deploy.sh` aman dijalankan berulang: hanya menambah migrasi baru, membuat ulang
   symlink dan cache, serta membuang `public/hot` (sisa `npm run dev` yang membuat tampilan rusak).
 
+### Catatan update: Register Penomoran SK
+
+Migrasi `2026_10_27_*` dan `2026_10_28_*` membuat register SK. Semuanya berjalan lewat
+`scripts/post-deploy.sh` seperti biasa, tetapi beberapa perlu diketahui sebelum update:
+
+- `2026_10_28_100000_add_report_indexes_to_surat_keputusan` **menolak berjalan** bila dua SK menunjuk
+  berkas scan yang sama, dan pesannya menyebut nomor SK-nya. Unggah ulang scan SK yang keliru lewat
+  "Ubah", lalu jalankan `scripts/post-deploy.sh` lagi.
+- `2026_10_28_110000_grant_register_sk_permission` memberi izin `backoffice.sk.register` ke setiap peran
+  yang memegang `backoffice.access`, jadi akses register tidak berubah. Sesudahnya izin ini bisa dicabut
+  per peran di **Peran & Hak Akses**.
+- `2026_10_28_120000_guard_surat_keputusan_register_and_trail` memasang trigger: nomor SK yang sudah terbit
+  tidak bisa diubah, dan SK hanya bisa dihapus lewat "Hapus" di register. Retensi data memakai
+  `SuratKeputusan::withDeletesAllowed()`, atau `SET LOCAL app.allow_history_changes = 'on'` dalam satu transaksi.
+- `2026_10_28_140000_add_ticket_to_surat_keputusan` dan `2026_10_28_170000_add_jenis_sk_id_to_surat_keputusan`
+  mengisi relasi tiket dan Master Jenis SK dari data SK yang sudah ada.
+- `2026_10_28_180000_add_report_columns_to_surat_keputusan` menambah kolom terhitung. PostgreSQL menulis ulang
+  tabel `surat_keputusan` sekali (singkat untuk ukuran register sekolah).
+
+### Catatan update: Detail layanan di /services
+
+Isi detail layanan yang hilang saat kartu dibuka punya beberapa penyebab, dan semuanya sudah diperbaiki:
+
+- Teks yang ditempel dari situs lain ke editor membawa kelas dan id situs itu (misalnya `collapse`,
+  `tab-pane fade`, `d-none`), sehingga bagiannya tersembunyi. Sekarang kelas dan id dibuang saat konten
+  disimpan maupun ditampilkan. Konten lama ikut tampil tanpa perlu disunting ulang.
+- Kelas `collapse` milik Bootstrap juga diberi gaya oleh Tailwind dan daisyUI (begitu pula `modal`).
+  Perbaikannya ada di `resources/css/app.css`, jadi **aset harus dibangun ulang** (`npm run build`).
+  Docker, `scripts/build-release.sh`, dan `scripts/build-production.sh` sudah melakukannya.
+- Kartu yang tersaring pencarian atau kategori tetap tak terlihat karena animasi AOS menunggu posisi
+  lamanya digulir. Sekarang kartu hasil saringan langsung tampil.
+
+### Catatan update: Buku tamu terpadu dan checkout tamu
+
+Tiga migrasi `2026_10_28_2*` berjalan lewat `scripts/post-deploy.sh` seperti biasa:
+
+- `200000_add_guest_type_to_visitors` menambah jenis tamu (kunjungan/pemohon), status pemohon, dan layanan
+  yang dituju. Tamu lama dengan keperluan "Pemohon Layanan: …" dikenali sebagai pemohon, dan layanannya
+  dicocokkan dari nama yang persis sama.
+- `210000_guard_visitor_checkout` **memperbaiki data lama**: status tamu disamakan dengan waktu check-out
+  (misalnya waktu yang diisi lewat edit tanpa mengubah status), dan waktu check-out yang lebih awal dari
+  check-in disamakan dengan waktu check-in. Setelah itu database menolak keduanya.
+- `220000_create_visitor_checkouts_table` membuat riwayat check-out (oleh petugas atau mandiri dari buku
+  tamu publik). Riwayat ini tidak dapat diubah. Check-out lama tercatat sebagai "oleh petugas" dengan
+  petugas yang tidak diketahui.
+
+Tamu kini bisa check-out sendiri di `/visitor-book` dengan nomor telepon saat mendaftar. Setelah 5 kali
+nomor salah, check-out tamu itu dikunci 15 menit, dan petugas tetap bisa mengeluarkannya di Buku Tamu.
+
+### Catatan update: Katalog layanan portal
+
+Portal pemohon punya katalognya sendiri (`/portal/layanan`) dan menu **Ajukan Layanan**. Layanan disaring
+menurut semua peran pemohon akun (misalnya guru yang juga wali murid), dan form pengajuan memakai aturan yang sama.
+
+- `2026_10_28_230000_constrain_service_applicant_roles` merapikan "Dapat diajukan oleh" setiap layanan
+  (huruf besar/kecil, ejaan `wali_murid`, duplikat, daftar kosong = semua pemohon). Setelah itu database hanya
+  menerima peran pemohon resmi. Migrasi **menolak berjalan** bila ada peran yang tidak dikenal, dan pesannya
+  menyebut nama layanannya. Perbaiki layanan itu di Kelola Layanan, lalu jalankan `scripts/post-deploy.sh` lagi.
+
+### Catatan update: Unduh hasil layanan dari pelacakan
+
+Tanpa migrasi. Di `/tracking`, tiket yang selesai dengan hasil berupa berkas menampilkan tombol unduh. Pemohon
+tanpa akun memverifikasi dengan email atau nomor WhatsApp saat mengajukan, lalu mendapat tautan unduh yang
+berlaku 10 menit. Setelah 3 kali salah, verifikasi tiket itu dikunci 15 menit, dan satu alamat IP hanya boleh
+salah 10 kali per jam di semua tiket. Hitungan ini disimpan di cache aplikasi, jadi `CACHE_STORE` harus
+dipakai bersama oleh semua proses web (`database`, bawaan, atau `redis`), bukan `array`. Di belakang
+Cloudflare/reverse proxy, isi `TRUSTED_PROXIES` dengan rentang IP proxy (langkah 4); bila tidak, semua pengunjung
+terbaca satu alamat IP dan berbagi batas 10 kali salah itu.
+
+Lewat API: `POST /api/publik/lacak/{nomor}/unduh` (isian `kontak`) memakai hitungan dan kunci yang sama, dan
+pemohon yang masuk memakai `GET /api/permohonan/{nomor}/hasil` tanpa verifikasi tambahan.
+
 ## 9. Backup
 
 Minimal setiap hari, dan selalu sebelum update:

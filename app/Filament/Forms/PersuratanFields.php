@@ -2,10 +2,12 @@
 
 namespace App\Filament\Forms;
 
+use App\Services\JenisSkService;
 use App\Support\Persuratan;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
@@ -28,6 +30,28 @@ class PersuratanFields
             ->datalist(fn () => Persuratan::options('jenis_surat'))
             ->placeholder('Pilih atau ketik jenis')
             ->maxLength(100);
+    }
+
+    /**
+     * The SK register's classification: picked from the active Jenis SK in
+     * Master Persuratan (not typed by hand). A record keeps the jenis it was
+     * saved with, even after that entry is renamed or switched off.
+     */
+    public static function jenisSk(): Select
+    {
+        return Select::make('jenis_sk')->label('Jenis SK')
+            ->options(fn (?Model $record) => collect(JenisSkService::allowed($record?->getAttribute('jenis_sk')))
+                ->mapWithKeys(fn (string $name) => [$name => $name])
+                ->all())
+            ->native(false)
+            ->searchable()
+            ->placeholder('Pilih jenis SK')
+            ->noSearchResultsMessage('Jenis SK tidak ditemukan. Tambahkan lewat Master Persuratan > Jenis SK.')
+            ->in(fn (Select $component) => array_keys($component->getOptions()))
+            ->validationMessages([
+                'required' => 'Pilih jenis SK.',
+                'in' => JenisSkService::MESSAGE,
+            ]);
     }
 
     /**

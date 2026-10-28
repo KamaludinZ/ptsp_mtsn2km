@@ -83,6 +83,7 @@ class RoleAccess
         'backoffice.tickets.process' => 'Back Office — proses tiket',
         'backoffice.tickets.complete' => 'Back Office — selesaikan tiket',
         'backoffice.reports.view' => 'Back Office — lihat laporan',
+        'backoffice.sk.register' => 'Back Office — Register Penomoran SK (lihat, minta nomor, ubah data dan scan)',
         'supervision.access' => 'Pengawasan — buka area pengawasan',
         'supervision.complaints.view' => 'Pengawasan — lihat pengaduan',
         'supervision.complaints.process' => 'Pengawasan — tindak lanjuti pengaduan',

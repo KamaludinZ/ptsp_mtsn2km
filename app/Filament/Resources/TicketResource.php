@@ -501,30 +501,16 @@ class TicketResource extends Resource
                     ->icon('heroicon-o-paper-clip')
                     ->description(fn (Ticket $record) => ServiceDisposition::recommendationHint($record->service))
                     ->schema([
-                        RepeatableEntry::make('files')
+                        ViewEntry::make('files')
                             ->hiddenLabel()
-                            ->contained(false)
-                            ->placeholder('Belum ada berkas.')
-                            ->schema([
-                                TextEntry::make('file_name')
-                                    ->hiddenLabel()
-                                    ->icon('heroicon-m-document-arrow-down')
-                                    ->color('primary')
-                                    ->url(fn ($record) => route('documents.ticket-file', $record))
-                                    ->openUrlInNewTab()
-                                    ->helperText(fn ($record) => 'Diunggah ' . $record->created_at?->format('d M Y H:i')),
-                            ]),
+                            ->view('filament.infolists.ticket-documents', ['kind' => 'berkas', 'empty' => 'Belum ada berkas.']),
                     ]),
                 Section::make('Hasil layanan')
                     ->icon('heroicon-o-document-check')
                     ->schema([
-                        TextEntry::make('output.output_description')
+                        ViewEntry::make('output')
                             ->hiddenLabel()
-                            ->default('Unduh hasil layanan')
-                            ->icon('heroicon-m-arrow-down-tray')
-                            ->color('primary')
-                            ->url(fn (Ticket $record) => $record->output ? route('documents.ticket-output', $record->output) : null)
-                            ->openUrlInNewTab()
+                            ->view('filament.infolists.ticket-documents', ['kind' => 'hasil'])
                             ->visible(fn (Ticket $record) => (bool) $record->output),
                         TextEntry::make('ready_for_pickup')
                             ->hiddenLabel()

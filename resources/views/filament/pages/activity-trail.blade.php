@@ -44,7 +44,7 @@
         </div>
     </x-filament::section>
 
-    {{-- Jenis: semua / perpindahan peran / ganti akun / aksi tiket --}}
+    {{-- Jenis: semua / perpindahan peran / ganti akun / aksi tiket / Register SK --}}
     <x-filament::tabs label="Jenis aktivitas">
         <x-filament::tabs.item :active="$type === ''" wire:click="setType('')">
             Semua
@@ -92,6 +92,9 @@
                             <div class="text-xs text-gray-500 dark:text-gray-400" style="display:flex;flex-wrap:wrap;gap:.25rem .75rem;margin-top:.25rem">
                                 @if ($entry['ticket'])
                                     <span>Tiket {{ $entry['ticket'] }}@if ($entry['service']) · {{ $entry['service'] }}@endif</span>
+                                @endif
+                                @if ($entry['sk'])
+                                    <span>SK {{ $entry['sk'] }}</span>
                                 @endif
                                 @if ($entry['impersonated_by'])
                                     <span class="text-warning-600 dark:text-warning-400">dilakukan {{ $entry['impersonated_by'] }} lewat ganti akun</span>
@@ -141,6 +144,11 @@
                 @if ($detail['ticket'])
                     <dt class="text-gray-500 dark:text-gray-400">Tiket</dt>
                     <dd>{{ $detail['ticket'] }}@if ($detail['service']) · {{ $detail['service'] }}@endif</dd>
+                @endif
+
+                @if ($detail['sk'])
+                    <dt class="text-gray-500 dark:text-gray-400">Nomor SK</dt>
+                    <dd>{{ $detail['sk'] }}</dd>
                 @endif
 
                 @foreach ($detail['details'] as $label => $value)

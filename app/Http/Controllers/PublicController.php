@@ -13,37 +13,13 @@ use App\Models\VisitorMaster;
 use App\Services\FrontDeskService;
 use Illuminate\Http\Request; // Don't forget to import Request
 use Carbon\Carbon;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class PublicController extends Controller
 {
     /** Indonesian messages for the public guest-book forms. */
-    private const GUEST_MESSAGES = [
-        'required' => ':Attribute wajib diisi.',
-        'email' => ':Attribute harus berupa alamat email yang valid.',
-        'max' => ':Attribute maksimal :max karakter.',
-        'in' => ':Attribute yang dipilih tidak tersedia.',
-        'image' => ':Attribute harus berupa gambar.',
-        'mimes' => ':Attribute harus berformat :values.',
-        'photo.max' => 'Ukuran foto maksimal 2 MB.',
-        'purpose_other.required_if' => 'Tuliskan tujuan kunjungan Anda.',
-        'target_service_other.required_if' => 'Tuliskan layanan yang Anda tuju.',
-    ];
-
-    private const GUEST_ATTRIBUTES = [
-        'name' => 'nama lengkap',
-        'phone' => 'nomor telepon/HP',
-        'email' => 'email',
-        'institution' => 'instansi/perusahaan',
-        'institution_category' => 'jenis instansi',
-        'applicant_type' => 'jenis pemohon',
-        'purpose' => 'tujuan kunjungan',
-        'purpose_other' => 'tujuan kunjungan lainnya',
-        'target_service' => 'layanan yang dituju',
-        'target_service_other' => 'layanan lainnya',
-        'notes' => 'keperluan',
-        'photo' => 'foto',
-    ];
-
     /**
      * Display home page (landing page)
      */
@@ -90,21 +66,35 @@ class PublicController extends Controller
     /**
      * Display visitor book (public access)
      */
-    public function visitorBook()
+    public function visitorBook(Request $request)
     {
-        $date = request('date', Carbon::today()->toDateString());
-        $visitors = Visitor::whereDate('check_in_time', $date)
-            ->orderBy('check_in_time', 'desc')
-            ->paginate(20);
+        // A public page: a date or kind it does not understand lists today's
+        // guests of every kind instead of failing.
+        $filters = Validator::make($request->only('date', 'jenis'), [
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'jenis' => ['nullable', Rule::in(array_keys(Visitor::GUEST_TYPES))],
+        ])->valid();
+        $date = $filters['date'] ?? Carbon::today()->toDateString();
+        $type = $filters['jenis'] ?? null;
 
-        // Counts for the whole day, not just the current page
-        $activeCount = Visitor::whereDate('check_in_time', $date)->whereNull('check_out_time')->count();
-        $finishedCount = Visitor::whereDate('check_in_time', $date)->whereNotNull('check_out_time')->count();
+        $visitors = Visitor::whereDate('check_in_time', $date)
+            ->when($type, fn ($query) => $query->where('guest_type', $type))
+            ->orderBy('check_in_time', 'desc')
+            ->paginate(20)
+            ->withQueryString();
+
+        // Counts for the whole day and every kind, not just the current page
+        $counts = Visitor::whereDate('check_in_time', $date)->toBase()
+            ->selectRaw("count(*) as total, count(*) filter (where check_out_time is null) as active, count(*) filter (where guest_type = 'pemohon') as applicants")
+            ->first();
+        [$totalCount, $activeCount] = [(int) $counts->total, (int) $counts->active];
+        $finishedCount = $totalCount - $activeCount;
+        $typeCounts = ['kunjungan' => $totalCount - (int) $counts->applicants, 'pemohon' => (int) $counts->applicants];
 
         $services = Service::where('is_active', true)->orderBy('name')->pluck('name');
         $visitPurposes = VisitorMaster::options('tujuan');
 
-        return view('public.visitor-book', compact('visitors', 'date', 'activeCount', 'finishedCount', 'services', 'visitPurposes'));
+        return view('public.visitor-book', compact('visitors', 'date', 'type', 'totalCount', 'activeCount', 'finishedCount', 'typeCounts', 'services', 'visitPurposes'));
     }
 
     /**
@@ -141,9 +131,9 @@ class PublicController extends Controller
             return redirect()->route('public.visitor.book')->with('success', 'Tamu berhasil didaftarkan!');
         }
 
-        $validated = $request->validate(FrontDeskService::selfRegistrationRules(), self::GUEST_MESSAGES, self::GUEST_ATTRIBUTES);
+        $validated = $request->validate(FrontDeskService::selfRegistrationRules(), FrontDeskService::GUEST_MESSAGES, FrontDeskService::GUEST_ATTRIBUTES);
 
-        $visitor = app(FrontDeskService::class)->selfRegister($validated);
+        $visitor = app(FrontDeskService::class)->register('kunjungan', $validated);
 
         return redirect()->route('public.visitor.book')
             ->with('success', 'Tamu berhasil didaftarkan!')
@@ -159,39 +149,9 @@ class PublicController extends Controller
             return redirect()->route('public.visitor.book')->with('success', 'Pemohon layanan berhasil didaftarkan!');
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'email' => 'nullable|string|email|max:255',
-            'institution' => 'nullable|string|max:255',
-            'institution_category' => 'nullable|string|max:255',
-            'applicant_type' => 'nullable|string|max:255',
-            'target_service' => ['required', 'string', function ($attribute, $value, $fail) {
-                if ($value !== 'Lainnya' && !Service::where('is_active', true)->where('name', $value)->exists()) {
-                    $fail('Pilih layanan dari daftar yang tersedia.');
-                }
-            }],
-            'target_service_other' => 'required_if:target_service,Lainnya|nullable|string|max:500',
-            'notes' => 'nullable|string|max:1000',
-            'obscure_name' => 'nullable',
-        ], self::GUEST_MESSAGES, self::GUEST_ATTRIBUTES);
+        $validated = $request->validate(FrontDeskService::serviceApplicantRules(), FrontDeskService::GUEST_MESSAGES, FrontDeskService::GUEST_ATTRIBUTES);
 
-        if ($validated['target_service'] === 'Lainnya') {
-            $validated['target_service'] = $validated['target_service_other'];
-        }
-
-        $visitor = Visitor::create([
-            'name' => $validated['name'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'] ?? null,
-            'institution' => $validated['institution'] ?? null,
-            'institution_category' => $validated['institution_category'] ?? null,
-            'purpose' => 'Pemohon Layanan: ' . $validated['target_service'], // Combine purpose
-            'notes' => $validated['notes'] ?? null,
-            'is_obscured' => $request->boolean('obscure_name'),
-            'check_in_time' => Carbon::now(),
-            'status' => 'active',
-        ]);
+        $visitor = app(FrontDeskService::class)->register('pemohon', $validated);
 
         // No WhatsApp here: the form needs no sign-in, so anyone could make the
         // school's number message any phone. The guest sees the confirmation on screen.
@@ -199,6 +159,58 @@ class PublicController extends Controller
         return redirect()->route('public.visitor.book')
             ->with('success', 'Pemohon layanan berhasil didaftarkan!')
             ->with('registered', $visitor->confirmationSummary());
+    }
+
+    /** Wrong phone numbers allowed per guest before checkout is locked for a while (anyone guessing, from anywhere). */
+    public const CHECKOUT_ATTEMPTS = 5;
+
+    public const CHECKOUT_LOCK_MINUTES = 15;
+
+    /**
+     * POST /visitor-book/{visitor}/checkout: a guest checks out from the
+     * public visitor book, proving it is them with the phone given on
+     * arrival (Visitor::phoneMatches). Recorded as the
+     * counter's checkout is (FrontDeskService::checkOut), as the guest's own.
+     * A wrong number comes back to the modal ("checkout" error bag).
+     */
+    public function checkOutVisitor(Request $request, Visitor $visitor)
+    {
+        $back = redirect()->route('public.visitor.book');
+        if (self::isBot($request)) {
+            return $back->with('success', 'Checkout berhasil. Terima kasih atas kunjungan Anda.');
+        }
+
+        if (! $visitor->canSelfCheckOut()) {
+            return $back->withErrors(['checkout' => $visitor->check_out_time
+                ? 'Tamu ini sudah checkout.'
+                : 'Checkout tamu ini dilakukan oleh petugas di loket.']);
+        }
+
+        $refuse = fn (string $message) => $back->withErrors(['phone' => $message], 'checkout')->withInput(['visitor' => (string) $visitor->id]);
+        $key = 'visitor-checkout:' . $visitor->id;
+        if (RateLimiter::tooManyAttempts($key, self::CHECKOUT_ATTEMPTS)) {
+            return $refuse('Terlalu banyak percobaan. Coba lagi dalam ' . ceil(RateLimiter::availableIn($key) / 60) . ' menit atau checkout di loket.');
+        }
+
+        $phone = Validator::make($request->only('phone'), ['phone' => ['required', 'string', 'max:20']], FrontDeskService::GUEST_MESSAGES, FrontDeskService::GUEST_ATTRIBUTES);
+        if ($phone->fails()) {
+            return $refuse($phone->errors()->first('phone'));
+        }
+
+        if (! $visitor->phoneMatches($request->input('phone'))) {
+            RateLimiter::hit($key, self::CHECKOUT_LOCK_MINUTES * 60);
+
+            return $refuse('Nomor telepon tidak cocok dengan data kunjungan. Periksa kembali nomornya, atau checkout di loket.');
+        }
+
+        try {
+            app(FrontDeskService::class)->checkOut($visitor, null, $request->ip());
+        } catch (\App\Exceptions\TicketActionException $e) {
+            return $back->withErrors(['checkout' => $e->getMessage()]);
+        }
+        RateLimiter::clear($key);
+
+        return $back->with('success', 'Checkout berhasil. Terima kasih atas kunjungan Anda, ' . $visitor->publicName() . '.');
     }
 
     /**

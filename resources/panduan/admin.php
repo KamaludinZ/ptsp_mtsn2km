@@ -145,6 +145,16 @@ return [
         ],
     ],
 
+    \App\Filament\Pages\Reports\SkRegisterRecap::class => [
+        'ringkas' => 'Rekap Register SK per tahun: jumlah nomor SK terbit, kelengkapan arsip scan, rata-rata waktu sampai scan diunggah, SK yang dihapus, serta sebaran per bulan, jenis SK, dan petugas pencatat. Untuk petugas dan pimpinan yang memegang register SK.',
+        'langkah' => [
+            'Pilih "Tahun register"; bulan mengikuti tanggal surat.',
+            'Baca angka utama, lalu tabel "Per bulan", "Per jenis SK", dan "Per petugas pencatat".',
+            'Klik nama bulan, "Lihat SK yang menunggu scan", atau nama jenis SK untuk membuka register yang sudah tersaring.',
+            'Klik "Unduh rekap" lalu pilih Excel (lembar Ringkasan, Per Bulan, Per Jenis SK, Per Petugas) atau PDF berkop untuk dicetak. Setiap unduhan dicatat di Log & Audit.',
+        ],
+    ],
+
     // ── Persuratan ──────────────────────────────────────────────────────
 
     \App\Filament\Resources\SuratKeluarResource::class => [
@@ -160,14 +170,27 @@ return [
         'tips' => 'Tombol "Detail" menampilkan data surat lengkap; tombol "Lampiran (n)" membuka berkas yang sudah diunggah.',
     ],
 
-    \App\Filament\Resources\PersuratanMasterResource::class => [
-        'ringkas' => 'Daftar pilihan baku untuk form surat keluar dan disposisi (tujuan naskah, jenis surat, tembusan, klasifikasi, instruksi disposisi) serta pengaturan format nomor per jenis surat.',
+    \App\Filament\Resources\SuratKeputusanResource::class => [
+        'ringkas' => 'Buku register Surat Keputusan (SK), terpisah dari surat keluar. Nomor SK berformat {N} TAHUN {YYYY}, berurutan 1–9999 dan dimulai ulang setiap tahun.',
         'langkah' => [
-            'Pilih tab daftar: Tujuan Naskah, Jenis Surat, Tembusan, Klasifikasi Surat, Instruksi Disposisi, Penomoran Otomatis, atau Variabel Tambahan.',
+            'Buka menu Penomoran SK di grup Persuratan untuk melihat seluruh nomor SK yang sudah diterbitkan.',
+            'Klik "Minta Nomor SK", isi data SK, lalu "Ambil nomor". Pilih "Buka sebagai halaman" untuk formulir layar penuh (Registrasi Nomor SK), mis. di ponsel.',
+            'Klik "Detail" pada baris SK untuk membuka Rincian SK: nomor, tanggal, jenis, perihal, peminta, keterangan, arsip scan, dan petugas pencatat.',
+            'SK berstatus "Terarsip" punya tombol "Scan" di barisnya; di Rincian SK, "Lihat scan" membuka berkasnya dan "Unduh scan" menyimpannya dengan nama aslinya.',
+            'Buka saringan di atas tabel (Tahun, Jenis SK, Status, Petugas, rentang tanggal), lalu "Cetak / Unduh": Unduh Excel untuk diolah lagi, atau Cetak / Unduh PDF untuk laporan siap cetak. Isinya sama dengan daftar di layar.',
+        ],
+        'tips' => 'Jenis SK diatur di Master Persuratan, tab "Jenis SK". Nomor yang sudah diberikan tidak pernah diberikan lagi, termasuk nomor SK yang dihapus. Peran yang boleh membuka register diatur di Peran & Hak Akses lewat izin "Back Office — Register Penomoran SK"; menghapus SK tetap khusus Administrator.',
+    ],
+
+    \App\Filament\Resources\PersuratanMasterResource::class => [
+        'ringkas' => 'Daftar pilihan baku untuk form surat keluar, disposisi, dan Penomoran SK (tujuan naskah, jenis surat, tembusan, klasifikasi, instruksi disposisi, jenis SK) serta pengaturan format nomor per jenis surat.',
+        'langkah' => [
+            'Pilih tab daftar: Tujuan Naskah, Jenis Surat, Tembusan, Klasifikasi Surat, Instruksi Disposisi, Penomoran Otomatis, Variabel Tambahan, atau Jenis SK.',
             'Klik "Tambah pilihan" untuk menambah isian baru; isi Daftar, Kode klasifikasi (bila ada), Nama, Urutan, dan "Tampilkan sebagai pilihan".',
             'Isian yang diketik petugas tercatat sebagai pilihan nonaktif; nyalakan kolom "Aktif" (atau centang beberapa baris lalu "Aktifkan") agar muncul di form.',
             'Di tab Penomoran Otomatis, klik "Atur penomoran" pada jenis surat untuk mengubah format nomornya; "Kembalikan ke format bawaan" bila ingin mengulang.',
             'Di tab Variabel Tambahan, klik "Tambah variabel" / "Ubah variabel" untuk meminta isian tambahan (mis. kelas) saat petugas meminta nomor.',
+            'Di tab Jenis SK, klik "Tambah jenis SK" atau "Ubah" pada barisnya untuk mengatur jenis yang dipilih saat meminta nomor SK.',
         ],
         'tips' => 'Daftar Instruksi Disposisi menjadi "Pilihan cepat instruksi" di jendela disposisi pimpinan.',
     ],

@@ -4,9 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\VisitorResource\Pages;
 use App\Models\Visitor;
+use App\Models\VisitorMaster;
 use Filament\Forms;
 use Filament\Forms\Form;
 use App\Exceptions\TicketActionException;
+use App\Models\Service;
 use App\Models\User;
 use App\Services\FrontDeskService;
 use Filament\Notifications\Notification;
@@ -47,8 +49,31 @@ class VisitorResource extends Resource
     {
         $creating = $form->getOperation() === 'create';
 
+        $visit = fn (Forms\Get $get) => ! $creating || $get('guest_type') === 'kunjungan';
+        $applicant = fn (Forms\Get $get) => $creating && $get('guest_type') === 'pemohon';
+        // As on the public form, an applicant names an institution only when coming for one.
+        $institution = fn (Forms\Get $get) => ! $applicant($get) || $get('applicant_type') === 'instansi_perusahaan';
+
         return $form
             ->schema([
+                // As the public visitor book: a visiting guest, or someone come for a PTSP service.
+                Forms\Components\Section::make('Jenis tamu')
+                    ->schema([
+                        Forms\Components\ToggleButtons::make('guest_type')
+                            ->hiddenLabel()
+                            ->options(Visitor::GUEST_TYPES)
+                            ->icons(['kunjungan' => 'heroicon-o-user-group', 'pemohon' => 'heroicon-o-document-text'])
+                            // Opened from Buku Tamu's "Pemohon layanan offline" button: ?jenis=pemohon.
+                            ->default(fn () => array_key_exists($type = (string) request()->query('jenis'), Visitor::GUEST_TYPES) ? $type : 'kunjungan')
+                            ->inline()
+                            ->required()
+                            ->live()
+                            ->helperText(fn (Forms\Get $get) => $get('guest_type') === 'pemohon'
+                                ? 'Datang untuk mengajukan atau menanyakan layanan PTSP secara langsung di loket.'
+                                : 'Datang untuk bertemu guru, pegawai, atau unit madrasah.'),
+                    ])
+                    ->visible($creating),
+
                 Forms\Components\Section::make('Identitas tamu')
                     ->schema([
                         Forms\Components\TextInput::make('name')
@@ -58,34 +83,70 @@ class VisitorResource extends Resource
                         Forms\Components\TextInput::make('phone')
                             ->label('Nomor telepon / WhatsApp')
                             ->tel()
+                            // Required as on the public form: it is how the guest checks out there.
+                            ->required($creating)
                             ->maxLength(20),
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
                             ->email()
                             ->maxLength(255),
+                        Forms\Components\Select::make('applicant_type')
+                            ->label('Status pemohon')
+                            ->options(Visitor::APPLICANT_STATUSES)
+                            ->in(array_keys(Visitor::APPLICANT_STATUSES))
+                            ->placeholder('Pilih status')
+                            ->live()
+                            ->visible($applicant),
+                        Forms\Components\Select::make('institution_category')
+                            ->label('Jenis instansi / perusahaan')
+                            ->visible($institution)
+                            ->options(Visitor::INSTITUTION_CATEGORIES)
+                            // Older guests may hold another category: checked when registering only.
+                            ->in(Visitor::institutionCategoryKeys(), $creating)
+                            ->placeholder('Pilih kategori'),
                         Forms\Components\TextInput::make('institution')
                             ->label('Instansi / asal')
+                            ->visible($institution)
                             ->maxLength(255),
                     ])
                     ->columns(2),
 
                 Forms\Components\Section::make('Kunjungan')
+                    ->visible($visit)
                     ->schema([
+                        // Registering: the public form's "Tujuan kunjungan" (master list, or Lainnya + text).
+                        Forms\Components\Select::make('purpose')
+                            ->label('Tujuan kunjungan')
+                            ->options(fn () => array_combine($purposes = VisitorMaster::options('tujuan'), $purposes))
+                            ->in(fn () => VisitorMaster::options('tujuan'))
+                            ->required()
+                            ->live()
+                            ->helperText(fn (?string $state) => $state === 'Layanan PTSP'
+                                ? 'Datang untuk mengajukan atau menanyakan layanan? Untuk itu pilih jenis Pemohon Layanan Offline di atas.'
+                                : null)
+                            ->visible($creating),
+                        Forms\Components\TextInput::make('purpose_other')
+                            ->label('Tuliskan tujuan kunjungan')
+                            ->required()
+                            ->maxLength(500)
+                            ->visible(fn (Forms\Get $get) => $creating && $get('purpose') === VisitorMaster::OTHER),
+                        // Correcting a guest afterwards: the purpose as it was saved.
                         Forms\Components\Textarea::make('purpose')
                             ->label('Keperluan')
                             ->required()
                             ->maxLength(500)
                             ->rows(3)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->hidden($creating),
                         Forms\Components\Select::make('person_to_meet_id')
                             ->label('Bertemu dengan')
+                            ->helperText('Bila tamu menemui orang tertentu.')
                             ->options(fn () => User::query()
                                 ->where('is_active', true)
                                 ->whereIn('user_type', ['guru', 'pegawai'])
                                 ->orderBy('name')
                                 ->pluck('name', 'id'))
                             ->searchable()
-                            ->required()
                             ->visible($creating),
                         Forms\Components\TextInput::make('person_to_meet')
                             ->label('Bertemu dengan')
@@ -111,14 +172,61 @@ class VisitorResource extends Resource
                             ->label('Waktu check-in')
                             ->required()
                             ->hidden($creating),
+                        Forms\Components\Placeholder::make('checkout_by')
+                            ->label('Cara check-out')
+                            ->content(fn (?Visitor $record) => ($checkout = $record?->checkouts()->with('officer:id,name')->first())
+                                ? \App\Models\VisitorCheckout::METHODS[$checkout->method] . ($checkout->officer ? " ({$checkout->officer->name})" : '') . ' · ' . $checkout->checked_out_at->translatedFormat('j M Y H:i')
+                                : null)
+                            ->visible(fn (?Visitor $record) => ! $creating && $record?->checkouts()->exists()),
                         Forms\Components\DateTimePicker::make('check_out_time')
                             ->label('Waktu check-out')
+                            ->afterOrEqual('check_in_time')
+                            ->validationMessages(['after_or_equal' => 'Waktu check-out tidak boleh sebelum waktu check-in.'])
                             ->hidden($creating),
                         Forms\Components\Textarea::make('notes')
-                            ->label('Catatan')
+                            ->label($creating ? 'Keperluan lainnya' : 'Catatan')
+                            ->placeholder($creating ? 'Jelaskan secara singkat keperluan tamu' : null)
+                            ->maxLength($creating ? 1000 : 500)
+                            ->rows(3)
+                            ->columnSpanFull(),
+                        Forms\Components\Toggle::make('is_obscured')
+                            ->label('Samarkan nama di daftar tamu publik')
+                            ->helperText('Petugas tetap melihat nama lengkap.')
+                            ->default(true)
+                            ->visible($creating)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Permohonan layanan')
+                    ->description('Layanan yang dituju pemohon yang datang langsung ke loket. Untuk menerbitkan tiket permohonan, daftarkan di Registrasi Layanan.')
+                    ->visible($applicant)
+                    ->schema([
+                        Forms\Components\Select::make('target_service')
+                            ->label('Layanan yang dituju')
+                            ->options(fn () => Service::where('is_active', true)->orderBy('name')->pluck('name', 'name')->put(VisitorMaster::OTHER, VisitorMaster::OTHER))
+                            ->in(fn () => [...Service::where('is_active', true)->pluck('name'), VisitorMaster::OTHER])
+                            ->searchable()
+                            ->required()
+                            ->live()
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('target_service_other')
+                            ->label('Tuliskan layanan yang dituju')
+                            ->required()
                             ->maxLength(500)
-                            ->columnSpanFull()
-                            ->hidden($creating),
+                            ->visible(fn (Forms\Get $get) => $get('target_service') === VisitorMaster::OTHER)
+                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('notes')
+                            ->label('Catatan tambahan')
+                            ->placeholder('Jelaskan secara singkat keperluan pemohon')
+                            ->maxLength(1000)
+                            ->rows(3)
+                            ->columnSpanFull(),
+                        Forms\Components\Toggle::make('is_obscured')
+                            ->label('Samarkan nama di daftar tamu publik')
+                            ->helperText('Petugas tetap melihat nama lengkap.')
+                            ->default(true)
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
             ]);
@@ -133,6 +241,12 @@ class VisitorResource extends Resource
                     ->searchable(['name', 'phone'])
                     ->sortable()
                     ->description(fn (Visitor $record) => $record->phone),
+                Tables\Columns\TextColumn::make('guest_type')
+                    ->label('Jenis')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state) => $state === 'pemohon' ? 'Pemohon' : 'Kunjungan')
+                    ->color(fn (?string $state) => $state === 'pemohon' ? 'info' : 'gray')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('institution')
                     ->label('Instansi')
                     ->searchable()
@@ -175,6 +289,9 @@ class VisitorResource extends Resource
                         true: fn (Builder $query) => $query->whereNull('check_out_time'),
                         false: fn (Builder $query) => $query->whereNotNull('check_out_time'),
                     ),
+                Tables\Filters\SelectFilter::make('guest_type')
+                    ->label('Jenis tamu')
+                    ->options(Visitor::GUEST_TYPES),
                 Tables\Filters\SelectFilter::make('institution_category')
                     ->label('Kategori instansi')
                     ->options(fn () => Visitor::whereNotNull('institution_category')->distinct()->orderBy('institution_category')->pluck('institution_category', 'institution_category')),
@@ -186,9 +303,21 @@ class VisitorResource extends Resource
                     ->icon('heroicon-m-arrow-right-start-on-rectangle')
                     ->color('warning')
                     ->visible(fn (Visitor $record) => ! $record->check_out_time && auth()->user()->can('checkOut', $record))
-                    ->action(function (Visitor $record) {
+                    // A visit from an earlier day was left open: the officer says when the guest left.
+                    ->modalDescription(fn (Visitor $record) => $record->check_in_time->isToday() ? null
+                        : 'Tamu datang ' . $record->check_in_time->translatedFormat('l, j F Y H:i') . ' dan belum dicatat pulang.')
+                    ->form(fn (Visitor $record) => $record->check_in_time->isToday() ? [] : [
+                        Forms\Components\DateTimePicker::make('left_at')
+                            ->label('Waktu pulang')
+                            ->required()
+                            ->seconds(false)
+                            ->minDate($record->check_in_time->copy()->startOfMinute())
+                            ->maxDate(now())
+                            ->validationMessages(['after_or_equal' => 'Waktu pulang tidak boleh sebelum tamu datang.', 'before_or_equal' => 'Waktu pulang tidak boleh di masa depan.']),
+                    ])
+                    ->action(function (Visitor $record, array $data) {
                         try {
-                            app(FrontDeskService::class)->checkOut($record);
+                            app(FrontDeskService::class)->checkOut($record, auth()->user(), null, isset($data['left_at']) ? \Illuminate\Support\Carbon::parse($data['left_at']) : null);
                             Notification::make()->title("{$record->name} sudah check-out.")->success()->send();
                         } catch (TicketActionException $e) {
                             Notification::make()->title($e->getMessage())->danger()->send();

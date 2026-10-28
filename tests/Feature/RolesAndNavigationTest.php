@@ -95,7 +95,7 @@ class RolesAndNavigationTest extends TestCase
     public function test_applicants_see_the_portal_menus(): void
     {
         $this->actingAs($this->userWithRole('umum'))->get('/portal')->assertOk()
-            ->assertSee(route('onlineportal.service.catalog'), false)
+            ->assertSee(\App\Filament\Portal\Pages\ServiceCatalog::getUrl(panel: 'portal'), false)
             ->assertSee(PortalTicketResource::getUrl('index', panel: 'portal'), false)
             ->assertDontSee('/cp/', false);
     }
