@@ -3951,10 +3951,10 @@
     "summary": "Feature test middleware SetActiveRoleContext: sesi memulihkan pilihan terakhir, peran di sesi diutamakan, peran yang dicabut jatuh ke cadangan, peran tunggal, perpindahan memperbarui sesi, petugas multi-peran membuka halaman /cp tanpa memilih dulu, token API memakai pilihan terakhir."
   },
   "tests/Feature/ActiveRoleDecisionPanelTest.php": {
-    "summary": "Feature test panel keputusan Antrean Disposisi: pimpinan yang sedang di peran loket diberi tahu antrean ada di peran Kepala TU dengan tombol pindah, di peran pimpinan antrean miliknya, panel hanya untuk pimpinan multi-peran."
+    "summary": "Feature test panel keputusan Antrean Disposisi: pimpinan yang sedang di peran loket diberi tahu antrean ada di peran Kepala TU dengan tombol pindah, di peran pimpinan antrean miliknya, panel hanya untuk pimpinan multi-peran. Tiket demo dipilih pasti lewat TestCase::undisposedTicket."
   },
   "tests/Feature/ActiveRolePolicyTest.php": {
-    "summary": "Feature test TicketPolicy dan TicketService mengikuti peran aktif: pimpinan memutuskan hanya di peran pimpinan, pesan penolakan menyebut peran yang perlu diaktifkan, API disposisi mengembalikan alasan, pimpinan per orang, proses dan serah-terima per peran, peran yang dicatat pada disposition_logs dan ticket_logs."
+    "summary": "Feature test TicketPolicy dan TicketService mengikuti peran aktif: pimpinan memutuskan hanya di peran pimpinan, pesan penolakan menyebut peran yang perlu diaktifkan, API disposisi mengembalikan alasan, pimpinan per orang, proses dan serah-terima per peran, peran yang dicatat pada disposition_logs dan ticket_logs. Tiket demo dipilih pasti lewat TestCase::undisposedTicket."
   },
   "tests/Feature/ActiveRoleSchemaTest.php": {
     "summary": "Feature test kolom users.active_role_id/active_role_at: relasi activeRole, penghapusan peran mengosongkan pilihan, memilih peran tidak menulis activity log profil."
@@ -4050,13 +4050,13 @@
     "summary": "Tes navigasi dashboard: staf redirect ke /cp, pemohon ke /portal, tamu ke login."
   },
   "tests/Feature/DecisionHistoryActiveRoleTest.php": {
-    "summary": "Feature test riwayat keputusan: disposisi mencatat peran aktif pimpinan, kolom Sebagai dan saringan peran di halaman Riwayat Disposisi."
+    "summary": "Feature test riwayat keputusan: disposisi mencatat peran aktif pimpinan, kolom Sebagai dan saringan peran di halaman Riwayat Disposisi. Tiket demo dipilih pasti lewat TestCase::undisposedTicket."
   },
   "tests/Feature/DisplayPreferenceApiTest.php": {
     "summary": "Test API preferensi tampilan: wajib login, nilai bawaan dan pembaruan sebagian, validasi."
   },
   "tests/Feature/DispositionActionTest.php": {
-    "summary": "Feature test besar untuk alur disposisi pimpinan: model tanda tangan (acknowledged_by, ttd_upload), lembar disposisi cetak, mode disposisi layanan (kepsek, tu, kepsek_tu, none) via ServiceDisposition, DispositionAuthority, DispositionHistory::statuses, halaman Approvals dan DispositionHistory, serta API /api/disposisi dan /api/tiket/{nomor}/disposisi. Memverifikasi bahwa mode Kepala Madrasah + Kepala TU menunggu kedua pejabat sebelum tiket approved dan diteruskan ke unit, lembar cetak menampilkan status per pejabat dan pernyataan sah elektronik, serta disposition_logs tidak dapat diubah.",
+    "summary": "Feature test besar untuk alur disposisi pimpinan: model tanda tangan (acknowledged_by, ttd_upload), lembar disposisi cetak, mode disposisi layanan (kepsek, tu, kepsek_tu, none) via ServiceDisposition, DispositionAuthority, DispositionHistory::statuses, halaman Approvals dan DispositionHistory, serta API /api/disposisi dan /api/tiket/{nomor}/disposisi. Memverifikasi bahwa mode Kepala Madrasah + Kepala TU menunggu kedua pejabat sebelum tiket approved dan diteruskan ke unit, lembar cetak menampilkan status per pejabat dan pernyataan sah elektronik, serta disposition_logs tidak dapat diubah. Disposisi kedua oleh pimpinan yang sama ditolak dengan alasan menunggu pejabat lain, bukan pesan peran aktif.",
     "sections": [
       {
         "symbol": "DispositionActionTest::setUp",
@@ -4073,40 +4073,40 @@
       {
         "symbol": "DispositionActionTest::multiLeaderModes",
         "startLine": 144,
-        "endLine": 290,
+        "endLine": 298,
         "summary": "Menguji lembar cetak ulang mencerminkan keputusan sebenarnya, mode kepsek_tu menunggu kedua pejabat (antrean, status per pejabat, unit baru melihat setelah keduanya), salah satu pejabat tetap bisa menolak, dan mode satu pejabat (data provider singleLeaderModes) diselesaikan oleh pejabat itu saja."
       },
       {
         "symbol": "DispositionActionTest::visibility",
-        "startLine": 291,
-        "endLine": 412,
+        "startLine": 299,
+        "endLine": 420,
         "summary": "Menguji layanan tanpa disposisi langsung ke petugas, unit penerima hanya membuka/mencetak lembar setelah disposisi, tombol lihat/cetak di halaman tiket, front desk tidak bisa mencetak, akses halaman riwayat disposisi untuk pimpinan dan supervisor, serta kembali ke antrean setelah disposisi."
       },
       {
         "symbol": "DispositionActionTest::instructions",
-        "startLine": 413,
-        "endLine": 450,
+        "startLine": 421,
+        "endLine": 458,
         "summary": "Menguji panel disposisi menawarkan instruksi Master Persuratan, instruksi cepat mengisi field instruksi, dan instruksi ketikan dipertahankan."
       },
       {
         "symbol": "DispositionActionTest::logsAndRouting",
-        "startLine": 451,
-        "endLine": 634,
+        "startLine": 459,
+        "endLine": 642,
         "summary": "Menguji entri riwayat menyimpan detail dokumen dan IP, endpoint disposisi berisi detail tanda tangan, permohonan baru mengikuti mode layanan, penerusan ke unit back office pilihan atau bawaan, fallback ke pimpinan, rekomendasi tanda tangan, pencatatan di disposition_logs yang immutable, migrasi penyalinan keputusan lama, dan kesesuaian enum SignatureModel."
       },
       {
         "symbol": "DispositionActionTest::authorityAndApi",
-        "startLine": 635,
-        "endLine": 760,
+        "startLine": 643,
+        "endLine": 768,
         "summary": "Menguji DispositionAuthority mengikuti mode, kebijakan approve, disposisi diketahui tanpa unggah tanda tangan, serta API antrean, putuskan/tolak, disposisi atas nama pimpinan, dan unggah lembar bertanda tangan menyusul."
       }
     ]
   },
   "tests/Feature/DispositionActiveRoleAuthTest.php": {
-    "summary": "Feature test otorisasi disposisi sesuai peran aktif: API antrean melaporkan peran aktif, lembar TTD hanya di peran saat disposisi, pengaturan disposisi hanya di peran Administrator, admin satu peran tidak terpengaruh."
+    "summary": "Feature test otorisasi disposisi sesuai peran aktif: API antrean melaporkan peran aktif, lembar TTD hanya di peran saat disposisi, pengaturan disposisi hanya di peran Administrator, admin satu peran tidak terpengaruh. Tiket demo diambil urut id agar hasilnya pasti."
   },
   "tests/Feature/DispositionFormActiveRoleTest.php": {
-    "summary": "Feature test form disposisi: menampilkan Didisposisi sebagai peran aktif dan bawaan Telah didisposisi oleh, disposisi tercatat dengan peran aktif."
+    "summary": "Feature test form disposisi: menampilkan Didisposisi sebagai peran aktif dan bawaan Telah didisposisi oleh, disposisi tercatat dengan peran aktif. Tiket demo dipilih pasti lewat TestCase::undisposedTicket."
   },
   "tests/Feature/DispositionSettingsTest.php": {
     "summary": "Test pengaturan disposisi per layanan: akses admin, pemetaan mode ke field persetujuan, simpan mode/penerima/anjuran, tampilan di katalog dan dokumen, ringkasan standar pelayanan di form permohonan (fakta, langkah, produk, tautan halaman publik hanya bila boleh dibuka), filter, API baca dan simpan."
@@ -4378,7 +4378,7 @@
     "summary": "Feature test API /api/persuratan/penomoran: baca format dan panduan token, simpan format dan klasifikasi arsip lalu kembali ke bawaan, singkatan dari Pengaturan Aplikasi atau penimpaan, pratinjau nomor, CRUD dan pencarian variabel tambahan, serta penolakan format tidak valid dan perubahan oleh petugas loket tanpa hak (back office boleh mengelola Master Persuratan)."
   },
   "tests/Feature/OutsideActiveRoleMessageTest.php": {
-    "summary": "Feature test pesan penolakan aksi di luar wewenang peran aktif: pimpinan diberi tahu peran yang perlu diaktifkan, staf tanpa peran pimpinan mendapat penolakan biasa, panel menampilkan toast dengan tombol ganti."
+    "summary": "Feature test pesan penolakan aksi di luar wewenang peran aktif: pimpinan diberi tahu peran yang perlu diaktifkan, staf tanpa peran pimpinan mendapat penolakan biasa, panel menampilkan toast dengan tombol ganti. Tiket demo dipilih pasti lewat TestCase::undisposedTicket."
   },
   "tests/Feature/PanelGuideTest.php": {
     "summary": "Feature test tombol Panduan di header /cp dan halaman Panduan Menu: hanya menu peran aktif yang tampil, panduan admin mencakup menu sistem, dan setiap menu panel petugas punya isi panduan tertulis."
@@ -4791,7 +4791,7 @@
     "summary": "Test fitur alur Registrasi Nomor SK untuk klien API: GET /api/penomoran-sk/registrasi mengembalikan isian awal, nomor_berikutnya sesuai tanggal_surat, catatan_tahun untuk tahun lain, perihal_mirip, dan petugas; bila diberi parameter tiket, isian terisi dari tiket (jenis_sk dari layanan via JenisSkService::assignServices, nama pemohon, keterangan permohonan). Memverifikasi POST /api/penomoran-sk dengan header Idempotency-Key memberi nomor yang sama dengan pratinjau dan menautkan tiket, serta hanya token ber-ability penomoran-sk:tulis dan peran register yang boleh membuka registrasi (validasi tiket/tanggal, loket ditolak)."
   },
   "tests/Feature/RegisterSkRegistrationPageTest.php": {
-    "summary": "Test fitur untuk halaman Filament RegisterSkNumber (route registrasi SuratKeputusanResource), versi halaman penuh dari Minta Nomor SK: tata letak form (Data SK, Tanggal surat, Jenis SK, Perihal, Nama peminta, Scan opsional, Petugas pencatat, pratinjau nomor) dan tombol Ambil nomor / Ambil & minta lagi. Memverifikasi submit mengarahkan ke Rincian SK dan mencatat petugas, submitAnother mempertahankan tanggal dan jenis, validasi sama dengan modal, pembukaan dari tiket (query tiket) mengisi pemohon dan keterangan, tiket tidak dikenal diabaikan, halaman tiket TicketResource menawarkan tautan Minta Nomor SK, dan modal register menautkan ke halaman ini serta loket ditolak.",
+    "summary": "Test fitur untuk halaman Filament RegisterSkNumber (route registrasi SuratKeputusanResource), versi halaman penuh dari Minta Nomor SK: tata letak form (Data SK, Tanggal surat, Jenis SK, Perihal, Nama peminta, Scan opsional, Petugas pencatat, pratinjau nomor) dan tombol Ambil nomor / Ambil & minta lagi. Memverifikasi submit mengarahkan ke Rincian SK dan mencatat petugas, submitAnother mempertahankan tanggal dan jenis, validasi sama dengan modal, pembukaan dari tiket (query tiket) mengisi pemohon dan keterangan, tiket tidak dikenal diabaikan, halaman tiket TicketResource menawarkan tautan Minta Nomor SK, dan modal register menautkan ke halaman ini serta loket ditolak. Tiket demo diambil urut id agar hasilnya pasti.",
     "sections": [
       {
         "symbol": "RegisterSkRegistrationPageTest::test_taking_a_number_opens_rincian_sk",
@@ -5232,10 +5232,10 @@
     "summary": "Feature test Monitoring Sistem (admin): kesehatan aplikasi/server, scheduler terdeteksi dari snapshot saat cache kehilangan heartbeat dan peringatan cache tidak permanen, metrik, keamanan, log dan audit trail termasuk import/ekspor akun, pembaruan, dan API terkait."
   },
   "tests/Feature/TicketActiveRoleActionsTest.php": {
-    "summary": "Feature test aksi tiket sesuai peran aktif: panel aksi di halaman tiket, tombol ganti hanya ke peran yang dipegang, tombol disposisi disembunyikan di luar peran pimpinan, Proses tiket terkunci, menu dan widget pimpinan mengikuti peran aktif."
+    "summary": "Feature test aksi tiket sesuai peran aktif: panel aksi di halaman tiket, tombol ganti hanya ke peran yang dipegang, tombol disposisi disembunyikan di luar peran pimpinan, Proses tiket terkunci, menu dan widget pimpinan mengikuti peran aktif. Tiket demo dipilih pasti lewat TestCase::undisposedTicket."
   },
   "tests/Feature/TicketActivityContextTest.php": {
-    "summary": "Feature test konteks tiket pada rekam jejak: keputusan tercatat di activity_log ticket dengan tiket, layanan, peran aktif, status; entri pemohon/sistem tidak disalin; aktivitas staf lain membawa peran_aktif."
+    "summary": "Feature test konteks tiket pada rekam jejak: keputusan tercatat di activity_log ticket dengan tiket, layanan, peran aktif, status; entri pemohon/sistem tidak disalin; aktivitas staf lain membawa peran_aktif. Tiket demo diambil urut id agar hasilnya pasti."
   },
   "tests/Feature/TicketAssignApiTest.php": {
     "summary": "Feature test TicketAssignApiTest: API aksi petugas: penugasan petugas (hanya staf aktif), unggah hasil layanan menyelesaikan tiket, serah terima produk oleh loket."
@@ -5244,7 +5244,7 @@
     "summary": "Tes akses dokumen tiket: pemohon bisa unduh dokumen tiket sendiri, tidak bisa dokumen tiket orang lain, staf bisa akses semua."
   },
   "tests/Feature/TicketLogActingRoleTest.php": {
-    "summary": "Feature test ticket_logs.acting_role: aksi tiket menyimpan peran aktif, staf satu peran tercatat dan pemohon/sistem kosong, kolom ikut immutable, API riwayat menampilkan Sebagai."
+    "summary": "Feature test ticket_logs.acting_role: aksi tiket menyimpan peran aktif, staf satu peran tercatat dan pemohon/sistem kosong, kolom ikut immutable, API riwayat menampilkan Sebagai. Tiket demo dipilih pasti lewat TestCase::undisposedTicket."
   },
   "tests/Feature/TicketProgressTest.php": {
     "summary": "Feature test TicketProgressTest: detail permohonan: tahapan (stepper) dan sisa waktu terhadap target."
@@ -5327,7 +5327,7 @@
     "summary": "Feature test halaman Registrasi Layanan Loket: pilihan status pemohon, form belum terdaftar dengan hasil pencarian akun, mode sudah terdaftar dengan filter tipe, pemilih akun, isian terkunci, ringkasan dan tautan perbaikan, layanan dipertahankan atau dilepas saat tipe berubah, pesan validasi, konfirmasi nomor permohonan, pesan gagal tanpa nomor, penautan akun lama, penolakan akun tak terpakai, dan pencegahan akun ganda."
   },
   "tests/TestCase.php": {
-    "summary": "Base TestCase untuk semua tes PTSP: extends Laravel TestCase dengan trait CreatesApplication. Semua Feature dan Unit tests mewarisi class ini."
+    "summary": "Kelas dasar tes aplikasi (CreatesApplication) dengan helper undisposedTicket: tiket demo pertama (urut id) yang punya layanan dan belum didisposisi pimpinan mana pun, supaya tes disposisi dan peran aktif tidak bergantung pada urutan baris data seeder."
   },
   "tests/Unit/AppVersionTest.php": {
     "summary": "Unit test versi aplikasi dan temuan monitoring: APP_VERSION diutamakan, berkas RELEASE paket rilis dipakai bila tanpa konfigurasi, Monitoring menandai TINYMCE_API_KEY yang kosong."
@@ -6607,6 +6607,59 @@
         "startLine": 178,
         "endLine": 246,
         "summary": "Pesan error berbahasa Indonesia seperti di buku tamu publik; tombol Daftarkan tamu/Daftarkan pemohon menyimpan data lengkap dengan notifikasi sukses, purpose pemohon berawalan Pemohon Layanan, service_id dan created_by petugas; form edit tidak menampilkan pilihan jenis tamu."
+      }
+    ]
+  },
+  "app/Services/TicketService.php": {
+    "summary": "Service inti tiket layanan (Modul 7–9): menerbitkan tiket, penugasan, perpindahan status back office, catatan tindak lanjut, berkas, hasil layanan, langkah workflow, keputusan/disposisi pimpinan, dan serah terima di loket. Setiap perubahan dicatat sebagai TicketLog yang tidak dapat diubah dan memicu notifikasi (email/WhatsApp) serta event TicketSubmitted.",
+    "sections": [
+      {
+        "symbol": "TicketService::OFFICER_STATUSES / TRANSITIONS / nextStatuses",
+        "startLine": 32,
+        "endLine": 81,
+        "summary": "Daftar status yang boleh dipilih petugas back office, transisi yang diizinkan per status beserta keterangan singkatnya (STATUS_HINTS), dan nextStatuses yang menyaring pilihan untuk tiket dan aktor tertentu."
+      },
+      {
+        "symbol": "TicketService::nextTicketNumber / open",
+        "startLine": 82,
+        "endLine": 169,
+        "summary": "Nomor tiket berikutnya per prefiks dan bulan (mis. PTSP-202609-0007) dihitung atomik di database. open() menerbitkan tiket dalam transaksi: memastikan layanan masih aktif, menetapkan perlu tidaknya disposisi dari mode disposisi layanan, membuat langkah workflow pertama, menyimpan berkas, lalu mengirim notifikasi ticket_created dan event TicketSubmitted setelah commit."
+      },
+      {
+        "symbol": "TicketService::assign / changeStatus / setIncomingCategory",
+        "startLine": 170,
+        "endLine": 254,
+        "summary": "Menugaskan staf ke tiket, memindahkan status tiket di back office sesuai TRANSITIONS dengan catatan wajib, dan mengatur kategori layanan masuk (setelah disposisi pimpinan) dengan alasan yang dicatat di log."
+      },
+      {
+        "symbol": "TicketService::addNote / attachFile / uploadOutput",
+        "startLine": 255,
+        "endLine": 325,
+        "summary": "Catatan tindak lanjut dengan jenis FOLLOW_UP_TYPES (boleh ditampilkan ke pemohon dan dijadwalkan ulang), berkas pendukung dari petugas, serta unggah produk layanan (Modul 9) yang menggantikan hasil sebelumnya dan menutup tiket."
+      },
+      {
+        "symbol": "TicketService::completeWorkflowStep",
+        "startLine": 326,
+        "endLine": 362,
+        "summary": "Menyelesaikan satu langkah workflow tiket dengan catatan; bila semua langkah selesai dan tiket tidak menunggu disposisi, tiket ditandai selesai dan notifikasi ticket_completed dikirim."
+      },
+      {
+        "symbol": "TicketService::decide",
+        "startLine": 363,
+        "endLine": 449,
+        "summary": "Pimpinan menyetujui atau menolak tiket terverifikasi (Modul 8). Kewenangan diperiksa lewat TicketPolicy::approve: pimpinan yang sedang memakai peran lain mendapat OutsideActiveRoleException yang menyebut peran yang harus diaktifkan, sedangkan yang sudah mendisposisi (mode Kepala Madrasah + Kepala TU) atau tidak berwenang mendapat TicketActionException berisi alasan kebijakan. Peran aktif dicatat pada DispositionLog; pada mode bersama tiket tetap menunggu sampai kedua pejabat mendisposisi."
+      },
+      {
+        "symbol": "TicketService::dispose / attachSignedSheet",
+        "startLine": 450,
+        "endLine": 532,
+        "summary": "Disposisi pimpinan dengan model tanda tangan, instruksi, dan unit penerima (atau penerima biasa layanan); pada mode bersama unit baru diberi tahu setelah kedua pejabat mendisposisi. Lembar disposisi bertanda tangan dapat dilampirkan sebagai TicketFile dan dicatat di log."
+      },
+      {
+        "symbol": "TicketService::handOver / recordFile / notify / managed / log",
+        "startLine": 533,
+        "endLine": 599,
+        "summary": "Serah terima produk layanan di loket (picked_up), helper penyimpanan berkas tiket, pengiriman notifikasi per event, perubahan status terkelola, dan penulisan satu langkah riwayat layanan TicketLog yang tidak dapat diubah."
       }
     ]
   }
