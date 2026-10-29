@@ -8,6 +8,7 @@ use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Models\Visitor;
+use App\Models\VisitorCheckout;
 use App\Models\VisitorMaster;
 use App\Support\ApplicantLink;
 use App\Support\Applicants;
@@ -38,33 +39,87 @@ class FrontDeskService
         'umum' => 'Umum',
     ];
 
+    /** Validation messages of the visitor book, in the public form and at the counter alike. */
+    public const GUEST_MESSAGES = [
+        'required' => ':Attribute wajib diisi.',
+        'email' => ':Attribute harus berupa alamat email yang valid.',
+        'max' => ':Attribute maksimal :max karakter.',
+        'in' => ':Attribute yang dipilih tidak tersedia.',
+        'image' => ':Attribute harus berupa gambar.',
+        'mimes' => ':Attribute harus berformat :values.',
+        'photo.max' => 'Ukuran foto maksimal 2 MB.',
+        'purpose_other.required_if' => 'Tuliskan tujuan kunjungan Anda.',
+        'target_service_other.required_if' => 'Tuliskan layanan yang Anda tuju.',
+    ];
+
+    /** Field names in those messages. */
+    public const GUEST_ATTRIBUTES = [
+        'name' => 'nama lengkap',
+        'phone' => 'nomor telepon/HP',
+        'email' => 'email',
+        'institution' => 'instansi/perusahaan',
+        'institution_category' => 'jenis instansi',
+        'applicant_type' => 'jenis pemohon',
+        'purpose' => 'tujuan kunjungan',
+        'purpose_other' => 'tujuan kunjungan lainnya',
+        'target_service' => 'layanan yang dituju',
+        'target_service_other' => 'layanan lainnya',
+        'notes' => 'keperluan',
+        'photo' => 'foto',
+    ];
+
     public function __construct(private TicketService $tickets)
     {
     }
 
     /**
-     * @param  array{name: string, email?: ?string, phone?: ?string, institution?: ?string, purpose: string, person_to_meet_id: int, photo_path?: ?string}  $data
+     * Enter a guest of either kind (Visitor::GUEST_TYPES) in the visitor book:
+     * the one way in for the counter's form, its API, the public form and its
+     * API, so the same guest makes the same entry wherever they register.
+     * $actor is the officer; none when the guest registers themselves.
      */
-    public function registerGuest(array $data, User $actor): Visitor
+    public function register(string $type, array $data, ?User $actor = null): Visitor
     {
-        $host = User::find($data['person_to_meet_id']);
+        $visitor = match ($type) {
+            'kunjungan' => $this->registerGuest($data, $actor),
+            'pemohon' => $this->registerServiceApplicant($data, $actor),
+        };
 
-        $visitor = Visitor::create([
-            'name' => $data['name'],
-            'email' => $data['email'] ?? null,
-            'phone' => $data['phone'] ?? null,
-            'institution' => filled($data['institution'] ?? null) ? $data['institution'] : '-',
-            'purpose' => $data['purpose'],
-            'person_to_meet' => $host?->name,
-            'photo_path' => $data['photo_path'] ?? null,
-            'check_in_time' => now(),
-            'created_by' => $actor->id,
-            'status' => 'active',
-        ]);
-
-        Log::info('Visitor registered at the counter', ['visitor_id' => $visitor->id]);
+        Log::info('Visitor registered', ['visitor_id' => $visitor->id, 'type' => $type, 'by' => $actor?->id]);
 
         return $visitor;
+    }
+
+    /**
+     * A guest come to meet someone. The public form's fields; the counter
+     * may add whom they meet. A photo is a stored path (the counter's form)
+     * or an uploaded file (the public form), kept on the private disk.
+     *
+     * @param  array{name: string, email?: ?string, phone?: ?string, institution?: ?string, institution_category?: ?string, purpose: string, purpose_other?: ?string, notes?: ?string, is_obscured?: bool, obscure_name?: mixed, person_to_meet_id?: ?int, photo_path?: ?string, photo?: mixed}  $data
+     */
+    public function registerGuest(array $data, ?User $actor = null): Visitor
+    {
+        $host = filled($data['person_to_meet_id'] ?? null) ? User::find($data['person_to_meet_id']) : null;
+        $photo = ($data['photo'] ?? null) instanceof \Illuminate\Http\UploadedFile
+            ? $data['photo']->store('visitor-photos', 'local')
+            : ($data['photo_path'] ?? null);
+
+        return Visitor::create([
+            'name' => $data['name'],
+            'guest_type' => 'kunjungan',
+            'email' => $data['email'] ?? null,
+            'phone' => $data['phone'] ?? null,
+            'institution' => filled($data['institution'] ?? null) ? $data['institution'] : null,
+            'institution_category' => $data['institution_category'] ?? null,
+            'purpose' => $data['purpose'] === VisitorMaster::OTHER ? $data['purpose_other'] : $data['purpose'],
+            'notes' => $data['notes'] ?? null,
+            'is_obscured' => self::obscured($data),
+            'person_to_meet' => $host?->name,
+            'photo_path' => $photo,
+            'check_in_time' => now(),
+            'created_by' => $actor?->id,
+            'status' => 'active',
+        ]);
     }
 
     /** Validation rules for a guest registering themselves (public guest book or kiosk). */
@@ -85,38 +140,100 @@ class FrontDeskService
     }
 
     /**
-     * A guest registering themselves: no officer, checked in now.
-     *
-     * @param  array<string, mixed>  $data  selfRegistrationRules() fields; an uploaded `photo` is stored with the staff-taken photos
+     * Validation rules for an applicant come for a PTSP service, entered in
+     * the visitor book: the public form, its API and the counter's API.
      */
-    public function selfRegister(array $data): Visitor
+    public static function serviceApplicantRules(): array
     {
-        $photo = ($data['photo'] ?? null) instanceof \Illuminate\Http\UploadedFile
-            ? $data['photo']->store('visitor-photos', 'local')
-            : null;
+        return [
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'email' => 'nullable|string|email|max:255',
+            'institution' => 'nullable|string|max:255',
+            'institution_category' => 'nullable|string|max:255',
+            'applicant_type' => ['nullable', Rule::in(array_keys(Visitor::APPLICANT_STATUSES))],
+            'target_service' => ['required', 'string', function ($attribute, $value, $fail) {
+                if ($value !== VisitorMaster::OTHER && ! Service::where('is_active', true)->where('name', $value)->exists()) {
+                    $fail('Pilih layanan dari daftar yang tersedia.');
+                }
+            }],
+            'target_service_other' => 'required_if:target_service,' . VisitorMaster::OTHER . '|nullable|string|max:500',
+            'notes' => 'nullable|string|max:1000',
+            'obscure_name' => 'nullable', // checkbox "on" from the web form, true/false from the API
+        ];
+    }
+
+    /**
+     * Someone come for a PTSP service, entered in the visitor book: by the
+     * public form (no officer) or at the counter. Both make the same entry,
+     * the service in its purpose.
+     *
+     * @param  array{name: string, phone: string, email?: ?string, applicant_type?: ?string, institution?: ?string, institution_category?: ?string, target_service: string, target_service_other?: ?string, notes?: ?string, is_obscured?: bool}  $data
+     */
+    public function registerServiceApplicant(array $data, ?User $actor = null): Visitor
+    {
+        $other = $data['target_service'] === VisitorMaster::OTHER;
+        $service = $other ? $data['target_service_other'] : $data['target_service'];
+        $status = $data['applicant_type'] ?? null;
+        // As the forms show it: an institution only for one coming on behalf of an institution.
+        $forInstitution = $status === null || $status === 'instansi_perusahaan';
 
         return Visitor::create([
             'name' => $data['name'],
+            'guest_type' => 'pemohon',
+            'applicant_type' => $status,
+            'service_id' => $other ? null : Service::where('is_active', true)->where('name', $service)->value('id'),
             'phone' => $data['phone'],
             'email' => $data['email'] ?? null,
-            'institution' => $data['institution'] ?? null,
-            'institution_category' => $data['institution_category'] ?? null,
-            'purpose' => $data['purpose'] === VisitorMaster::OTHER ? $data['purpose_other'] : $data['purpose'],
+            'institution' => $forInstitution && filled($data['institution'] ?? null) ? $data['institution'] : null,
+            'institution_category' => $forInstitution ? ($data['institution_category'] ?? null) : null,
+            'purpose' => 'Pemohon Layanan: ' . $service,
             'notes' => $data['notes'] ?? null,
-            'is_obscured' => filter_var($data['obscure_name'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            'photo_path' => $photo,
+            'is_obscured' => self::obscured($data),
             'check_in_time' => now(),
+            'created_by' => $actor?->id,
             'status' => 'active',
         ]);
     }
 
-    public function checkOut(Visitor $visitor): void
+    /** "Samarkan nama": is_obscured from the counter's form, obscure_name ("on", true) from the public form and the APIs. */
+    private static function obscured(array $data): bool
     {
-        if ($visitor->check_out_time) {
-            throw new TicketActionException('Tamu sudah check out.');
-        }
+        return filter_var($data['is_obscured'] ?? $data['obscure_name'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    }
 
-        $visitor->update(['check_out_time' => now(), 'status' => 'checked_out']);
+    /**
+     * Check a guest out: by an officer ($actor), or by the guest themselves
+     * from the public visitor book ($actor null, $ip where from). The visit
+     * records it the same way either time (the time, and the status with it);
+     * the history says who. $leftAt is when the guest left, for a visit an
+     * officer closes afterwards (now by default; between the arrival and now).
+     * The row is locked, so two checkouts at once cannot both pass.
+     */
+    public function checkOut(Visitor $visitor, ?User $actor = null, ?string $ip = null, ?\DateTimeInterface $leftAt = null): void
+    {
+        DB::transaction(function () use ($visitor, $actor, $ip, $leftAt) {
+            $current = Visitor::whereKey($visitor->getKey())->lockForUpdate()->firstOrFail();
+            if ($current->check_out_time) {
+                throw new TicketActionException('Tamu sudah check out.');
+            }
+
+            $leftAt = $actor && $leftAt ? \Illuminate\Support\Carbon::instance($leftAt)->startOfMinute() : now();
+            if ($leftAt->lt($current->check_in_time->copy()->startOfMinute()) || $leftAt->gt(now())) {
+                throw new TicketActionException('Waktu pulang harus di antara waktu datang (' . $current->check_in_time->translatedFormat('j M Y H:i') . ') dan sekarang.');
+            }
+
+            $current->update(['check_out_time' => $leftAt->max($current->check_in_time)]);
+            VisitorCheckout::create([
+                'visitor_id' => $current->id,
+                'method' => $actor ? 'petugas' : 'mandiri',
+                'checked_out_by' => $actor?->id,
+                'ip_address' => $actor ? null : $ip,
+                'checked_out_at' => $current->check_out_time,
+            ]);
+
+            $visitor->setRawAttributes($current->getAttributes(), true);
+        });
     }
 
     /**

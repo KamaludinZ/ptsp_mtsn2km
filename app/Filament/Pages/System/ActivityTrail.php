@@ -21,7 +21,7 @@ use Spatie\Activitylog\Models\Activity;
 
 /**
  * Rekam jejak aktivitas (/cp/rekam-jejak): perpindahan peran, sesi ganti
- * akun, dan aksi tiket beserta konteksnya (peran aktif, tiket, layanan),
+ * akun, aksi tiket, dan Register SK beserta konteksnya (peran aktif, tiket, layanan, nomor SK),
  * per hari, dengan saringan pengguna, peran, tanggal, dan aksi, serta rekap
  * per pengguna–peran. Hanya administrator (peran aktif). Data: activity_log
  * (App\Support\ActivityTrail), tidak dapat diubah atau dihapus.
@@ -35,6 +35,7 @@ class ActivityTrail extends Page implements HasForms
         'role_switch' => ['label' => 'Perpindahan peran', 'color' => 'info', 'icon' => 'heroicon-m-arrows-right-left'],
         'impersonation' => ['label' => 'Ganti akun', 'color' => 'warning', 'icon' => 'heroicon-m-user-circle'],
         'ticket' => ['label' => 'Aksi tiket', 'color' => 'success', 'icon' => 'heroicon-m-ticket'],
+        'register_sk' => ['label' => 'Register SK', 'color' => 'primary', 'icon' => 'heroicon-m-document-check'],
     ];
 
     /** Entries shown in the timeline at once (newest first). */
@@ -77,7 +78,7 @@ class ActivityTrail extends Page implements HasForms
 
     public function getSubheading(): ?string
     {
-        return 'Siapa melakukan apa, dengan peran aktif apa, dan pada tiket mana. Catatan tidak dapat diubah atau dihapus.';
+        return 'Siapa melakukan apa, dengan peran aktif apa, dan pada tiket atau SK mana. Catatan tidak dapat diubah atau dihapus.';
     }
 
     public function form(Form $form): Form

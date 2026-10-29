@@ -48,6 +48,7 @@ Permission area dimiliki **peran**, bukan pengguna. Pemetaannya ada di satu temp
 | `frontdesk.access` | Registrasi Layanan, Buku Tamu (daftar tamu, check-out, cetak kartu), serah produk | admin, kepala_tu, front_desk |
 | `backoffice.access` | Aksi proses tiket (tugaskan, status, catatan, berkas, hasil, workflow), Kinerja Pelayanan | admin, kepala_sekolah, kepala_tu, back_office |
 | `supervision.access` | Kinerja Pelayanan | admin, kepala_sekolah, kepala_tu, supervisor |
+| `backoffice.sk.register` | Register Penomoran SK (lihat, minta nomor, ubah data dan scan) bersama `backoffice.access`; bisa dicabut per peran | setiap peran yang memegang `backoffice.access` (migration `2026_10_28_110000_grant_register_sk_permission`) |
 
 Hak lain:
 
@@ -57,6 +58,19 @@ Hak lain:
 | Pengaduan & WBS, Laporan SKM & SPAK | admin, supervisor, kepala_sekolah, kepala_tu (`RoleAccess::COMPLAINT_HANDLERS`) |
 | Tiket Layanan (daftar & detail) | semua staf (`TicketPolicy::viewAny`) |
 | Master data, pengguna, peran, survei, pengaturan, Keamanan Sistem | admin (`App\Filament\Concerns\AdminOnly`) |
+
+### Register Penomoran SK
+
+Aturan di `App\Support\RegisterSkAccess`, dipakai `SuratKeputusanPolicy`, panel, dan API:
+
+- Mengikuti **peran aktif**, bukan semua peran yang dipegang. Peran aktif harus membuka back office
+  (`backoffice.access`) dan memegang `backoffice.sk.register`.
+- Menghapus SK hanya untuk peran aktif Administrator. Alasannya wajib dan dicatat di Log & Audit.
+- Meminta nomor SK untuk sebuah tiket (`SuratKeputusanPolicy::createForTicket`): yang boleh meminta nomor
+  dan memproses tiket itu.
+- API: route dijaga `izin.aktif:backoffice.access,backoffice.sk.register` (peran aktif) dan kemampuan token
+  (`penomoran-sk:baca`, `penomoran-sk:tulis`, `jenis-sk:kelola`, atau `*`). Penolakan menyebut peran yang
+  berwenang. Batas: 10 nomor per menit dan 150 per hari per akun, serta 6 unduhan laporan per menit.
 
 Akses panel diatur oleh `User::canAccessPanel()`: staf aktif ke `/cp`, pemohon aktif ke
 `/portal`; akun nonaktif ditolak. Login untuk kedua panel lewat `/login` situs (dengan kode

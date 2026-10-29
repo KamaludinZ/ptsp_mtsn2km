@@ -201,7 +201,7 @@ class ApplicationTest extends TestCase
         $this->actingAs($user);
         \Livewire\Livewire::withQueryParams(['layanan' => $studentOnly->slug])
             ->test(\App\Filament\Portal\Pages\ApplyService::class)
-            ->assertRedirect(route('onlineportal.service.catalog'));
+            ->assertRedirect(\App\Filament\Portal\Pages\ServiceCatalog::getUrl(panel: 'portal')); // the portal's own catalogue
 
         $this->assertDatabaseCount('tickets', 0);
     }

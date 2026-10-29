@@ -17,17 +17,17 @@ class RolePermissionSeeder extends Seeder
     /** role => permission patterns ("backoffice.*" = every permission of that area). */
     public const DEFAULTS = [
         'admin' => ['*'],
-        'kepala_sekolah' => ['dashboard.view', 'backoffice.access', 'backoffice.tickets.view', 'backoffice.reports.view', 'supervision.*'],
+        'kepala_sekolah' => ['dashboard.view', 'backoffice.access', 'backoffice.sk.register', 'backoffice.tickets.view', 'backoffice.reports.view', 'supervision.*'],
         'kepala_tu' => ['dashboard.view', 'frontdesk.*', 'backoffice.*', 'supervision.*'],
         'supervisor' => ['dashboard.view', 'supervision.*'],
         'back_office' => ['dashboard.view', 'backoffice.*'],
         'front_desk' => ['dashboard.view', 'frontdesk.*'],
-        'waka_humas' => ['dashboard.view', 'backoffice.access', 'backoffice.tickets.view', 'backoffice.tickets.process'],
-        'waka_kesiswaan' => ['dashboard.view', 'backoffice.access', 'backoffice.tickets.view', 'backoffice.tickets.process'],
-        'waka_kurikulum' => ['dashboard.view', 'backoffice.access', 'backoffice.tickets.view', 'backoffice.tickets.process'],
-        'waka_sarpras' => ['dashboard.view', 'backoffice.access', 'backoffice.tickets.view', 'backoffice.tickets.process'],
+        'waka_humas' => ['dashboard.view', 'backoffice.access', 'backoffice.sk.register', 'backoffice.tickets.view', 'backoffice.tickets.process'],
+        'waka_kesiswaan' => ['dashboard.view', 'backoffice.access', 'backoffice.sk.register', 'backoffice.tickets.view', 'backoffice.tickets.process'],
+        'waka_kurikulum' => ['dashboard.view', 'backoffice.access', 'backoffice.sk.register', 'backoffice.tickets.view', 'backoffice.tickets.process'],
+        'waka_sarpras' => ['dashboard.view', 'backoffice.access', 'backoffice.sk.register', 'backoffice.tickets.view', 'backoffice.tickets.process'],
         'tata_usaha' => ['dashboard.view', 'backoffice.*'],
-        'penjamin_mutu' => ['dashboard.view', 'backoffice.access', 'backoffice.tickets.view', 'backoffice.reports.view', 'supervision.performance.view', 'supervision.surveys.view'],
+        'penjamin_mutu' => ['dashboard.view', 'backoffice.access', 'backoffice.sk.register', 'backoffice.tickets.view', 'backoffice.reports.view', 'supervision.performance.view', 'supervision.surveys.view'],
         // Applicants: the portal.
         'guru' => ['onlineportal.*'],
         'pegawai' => ['onlineportal.*'],

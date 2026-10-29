@@ -5,6 +5,7 @@ namespace App\Filament\Portal\Pages;
 use App\Filament\Portal\Resources\TicketResource;
 use App\Models\Service;
 use App\Services\TicketService;
+use App\Support\PortalServices;
 use App\Support\ServiceSummary;
 use App\Support\TicketDocuments;
 use App\Support\TicketLabels;
@@ -23,8 +24,10 @@ use Filament\Pages\Page;
 use Livewire\Attributes\Url;
 
 /**
- * An online service request (Modul 5): the applicant picks the service in
- * the public catalogue and lands here with ?layanan=<slug>.
+ * An online service request (Modul 5), the portal's "Ajukan Layanan" menu.
+ * Opened from a service (?layanan=<slug>, e.g. from the catalogue) it is
+ * that service's form; opened from the menu it first asks which service,
+ * among those the applicant's roles may request online (PortalServices).
  */
 class ApplyService extends Page implements HasForms
 {
@@ -34,7 +37,11 @@ class ApplyService extends Page implements HasForms
 
     protected static ?string $title = 'Ajukan Layanan';
 
-    protected static bool $shouldRegisterNavigation = false;
+    protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
+
+    protected static ?string $navigationLabel = 'Ajukan Layanan';
+
+    protected static ?int $navigationSort = 40;
 
     protected static string $view = 'filament.pages.form-page';
 
@@ -48,10 +55,13 @@ class ApplyService extends Page implements HasForms
 
     public function mount(): void
     {
-        $this->service = Service::query()
-            ->where('slug', $this->serviceSlug)
-            ->requestable(auth()->user()->user_type, 'online')
-            ->first();
+        if (blank($this->serviceSlug)) {
+            $this->form->fill(); // from the menu: pick the service first
+
+            return;
+        }
+
+        $this->service = PortalServices::requestable(auth()->user())->where('slug', $this->serviceSlug)->first();
 
         if (! $this->service) {
             Notification::make()
@@ -60,7 +70,7 @@ class ApplyService extends Page implements HasForms
                 ->warning()
                 ->send();
 
-            $this->redirect(route('onlineportal.service.catalog'));
+            $this->redirect(ServiceCatalog::getUrl());
 
             return;
         }
@@ -73,12 +83,32 @@ class ApplyService extends Page implements HasForms
         return $this->service ? 'Ajukan: ' . $this->service->name : 'Ajukan Layanan';
     }
 
+    public function getSubheading(): ?string
+    {
+        return $this->service ? null : 'Pilih layanan yang ingin Anda ajukan; formulirnya terbuka setelah itu.';
+    }
+
     public function form(Form $form): Form
     {
+        // Built before mount() knows the service: each part shows by it (picker, or the service's form).
+        $chosen = fn () => (bool) $this->service;
+
         return $form
             ->statePath('data')
             ->schema([
+                Section::make('Layanan')
+                    ->visible(fn () => ! $this->service)
+                    ->schema([
+                        Select::make('service')
+                            ->label('Layanan yang diajukan')
+                            ->options(fn () => PortalServices::requestable(auth()->user())->orderBy('name')->pluck('name', 'slug'))
+                            ->searchable()
+                            ->required()
+                            ->validationMessages(['required' => 'Pilih layanan yang ingin Anda ajukan.'])
+                            ->helperText(new \Illuminate\Support\HtmlString('Belum yakin? Bandingkan layanan di <a href="' . e(ServiceCatalog::getUrl()) . '" class="underline">Katalog Layanan</a>.')),
+                    ]),
                 Section::make('Standar pelayanan')
+                    ->visible($chosen)
                     ->icon('heroicon-o-clipboard-document-list')
                     ->collapsible()
                     ->schema([
@@ -92,6 +122,7 @@ class ApplyService extends Page implements HasForms
                         Placeholder::make('templates')->hiddenLabel()->content(fn () => ServiceSummary::templates($this->service)),
                     ]),
                 Section::make('Permohonan')
+                    ->visible($chosen)
                     ->schema([
                         Textarea::make('description')
                             ->label('Keperluan / keterangan')
@@ -120,15 +151,28 @@ class ApplyService extends Page implements HasForms
 
     protected function getFormActions(): array
     {
+        if (! $this->service) {
+            return [
+                Action::make('submit')->label('Lanjut ke formulir')->submit('submit')->icon('heroicon-m-arrow-right'),
+                Action::make('cancel')->label('Batal')->color('gray')->url(ServiceCatalog::getUrl()),
+            ];
+        }
+
         return [
             Action::make('submit')->label('Kirim permohonan')->submit('submit')->icon('heroicon-m-paper-airplane'),
-            Action::make('cancel')->label('Batal')->color('gray')->url(route('onlineportal.service.catalog')),
+            Action::make('change')->label('Ganti layanan')->color('gray')->url(self::getUrl()),
+            Action::make('cancel')->label('Batal')->color('gray')->url(ServiceCatalog::getUrl()),
         ];
     }
 
     public function submit(): void
     {
-        abort_unless($this->service, 404);
+        if (! $this->service) {
+            // The service picked: on to its form.
+            $this->redirect(self::getUrl(['layanan' => $this->form->getState()['service']]), navigate: true);
+
+            return;
+        }
 
         $data = $this->form->getState();
         $names = $data['file_names'] ?? [];

@@ -42,7 +42,7 @@ class ActiveRolePolicyTest extends TestCase
     /** A ticket waiting for the default leadership (kepala sekolah / kepala TU / admin). */
     private function awaitingTicket(): Ticket
     {
-        $ticket = Ticket::query()->whereHas('service')->firstOrFail();
+        $ticket = $this->undisposedTicket();
         $ticket->service->forceFill(['approval_required' => true, 'approval_roles' => [], 'approval_users' => []])->save();
         $ticket->forceFill(['approval_required' => true])->save();
 
@@ -135,7 +135,7 @@ class ActiveRolePolicyTest extends TestCase
 
     public function test_processing_and_hand_over_follow_the_active_role(): void
     {
-        $ticket = Ticket::query()->firstOrFail();
+        $ticket = Ticket::query()->orderBy('id')->firstOrFail();
         $user = $this->staff('front_desk', 'back_office');
 
         $this->actIn($user, 'back_office');

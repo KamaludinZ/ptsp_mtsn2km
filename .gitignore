@@ -12,6 +12,7 @@ yarn-error.log
 /storage/framework/cache/*
 /storage/logs/*
 /storage/app/public/*
+/storage/app/private/*
 /bootstrap/cache/*
 !.gitignore
 /.phpunit.result.cache

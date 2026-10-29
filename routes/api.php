@@ -41,6 +41,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_
 Route::middleware(['auth:sanctum', 'throttle:api'])->post('/tiket/{ticket:ticket_number}/catatan', [\App\Http\Controllers\Api\StaffTicketController::class, 'addNote'])->name('api.tiket.catatan.tambah');
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_number}', [\App\Http\Controllers\Api\StaffTicketController::class, 'show'])->name('api.tiket.show');
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_number}/riwayat', [\App\Http\Controllers\Api\TicketHistoryController::class, 'show'])->name('api.tiket.riwayat');
+// The SK asked for from a ticket: as the SK register is opened (active role, register token).
+Route::middleware(['auth:sanctum', 'throttle:api', 'peran.aktif', 'izin.aktif:backoffice.access,' . \App\Support\RegisterSkAccess::PERMISSION, 'ability:penomoran-sk:baca,penomoran-sk:tulis'])
+    ->get('/tiket/{ticket:ticket_number}/sk', [\App\Http\Controllers\Api\SuratKeputusanController::class, 'forTicket'])->name('api.tiket.sk');
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_number}/disposisi', [\App\Http\Controllers\Api\TicketHistoryController::class, 'dispositions'])->name('api.tiket.disposisi');
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/tiket/{ticket:ticket_number}/berkas', [\App\Http\Controllers\Api\TicketHistoryController::class, 'documents'])->name('api.tiket.berkas');
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/riwayat', [\App\Http\Controllers\Api\TicketHistoryController::class, 'index'])->name('api.riwayat');
@@ -71,6 +74,47 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('surat-keluar')->gro
     Route::put('/{suratKeluar}', [\App\Http\Controllers\Api\SuratKeluarController::class, 'update'])->name('api.surat-keluar.update');
 });
 
+// Register Penomoran SK: "{N} TAHUN {YYYY}", its own yearly sequence.
+Route::middleware(['auth:sanctum', 'throttle:api', 'peran.aktif'])->prefix('penomoran-sk')->name('api.penomoran-sk.')->group(function () {
+    $sk = \App\Http\Controllers\Api\SuratKeputusanController::class;
+
+    // Any staff may ask what their active role may do here.
+    Route::get('/akses', [$sk, 'access'])->middleware('ability:penomoran-sk:baca,penomoran-sk:tulis')->name('akses');
+
+    // The rest: the active role must open the back office and hold the register (RegisterSkAccess); the policy decides per SK.
+    Route::middleware('izin.aktif:backoffice.access,' . \App\Support\RegisterSkAccess::PERMISSION)->group(function () use ($sk) {
+        // Reading (and downloading) needs a token able to read or write the register; writing, one able to write.
+        Route::middleware('ability:penomoran-sk:baca,penomoran-sk:tulis')->group(function () use ($sk) {
+            Route::get('/', [$sk, 'index'])->name('index');
+            Route::get('/saringan', [$sk, 'filterOptions'])->name('saringan');
+            Route::get('/arsip', [$sk, 'archive'])->name('arsip');
+            Route::get('/arsip/periksa', [$sk, 'verifyArchive'])->name('arsip.periksa');
+            // Unduh Laporan SK: the register of the list's filters as a file.
+            Route::get('/unduh/{format}', [$sk, 'download'])->whereIn('format', ['excel', 'pdf'])->name('unduh');
+            // Rekap Register SK (Laporan & Evaluasi): one year, and as a file.
+            Route::get('/rekap', [$sk, 'recap'])->name('rekap');
+            // Status penomoran: last and next number, what is left of the year, and the gaps with their reasons.
+            Route::get('/nomor', [$sk, 'numbering'])->name('nomor');
+            Route::get('/rekap/unduh/{format}', [$sk, 'downloadRecap'])->whereIn('format', ['excel', 'pdf'])->name('rekap.unduh');
+            Route::get('/{suratKeputusan}', [$sk, 'show'])->whereNumber('suratKeputusan')->name('show');
+            Route::get('/{suratKeputusan}/scan', [$sk, 'downloadScan'])->whereNumber('suratKeputusan')->name('scan.show');
+            Route::get('/{suratKeputusan}/riwayat', [$sk, 'history'])->whereNumber('suratKeputusan')->name('riwayat');
+        });
+
+        Route::middleware('abilities:penomoran-sk:tulis')->group(function () use ($sk) {
+            // Registrasi Nomor SK: what the form starts with, then POST / to take the number.
+            Route::get('/registrasi', [$sk, 'registrationDraft'])->name('registrasi');
+            Route::post('/', [$sk, 'store'])->name('store');
+            // Several SK of one year, numbered one after another (one meeting's SK).
+            Route::post('/kumpulan', [$sk, 'storeMany'])->name('kumpulan');
+            Route::put('/{suratKeputusan}', [$sk, 'update'])->whereNumber('suratKeputusan')->name('update');
+            Route::delete('/{suratKeputusan}', [$sk, 'destroy'])->whereNumber('suratKeputusan')->name('destroy');
+            Route::post('/{suratKeputusan}/scan', [$sk, 'uploadScan'])->whereNumber('suratKeputusan')->name('scan.store');
+            Route::delete('/{suratKeputusan}/scan', [$sk, 'removeScan'])->whereNumber('suratKeputusan')->name('scan.destroy');
+        });
+    });
+});
+
 Route::middleware(['auth:sanctum', 'throttle:api'])->get('/persuratan/pilihan', [\App\Http\Controllers\Api\PersuratanController::class, 'options'])->name('api.persuratan.pilihan');
 // Penomoran Otomatis: the number format of each jenis surat.
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('persuratan/penomoran')->name('api.persuratan.penomoran.')->group(function () {
@@ -83,6 +127,23 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('persuratan/penomora
     Route::get('/{master}/variabel', [\App\Http\Controllers\Api\NumberingFormatController::class, 'showVariable'])->whereNumber('master')->name('variabel.show');
     Route::put('/{master}/variabel', [\App\Http\Controllers\Api\NumberingFormatController::class, 'saveVariable'])->whereNumber('master')->name('variabel.save');
     Route::delete('/{master}/variabel', [\App\Http\Controllers\Api\NumberingFormatController::class, 'deleteVariable'])->whereNumber('master')->name('variabel.delete');
+});
+
+// Jenis SK: the classifications of the SK register (Master Persuratan > Jenis SK), by the active role.
+Route::middleware(['auth:sanctum', 'throttle:api', 'peran.aktif', 'izin.aktif:backoffice.access'])->prefix('persuratan/jenis-sk')->name('api.persuratan.jenis-sk.')->group(function () {
+    $jenis = \App\Http\Controllers\Api\JenisSkController::class;
+
+    // Any SK token reads the list; changing it needs a token for Master Jenis SK.
+    Route::middleware('ability:penomoran-sk:baca,penomoran-sk:tulis,jenis-sk:kelola')->group(function () use ($jenis) {
+        Route::get('/', [$jenis, 'index'])->name('index');
+        Route::get('/{jenisSk}', [$jenis, 'show'])->whereNumber('jenisSk')->name('show');
+        Route::get('/{jenisSk}/statistik', [$jenis, 'statistics'])->whereNumber('jenisSk')->name('statistik');
+    });
+    Route::middleware('abilities:jenis-sk:kelola')->group(function () use ($jenis) {
+        Route::post('/', [$jenis, 'store'])->name('store');
+        Route::put('/{jenisSk}', [$jenis, 'update'])->whereNumber('jenisSk')->name('update');
+        Route::delete('/{jenisSk}', [$jenis, 'destroy'])->whereNumber('jenisSk')->name('destroy');
+    });
 });
 
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('persuratan/master')->name('api.persuratan.master.')->group(function () {
@@ -103,6 +164,7 @@ Route::middleware('throttle:60,1')->prefix('publik')->name('api.publik.')->group
     Route::get('/pengumuman/{pengumuman}', [\App\Http\Controllers\Api\PublicController::class, 'announcement'])->whereNumber('pengumuman')->name('pengumuman.detail');
     Route::get('/faq', [\App\Http\Controllers\Api\PublicController::class, 'faq'])->name('faq');
     Route::get('/lacak/{nomor}', [\App\Http\Controllers\Api\PublicController::class, 'track'])->middleware('throttle:30,1')->name('lacak');
+    Route::post('/lacak/{nomor}/unduh', [\App\Http\Controllers\Api\PublicController::class, 'verifyOutputDownload'])->middleware('throttle:public-forms')->name('lacak.unduh');
     Route::get('/buku-tamu/pilihan', [\App\Http\Controllers\Api\PublicController::class, 'guestBookOptions'])->name('buku-tamu.pilihan');
     Route::post('/buku-tamu', [\App\Http\Controllers\Api\PublicController::class, 'signGuestBook'])->middleware('throttle:public-forms')->name('buku-tamu');
     Route::post('/pengaduan', [\App\Http\Controllers\Api\PublicController::class, 'submitReport'])->middleware('throttle:public-forms')->name('pengaduan');
@@ -118,6 +180,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('permohonan')->name(
     Route::post('/', [\App\Http\Controllers\Api\ApplicantTicketController::class, 'store'])->middleware('throttle:public-forms')->name('store');
     Route::get('/{ticket:ticket_number}', [\App\Http\Controllers\Api\ApplicantTicketController::class, 'show'])->name('show');
     Route::post('/{ticket:ticket_number}/berkas', [\App\Http\Controllers\Api\ApplicantTicketController::class, 'upload'])->middleware('throttle:public-forms')->name('berkas');
+    Route::get('/{ticket:ticket_number}/hasil', [\App\Http\Controllers\Api\ApplicantTicketController::class, 'output'])->name('hasil');
 });
 
 // Buku tamu at the counter

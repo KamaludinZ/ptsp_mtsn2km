@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Ticket;
 use App\Models\TicketLog;
+use Illuminate\Support\Facades\URL;
 
 /**
  * What public ticket tracking may show. Ticket numbers are sequential and
@@ -14,6 +15,9 @@ use App\Models\TicketLog;
  */
 class TicketTracking
 {
+    /** How long the link to the product file, given once the applicant is verified, works. */
+    public const LINK_MINUTES = 10;
+
     public static function find(string $number): ?Ticket
     {
         return Ticket::with(['service', 'user', 'logs', 'workflowSteps' => fn ($q) => $q->with('workflowStep')->orderBy('id'), 'output'])
@@ -24,6 +28,40 @@ class TicketTracking
     public static function isOwner(Ticket $ticket, ?string $email): bool
     {
         return filled($email) && $ticket->user && strcasecmp(trim($email), (string) $ticket->user->email) === 0;
+    }
+
+    /**
+     * How a finished request's product file is reached: berkas, whether there
+     * is one to download (finished, and on the disk); akun, whether to sign in
+     * (User::signsIn), told only to the verified owner since anyone may try a
+     * number (null otherwise: both ways are offered); masuk_url, the request in
+     * the portal, past the login.
+     *
+     * @return array{berkas: bool, akun: ?bool, masuk_url: string}
+     */
+    public static function output(Ticket $ticket, bool $owner): array
+    {
+        return [
+            'berkas' => self::hasOutputFile($ticket),
+            'akun' => $owner ? $ticket->user?->signsIn() : null,
+            'masuk_url' => \App\Filament\Portal\Resources\TicketResource::getUrl('view', ['record' => $ticket], panel: 'portal'),
+        ];
+    }
+
+    /** A finished request whose product is a file still on the disk. */
+    public static function hasOutputFile(Ticket $ticket): bool
+    {
+        return $ticket->status === 'completed' && TicketDocuments::exists($ticket->output?->file_path);
+    }
+
+    /**
+     * The short-lived link to the product file for the verified applicant.
+     * Signed on the path alone (signed:relative), so it holds behind a proxy
+     * that changes the scheme or the host.
+     */
+    public static function outputLink(Ticket $ticket): string
+    {
+        return url(URL::temporarySignedRoute('onlineportal.track.ticket.output', now()->addMinutes(self::LINK_MINUTES), ['output' => $ticket->output], absolute: false));
     }
 
     public static function summary(Ticket $ticket, bool $owner): array
@@ -44,6 +82,7 @@ class TicketTracking
             ] : null,
             'has_output_file' => (bool) $ticket->output?->file_path,
             'ready_for_pickup' => (bool) $ticket->ready_for_pickup,
+            'hasil' => self::output($ticket, $owner),
             // Like the portal: only milestones, never officers' internal entries.
             'logs' => $ticket->logs->whereIn('action', TicketLog::APPLICANT_VISIBLE)->sortBy('created_at')->values()->map(fn (TicketLog $log) => [
                 'action' => $log->action,

@@ -39,7 +39,7 @@ class TicketLogActingRoleTest extends TestCase
     public function test_ticket_actions_record_the_active_role(): void
     {
         $this->assertTrue(Schema::hasColumn('ticket_logs', 'acting_role'));
-        $ticket = Ticket::query()->whereHas('service')->firstOrFail();
+        $ticket = $this->undisposedTicket();
         $ticket->service->forceFill(['approval_required' => true, 'approval_roles' => [], 'approval_users' => []])->save();
         $ticket->forceFill(['approval_required' => true, 'status' => 'verified', 'approval_status' => 'pending'])->save();
 
@@ -55,7 +55,7 @@ class TicketLogActingRoleTest extends TestCase
 
     public function test_single_role_staff_record_their_role_and_applicants_none(): void
     {
-        $ticket = Ticket::query()->firstOrFail();
+        $ticket = Ticket::query()->orderBy('id')->firstOrFail();
         $officer = User::role('back_office')->firstOrFail();
         $applicant = User::where('email', 'budi.santoso@email.com')->firstOrFail();
 
@@ -71,7 +71,7 @@ class TicketLogActingRoleTest extends TestCase
 
     public function test_recorded_role_is_part_of_the_immutable_history(): void
     {
-        $ticket = Ticket::query()->firstOrFail();
+        $ticket = Ticket::query()->orderBy('id')->firstOrFail();
         $officer = User::role('back_office')->firstOrFail();
         $log = TicketLog::create(['ticket_id' => $ticket->id, 'action' => 'note', 'performed_by' => $officer->id, 'notes' => 'x']);
 
@@ -81,7 +81,7 @@ class TicketLogActingRoleTest extends TestCase
 
     public function test_history_api_shows_the_role_to_staff(): void
     {
-        $ticket = Ticket::query()->firstOrFail();
+        $ticket = Ticket::query()->orderBy('id')->firstOrFail();
         $officer = User::role('back_office')->firstOrFail();
         TicketLog::create(['ticket_id' => $ticket->id, 'action' => 'note', 'performed_by' => $officer->id, 'notes' => 'Dicek ulang', 'acting_role' => 'back_office']);
         Sanctum::actingAs(User::role('admin')->firstOrFail());

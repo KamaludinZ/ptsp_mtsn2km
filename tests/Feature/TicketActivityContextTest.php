@@ -58,7 +58,7 @@ class TicketActivityContextTest extends TestCase
 
     public function test_applicant_and_system_entries_are_not_copied(): void
     {
-        $ticket = Ticket::query()->firstOrFail();
+        $ticket = Ticket::query()->orderBy('id')->firstOrFail();
         $applicant = User::where('email', 'budi.santoso@email.com')->firstOrFail();
         $before = Activity::inLog('ticket')->count();
 

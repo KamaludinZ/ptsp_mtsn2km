@@ -12,6 +12,9 @@ class Visitor extends Model
 
     protected $fillable = [
         'name',
+        'guest_type',
+        'applicant_type',
+        'service_id',
         'phone',
         'email',
         'institution',
@@ -33,15 +36,64 @@ class Visitor extends Model
         'check_out_time' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        // The status follows the checkout time, whoever sets it (the database checks both agree).
+        static::saving(function (Visitor $visitor) {
+            $visitor->status = $visitor->check_out_time ? self::STATUS_CHECKED_OUT : self::STATUS_ACTIVE;
+        });
+    }
+
     // Relationship with staff who registered the visitor
     public function staff()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** Riwayat checkout: how the guest left (officer or themselves). */
+    public function checkouts()
+    {
+        return $this->hasMany(VisitorCheckout::class)->latest('checked_out_at');
+    }
+
+    /** The service an applicant (guest_type pemohon) came for; none for "Lainnya". */
+    public function service()
+    {
+        return $this->belongsTo(Service::class)->withTrashed();
+    }
+
     // Constants for status
     const STATUS_ACTIVE = 'active';
     const STATUS_CHECKED_OUT = 'checked_out';
+
+    /** The two ways a guest is registered, as on the public visitor book's two forms. */
+    const GUEST_TYPES = [
+        'kunjungan' => 'Tamu Kunjungan',
+        'pemohon' => 'Pemohon Layanan Offline',
+    ];
+
+    /** "Status pemohon" of the public form for service applicants; an institution names itself. */
+    const APPLICANT_STATUSES = [
+        'siswa' => 'Siswa',
+        'wali_murid' => 'Wali Murid',
+        'alumni' => 'Alumni',
+        'pegawai' => 'Pegawai',
+        'umum' => 'Masyarakat Umum',
+        'instansi_perusahaan' => 'Instansi/Perusahaan',
+    ];
+
+    /** "Jenis instansi/perusahaan" of the public visitor book, grouped as there. */
+    const INSTITUTION_CATEGORIES = [
+        'Instansi' => ['pemerintah' => 'Pemerintah', 'swasta' => 'Swasta', 'pendidikan' => 'Pendidikan'],
+        'Perusahaan' => ['umkm' => 'UMKM', 'menengah' => 'Menengah', 'besar' => 'Besar', 'multinasional' => 'Multinasional'],
+        'lainnya' => 'Lainnya',
+    ];
+
+    /** The codes of INSTITUTION_CATEGORIES, for validation. */
+    public static function institutionCategoryKeys(): array
+    {
+        return collect(self::INSTITUTION_CATEGORIES)->flatMap(fn ($group, string $key) => is_array($group) ? array_keys($group) : [$key])->all();
+    }
 
     // Choices for "Tujuan Kunjungan" on the public visitor book; "Lainnya" asks for free text.
     /** Initial content of the 'tujuan' list in visitor_masters (see VisitorMaster). */
@@ -101,6 +153,29 @@ class Visitor extends Model
             'Waktu check-in' => $this->check_in_time?->translatedFormat('l, j F Y H:i'),
             'Daftar tamu publik' => $this->is_obscured ? 'Nama disamarkan' : 'Nama ditampilkan',
         ];
+    }
+
+    /**
+     * May the guest check themselves out from the public visitor book? Only
+     * on the day they came, while still on site, and with a phone number to
+     * prove it is them; anyone else is checked out at the counter.
+     */
+    public function canSelfCheckOut(): bool
+    {
+        return $this->check_out_time === null
+            && filled($this->phone)
+            && (bool) $this->check_in_time?->isToday();
+    }
+
+    /**
+     * Is $typed the phone this guest gave on arrival? Written either way:
+     * punctuation and spaces aside, 62, +62 or 0062 the same as a leading 0
+     * (as accounts are matched, Applicants::normalizePhone). A guest who gave
+     * no phone matches nothing.
+     */
+    public function phoneMatches(?string $typed): bool
+    {
+        return \App\Support\Applicants::samePhone($this->phone, $typed);
     }
 
     /**

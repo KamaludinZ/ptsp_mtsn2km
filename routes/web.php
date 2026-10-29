@@ -24,6 +24,7 @@ Route::get('/pengumuman/{pengumuman}', [PengumumanController::class, 'show'])->n
 Route::get('/visitor-book', [PublicController::class, 'visitorBook'])->name('public.visitor.book');
 Route::post('/visitor-book/submit-visitor', [PublicController::class, 'submitVisitor'])->middleware('throttle:public-forms')->name('public.visitor.submit');
 Route::post('/visitor-book/submit-applicant', [PublicController::class, 'submitApplicant'])->middleware('throttle:public-forms')->name('public.applicant.submit');
+Route::post('/visitor-book/{visitor}/checkout', [PublicController::class, 'checkOutVisitor'])->whereNumber('visitor')->middleware('throttle:public-forms')->name('public.visitor.checkout');
 
 // Service catalogue and ticket tracking. Applying happens in the portal.
 Route::get('/services', [OnlinePortalController::class, 'serviceCatalog'])->name('onlineportal.service.catalog');
@@ -33,6 +34,8 @@ Route::get('/services/{slug}/template/{template}', [OnlinePortalController::clas
 Route::get('/services/{slug}/apply', fn (string $slug) => redirect('/portal/ajukan?layanan=' . urlencode($slug)))->name('onlineportal.service.apply');
 Route::get('/tracking', [OnlinePortalController::class, 'trackTicketForm'])->name('onlineportal.track.ticket.form');
 Route::post('/tracking', [OnlinePortalController::class, 'trackTicket'])->middleware('throttle:30,1')->name('onlineportal.track.ticket.result');
+Route::post('/tracking/unduh', [OnlinePortalController::class, 'verifyOutputDownload'])->middleware('throttle:public-forms')->name('onlineportal.track.ticket.download');
+Route::get('/tracking/hasil/{output}', [OnlinePortalController::class, 'downloadOutput'])->whereNumber('output')->middleware(['signed:relative', 'throttle:30,1'])->name('onlineportal.track.ticket.output');
 
 // Complaints (Dumas) and whistleblowing from the public
 Route::get('/complaints', [SupervisionController::class, 'complaints'])->name('supervision.complaints.dashboard');
@@ -163,6 +166,10 @@ Route::middleware('auth')->get('/surat-keluar/{suratKeluar}/lampiran/{index}', f
         ? $disk->download($path, $suratKeluar->attachmentName($path))
         : $disk->response($path, $suratKeluar->attachmentName($path));
 })->can('view', 'suratKeluar')->whereNumber('index')->name('surat-keluar.lampiran');
+
+// Arsip scan SK: the signed SK on the private disk, for the back office keeping the SK register
+Route::middleware('auth')->get('/surat-keputusan/{suratKeputusan}/scan', fn (\App\Models\SuratKeputusan $suratKeputusan) => \App\Services\SuratKeputusanService::scanResponse($suratKeputusan, request()->boolean('unduh')))
+    ->can('view', 'suratKeputusan')->whereNumber('suratKeputusan')->name('surat-keputusan.scan');
 
 // Ganti peran cepat from the /cp header: switch the active role, back to the same page (staff only)
 Route::middleware(['auth', 'throttle:30,1'])->post('/peran-aktif/ganti', \App\Http\Controllers\ActiveRoleSwitchController::class)->name('peran-aktif.ganti');

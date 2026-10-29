@@ -109,6 +109,12 @@ class Ticket extends Model implements HasMedia
     ];
 
     // Relationship with user who applied
+    /** SK asked for from this ticket (Proses tiket > Minta Nomor SK). */
+    public function suratKeputusan(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SuratKeputusan::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

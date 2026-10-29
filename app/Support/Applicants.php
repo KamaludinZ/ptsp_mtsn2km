@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -35,6 +36,16 @@ class Applicants
     public static function isApplicant(?User $user): bool
     {
         return $user !== null && self::rolesOf($user) !== [];
+    }
+
+    /**
+     * Apakah pengunjung ini mengajukan layanan lewat portal? Pengunjung yang
+     * belum masuk: ya (setelah login); staf hanya bila juga memegang peran
+     * pemohon, selain itu portal mengembalikannya ke /cp.
+     */
+    public static function usesPortal(?User $user): bool
+    {
+        return $user === null || $user->canAccessPanel(Filament::getPanel('portal'));
     }
 
     /**
@@ -96,6 +107,19 @@ class Applicants
         $digits = preg_replace('/\D+/', '', (string) $phone);
 
         return $digits === '' ? '' : preg_replace('/^(62|0)?/', '0', $digits);
+    }
+
+    /**
+     * Apakah $typed nomor yang sama dengan $registered, ditulis cara apa pun:
+     * tanda baca diabaikan, awalan 62, +62, atau 0062 sama dengan 0. Nomor
+     * terdaftar yang kosong tidak cocok dengan apa pun.
+     */
+    public static function samePhone(?string $registered, ?string $typed): bool
+    {
+        $normalize = fn (?string $phone) => self::normalizePhone(preg_replace('/^\s*(\+|00)/', '', (string) $phone));
+        $expected = $normalize($registered);
+
+        return $expected !== '' && hash_equals($expected, $normalize($typed));
     }
 
     /** Batasi $query ke akun bernomor WhatsApp sama dengan $phone (tanda baca dan awalan 62/0 diabaikan). */

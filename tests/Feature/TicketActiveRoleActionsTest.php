@@ -38,7 +38,7 @@ class TicketActiveRoleActionsTest extends TestCase
 
     public function test_ticket_page_shows_what_the_active_role_may_do(): void
     {
-        $ticket = Ticket::query()->firstOrFail();
+        $ticket = Ticket::query()->orderBy('id')->firstOrFail();
 
         $this->actingAs($this->multiRole())
             ->withSession([ActiveRoles::SESSION_KEY => 'front_desk'])
@@ -58,7 +58,7 @@ class TicketActiveRoleActionsTest extends TestCase
         $this->actingAs($user);
         $user->forceFill(['active_role_id' => \Spatie\Permission\Models\Role::findByName('kepala_tu', 'web')->id])->save();
 
-        Livewire::test(ActiveRoleActions::class, ['record' => Ticket::query()->firstOrFail()])
+        Livewire::test(ActiveRoleActions::class, ['record' => Ticket::query()->orderBy('id')->firstOrFail()])
             ->assertSee('Aksi untuk peran aktif: Kepala Tata Usaha')
             ->assertSeeHtml('data-ticket-action="approve" data-allowed="ya"')
             ->assertSeeHtml('data-ticket-action="delete" data-allowed="tidak"')
@@ -67,7 +67,7 @@ class TicketActiveRoleActionsTest extends TestCase
 
     private function awaitingTicket(): Ticket
     {
-        $ticket = Ticket::query()->whereHas('service')->firstOrFail();
+        $ticket = $this->undisposedTicket();
         $ticket->service->forceFill(['approval_required' => true, 'approval_roles' => [], 'approval_users' => []])->save();
         $ticket->forceFill(['approval_required' => true, 'status' => 'verified', 'approval_status' => 'pending'])->save();
 

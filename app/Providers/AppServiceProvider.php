@@ -4,8 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
-use App\Models\AppSetting;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -185,13 +183,6 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             $useVite = (config('app.env') === 'local') && config('assets.mode', 'vite') === 'vite';
             $view->with('useVite', $useVite);
-
-            if (Schema::hasTable('app_settings')) {
-                $themePublic = AppSetting::where('key', 'theme_public')->value('value') ?? 'light';
-                $themeAdmin = AppSetting::where('key', 'theme_admin')->value('value') ?? 'corporate';
-                $view->with('themePublic', $themePublic);
-                $view->with('themeAdmin', $themeAdmin);
-            }
         });
     }
 

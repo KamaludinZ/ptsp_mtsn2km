@@ -9,6 +9,7 @@ use App\Support\IncomingCategory;
 use App\Support\ServiceDisposition;
 use App\Support\ServiceMetrics;
 use App\Support\StatusBadge;
+use App\Support\TicketDocuments;
 use App\Support\TicketLabels;
 use App\Support\TicketTabs;
 use Illuminate\Database\Eloquent\Builder;
@@ -157,11 +158,13 @@ class StaffTicketController extends Controller
             'berkas' => $ticket->files->map(fn ($file) => [
                 'nama' => $file->file_name,
                 'diunggah' => $file->created_at?->toIso8601String(),
-                'unduh' => route('documents.ticket-file', $file),
+                'unduh' => $url = route('documents.ticket-file', $file),
+                ...TicketDocuments::fileType($file->file_name, $url),
             ]),
             'hasil_layanan' => $ticket->output ? [
                 'keterangan' => $ticket->output->output_description,
-                'unduh' => route('documents.ticket-output', $ticket->output),
+                'unduh' => $url = route('documents.ticket-output', $ticket->output),
+                ...TicketDocuments::fileType($ticket->output->file_path, $url),
             ] : null,
             'siap_diambil' => (bool) $ticket->ready_for_pickup,
             'langkah_workflow' => $ticket->workflowSteps->map(fn ($step) => [
@@ -237,14 +240,14 @@ class StaffTicketController extends Controller
         abort_unless($user->can('update', $ticket), 403);
 
         $data = $request->validate([
-            'berkas' => ['required', 'file', 'max:20480', 'mimes:' . \App\Support\TicketDocuments::MIMES],
+            'berkas' => ['required', 'file', 'max:20480', 'mimes:' . TicketDocuments::MIMES],
             'keterangan' => ['nullable', 'string', 'max:500'],
         ]);
 
         try {
             app(\App\Services\TicketService::class)->uploadOutput(
                 $ticket,
-                \App\Support\TicketDocuments::store($data['berkas'], 'ticket-outputs'),
+                TicketDocuments::store($data['berkas'], 'ticket-outputs'),
                 $data['berkas']->getClientOriginalName(),
                 $user,
                 $data['keterangan'] ?? null,

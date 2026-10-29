@@ -2,6 +2,7 @@
 
 namespace App\Filament\Portal\Widgets;
 
+use App\Filament\Portal\Pages\ServiceCatalog;
 use App\Filament\Portal\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Support\TicketLabels;
@@ -33,7 +34,7 @@ class RecentRequests extends TableWidget
                 Tables\Columns\TextColumn::make('created_at')->label('Diajukan')->date('d M Y'),
             ])
             ->headerActions([
-                Tables\Actions\Action::make('apply')->label('Ajukan layanan')->icon('heroicon-m-plus')->url(route('onlineportal.service.catalog')),
+                Tables\Actions\Action::make('apply')->label('Ajukan layanan')->icon('heroicon-m-plus')->url(ServiceCatalog::getUrl()),
             ])
             ->recordUrl(fn (Ticket $record) => TicketResource::getUrl('view', ['record' => $record]))
             ->emptyStateHeading('Belum ada permohonan')

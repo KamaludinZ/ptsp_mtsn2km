@@ -34,21 +34,29 @@ class PersuratanMasterResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Master Persuratan';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
-    /** Back office reads, adds and edits the lists; only administrators delete from them. */
+    /**
+     * Back office reads, adds and edits the lists; only administrators delete
+     * from them (PersuratanMasterPolicy). Anything the policy does not name,
+     * e.g. reorder or forceDelete, follows the closest rule it does name.
+     */
     public static function can(string $action, ?Model $record = null): bool
     {
         $user = auth()->user();
 
-        if (! $user instanceof \App\Models\User || $user->is_active === false) {
+        if (! $user instanceof \App\Models\User) {
             return false;
         }
 
-        return match ($action) {
-            'delete', 'deleteAny', 'forceDelete', 'forceDeleteAny' => \App\Support\ActiveRoles::hasRole($user, 'admin'),
-            default => $user->can('backoffice.access'),
+        $ability = match ($action) {
+            'viewAny', 'view', 'create', 'update', 'delete', 'deleteAny' => $action,
+            'forceDelete' => 'delete',
+            'forceDeleteAny' => 'deleteAny',
+            default => 'viewAny',
         };
+
+        return \Illuminate\Support\Facades\Gate::forUser($user)->allows($ability, in_array($ability, ['view', 'update', 'delete'], true) && $record ? $record : PersuratanMaster::class);
     }
 
     public static function form(Form $form): Form
@@ -74,8 +82,9 @@ class PersuratanMasterResource extends Resource
                     'regex' => 'Gunakan format kode seperti PP.00 atau KP.01.2.',
                     'max' => 'Kode paling panjang 50 karakter.',
                 ]),
-            Forms\Components\TextInput::make('nama')->label('Nama')->required()->minLength(3)->maxLength(255)
+            Forms\Components\TextInput::make('nama')->label(fn (Get $get) => $get('type') === 'jenis_sk' ? 'Nama jenis SK' : 'Nama')->required()->minLength(3)->maxLength(255)
                 ->placeholder(fn (Get $get) => self::PLACEHOLDERS[$get('type')] ?? null)
+                ->helperText(fn (Get $get) => $get('type') === 'jenis_sk' ? 'Dipilih petugas saat meminta nomor SK. Nomor SK tetap satu urutan per tahun untuk semua jenis.' : null)
                 ->unique(ignoreRecord: true, modifyRuleUsing: fn ($rule, Get $get) => $rule->where('type', $get('type')))
                 ->rules([fn (Get $get, ?Model $record) => self::distinct('nama', $get('type'), $record)])
                 ->dehydrateStateUsing(fn (?string $state) => Str::squish((string) $state))
@@ -93,8 +102,21 @@ class PersuratanMasterResource extends Resource
                     'min' => 'Urutan tidak boleh negatif.',
                     'max' => 'Urutan paling besar 9999.',
                 ]),
+            // Jenis SK: the PTSP services whose SK start with it (Registrasi Nomor SK from a ticket).
+            Forms\Components\Select::make('layanan')->label('Layanan PTSP')
+                ->multiple()->searchable()
+                ->options(fn () => \App\Models\Service::query()->orderBy('name')->pluck('name', 'id')->all())
+                ->helperText('SK yang diminta dari tiket layanan ini langsung memakai jenis SK ini (masih bisa diganti).')
+                ->visible(fn (Get $get) => $get('type') === 'jenis_sk')
+                ->afterStateHydrated(fn (Forms\Components\Select $component, ?PersuratanMaster $record) => $component->state($record?->layanan()->pluck('id')->all() ?? []))
+                ->dehydrated(false)
+                ->saveRelationshipsUsing(fn (PersuratanMaster $record, ?array $state) => $record->type === 'jenis_sk'
+                    ? \App\Services\JenisSkService::assignServices($record, $state ?? [])
+                    : null),
             Forms\Components\Toggle::make('is_active')->label('Tampilkan sebagai pilihan')
-                ->helperText('Matikan untuk menyembunyikan dari form tanpa menghapusnya.')
+                ->helperText(fn (Get $get) => $get('type') === 'jenis_sk'
+                    ? 'Matikan untuk menyembunyikan dari form Minta Nomor SK tanpa menghapusnya. SK yang sudah tercatat tidak berubah.'
+                    : 'Matikan untuk menyembunyikan dari form tanpa menghapusnya.')
                 ->default(true),
         ])->columns(1);
     }
@@ -105,6 +127,7 @@ class PersuratanMasterResource extends Resource
         'tembusan' => 'mis. Kepala Tata Usaha',
         'klasifikasi' => 'mis. Pendidikan',
         'instruksi_disposisi' => 'mis. Untuk ditindaklanjuti',
+        'jenis_sk' => 'mis. Kepegawaian dan Pengangkatan',
     ];
 
     /** Refuse a value already in the same list, ignoring case and extra spaces. */
@@ -135,7 +158,11 @@ class PersuratanMasterResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('kode')->label('Kode')->searchable()->placeholder('–')
                     ->visible(fn ($livewire) => in_array($livewire->activeTab ?? null, ['klasifikasi', null], true)),
-                Tables\Columns\TextColumn::make('nama')->label(fn ($livewire) => in_array($livewire->activeTab ?? null, [Pages\ListPersuratanMasters::NUMBERING_TAB, Pages\ListPersuratanMasters::VARIABLE_TAB], true) ? 'Jenis surat' : 'Nama')->searchable()->wrap(),
+                Tables\Columns\TextColumn::make('nama')->label(fn ($livewire) => match (true) {
+                    in_array($livewire->activeTab ?? null, [Pages\ListPersuratanMasters::NUMBERING_TAB, Pages\ListPersuratanMasters::VARIABLE_TAB], true) => 'Jenis surat',
+                    ($livewire->activeTab ?? null) === Pages\ListPersuratanMasters::JENIS_SK_TAB => 'Jenis SK',
+                    default => 'Nama',
+                })->searchable()->wrap(),
                 // Penomoran Otomatis tab: the format of each jenis surat and an example number.
                 Tables\Columns\TextColumn::make('format_nomor')->label('Format nomor')
                     ->state(fn (PersuratanMaster $record) => \App\Support\NomorFormatSettings::for($record)['format'])
@@ -169,6 +196,16 @@ class PersuratanMasterResource extends Resource
                     ->color(fn (?string $state) => $state === 'Dipakai' ? 'success' : 'gray')
                     ->description(fn (PersuratanMaster $record) => \App\Support\NomorFormatSettings::effectiveFormat($record))
                     ->visible(fn ($livewire) => ($livewire->activeTab ?? null) === Pages\ListPersuratanMasters::VARIABLE_TAB),
+                // Jenis SK tab: how much the register uses each jenis, and the register filtered by it.
+                Tables\Columns\TextColumn::make('pemakaian_sk')->label('Dipakai di register')
+                    ->state(fn (PersuratanMaster $record) => ($total = \App\Services\JenisSkService::usage([$record->nama])[$record->nama]['semua']) ? $total . ' SK' : 'Belum dipakai')
+                    ->description(fn (PersuratanMaster $record) => \App\Services\JenisSkService::usage([$record->nama])[$record->nama]['tahun'] . ' SK tahun ' . now()->year)
+                    ->color(fn (string $state) => $state === 'Belum dipakai' ? 'gray' : 'primary')
+                    ->url(fn (PersuratanMaster $record) => SuratKeputusanResource::canViewAny()
+                        // Every year: an empty Tahun filter value overrides the register's default (this year).
+                        ? SuratKeputusanResource::getUrl('index', ['tableFilters' => ['jenis_sk' => ['values' => [$record->nama]], 'tahun' => ['value' => '']]])
+                        : null)
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? null) === Pages\ListPersuratanMasters::JENIS_SK_TAB),
                 Tables\Columns\TextColumn::make('type')->label('Daftar')->badge()->color('gray')
                     ->formatStateUsing(fn (string $state) => PersuratanMaster::TYPES[$state] ?? $state)
                     ->visible(fn ($livewire) => blank($livewire->activeTab ?? null)),
@@ -181,9 +218,12 @@ class PersuratanMasterResource extends Resource
                 \App\Filament\Actions\NumberingFormatAction::abbreviation(),
                 \App\Filament\Actions\NumberVariableAction::make(),
                 \App\Filament\Actions\NumberVariableAction::delete(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->modalHeading(fn (Tables\Actions\EditAction $action, PersuratanMaster $record) => $record->type === 'jenis_sk' ? 'Ubah jenis SK' : __('filament-actions::edit.single.modal.heading', ['label' => $action->getRecordTitle()])),
                 Tables\Actions\DeleteAction::make()
-                    ->modalDescription('Pilihan ini hilang dari form. Surat yang sudah memakainya tidak berubah. Untuk menyembunyikan sementara, matikan "Aktif".'),
+                    ->modalDescription(fn (PersuratanMaster $record) => $record->type === 'jenis_sk'
+                        ? static::jenisSkDeleteNote($record)
+                        : 'Pilihan ini hilang dari form. Surat yang sudah memakainya tidak berubah. Untuk menyembunyikan sementara, matikan "Aktif".'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -199,19 +239,34 @@ class PersuratanMasterResource extends Resource
             ->emptyStateIcon('heroicon-o-list-bullet')
             ->emptyStateHeading(fn ($livewire) => filled($livewire->tableSearch ?? null)
                 ? 'Tidak ada pilihan yang cocok'
-                : trim('Belum ada pilihan ' . mb_strtolower(PersuratanMaster::TYPES[$livewire->activeListType() ?? ''] ?? '')))
-            ->emptyStateDescription(fn ($livewire) => filled($livewire->tableSearch ?? null)
-                ? 'Coba kata kunci lain atau hapus pencarian.'
-                : 'Tambahkan pilihan rutin agar petugas cukup memilih dari daftar. Petugas tetap dapat mengetik isian sendiri.')
+                : ($livewire->activeListType() === Pages\ListPersuratanMasters::JENIS_SK_TAB
+                    ? 'Belum ada jenis SK'
+                    : trim('Belum ada pilihan ' . mb_strtolower(PersuratanMaster::TYPES[$livewire->activeListType() ?? ''] ?? ''))))
+            ->emptyStateDescription(fn ($livewire) => match (true) {
+                filled($livewire->tableSearch ?? null) => 'Coba kata kunci lain atau hapus pencarian.',
+                $livewire->activeListType() === Pages\ListPersuratanMasters::JENIS_SK_TAB => 'Tambahkan jenis SK agar petugas dapat mengelompokkan setiap nomor SK yang diminta.',
+                default => 'Tambahkan pilihan rutin agar petugas cukup memilih dari daftar. Petugas tetap dapat mengetik isian sendiri.',
+            })
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make('emptyCreate')
-                    ->label('Tambah pilihan')
+                    ->label(fn ($livewire) => $livewire->activeListType() === Pages\ListPersuratanMasters::JENIS_SK_TAB ? 'Tambah jenis SK' : 'Tambah pilihan')
+                    ->modalHeading(fn ($livewire, Tables\Actions\CreateAction $action) => $livewire->activeListType() === Pages\ListPersuratanMasters::JENIS_SK_TAB ? 'Tambah jenis SK' : __('filament-actions::create.single.modal.heading', ['label' => $action->getModelLabel()]))
                     ->icon('heroicon-m-plus')
                     ->model(PersuratanMaster::class)
                     ->form(fn (Form $form) => static::form($form))
                     ->fillForm(fn ($livewire) => ['type' => $livewire->activeListType() ?: 'tujuan_naskah', 'is_active' => true, 'sort' => 0])
                     ->hidden(fn ($livewire) => filled($livewire->tableSearch ?? null)),
             ]);
+    }
+
+    /** Before deleting a jenis SK: how many SK in the register keep it. */
+    public static function jenisSkDeleteNote(PersuratanMaster $record): string
+    {
+        $used = \App\Services\JenisSkService::usage([$record->nama])[$record->nama]['semua'];
+
+        return 'Jenis SK ini hilang dari pilihan Minta Nomor SK. '
+            . ($used ? $used . ' SK yang sudah memakainya tetap menyimpan jenisnya. ' : 'Belum ada SK yang memakainya. ')
+            . 'Untuk menyembunyikan sementara, matikan "Aktif".';
     }
 
     public static function getPages(): array

@@ -9,7 +9,6 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\MenuItem;
-use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -44,12 +43,6 @@ class PortalPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Portal/Resources'), for: 'App\\Filament\\Portal\\Resources')
             ->discoverPages(in: app_path('Filament/Portal/Pages'), for: 'App\\Filament\\Portal\\Pages')
             ->discoverWidgets(in: app_path('Filament/Portal/Widgets'), for: 'App\\Filament\\Portal\\Widgets')
-            ->navigationItems([
-                NavigationItem::make('Katalog Layanan')
-                    ->icon('heroicon-o-squares-2x2')
-                    ->url(fn () => route('onlineportal.service.catalog'))
-                    ->sort(50),
-            ])
             ->userMenuItems([
                 'profile' => MenuItem::make()
                     ->label(fn () => auth()->user()?->name . ' · ' . \App\Support\RoleAccess::userRoleLabel(auth()->user()))

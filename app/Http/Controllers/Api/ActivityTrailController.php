@@ -13,7 +13,7 @@ use Spatie\Activitylog\Models\Activity;
 /** Rekam jejak aktivitas untuk administrator (peran aktif): perpindahan peran, ganti akun, aksi tiket. */
 class ActivityTrailController extends Controller
 {
-    /** GET /api/rekam-jejak?pengguna=&peran=&jenis=role_switch|impersonation|ticket&aksi=&dari=&sampai=&halaman= */
+    /** GET /api/rekam-jejak?pengguna=&peran=&jenis=role_switch|impersonation|ticket|register_sk&aksi=&dari=&sampai=&halaman= */
     public function index(Request $request): JsonResponse
     {
         abort_unless(ActiveRoles::hasRole($request->user(), 'admin'), 403, 'Rekam jejak hanya untuk peran aktif Administrator.');
@@ -46,6 +46,7 @@ class ActivityTrailController extends Controller
                     'peran_tujuan' => $row['to_role'],
                     'tiket' => $row['ticket'],
                     'layanan' => $row['service'],
+                    'nomor_sk' => $row['sk'],
                     'lewat_ganti_akun_oleh' => $row['impersonated_by'],
                     'ip' => $row['ip'],
                     'detail' => $row['details'],

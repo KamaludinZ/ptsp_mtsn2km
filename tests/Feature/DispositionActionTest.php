@@ -201,6 +201,14 @@ class DispositionActionTest extends TestCase
         // The headmaster cannot dispose twice; the queue moves on.
         $this->assertFalse($this->headmaster->can('approve', $ticket));
         $this->assertStringContainsString('Menunggu disposisi Kepala Tata Usaha', (string) \Illuminate\Support\Facades\Gate::forUser($this->headmaster)->inspect('approve', $ticket)->message());
+        try {
+            // Told so, not that the active role may not decide it.
+            app(TicketService::class)->decide($ticket, true, $this->headmaster, 'acknowledged_by');
+            $this->fail('A second disposition by the same leader must be refused.');
+        } catch (\App\Exceptions\TicketActionException $e) {
+            $this->assertNotInstanceOf(\App\Exceptions\OutsideActiveRoleException::class, $e);
+            $this->assertStringContainsString('Anda sudah mendisposisi permohonan ini. Menunggu disposisi Kepala Tata Usaha', $e->getMessage());
+        }
         Livewire::test(Approvals::class)->assertCanNotSeeTableRecords([$ticket]);
         $this->assertFalse(app(DispositionAuthority::class)->disposers($ticket)->contains($this->headmaster));
 

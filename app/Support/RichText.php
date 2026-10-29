@@ -34,12 +34,22 @@ class RichText
         return new HtmlString((string) self::sanitize(self::toHtml($value)));
     }
 
+    /**
+     * Rich text for API clients: sanitised HTML, as the site shows it. A
+     * plain-text value (no tag at all) stays as it was stored.
+     */
+    public static function forApi(?string $value): ?string
+    {
+        return str_contains((string) $value, '<') ? self::sanitize($value) : $value;
+    }
+
     /** Plain text for previews, search snippets and table cells. */
     public static function plain(?string $value, int $limit = 0): string
     {
-        $text = Str::squish(html_entity_decode(strip_tags(str_replace(['</p>', '</li>', '<br>', '<br/>', '<br />'], ' ', (string) self::toHtml($value))), ENT_QUOTES | ENT_HTML5));
+        // Sanitised first, so the text of a <script> or <style> never shows.
+        $text = Str::squish(html_entity_decode(strip_tags(str_replace(['</p>', '</li>', '<br>', '<br/>', '<br />'], ' ', (string) self::sanitize(self::toHtml($value)))), ENT_QUOTES | ENT_HTML5));
 
-        return $limit > 0 ? Str::limit($text, $limit) : $text;
+        return $limit > 0 ? Str::limit($text, $limit, preserveWords: true) : $text;
     }
 
     /** Whether $value already is HTML (as TinyMCE stores it). */
@@ -138,7 +148,11 @@ class RichText
             (new HtmlSanitizerConfig())
                 ->allowSafeElements()
                 ->allowAttribute('style', ['p', 'span', 'div', 'td', 'th', 'tr', 'table', 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ul', 'ol', 'blockquote'])
-                ->allowAttribute('class', '*')
+                // Text pasted from other sites brings their classes and ids:
+                // "collapse", "tab-pane fade" or "d-none" hid whole sections
+                // here, and an id can collide with the page's own.
+                ->dropAttribute('class', '*')
+                ->dropAttribute('id', '*')
                 ->allowLinkSchemes(['https', 'http', 'mailto', 'tel'])
                 ->allowRelativeLinks()
                 ->allowMediaSchemes(['https', 'http'])

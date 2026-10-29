@@ -27,10 +27,17 @@ class ListSuratKeluar extends ListRecords
 {
     protected static string $resource = SuratKeluarResource::class;
 
-    public function getSubheading(): ?string
+    public function getSubheading(): string|\Illuminate\Contracts\Support\Htmlable|null
     {
-        return 'Buku register surat keluar. Nomor berurutan 1–9999 dan dimulai ulang setiap tahun.';
+        $register = \App\Filament\Resources\SuratKeputusanResource::canViewAny()
+            ? '<a href="' . e(\App\Filament\Resources\SuratKeputusanResource::getUrl('index')) . '" class="font-medium text-primary-600 hover:underline dark:text-primary-400">Register Penomoran SK</a>'
+            : 'Register Penomoran SK';
+
+        // SK are numbered in their own register, never with an agenda number.
+        return new \Illuminate\Support\HtmlString(e('Buku register surat keluar. Nomor berurutan 1–9999 dan dimulai ulang setiap tahun.')
+            . ' ' . e('Nomor Surat Keputusan (SK) dicatat terpisah di') . ' ' . $register . '.');
     }
+
 
     protected function getFooterWidgets(): array
     {
@@ -101,9 +108,11 @@ class ListSuratKeluar extends ListRecords
                         ->compact()
                         ->schema([
                             PersuratanFields::jenis()->live(debounce: 400)
-                                ->helperText(fn (Get $get) => ($jenis = SuratKeluarService::jenisSurat($get('jenis_surat')))
-                                    ? 'Format: ' . NomorFormatSettings::effectiveFormat($jenis)
-                                    : 'Jenis di luar daftar memakai format bawaan.')
+                                ->helperText(fn (Get $get) => match (true) {
+                                    \App\Support\Persuratan::isSuratKeputusan($get('jenis_surat')) => 'Surat Keputusan bernomor sendiri ({N} TAHUN {YYYY}): minta nomornya di Register Penomoran SK, bukan di buku surat keluar.',
+                                    ($jenis = SuratKeluarService::jenisSurat($get('jenis_surat'))) !== null => 'Format: ' . NomorFormatSettings::effectiveFormat($jenis),
+                                    default => 'Jenis di luar daftar memakai format bawaan.',
+                                })
                                 // Another jenis surat asks for another variable: start its field empty.
                                 ->afterStateUpdated(fn (\Filament\Forms\Set $set, ?string $state, ?string $old) => SuratKeluarService::jenisSurat($state)?->is(SuratKeluarService::jenisSurat($old)) ? null : $set('variabel', null)),
                             Placeholder::make('ringkasan_jenis')

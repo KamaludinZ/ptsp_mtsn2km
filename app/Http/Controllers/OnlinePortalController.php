@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Service;
 use App\Models\ServiceTemplate;
 use App\Models\Ticket;
+use App\Models\TicketOutput;
+use App\Services\TicketDownloadAttempts;
+use App\Support\ServiceVisitor;
+use App\Support\TicketDocuments;
 use App\Support\TicketTracking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,12 +22,11 @@ class OnlinePortalController extends Controller
     public function serviceCatalog()
     {
         $user = Auth::user();
-        $userType = $user ? $user->user_type : 'umum';
+        $visitor = ServiceVisitor::current();
 
         try {
-            // Services allowed for this user type (user_types_allowed is a jsonb array)
-            $services = Service::where('is_active', true)
-                ->availableFor($userType)
+            // Services open to the visitor's type (user_types_allowed is a jsonb array); staff see all.
+            $services = $visitor->catalog(Service::query())
                 ->with(['categories' => fn ($query) => $query->orderBy('name')])
                 ->orderBy('name')
                 ->get();
@@ -42,7 +45,7 @@ class OnlinePortalController extends Controller
             [$categories, $services, $loadError] = [collect(), collect(), true];
         }
 
-        return response()->view('onlineportal.service-catalog', compact('categories', 'services', 'user', 'loadError'), $loadError ? 503 : 200);
+        return response()->view('onlineportal.service-catalog', compact('categories', 'services', 'user', 'visitor', 'loadError'), $loadError ? 503 : 200);
     }
 
     /**
@@ -51,14 +54,13 @@ class OnlinePortalController extends Controller
     public function serviceDetail($slug)
     {
         $user = Auth::user();
-        $userType = $user ? $user->user_type : 'umum';
+        $visitor = ServiceVisitor::current();
 
-        $service = Service::where('slug', $slug)
+        $service = $visitor->pages(Service::where('slug', $slug))
             ->with(['categories', 'components', 'activeTemplates'])
-            ->availableFor($userType)
             ->firstOrFail();
 
-        return view('onlineportal.service-detail', compact('service', 'user'));
+        return view('onlineportal.service-detail', compact('service', 'user', 'visitor'));
     }
 
     /** A template berkas of an active service: public, like the service page itself (inactive ones for staff only). */
@@ -124,4 +126,32 @@ class OnlinePortalController extends Controller
         return response()->json(TicketTracking::summary($ticket, TicketTracking::isOwner($ticket, $validated['email'] ?? null)));
     }
 
+    /**
+     * POST /tracking/unduh: an applicant without an account proves a finished
+     * request is theirs with the e-mail or WhatsApp number given on it, and
+     * gets a short-lived link to the product file. TicketDownloadAttempts
+     * counts the wrong tries and locks the ticket after the last one.
+     */
+    public function verifyOutputDownload(Request $request, TicketDownloadAttempts $attempts)
+    {
+        $validated = $request->validate([
+            'ticket_number' => 'required|string|max:50',
+            'kontak' => 'required|string|max:255',
+        ], [], ['ticket_number' => 'nomor tiket', 'kontak' => 'email atau nomor WhatsApp']);
+
+        return $attempts->answer(TicketTracking::find($validated['ticket_number']), $validated['kontak'], $request->ip());
+    }
+
+    /**
+     * GET /tracking/hasil/{output}: the product file, through the signed link
+     * verifyOutputDownload gave. Only the request's current product, while the
+     * request is still finished.
+     */
+    public function downloadOutput(TicketOutput $output)
+    {
+        $ticket = $output->ticket;
+        abort_unless($ticket && $ticket->output?->is($output) && TicketTracking::hasOutputFile($ticket), 404);
+
+        return TicketDocuments::download($output->file_path, TicketDocuments::outputName($ticket));
+    }
 }

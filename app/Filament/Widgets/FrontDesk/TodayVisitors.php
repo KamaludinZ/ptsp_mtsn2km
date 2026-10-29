@@ -50,7 +50,7 @@ class TodayVisitors extends TableWidget
                     ->color('gray')
                     ->visible(fn (Visitor $record) => ! $record->check_out_time)
                     ->action(fn (Visitor $record) => self::attempt(
-                        fn () => app(FrontDeskService::class)->checkOut($record),
+                        fn () => app(FrontDeskService::class)->checkOut($record, auth()->user()),
                         "{$record->name} sudah check-out.",
                     )),
             ])

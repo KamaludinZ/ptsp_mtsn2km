@@ -66,6 +66,30 @@ class Service extends Model
                 $model->slug = static::uniqueSlug($model->name, $model->id);
             }
         });
+
+        // "Dapat diajukan oleh": applicant roles, each once, in the official order;
+        // none ticked means every applicant. An unknown role is kept for the
+        // database to refuse: dropping it could open the service to everyone.
+        static::saving(function (Service $service) {
+            $roles = array_values(array_intersect(\App\Support\Applicants::ROLES, (array) $service->user_types_allowed));
+            $unknown = array_diff((array) $service->user_types_allowed, \App\Support\Applicants::ROLES);
+            $service->user_types_allowed = $unknown ? array_values(array_unique([...$roles, ...$unknown])) : ($roles ?: null);
+        });
+    }
+
+    /**
+     * The applicant roles (spatie roles) the service is open to; every
+     * applicant role when "Dapat diajukan oleh" is left empty.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role>
+     */
+    public function applicantRoles(): \Illuminate\Database\Eloquent\Collection
+    {
+        return \Spatie\Permission\Models\Role::where('guard_name', 'web')
+            ->whereIn('name', $this->user_types_allowed ?: \App\Support\Applicants::ROLES)
+            ->get()
+            ->sortBy(fn ($role) => array_search($role->name, \App\Support\Applicants::ROLES, true))
+            ->values();
     }
 
     /**
@@ -85,6 +109,14 @@ class Service extends Model
                 $query->orWhereJsonContains('user_types_allowed', $userType);
             }
         });
+    }
+
+    /** scopeAvailableFor() for a loaded service: is it open to $userType? */
+    public function isAvailableFor(?string $userType): bool
+    {
+        $types = $this->user_types_allowed;
+
+        return empty($types) || in_array('umum', $types, true) || ($userType && in_array($userType, $types, true));
     }
 
     /**
@@ -178,9 +210,9 @@ class Service extends Model
     public function syncStandardComponents(array $values): void
     {
         foreach (array_keys(ServiceComponent::EXTRA) as $type) {
-            $content = $values[$type] ?? null;
+            $content = \App\Support\RichText::sanitize($values[$type] ?? null);
 
-            if (\App\Support\RichText::sanitize($content) === null) {
+            if ($content === null) {
                 $this->components()->where('component_type', $type)->delete();
 
                 continue;
@@ -218,19 +250,30 @@ class Service extends Model
     /**
      * Services a request can be opened for right now: active, and online
      * only when served online (online/hybrid) and open to the applicant's
-     * type. Offline any active service qualifies here; the counter itself
-     * narrows it to the applicant's type (availableFor, FrontDeskService).
+     * type, or to any of their types (roles). Offline any active service
+     * qualifies here; the counter itself narrows it to the applicant's type
+     * (availableFor, FrontDeskService).
      */
-    public function scopeRequestable($query, ?string $userType, string $channel = 'online')
+    public function scopeRequestable($query, string|array|null $userTypes, string $channel = 'online')
     {
+        // Several types (an applicant's roles): open to any of them.
+        $types = (array) $userTypes ?: [null];
+
         return $query->where('is_active', true)
-            ->when($channel === 'online', fn ($q) => $q->whereIn('mode', ['online', 'hybrid'])->availableFor($userType));
+            ->when($channel === 'online', fn ($q) => $q->whereIn('mode', ['online', 'hybrid'])
+                ->where(fn ($open) => collect($types)->each(fn (?string $type) => $open->orWhere(fn ($one) => $one->availableFor($type)))));
     }
 
-    /** Can $applicant request this service on $channel (read fresh from the database)? */
+    /**
+     * Can $applicant request this service on $channel (read fresh from the
+     * database)? Online, by any of the applicant's roles, as the portal's
+     * catalogue offers it (PortalServices).
+     */
     public function acceptsRequests(?User $applicant, string $channel = 'online'): bool
     {
-        return static::query()->whereKey($this->getKey())->requestable($applicant?->user_type, $channel)->exists();
+        $roles = $applicant ? \App\Support\PortalServices::rolesOf($applicant) : null;
+
+        return static::query()->whereKey($this->getKey())->requestable($roles, $channel)->exists();
     }
 
     /** "legalisir-ijazah", or "legalisir-ijazah-2" when taken (soft-deleted services included). */
@@ -272,5 +315,11 @@ class Service extends Model
         $this->attributes['approval_required'] = $mode !== 'none';
         $this->approval_roles = ServiceDisposition::MODE_ROLES[$mode] ?: null;
         $this->approval_users = null;
+    }
+
+    /** Jenis SK bawaan: the jenis an SK asked for from this service's tickets starts with (Master Jenis SK > Layanan PTSP). */
+    public function jenisSk(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(PersuratanMaster::class, 'jenis_sk_id');
     }
 }

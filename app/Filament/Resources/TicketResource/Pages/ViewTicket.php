@@ -113,6 +113,12 @@ class ViewTicket extends ViewRecord
                 $this->noteAction(),
                 $this->categoryAction(),
                 $this->uploadFileAction(),
+                // A ticket that needs an SK: Registrasi Nomor SK with the applicant and ticket filled in.
+                Actions\Action::make('requestSkNumber')
+                    ->label('Minta Nomor SK')
+                    ->icon('heroicon-m-hashtag')
+                    ->url(fn () => \App\Filament\Resources\SuratKeputusanResource::getUrl('registrasi', ['tiket' => $this->getRecord()->getKey()]))
+                    ->visible(fn () => \App\Filament\Resources\SuratKeputusanResource::canCreate()),
             ])
                 ->label('Proses tiket')
                 ->icon('heroicon-m-cog-6-tooth')

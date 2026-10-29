@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Support\ActiveRoles;
+use App\Support\RegisterSkAccess;
 use App\Support\RoleAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -50,17 +51,21 @@ class ActiveRoleController extends Controller
 
         $roles = ActiveRoles::for($user);
         $active = $roles->firstWhere('active', true);
+        // Roles held that open Register Penomoran SK (RegisterSkAccess), to know where to switch.
+        $registerRoles = RegisterSkAccess::workingRoles();
 
         return [
-            'aktif' => $active ? $this->present($active) : null,
+            'aktif' => $active ? $this->present($active, $registerRoles) : null,
             'perlu_memilih' => ActiveRoles::needsChoice($user),
-            'peran' => $roles->map(fn (array $role) => $this->present($role))->values(),
+            'peran' => $roles->map(fn (array $role) => $this->present($role, $registerRoles))->values(),
             // What the active role may do now (TicketPolicy follows the active role).
             'wewenang' => [
                 'disposisi' => ActiveRoles::actsAsLeader($user),
                 'proses_tiket' => ActiveRoles::can($user, 'backoffice.access'),
                 'serah_terima' => ActiveRoles::can($user, 'frontdesk.access'),
                 'pengawasan' => ActiveRoles::can($user, 'supervision.access'),
+                // Register Penomoran SK: lihat, minta_nomor, ubah, hapus.
+                'register_sk' => RegisterSkAccess::abilities($user),
             ],
             'izin' => $active
                 ? \Spatie\Permission\Models\Role::findByName($active['name'], 'web')->permissions->pluck('name')->sort()->values()
@@ -68,13 +73,15 @@ class ActiveRoleController extends Controller
         ];
     }
 
-    private function present(array $role): array
+    /** @param  array<int, string>  $registerRoles */
+    private function present(array $role, array $registerRoles = []): array
     {
         return [
             'nama' => $role['name'],
             'label' => $role['label'],
             'deskripsi' => $role['description'],
             'area' => $role['areas'],
+            'register_sk' => in_array($role['name'], $registerRoles, true),
             'aktif' => $role['active'],
             'terakhir_dipakai' => $role['last_used']?->toIso8601String(),
         ];
