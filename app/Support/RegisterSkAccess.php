@@ -32,6 +32,22 @@ class RegisterSkAccess
     }
 
     /**
+     * Pencatatan nomor manual (SuratKeputusanService::reserveBlock): up to
+     * MAX_BLOCK numbers at once, for administrators acting as admin, to bring
+     * the register up to numbers already used by hand.
+     */
+    public static function canRecordBlock(User $user): bool
+    {
+        return self::canWork($user) && ActiveRoles::hasRole($user, 'admin');
+    }
+
+    /** How many SK numbers the user may take in one request ("Jumlah nomor"). */
+    public static function maxPerRequest(User $user): int
+    {
+        return self::canRecordBlock($user) ? \App\Services\SuratKeputusanService::MAX_BLOCK : \App\Services\SuratKeputusanService::MAX_PER_MINUTE;
+    }
+
+    /**
      * What the user may do in the register right now.
      *
      * @return array{lihat: bool, minta_nomor: bool, ubah: bool, hapus: bool}

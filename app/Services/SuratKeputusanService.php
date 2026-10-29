@@ -9,6 +9,7 @@ use App\Models\SuratKeputusan;
 use App\Models\User;
 use App\Support\ActiveRoles;
 use App\Support\Persuratan;
+use App\Support\RegisterSkAccess;
 use App\Support\RoleAccess;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,6 +35,12 @@ class SuratKeputusanService
     public const MAX_PER_MINUTE = 10;
 
     public const MAX_PER_DAY = 150;
+
+    /**
+     * Pencatatan nomor manual (reserveBlock): numbers an administrator may
+     * take in one request, and in one day, apart from the limits above.
+     */
+    public const MAX_BLOCK = 1000;
 
     /** pg_trgm similarity from which two perihal read as the same SK. */
     public const SIMILAR_PERIHAL = 0.5;
@@ -232,6 +239,52 @@ class SuratKeputusanService
         return $taken;
     }
 
+    /**
+     * Pencatatan nomor manual: an administrator records at once a block of
+     * numbers already used outside the app (e.g. written by hand before it),
+     * so the register goes on from the numbers in use. Up to MAX_BLOCK
+     * numbers per request and per day for one account, apart from the limits
+     * of ordinary requests; numbered one after another with the same data
+     * (correctable per SK with "Ubah"), all or none.
+     *
+     * @param  array<string, mixed>  $data  as reserve(), without a scan (one per SK) or a ticket
+     * @return list<SuratKeputusan>
+     */
+    public function reserveBlock(CarbonInterface $tanggal, User $pembuat, array $data, int $count): array
+    {
+        if (! RegisterSkAccess::canRecordBlock($pembuat)) {
+            throw new TicketActionException('Lebih dari ' . self::MAX_PER_MINUTE . ' nomor SK sekaligus hanya untuk administrator dengan peran aktif Administrator.');
+        }
+        if ($count < 1 || $count > self::MAX_BLOCK) {
+            throw new TicketActionException('Jumlah nomor SK sekaligus 1–' . self::MAX_BLOCK . '.');
+        }
+        $year = (int) $tanggal->format('Y');
+        $data = [...array_diff_key($data, array_flip(['berkas_scan', 'berkas_scan_nama', 'ticket_id', 'kunci_permintaan'])), 'jenis_sk' => JenisSkService::assert($data['jenis_sk'] ?? null)];
+        self::refuseBulkTaking($pembuat, $count, block: true);
+
+        $taken = DB::transaction(function () use ($tanggal, $pembuat, $data, $year, $count) {
+            DB::select('select pg_advisory_xact_lock(hashtext(?))', ['surat_keputusan:' . $year]);
+
+            $first = self::nextNumber($year);
+            $left = $first === null ? 0 : self::MAX_NUMBER - $first + 1;
+            if ($count > $left) {
+                throw new TicketActionException("Sisa nomor SK tahun {$year} tinggal {$left}; kurangi jumlahnya.");
+            }
+
+            $range = SuratKeputusan::composeRange($first, $first + $count - 1, $year);
+            $peran = self::officer($pembuat)['peran'];
+            $taken = array_map(fn (int $number) => $this->record($tanggal, $pembuat, $data, $year, $number, $peran,
+                "Mencatat nomor SK {$number} TAHUN {$year} (pencatatan nomor manual {$range})", ['kumpulan' => $range]), range($first, $first + $count - 1));
+            DB::table('surat_keputusan_sequences')->upsert([['tahun' => $year, 'last_number' => $first + $count - 1]], ['tahun'], ['last_number']);
+
+            return $taken;
+        });
+
+        self::countTaken($pembuat, $count, block: true);
+
+        return $taken;
+    }
+
     /** Take the next number of $year for one SK (the year lock is held by the caller). */
     private function issue(CarbonInterface $tanggal, User $pembuat, array $data, int $year): SuratKeputusan
     {
@@ -241,45 +294,58 @@ class SuratKeputusanService
             throw new TicketActionException('Nomor SK tahun ' . $year . ' sudah mencapai ' . self::MAX_NUMBER . '.');
         }
 
-        $sk = SuratKeputusan::create([
-            ...array_intersect_key($data, array_flip(['perihal', 'jenis_sk', 'nama_peminta', 'keterangan', 'berkas_scan', 'berkas_scan_nama', 'ticket_id', 'kunci_permintaan'])),
-            'tahun' => $year,
-            'nomor_urut' => $next,
-            'nomor_sk' => SuratKeputusan::composeNumber($next, $year),
-            'tanggal_surat' => $tanggal->toDateString(),
-            'pembuat_id' => $pembuat->id,
-            'peran_pembuat' => self::officer($pembuat)['peran'],
-        ]);
+        $sk = $this->record($tanggal, $pembuat, $data, $year, $next, self::officer($pembuat)['peran'], 'Meminta nomor SK ' . SuratKeputusan::composeNumber($next, $year));
         DB::table('surat_keputusan_sequences')->upsert([['tahun' => $year, 'last_number' => $next]], ['tahun'], ['last_number']);
-
-        activity('surat_keputusan')->causedBy($pembuat)->performedOn($sk)->event('created')
-            ->withProperties(['attributes' => self::snapshot($sk)])
-            ->log('Meminta nomor SK ' . $sk->nomor_sk);
 
         return $sk;
     }
 
-    /** The numbers just taken count against the account's limits. */
-    private static function countTaken(User $user, int $count): void
+    /** One SK with $number of $year, and its "created" entry in Log & Audit (the sequence is the caller's). */
+    private function record(CarbonInterface $tanggal, User $pembuat, array $data, int $year, int $number, ?string $peran, string $description, array $properties = []): SuratKeputusan
     {
-        foreach (self::limits($user) as [$key, , $seconds]) {
+        $sk = SuratKeputusan::create([
+            ...array_intersect_key($data, array_flip(['perihal', 'jenis_sk', 'nama_peminta', 'keterangan', 'berkas_scan', 'berkas_scan_nama', 'ticket_id', 'kunci_permintaan'])),
+            'tahun' => $year,
+            'nomor_urut' => $number,
+            'nomor_sk' => SuratKeputusan::composeNumber($number, $year),
+            'tanggal_surat' => $tanggal->toDateString(),
+            'pembuat_id' => $pembuat->id,
+            'peran_pembuat' => $peran,
+        ]);
+
+        activity('surat_keputusan')->causedBy($pembuat)->performedOn($sk)->event('created')
+            ->withProperties(['attributes' => self::snapshot($sk), ...$properties])
+            ->log($description);
+
+        return $sk;
+    }
+
+    /** The numbers just taken count against the account's limits (a block, against its own quota). */
+    private static function countTaken(User $user, int $count, bool $block = false): void
+    {
+        foreach (self::limits($user, $block) as [$key, , $seconds]) {
             RateLimiter::increment($key, $seconds, $count);
         }
     }
 
-    /** [rate limiter key, most numbers, window in seconds, window in words] per window. */
-    private static function limits(User $user): array
+    /**
+     * [rate limiter key, most numbers, window in seconds, window in words] per
+     * window: ordinary requests, or the administrator's pencatatan nomor manual.
+     */
+    private static function limits(User $user, bool $block = false): array
     {
-        return [
+        return $block ? [
+            ['penomoran-sk:blok:' . $user->getKey(), self::MAX_BLOCK, 86400, 'satu hari'],
+        ] : [
             ['penomoran-sk:menit:' . $user->getKey(), self::MAX_PER_MINUTE, 60, 'satu menit'],
             ['penomoran-sk:hari:' . $user->getKey(), self::MAX_PER_DAY, 86400, 'satu hari'],
         ];
     }
 
     /** One account may not take numbers faster than a person asks for them ($count more now); the refusal is logged. */
-    private static function refuseBulkTaking(User $user, int $count = 1): void
+    private static function refuseBulkTaking(User $user, int $count = 1, bool $block = false): void
     {
-        foreach (self::limits($user) as [$key, $max, , $window]) {
+        foreach (self::limits($user, $block) as [$key, $max, , $window]) {
             if (RateLimiter::attempts($key) + $count > $max) {
                 $retry = max(1, RateLimiter::availableIn($key));
                 activity('surat_keputusan')->causedBy($user)->event('limited')

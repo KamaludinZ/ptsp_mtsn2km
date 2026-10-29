@@ -247,7 +247,7 @@ class SuratKeputusanController extends Controller
 
         return response()->json([
             'jumlah' => count($taken),
-            'nomor' => $first->nomor_urut === $last->nomor_urut ? $first->nomor_sk : $first->nomor_urut . '–' . $last->nomor_sk,
+            'nomor' => SuratKeputusan::composeRange($first->nomor_urut, $last->nomor_urut, $first->tahun),
             'data' => array_map(fn (SuratKeputusan $sk) => self::present($sk->load('pembuat:id,name')), $taken),
         ], 201);
     }

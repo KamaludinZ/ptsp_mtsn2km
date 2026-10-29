@@ -7,17 +7,21 @@ use App\Filament\Resources\SuratKeputusanResource;
 use App\Models\SuratKeputusan;
 use App\Services\SkReportService;
 use App\Services\SuratKeputusanService;
+use App\Support\RegisterSkAccess;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -36,9 +40,18 @@ class ListSuratKeputusan extends ListRecords
         return 'Buku register Surat Keputusan. Nomor berformat {N} TAHUN {YYYY}, berurutan 1–9999 dan dimulai ulang setiap tahun, terpisah dari nomor surat keluar.';
     }
 
-    /** Minta Nomor SK: the SK data, all required but keterangan; correctable later with "Ubah". */
+    /**
+     * Minta Nomor SK: the SK data, all required but keterangan; correctable
+     * later with "Ubah". "Jumlah nomor" takes several numbers with the same
+     * data at once: up to 1000 for an administrator recording numbers already
+     * used by hand, up to 10 for other officers (RegisterSkAccess::maxPerRequest).
+     * Not offered for a ticket's SK (Registrasi Nomor SK with ?tiket=).
+     */
     public static function requestForm(): array
     {
+        $max = RegisterSkAccess::maxPerRequest(auth()->user());
+        $block = RegisterSkAccess::canRecordBlock(auth()->user());
+
         return [
             Section::make('Data SK')
                 ->description('Lengkapi data SK; setelah nomor terbit, data masih dapat dikoreksi lewat "Ubah".')
@@ -49,25 +62,60 @@ class ListSuratKeputusan extends ListRecords
                         ->default(now())
                         ->live()
                         ->helperText('Tahunnya menentukan urutan nomor SK.'),
+                    TextInput::make('jumlah')
+                        ->label('Jumlah nomor yang dibutuhkan')
+                        ->integer()
+                        ->default(1)
+                        ->minValue(1)
+                        ->maxValue($max)
+                        ->required()
+                        ->live(onBlur: true)
+                        ->visible(fn ($livewire) => ! ($livewire instanceof RegisterSkNumber && $livewire->ticket()))
+                        ->helperText($block
+                            ? "1–{$max} nomor sekaligus (paling banyak " . SuratKeputusanService::MAX_BLOCK . ' per hari), untuk mencatat nomor yang sudah terpakai secara manual. Semua nomor berisi data yang sama; koreksi tiap SK lewat "Ubah".'
+                            : "1–{$max} nomor sekaligus, dihitung dalam batas " . SuratKeputusanService::MAX_PER_MINUTE . ' nomor per menit dan ' . SuratKeputusanService::MAX_PER_DAY . ' per hari. Semua nomor berisi data yang sama; koreksi tiap SK lewat "Ubah".')
+                        ->validationMessages([
+                            'required' => 'Isi jumlah nomor yang dibutuhkan.',
+                            'integer' => 'Jumlah nomor berupa bilangan bulat.',
+                            'min' => 'Jumlah nomor paling sedikit 1.',
+                            'max' => $block
+                                ? "Paling banyak {$max} nomor sekaligus."
+                                : "Paling banyak {$max} nomor sekaligus; lebih dari itu hanya untuk administrator (pencatatan nomor manual).",
+                        ]),
                     ...SuratKeputusanResource::dataFields(),
                 ]),
             Section::make('Scan SK (opsional)')
                 ->description('Unggah sekarang bila SK sudah ditandatangani, atau nanti lewat "Ubah". Berkas disimpan privat dan hanya dapat dibuka petugas yang berwenang atas register SK.')
                 ->compact()
                 ->collapsible()
+                // One scan belongs to one SK: with several numbers, each scan goes in later through "Ubah".
+                ->visible(fn (Get $get) => self::count($get('jumlah')) === 1)
                 ->schema([SuratKeputusanResource::scanUpload()]),
             SuratKeputusanResource::officerField(),
             Placeholder::make('preview')
-                ->label('Nomor yang akan diberikan')
-                ->content(fn (Get $get) => self::numberPreview($get('tanggal_surat'))),
+                ->label(fn (Get $get) => self::count($get('jumlah')) > 1 ? 'Nomor yang akan diberikan' . ' (' . self::count($get('jumlah')) . ' nomor)' : 'Nomor yang akan diberikan')
+                ->content(fn (Get $get) => self::numberPreview($get('tanggal_surat'), self::count($get('jumlah')))),
+            // Numbers are never given back: several at once are confirmed first.
+            Checkbox::make('konfirmasi_jumlah')
+                ->label(fn (Get $get) => 'Ya, ambil ' . self::count($get('jumlah')) . ' nomor SK sekaligus. Nomor yang sudah diambil tidak dapat dipakai ulang.')
+                ->accepted()
+                ->dehydrated(false)
+                ->visible(fn (Get $get) => self::count($get('jumlah')) > 1)
+                ->validationMessages(['accepted' => 'Centang untuk memastikan jumlah nomor yang diambil.']),
         ];
     }
 
+    /** "Jumlah nomor" as typed: blank or not a number counts as one. */
+    private static function count(mixed $jumlah): int
+    {
+        return max(1, (int) (is_numeric($jumlah) ? $jumlah : 1));
+    }
+
     /**
-     * Pratinjau: the next number of the year of the chosen date, taken for
-     * real only on "Ambil nomor" (another officer may take it first).
+     * Pratinjau: the next number(s) of the year of the chosen date, taken for
+     * real only on "Ambil nomor" (another officer may take them first).
      */
-    public static function numberPreview(mixed $tanggal): HtmlString
+    public static function numberPreview(mixed $tanggal, int $count = 1): HtmlString
     {
         $year = rescue(fn () => (int) Carbon::parse($tanggal ?: now())->format('Y'), now()->year, report: false);
         $next = SuratKeputusanService::nextNumber($year);
@@ -77,11 +125,51 @@ class ListSuratKeputusan extends ListRecords
                 . e('Nomor SK tahun ' . $year . ' sudah mencapai ' . SuratKeputusanService::MAX_NUMBER . '; tidak ada nomor tersisa.') . '</span>');
         }
 
-        return new HtmlString('<div data-sk-preview="' . e(SuratKeputusan::composeNumber($next, $year)) . '" class="space-y-1">'
-            . '<p class="font-mono text-2xl font-semibold tracking-wide text-primary-600 dark:text-primary-400">' . e(SuratKeputusan::composeNumber($next, $year)) . '</p>'
-            . '<p class="text-xs text-gray-500 dark:text-gray-400">' . e("Nomor urut {$next} tahun {$year}. Bila petugas lain mengambil nomor lebih dulu, Anda mendapat nomor sesudahnya.") . '</p>'
+        $left = SuratKeputusanService::MAX_NUMBER - $next + 1;
+        if ($count > $left) {
+            return new HtmlString('<span data-sk-preview="kurang" class="text-sm font-medium text-danger-600 dark:text-danger-400">'
+                . e("Sisa nomor SK tahun {$year} tinggal {$left}; kurangi jumlahnya.") . '</span>');
+        }
+
+        $last = $next + $count - 1;
+        $numbers = SuratKeputusan::composeRange($next, $last, $year);
+        $note = $count === 1
+            ? "Nomor urut {$next} tahun {$year}. Bila petugas lain mengambil nomor lebih dulu, Anda mendapat nomor sesudahnya."
+            : "{$count} nomor urut {$next} sampai {$last} tahun {$year}, berurutan tanpa nomor lain di antaranya. Bila petugas lain mengambil nomor lebih dulu, rentangnya bergeser sesudah nomor itu.";
+
+        return new HtmlString('<div data-sk-preview="' . e($numbers) . '" class="space-y-1">'
+            . '<p class="font-mono text-2xl font-semibold tracking-wide text-primary-600 dark:text-primary-400">' . e($numbers) . '</p>'
+            . '<p class="text-xs text-gray-500 dark:text-gray-400">' . e($note) . '</p>'
             . self::otherYearWarning($year)
             . '</div>');
+    }
+
+    /**
+     * "Ambil nomor": one SK, or "Jumlah nomor" SK with the same data numbered
+     * one after another: an administrator's pencatatan nomor manual
+     * (reserveBlock, up to 1000 and its own daily quota), or another
+     * officer's kumpulan (reserveMany, up to 10 within the usual limits).
+     *
+     * @param  array<string, mixed>  $data  the request form's state
+     * @return list<SuratKeputusan>
+     */
+    public static function takeNumbers(array $data, ?int $ticketId = null): array
+    {
+        $service = app(SuratKeputusanService::class);
+        $user = auth()->user();
+        $count = self::count($data['jumlah'] ?? 1);
+        $date = Carbon::parse($data['tanggal_surat']);
+        $data = [...Arr::except($data, ['jumlah', 'konfirmasi_jumlah']), 'ticket_id' => $ticketId];
+
+        if ($count === 1) {
+            return [$service->reserve($date, $user, $data)];
+        }
+
+        $data = Arr::except($data, ['berkas_scan', 'berkas_scan_nama']);
+
+        return RegisterSkAccess::canRecordBlock($user)
+            ? $service->reserveBlock($date, $user, $data, $count)
+            : $service->reserveMany($user, array_fill(0, $count, $data));
     }
 
     /**
@@ -95,6 +183,44 @@ class ListSuratKeputusan extends ListRecords
         return $text === null ? '' : '<p data-sk-preview-other-year="' . $year . '" class="text-xs font-medium text-warning-600 dark:text-warning-400">' . e($text) . '</p>';
     }
 
+    /**
+     * After "Ambil nomor" with several numbers: the range to copy, and what is
+     * still to do; one number, as numberGiven.
+     *
+     * @param  list<SuratKeputusan>  $taken
+     */
+    public static function numbersGiven(array $taken): Notification
+    {
+        $first = reset($taken);
+        $last = end($taken);
+        if ($first->is($last)) {
+            return self::numberGiven($first);
+        }
+
+        $numbers = SuratKeputusan::composeRange($first->nomor_urut, $last->nomor_urut, $first->tahun);
+
+        return Notification::make()
+            ->title(count($taken) . ' nomor SK diberikan')
+            ->body(e($numbers) . '<br>' . e('Tentang ' . $first->perihal)
+                . '<br><span class="text-xs">Semua nomor berisi data yang sama; koreksi tiap SK dan unggah scannya lewat "Ubah".</span>')
+            ->actions([self::copyAction($numbers)])
+            ->success()
+            ->persistent();
+    }
+
+    /** Salin: the number(s) go straight to the clipboard for the SK text. */
+    private static function copyAction(string $numbers): \Filament\Notifications\Actions\Action
+    {
+        return \Filament\Notifications\Actions\Action::make('copy')
+            ->label('Salin nomor')
+            ->icon('heroicon-m-clipboard-document')
+            ->button()
+            ->extraAttributes([
+                'data-copy-number' => $numbers,
+                'x-on:click' => 'window.navigator.clipboard.writeText($el.dataset.copyNumber); $tooltip(' . \Illuminate\Support\Js::from('Tersalin') . ')',
+            ]);
+    }
+
     /** After "Ambil nomor": the number to copy into the SK, and what is still to do. */
     public static function numberGiven(SuratKeputusan $sk): Notification
     {
@@ -102,17 +228,7 @@ class ListSuratKeputusan extends ListRecords
             ->title('Nomor SK diberikan')
             ->body(e($sk->nomor_sk) . '<br>' . e('Tentang ' . $sk->perihal)
                 . ($sk->hasScan() ? '' : '<br><span class="text-xs">Scan belum diunggah; unggah lewat "Ubah" setelah SK ditandatangani.</span>'))
-            // Salin: the number goes straight to the clipboard for the SK text.
-            ->actions([
-                \Filament\Notifications\Actions\Action::make('copy')
-                    ->label('Salin nomor')
-                    ->icon('heroicon-m-clipboard-document')
-                    ->button()
-                    ->extraAttributes([
-                        'data-copy-number' => $sk->nomor_sk,
-                        'x-on:click' => 'window.navigator.clipboard.writeText($el.dataset.copyNumber); $tooltip(' . \Illuminate\Support\Js::from('Tersalin') . ')',
-                    ]),
-            ])
+            ->actions([self::copyAction($sk->nomor_sk)])
             ->success()
             ->persistent();
     }
@@ -269,7 +385,7 @@ class ListSuratKeputusan extends ListRecords
                 ])
                 ->action(function (array $data, array $arguments, Action $action, Form $form) {
                     try {
-                        $sk = app(SuratKeputusanService::class)->reserve(Carbon::parse($data['tanggal_surat']), auth()->user(), $data);
+                        $taken = self::takeNumbers($data);
                     } catch (TicketActionException $e) {
                         Notification::make()->title('Nomor SK tidak dapat diberikan')->body($e->getMessage())->danger()->send();
 
@@ -277,7 +393,7 @@ class ListSuratKeputusan extends ListRecords
                         $action->halt();
                     }
 
-                    self::numberGiven($sk)->send();
+                    self::numbersGiven($taken)->send();
 
                     $this->resetTable();
                     // The summary above the table shows the new last and next numbers.
@@ -285,7 +401,7 @@ class ListSuratKeputusan extends ListRecords
 
                     if ($arguments['another'] ?? false) {
                         // The next SK usually shares the date and jenis; the rest starts empty.
-                        $form->fill(['tanggal_surat' => $data['tanggal_surat'], 'jenis_sk' => $data['jenis_sk']]);
+                        $form->fill(['tanggal_surat' => $data['tanggal_surat'], 'jenis_sk' => $data['jenis_sk'], 'jumlah' => 1]);
                         $action->halt();
                     }
                 }),
