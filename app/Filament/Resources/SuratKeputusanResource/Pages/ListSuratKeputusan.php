@@ -215,9 +215,11 @@ class ListSuratKeputusan extends ListRecords
             ->label('Salin nomor')
             ->icon('heroicon-m-clipboard-document')
             ->button()
+            // A notification's button prints its attributes escaped more than once,
+            // so the handler holds no quotes: Alpine could not read 'Tersalin'.
             ->extraAttributes([
                 'data-copy-number' => $numbers,
-                'x-on:click' => 'window.navigator.clipboard.writeText($el.dataset.copyNumber); $tooltip(' . \Illuminate\Support\Js::from('Tersalin') . ')',
+                'x-on:click' => 'window.navigator.clipboard.writeText($el.dataset.copyNumber); $tooltip(`Tersalin`)',
             ]);
     }
 

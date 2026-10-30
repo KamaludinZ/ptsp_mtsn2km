@@ -324,6 +324,8 @@ class VariabelTambahanTest extends TestCase
         $copy = collect($notification['actions'])->firstWhere('name', 'copy');
         $this->assertSame('Salin nomor', $copy['label']);
         $this->assertSame($letter->nomor_surat, $copy['extraAttributes']['data-copy-number']);
+        // The button escapes its attributes more than once: no quotes for Alpine to trip on.
+        $this->assertDoesNotMatchRegularExpression('/[\'"&<>]/', $copy['extraAttributes']['x-on:click']);
     }
 
     public function test_variable_definition_is_stored_on_the_letter_type(): void

@@ -46,4 +46,14 @@ class AsyncAlpineMorphAssetTest extends TestCase
         $this->assertStringContainsString("'livewire:navigating'", $script);
         $this->assertStringContainsString("hook('morph.updating'", $script);
     }
+
+    public function test_a_select_taken_off_the_page_gets_empty_lists(): void
+    {
+        // Escape on Minta Nomor SK: the closed modal's Jenis SK asked for its options again.
+        $script = file_get_contents(resource_path('js/async-alpine-morph.js'));
+
+        $this->assertStringContainsString("name !== 'selectFormComponent'", $script);
+        $this->assertStringContainsString("['getOptionsUsing', 'getOptionLabelsUsing', 'getSearchResultsUsing']", $script);
+        $this->assertStringContainsString('?? []', $script);
+    }
 }

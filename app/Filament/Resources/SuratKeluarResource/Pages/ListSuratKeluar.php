@@ -169,7 +169,8 @@ class ListSuratKeluar extends ListRecords
                         ->body($letters->count() <= 10
                             ? $letters->pluck('nomor_surat')->join('<br>')
                             : $letters->first()->nomor_surat . '<br>s.d.<br>' . $letters->last()->nomor_surat . '<br>(nomor urut ' . SuratKeluarNumber::ranges($letters->pluck('nomor_urut')) . ')')
-                        // Salin: the numbers go straight to the clipboard for the letter text.
+                        // Salin: the numbers go straight to the clipboard for the letter text. The
+                        // button prints its attributes escaped more than once, so the handler holds no quotes.
                         ->actions([
                             \Filament\Notifications\Actions\Action::make('copy')
                                 ->label($letters->count() === 1 ? 'Salin nomor' : 'Salin semua nomor')
@@ -177,7 +178,7 @@ class ListSuratKeluar extends ListRecords
                                 ->button()
                                 ->extraAttributes([
                                     'data-copy-number' => $letters->pluck('nomor_surat')->join("\n"),
-                                    'x-on:click' => 'window.navigator.clipboard.writeText($el.dataset.copyNumber); $tooltip(' . \Illuminate\Support\Js::from('Tersalin') . ')',
+                                    'x-on:click' => 'window.navigator.clipboard.writeText($el.dataset.copyNumber); $tooltip(`Tersalin`)',
                                 ]),
                         ])
                         ->success()
