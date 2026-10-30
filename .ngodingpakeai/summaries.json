@@ -6329,7 +6329,7 @@
     ]
   },
   "app/Providers/AppServiceProvider.php": {
-    "summary": "Service provider utama AppServiceProvider yang mengatur URL disk public relatif (/storage), LogoutResponse kustom, aset TinyMCE dan render hook Filament (preferensi tampilan, banner ganti akun sementara, banner rotasi kata sandi, sidebar tertutup di ponsel), perlindungan rekam jejak Spatie Activity agar tidak bisa diubah/dihapus, listener event autentikasi, email reset kata sandi berbahasa Indonesia, rate limiter api dan public-forms, serta pemaksaan skema HTTPS di production.",
+    "summary": "Service provider utama AppServiceProvider yang mengatur URL disk public relatif (/storage), LogoutResponse kustom, aset TinyMCE dan skrip ptsp-async-alpine-morph (pemuatan komponen Filament mode SPA), dan render hook Filament (preferensi tampilan, banner ganti akun sementara, banner rotasi kata sandi, sidebar tertutup di ponsel), perlindungan rekam jejak Spatie Activity agar tidak bisa diubah/dihapus, listener event autentikasi, email reset kata sandi berbahasa Indonesia, rate limiter api dan public-forms, serta pemaksaan skema HTTPS di production.",
     "sections": [
       {
         "symbol": "AppServiceProvider::register",
@@ -6340,19 +6340,19 @@
       {
         "symbol": "AppServiceProvider::boot (Filament & activity log)",
         "startLine": 29,
-        "endLine": 86,
-        "summary": "Mendaftarkan aset JS ptsp-tiny-editor, render hook DisplayPreferences::headHtml, larangan update/delete Activity, penambahan properti peran_aktif (ActiveRoles::actingRoleOf) dan impersonated_by saat Impersonation aktif, penutupan log ganti akun saat Logout, banner components.impersonation-banner, dan Livewire PasswordRotationBanner."
+        "endLine": 88,
+        "summary": "Mendaftarkan aset JS ptsp-tiny-editor, render hook DisplayPreferences::headHtml, larangan update/delete Activity, penambahan properti peran_aktif (ActiveRoles::actingRoleOf) dan impersonated_by saat Impersonation aktif, penutupan log ganti akun saat Logout, banner components.impersonation-banner, dan Livewire PasswordRotationBanner. Mendaftarkan FilamentAsset ptsp-tiny-editor dan ptsp-async-alpine-morph untuk kedua panel."
       },
       {
         "symbol": "AppServiceProvider::boot (notifikasi & event)",
-        "startLine": 87,
-        "endLine": 160,
+        "startLine": 89,
+        "endLine": 162,
         "summary": "Email ResetPassword berbahasa Indonesia dengan tautan route password.reset, skrip menutup sidebar di layar kecil, penerapan IntegrationRuntime untuk setelan email/WhatsApp termasuk saat JobProcessing, WhatsApp sambutan via SendWhatsAppMessage setelah email terverifikasi, pencatatan last_login_at dan log akses Masuk/Keluar, pelaporan login gagal dan lockout ke SecurityMonitor, serta locale dari session."
       },
       {
         "symbol": "AppServiceProvider::boot (rate limiter & skema)",
-        "startLine": 161,
-        "endLine": 198,
+        "startLine": 163,
+        "endLine": 200,
         "summary": "RateLimiter 'api' 60 per menit dan 'public-forms' 10 per menit per pengguna atau IP, paksa skema https di production (http di lingkungan lain), view composer useVite, dan setSecurityHeaders() yang masih kosong."
       }
     ]
@@ -6729,5 +6729,34 @@
         "summary": "Admin yang memakai peran lain dibatasi 10; halaman Registrasi mengambil banyak nomor lalu membuka register dan Ambil & minta lagi mengembalikan jumlah ke 1; SK dari tiket tidak menampilkan field jumlah."
       }
     ]
+  },
+  "resources/js/async-alpine-morph.js": {
+    "summary": "Skrip panel Filament untuk mode SPA /cp: memuat tabel Filament (x-data table dengan x-load visible) langsung sebagai eager pada halaman pertama dan pada halaman yang dibuka lewat wire:navigate (event livewire:navigating, onSwap) sebelum Alpine berjalan, sehingga modal aksi halaman seperti Minta Nomor SK yang berada di dalam tabel bisa terbuka di ponsel. Hook Livewire morph.updating mempertahankan x-ignore pada komponen async-alpine yang belum dimuat agar render ulang tidak menjalankan komponen yang kodenya belum ada (table, selectFormComponent, textareaFormComponent is not defined).",
+    "sections": [
+      {
+        "symbol": "loadTablesAtOnce",
+        "startLine": 19,
+        "endLine": 29,
+        "summary": "Penanda agar skrip hanya terpasang sekali, selektor tabel Filament yang dimuat malas, dan fungsi yang mengubah strategi pemuatannya menjadi eager di dalam satu akar DOM."
+      },
+      {
+        "symbol": "keepWaitingComponentsIgnored",
+        "startLine": 31,
+        "endLine": 45,
+        "summary": "Hook Livewire morph.updating: tabel di HTML baru tetap eager, dan komponen yang masih menunggu async-alpine (_x_async belum loaded) tetap memakai x-ignore selama render ulang."
+      },
+      {
+        "symbol": "pemasangan",
+        "startLine": 47,
+        "endLine": 58,
+        "summary": "Memuat tabel langsung pada halaman saat ini, mendaftarkan onSwap pada livewire:navigating untuk halaman berikutnya, dan memasang hook saat Livewire sudah ada atau menunggu livewire:init."
+      }
+    ]
+  },
+  "public/js/app/ptsp-async-alpine-morph.js": {
+    "summary": "Salinan terbit (php artisan filament:assets) dari resources/js/async-alpine-morph.js, dimuat Filament sebagai aset ptsp-async-alpine-morph di panel: tabel /cp dimuat langsung pada mode SPA, termasuk setelah wire:navigate, agar modal aksi di dalam tabel terbuka di ponsel; komponen async-alpine yang belum dimuat tetap x-ignore saat render ulang Livewire."
+  },
+  "tests/Feature/AsyncAlpineMorphAssetTest.php": {
+    "summary": "Tes skrip ptsp-async-alpine-morph: halaman /cp/penomoran-sk dan /cp/penomoran-sk/registrasi memuat js/app/ptsp-async-alpine-morph.js, salinan di public sama dengan resources/js/async-alpine-morph.js (harus diterbitkan ulang dengan filament:assets bila berubah), dan skrip memuat aturan tabel eager, livewire:navigating, serta hook morph.updating."
   }
 }
