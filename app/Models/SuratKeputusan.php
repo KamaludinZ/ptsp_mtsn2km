@@ -202,6 +202,12 @@ class SuratKeputusan extends Model
         return $nomorUrut . ' TAHUN ' . $tahun;
     }
 
+    /** Numbers one after another, e.g. "7–16 TAHUN 2026"; one number alone as composeNumber. */
+    public static function composeRange(int $first, int $last, int $tahun): string
+    {
+        return $first === $last ? self::composeNumber($first, $tahun) : $first . '–' . self::composeNumber($last, $tahun);
+    }
+
     /** Status of an SK in the register: its number is taken; the archive is complete once the scan is uploaded. */
     public const STATUS = [
         'menunggu_scan' => 'Menunggu scan',

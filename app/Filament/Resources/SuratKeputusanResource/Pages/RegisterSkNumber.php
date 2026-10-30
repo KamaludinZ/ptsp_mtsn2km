@@ -17,7 +17,6 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
 use Livewire\Attributes\Url;
 
@@ -118,22 +117,25 @@ class RegisterSkNumber extends Page implements HasForms
         $data = $this->form->getState();
 
         try {
-            // Permohonan terkait: only a ticket the officer may see (ticket()).
-            $sk = app(SuratKeputusanService::class)->reserve(Carbon::parse($data['tanggal_surat']), auth()->user(), [...$data, 'ticket_id' => $this->ticket()?->getKey()]);
+            // Permohonan terkait: only a ticket the officer may see (ticket()); its SK is one number.
+            $taken = ListSuratKeputusan::takeNumbers($data, $this->ticket()?->getKey());
         } catch (TicketActionException $e) {
             Notification::make()->title('Nomor SK tidak dapat diberikan')->body($e->getMessage())->danger()->send();
 
             return;
         }
 
-        ListSuratKeputusan::numberGiven($sk)->send();
+        ListSuratKeputusan::numbersGiven($taken)->send();
 
         if ($another) {
-            $this->form->fill(['tanggal_surat' => $data['tanggal_surat'], 'jenis_sk' => $data['jenis_sk']]);
+            $this->form->fill(['tanggal_surat' => $data['tanggal_surat'], 'jenis_sk' => $data['jenis_sk'], 'jumlah' => 1]);
 
             return;
         }
 
-        $this->redirect(SuratKeputusanResource::getUrl('view', ['record' => $sk]));
+        // One SK opens in Rincian SK; several, the register that lists them.
+        $this->redirect(count($taken) === 1
+            ? SuratKeputusanResource::getUrl('view', ['record' => $taken[0]])
+            : SuratKeputusanResource::getUrl('index'));
     }
 }

@@ -550,54 +550,60 @@
     ]
   },
   "app/Filament/Resources/SuratKeputusanResource/Pages/ListSuratKeputusan.php": {
-    "summary": "Halaman daftar Register Penomoran SK pada SuratKeputusanResource: nomor berformat {N} TAHUN {YYYY} berurutan 1–9999 per tahun, terpisah dari surat keluar. Menyediakan form Minta Nomor SK (requestForm) dengan pratinjau nomor berikutnya dan peringatan tahun lain, aksi reserve ke SuratKeputusanService::reserve termasuk Ambil & minta lagi, unduh laporan Excel/PDF sesuai filter dan pencarian lewat SkReportService (batas baris PDF, batas unduhan, log audit), pencarian satu frasa, serta widget SkYearOverview, RegisterSkRoleAccess, dan SkNumberHistory.",
+    "summary": "Halaman daftar Register Penomoran SK (/cp/penomoran-sk) pada SuratKeputusanResource: nomor {N} TAHUN {YYYY} berurutan 1–9999 per tahun, terpisah dari surat keluar. Menyediakan form Minta Nomor SK (requestForm) dengan field Jumlah nomor yang dibutuhkan, pratinjau nomor/rentang, pengambilan satu atau banyak nomor (takeNumbers), notifikasi Salin nomor, serta laporan Cetak / Unduh Excel/PDF sesuai filter dan pencarian tabel.",
     "sections": [
       {
         "symbol": "ListSuratKeputusan::requestForm",
-        "startLine": 39,
-        "endLine": 64,
-        "summary": "Skema form Minta Nomor SK: section Data SK (tanggal dan dataFields), section scan SK opsional, field petugas, dan placeholder pratinjau nomor."
+        "startLine": 43,
+        "endLine": 112,
+        "summary": "Form Minta Nomor SK yang dipakai modal register dan halaman RegisterSkNumber: tanggal surat, Jumlah nomor yang dibutuhkan (1–1000 untuk administrator dengan peran aktif Administrator, 1–10 untuk petugas lain menurut RegisterSkAccess::maxPerRequest; disembunyikan untuk SK dari tiket), data SK, scan opsional yang disembunyikan bila jumlah lebih dari satu, petugas pencatat, pratinjau, dan centang konfirmasi wajib untuk banyak nomor."
       },
       {
         "symbol": "ListSuratKeputusan::numberPreview",
-        "startLine": 66,
-        "endLine": 96,
-        "summary": "Menampilkan nomor SK berikutnya untuk tahun tanggal terpilih dari SuratKeputusanService::nextNumber, pesan habis bila mencapai MAX_NUMBER, dan peringatan otherYearNote untuk tahun selain tahun berjalan."
+        "startLine": 114,
+        "endLine": 145,
+        "summary": "Pratinjau nomor berikutnya atau rentang nomor (SuratKeputusan::composeRange, mis. 7–256 TAHUN 2026) untuk tahun tanggal surat; memberi peringatan bila nomor tahun itu habis atau sisa nomornya kurang dari jumlah yang diminta, serta catatan bila tahunnya bukan tahun berjalan."
       },
       {
-        "symbol": "ListSuratKeputusan::numberGiven",
-        "startLine": 98,
-        "endLine": 118,
-        "summary": "Notifikasi persisten setelah nomor diberikan berisi nomor SK, perihal, pengingat unggah scan, dan tombol Salin nomor ke clipboard."
+        "symbol": "ListSuratKeputusan::takeNumbers",
+        "startLine": 147,
+        "endLine": 173,
+        "summary": "Mengambil nomor dari isian form: satu nomor lewat SuratKeputusanService::reserve, banyak nomor dengan data sama lewat reserveBlock (administrator, pencatatan nomor manual sampai 1000 dengan kuota harian sendiri) atau reserveMany (petugas lain, sampai 10 dalam batas biasa); scan tidak ikut bila lebih dari satu nomor."
+      },
+      {
+        "symbol": "ListSuratKeputusan::numbersGiven / numberGiven / copyAction",
+        "startLine": 186,
+        "endLine": 234,
+        "summary": "Notifikasi setelah Ambil nomor: satu nomor dengan perihal dan pengingat unggah scan, atau N nomor SK diberikan dengan rentangnya; tombol Salin nomor menyalin nomor atau rentang ke clipboard."
       },
       {
         "symbol": "ListSuratKeputusan::downloadReport",
-        "startLine": 157,
-        "endLine": 213,
-        "summary": "Mengunduh laporan register sesuai filter: menolak hasil kosong, PDF di atas batas, atau unduhan terlalu sering; mencatat unduhan via SkReportService::log; serta menerjemahkan filter tabel ke kriteria API (reportFilters) dan nama berkas."
+        "startLine": 273,
+        "endLine": 329,
+        "summary": "Cetak / Unduh laporan register sesuai filter dan pencarian tabel: menolak laporan kosong, PDF yang terlalu besar, dan unduhan beruntun, mencatat unduhan di Log & Audit, lalu mengirim berkas Excel atau PDF."
       },
       {
         "symbol": "ListSuratKeputusan::getHeaderActions",
-        "startLine": 230,
-        "endLine": 293,
-        "summary": "Grup Cetak/Unduh Excel dan PDF serta aksi Minta Nomor SK berbentuk modal dengan tombol Ambil & minta lagi dan tautan ke halaman registrasi; memicu event sk-numbers-changed setelah nomor terbit."
+        "startLine": 346,
+        "endLine": 409,
+        "summary": "Aksi kepala halaman: grup Cetak / Unduh (Excel, PDF) dan Minta Nomor SK (modal requestForm dengan Ambil nomor, Ambil & minta lagi yang mengembalikan jumlah ke 1, serta tautan Buka sebagai halaman), memakai takeNumbers dan numbersGiven lalu menyegarkan tabel dan ringkasan tahun."
       }
     ]
   },
   "app/Filament/Resources/SuratKeputusanResource/Pages/RegisterSkNumber.php": {
-    "summary": "Halaman Filament Registrasi Nomor SK (/cp/penomoran-sk/registrasi) yang menyajikan form Minta Nomor SK sebagai halaman tersendiri dengan aturan yang sama seperti modal register (ListSuratKeputusan::requestForm). Bila dibuka dengan ?tiket=, tiket diverifikasi lewat SuratKeputusanPolicy::createForTicket dan nama peminta, keterangan, serta jenis SK diisi dari SuratKeputusanService::registrationDraft; submit memanggil SuratKeputusanService::reserve dengan ticket_id lalu membuka Rincian SK atau mengosongkan form untuk SK berikutnya.",
+    "summary": "Halaman Filament Registrasi Nomor SK (/cp/penomoran-sk/registrasi): form Minta Nomor SK sebagai halaman tersendiri dengan aturan yang sama seperti modal register (ListSuratKeputusan::requestForm), termasuk Jumlah nomor yang dibutuhkan. Dari tiket (?tiket=) mengisi peminta, keterangan, dan jenis SK dari permohonan dan selalu satu nomor; satu nomor membuka Rincian SK, banyak nomor kembali ke register.",
     "sections": [
       {
-        "symbol": "RegisterSkNumber::mount",
-        "startLine": 51,
-        "endLine": 73,
-        "summary": "Mewajibkan izin create, mengisi form, dan bila ada tiket yang boleh diakses mengisi draft isian dari layanan dan pemohon tiket."
+        "symbol": "RegisterSkNumber::mount / ticket",
+        "startLine": 50,
+        "endLine": 72,
+        "summary": "Memeriksa hak membuat SK, mengisi form, dan bila dibuka dari tiket yang boleh diproses petugas (SuratKeputusanPolicy::createForTicket) mengisi data awal dari SuratKeputusanService::registrationDraft."
       },
       {
-        "symbol": "RegisterSkNumber::submit",
-        "startLine": 114,
-        "endLine": 138,
-        "summary": "Memesan nomor SK dengan data form dan tiket terkait, menampilkan notifikasi nomor, lalu redirect ke halaman view atau mengisi ulang tanggal dan jenis SK untuk permintaan berikutnya."
+        "symbol": "RegisterSkNumber::submit / submitAnother",
+        "startLine": 98,
+        "endLine": 140,
+        "summary": "Ambil nomor lewat ListSuratKeputusan::takeNumbers dengan tiket terkait; menampilkan notifikasi numbersGiven, lalu membuka Rincian SK untuk satu nomor atau register untuk banyak nomor. Ambil & minta lagi mempertahankan tanggal dan jenis SK serta mengembalikan jumlah ke 1."
       }
     ]
   },
@@ -1630,7 +1636,7 @@
     "summary": "Model batch pengambilan beberapa nomor surat keluar sekaligus (surat_keluar_batches) dengan pembuat dan daftar surat."
   },
   "app/Models/SuratKeputusan.php": {
-    "summary": "Model Eloquent tabel surat_keputusan untuk satu nomor di Register Penomoran SK berformat {N} TAHUN {YYYY} (composeNumber), dengan status menunggu_scan atau terarsip menurut ada tidaknya berkas_scan. Hook model mengisi peran_pembuat dari peran aktif, menaikkan versi untuk optimistic lock, membersihkan nama scan, menolak scan milik SK lain, mengisi detail scan (mime, ukuran, sidik sha256, pengunggah), menautkan jenis_sk_id ke Master Jenis SK, dan menghapus file scan lama setelah commit. Menyediakan withDeletesAllowed (melewati trigger surat_keputusan_guard), scope withStatus dan register untuk filter bersama API/ekspor, serta relasi jenisSkMaster, ticket (termasuk terhapus), pengunggahScan, dan pembuat.",
+    "summary": "Model Eloquent tabel surat_keputusan untuk satu nomor di Register Penomoran SK berformat {N} TAHUN {YYYY} (composeNumber), dengan status menunggu_scan atau terarsip menurut ada tidaknya berkas_scan. Hook model mengisi peran_pembuat dari peran aktif, menaikkan versi untuk optimistic lock, membersihkan nama scan, menolak scan milik SK lain, mengisi detail scan (mime, ukuran, sidik sha256, pengunggah), menautkan jenis_sk_id ke Master Jenis SK, dan menghapus file scan lama setelah commit. Menyediakan withDeletesAllowed (melewati trigger surat_keputusan_guard), scope withStatus dan register untuk filter bersama API/ekspor, serta relasi jenisSkMaster, ticket (termasuk terhapus), pengunggahScan, dan pembuat. composeRange menyusun rentang nomor berurutan (mis. 7–256 TAHUN 2026).",
     "sections": [
       {
         "symbol": "SuratKeputusan::booted",
@@ -1645,10 +1651,16 @@
         "summary": "Transaksi yang menyalakan konfigurasi sesi app.allow_sk_delete agar penghapusan lolos trigger database; plus pengamanan scan milik SK lain, pengisian detail scan, dan cleanScanName untuk nama berkas aman."
       },
       {
+        "symbol": "SuratKeputusan::composeNumber / composeRange",
+        "startLine": 199,
+        "endLine": 210,
+        "summary": "Format nomor SK {N} TAHUN {YYYY} dan rentang nomor berurutan seperti 7–16 TAHUN 2026 (satu nomor tetap ditulis sebagai nomor tunggal), dipakai form, notifikasi, dan API kumpulan."
+      },
+      {
         "symbol": "SuratKeputusan::scopeRegister",
-        "startLine": 256,
-        "endLine": 289,
-        "summary": "Filter register: tahun (bawaan tahun ini atau semua), pencarian q pada nomor, perihal tanpa tentang, jenis, peminta, keterangan, nomor tiket dan nomor urut, serta nomor_urut, jenis_sk, status, petugas, tiket, dan rentang tanggal surat."
+        "startLine": 271,
+        "endLine": 297,
+        "summary": "Pencarian dan penyaringan register (frasa utuh pada nomor, perihal, peminta, keterangan, dan filter tahun, jenis, status, petugas, tanggal) yang sama untuk tabel panel dan parameter q API."
       }
     ]
   },
@@ -1841,55 +1853,55 @@
     "summary": "Penomoran surat keluar terpusat: reserve() mengambil 1-5000 nomor kosong terkecil per tahun (nomor bekas surat terhapus lebih dulu) dengan baris surat_sequences dikunci, insert massal per 500 baris, membuat batch dan mencatat activity_log; freeNumbers() dan nextNumber() mencari nomor kosong; describe() melengkapi surat; delete() menghapus surat oleh admin, menyesuaikan atau menghapus batch riwayat permintaan, mencatat activity_log beserta alasan, lalu menghapus berkas lampiran; composeNumber()/numberComposer() merakit nomor dari format jenis surat; variableProblem(), jenisSurat()."
   },
   "app/Services/SuratKeputusanService.php": {
-    "summary": "Service inti Penomoran SK: nomor {N} TAHUN {YYYY} berurutan 1–9999 per tahun terpisah dari surat keluar, tidak pernah dipakai ulang (tabel surat_keputusan_sequences), dan dikunci per tahun dengan pg_advisory_xact_lock agar dua petugas tidak mendapat nomor sama. Menyediakan reserve dan reserveMany (kumpulan satu tahun, semua-atau-tidak) dengan batas MAX_PER_MINUTE 10 dan MAX_PER_DAY 150 per akun (SkNumberLimitException), koreksi berversi (describe, assertVersion), status penomoran dan celah nomor, ringkasan tahun, pemakaian jenis, deteksi perihal mirip via pg_trgm, draft registrasi dari tiket, idempotensi (givenFor), periksa arsip SHA-256, riwayat dari activity log surat_keputusan, serta simpan/unduh/lampir/hapus scan dan hapus SK beralasan.",
+    "summary": "Service inti Penomoran SK: nomor {N} TAHUN {YYYY} berurutan 1–9999 per tahun, terpisah dari surat keluar, tidak pernah dipakai ulang (tabel surat_keputusan_sequences), dan dikunci per tahun dengan pg_advisory_xact_lock. Menangani satu nomor (reserve), kumpulan sampai 10 (reserveMany), pencatatan nomor manual administrator sampai 1000 (reserveBlock, MAX_BLOCK), batas per akun lewat RateLimiter, status penomoran, arsip scan, riwayat, dan penghapusan beralasan.",
     "sections": [
       {
-        "symbol": "SuratKeputusanService::nextNumber",
-        "startLine": 41,
-        "endLine": 154,
-        "summary": "Tahun yang memiliki SK, opsi jenis termasuk jenis lama, nomor berikutnya dari maksimum sequence atau nomor tercatat, status penomoran dengan celah nomor beserta jejak hapusnya, ringkasan tahun, dan pemakaian jenis per tahun."
+        "symbol": "SuratKeputusanService::MAX_NUMBER / MAX_PER_MINUTE / MAX_PER_DAY / MAX_BLOCK",
+        "startLine": 32,
+        "endLine": 46,
+        "summary": "Batas penomoran: 9999 nomor per tahun, 10 nomor per menit dan 150 per hari per akun untuk permintaan biasa, serta 1000 nomor per permintaan dan per hari untuk pencatatan nomor manual oleh administrator; ambang kemiripan perihal pg_trgm."
       },
       {
-        "symbol": "SuratKeputusanService::similarPerihal",
-        "startLine": 155,
-        "endLine": 175,
-        "summary": "Mencari hingga tiga SK tahun sama yang perihalnya mirip dengan similarity pg_trgm minimal 0,5 untuk mencegah permintaan ganda."
+        "symbol": "SuratKeputusanService::nextNumber / numberingStatus / yearSummary",
+        "startLine": 74,
+        "endLine": 160,
+        "summary": "Nomor berikutnya tahun tertentu tanpa mengambilnya, status penomoran (nomor terakhir, sisa, celah nomor beserta jejak hapus), ringkasan tahun, dan pemakaian jenis SK."
       },
       {
-        "symbol": "SuratKeputusanService::reserve",
-        "startLine": 177,
-        "endLine": 260,
-        "summary": "Mengambil nomor berikutnya di dalam transaksi berkunci tahun, untuk satu SK atau kumpulan SK setahun; issue membuat record, memperbarui sequence, dan mencatat event created dengan snapshot."
+        "symbol": "SuratKeputusanService::reserve / reserveMany",
+        "startLine": 184,
+        "endLine": 240,
+        "summary": "Mengambil satu nomor SK, atau kumpulan sampai 10 SK satu tahun yang bernomor berurutan (semua atau tidak sama sekali), di bawah kunci tahun dan dihitung terhadap batas per menit dan per hari akun."
       },
       {
-        "symbol": "SuratKeputusanService::refuseBulkTaking",
-        "startLine": 262,
-        "endLine": 296,
-        "summary": "Pembatasan laju per menit dan per hari menggunakan RateLimiter; permintaan berlebih dicatat sebagai event limited dan ditolak dengan SkNumberLimitException beserta waktu tunggu."
+        "symbol": "SuratKeputusanService::reserveBlock",
+        "startLine": 242,
+        "endLine": 286,
+        "summary": "Pencatatan nomor manual: administrator dengan peran aktif Administrator (RegisterSkAccess::canRecordBlock) mencatat sekaligus 1–1000 nomor yang sudah terpakai di luar aplikasi, dengan data yang sama, berurutan, semua atau tidak sama sekali; menolak bila sisa nomor tahun itu kurang, dan memakai kuota harian sendiri 1000 nomor per akun di luar batas biasa."
       },
       {
-        "symbol": "SuratKeputusanService::registrationDraft",
-        "startLine": 298,
-        "endLine": 347,
-        "summary": "Optimistic lock versi, catatan untuk tanggal di luar tahun berjalan, dan draft registrasi dari tiket berisi jenis SK bawaan layanan, nama pemohon, keterangan nomor tiket, nomor berikutnya, dan perihal mirip."
+        "symbol": "SuratKeputusanService::issue / record",
+        "startLine": 288,
+        "endLine": 321,
+        "summary": "Mengambil nomor berikutnya untuk satu SK dan memperbarui urutan tahun; record membuat baris surat_keputusan dengan peran pembuat serta entri created di Log & Audit (untuk blok, beserta rentang kumpulannya)."
       },
       {
-        "symbol": "SuratKeputusanService::verifyArchive",
-        "startLine": 349,
-        "endLine": 411,
-        "summary": "Memeriksa setiap scan terarsip per chunk: hilang dari disk, belum bersidik, atau hash SHA-256 berubah; serta pencarian SK berdasar kunci idempotensi dan koreksi data SK dengan tahun tetap."
+        "symbol": "SuratKeputusanService::countTaken / limits / refuseBulkTaking",
+        "startLine": 323,
+        "endLine": 362,
+        "summary": "Batas pengambilan nomor per akun lewat RateLimiter: jendela per menit dan per hari untuk permintaan biasa, atau kuota harian blok untuk pencatatan manual; penolakan dicatat sebagai event limited dan dilempar sebagai SkNumberLimitException dengan waktu tunggu."
       },
       {
-        "symbol": "SuratKeputusanService::history",
-        "startLine": 413,
-        "endLine": 530,
-        "summary": "Petugas pencatat dan perannya, perubahan terakhir, admin ganti akun yang mengambil nomor, serta riwayat SK dari activity log dengan perubahan kolom lama ke baru dan alasan hapus."
+        "symbol": "SuratKeputusanService::registrationDraft / verifyArchive",
+        "startLine": 387,
+        "endLine": 454,
+        "summary": "Isian awal Registrasi Nomor SK (dari tiket: peminta, keterangan, jenis SK layanan), nomor yang akan diberikan, perihal mirip, serta pemeriksaan kelengkapan arsip scan SK."
       },
       {
-        "symbol": "SuratKeputusanService::scanResponse",
-        "startLine": 532,
-        "endLine": 613,
-        "summary": "Menyimpan scan di disk privat dengan nama acak, menyajikan scan dengan header nosniff dan no-store, melampirkan atau melepas scan, dan menghapus SK lewat withDeletesAllowed dengan log alasan dan snapshot."
+        "symbol": "SuratKeputusanService::history / scan / delete",
+        "startLine": 538,
+        "endLine": 670,
+        "summary": "Riwayat SK dari Log & Audit (nomor diambil, data diubah, SK dihapus), penyimpanan dan pengiriman scan SK dari disk privat, serta penghapusan SK dengan alasan yang tercatat."
       }
     ]
   },
@@ -2053,7 +2065,27 @@
     "summary": "Konstanta ProxyTrust::WILDCARD_HEADERS: header X-Forwarded yang dipercaya saat TRUSTED_PROXIES bernilai bintang (host, port, proto, prefix) tanpa X-Forwarded-For, sehingga IP klien tidak bisa dipalsukan pengunjung."
   },
   "app/Support/RegisterSkAccess.php": {
-    "summary": "Helper hak akses Register Penomoran SK berdasarkan peran aktif, dipakai SuratKeputusanPolicy dan API: canWork mensyaratkan akun aktif, staf, dengan izin backoffice.access dan izin register PERMISSION backoffice.sk.register pada peran aktif; canDelete hanya untuk peran aktif admin. abilities() mengembalikan lihat/minta_nomor/ubah/hapus, actionsFor() menyusun daftar aksi beserta peran yang berwenang dan peran lain yang dapat dipindahi, serta workingRoles() mencari peran staf yang memiliki kedua izin."
+    "summary": "Helper hak akses Register Penomoran SK menurut peran aktif, dipakai SuratKeputusanPolicy, form, dan API: canWork mensyaratkan akun aktif, staf, dengan izin backoffice.access dan backoffice.sk.register; canDelete dan canRecordBlock hanya untuk peran aktif Administrator; maxPerRequest memberi batas Jumlah nomor (1000 untuk administrator, 10 untuk petugas lain).",
+    "sections": [
+      {
+        "symbol": "RegisterSkAccess::canWork / canDelete",
+        "startLine": 21,
+        "endLine": 32,
+        "summary": "Siapa yang boleh membaca register, meminta nomor, dan mengoreksi SK (peran aktif dengan izin back office dan register), serta siapa yang boleh menghapus SK (administrator)."
+      },
+      {
+        "symbol": "RegisterSkAccess::canRecordBlock / maxPerRequest",
+        "startLine": 34,
+        "endLine": 48,
+        "summary": "Pencatatan nomor manual sampai 1000 nomor sekaligus hanya untuk administrator dengan peran aktif Administrator yang boleh bekerja di register; batas jumlah nomor per permintaan 1000 untuk mereka dan 10 untuk petugas lain."
+      },
+      {
+        "symbol": "RegisterSkAccess::abilities / actionsFor / workingRoles",
+        "startLine": 50,
+        "endLine": 108,
+        "summary": "Kemampuan pengguna di register untuk panel Akses untuk peran aktif dan API (lihat, minta nomor, ubah, hapus), peran yang boleh tiap aksi beserta saran peran yang bisa diaktifkan, dan daftar peran staf yang memegang izin register."
+      }
+    ]
   },
   "app/Support/RichText.php": {
     "summary": "Helper rich text TinyMCE (layanan, pengumuman, FAQ) yang menyanitasi HTML saat simpan dan tampil memakai Symfony HtmlSanitizer, sehingga script, event handler, dan tautan tidak aman tidak sampai ke halaman. Nilai teks lama (penomoran, per baris, atau daftar JSON) diubah menjadi daftar atau paragraf HTML.",
@@ -6660,6 +6692,41 @@
         "startLine": 533,
         "endLine": 599,
         "summary": "Serah terima produk layanan di loket (picked_up), helper penyimpanan berkas tiket, pengiriman notifikasi per event, perubahan status terkelola, dan penulisan satu langkah riwayat layanan TicketLog yang tidak dapat diubah."
+      }
+    ]
+  },
+  "tests/Feature/RegisterSkJumlahNomorTest.php": {
+    "summary": "Tes fitur Jumlah nomor yang dibutuhkan di /cp/penomoran-sk: administrator mencatat 1000 nomor manual sekaligus dengan rentang, konfirmasi, log per nomor, dan kuota harian sendiri; batas 1000 dan sisa nomor tahun; petugas lain sampai 10 dalam batas biasa; admin di peran lain diperlakukan sebagai petugas; halaman Registrasi kembali ke register; SK dari tiket tetap satu nomor.",
+    "sections": [
+      {
+        "symbol": "test_an_administrator_records_a_thousand_numbers_used_by_hand_at_once",
+        "startLine": 64,
+        "endLine": 96,
+        "summary": "Pratinjau rentang, centang konfirmasi wajib, scan disembunyikan, lalu 1000 nomor berurutan dengan data sama, peran admin, urutan tahun diperbarui, dan 1000 entri Log & Audit yang menyebut rentangnya."
+      },
+      {
+        "symbol": "test_the_administrator_s_block_has_its_own_daily_quota",
+        "startLine": 98,
+        "endLine": 117,
+        "summary": "Kuota blok 1000 nomor per hari menolak permintaan yang melewatinya (dicatat sebagai limited) tanpa mengambil nomor, sementara permintaan biasa tetap memakai batasnya sendiri."
+      },
+      {
+        "symbol": "test_more_than_a_thousand_or_more_than_the_year_has_left_is_refused",
+        "startLine": 119,
+        "endLine": 140,
+        "summary": "Jumlah di atas 1000 atau di bawah 1 ditolak validasi; bila sisa nomor tahun kurang, pratinjau memperingatkan dan permintaan ditolak tanpa nomor terambil."
+      },
+      {
+        "symbol": "test_other_officers_take_up_to_ten_within_the_usual_limits",
+        "startLine": 142,
+        "endLine": 166,
+        "summary": "Petugas back office dibatasi 10 nomor sekaligus dan batas 10 per menit; reserveBlock menolak bukan administrator."
+      },
+      {
+        "symbol": "registration page and ticket",
+        "startLine": 168,
+        "endLine": 214,
+        "summary": "Admin yang memakai peran lain dibatasi 10; halaman Registrasi mengambil banyak nomor lalu membuka register dan Ambil & minta lagi mengembalikan jumlah ke 1; SK dari tiket tidak menampilkan field jumlah."
       }
     ]
   }
