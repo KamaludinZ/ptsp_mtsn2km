@@ -31,9 +31,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(Request $request): void
     {
-        // TinyMCE rich text fields (App\Filament\Forms\Components\TinyEditor) in the panels.
+        // TinyMCE rich text fields (App\Filament\Forms\Components\TinyEditor) in the panels, and
+        // components Filament loads lazily (x-load) kept out of Alpine until loaded, across Livewire updates.
         \Filament\Support\Facades\FilamentAsset::register([
             \Filament\Support\Assets\Js::make('ptsp-tiny-editor', resource_path('js/tiny-editor.js')),
+            \Filament\Support\Assets\Js::make('ptsp-async-alpine-morph', resource_path('js/async-alpine-morph.js')),
         ]);
 
         // Preferensi tampilan (text size, theme mode) in both panels, before Filament's theme script.
