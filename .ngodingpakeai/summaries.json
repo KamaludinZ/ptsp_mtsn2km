@@ -5237,7 +5237,7 @@
     "summary": "Test fitur pemberitahuan di buku surat keluar (ListSuratKeluar) bahwa nomor Surat Keputusan dicatat terpisah di Register Penomoran SK, lengkap dengan tautan ke SuratKeputusanResource. Memverifikasi aksi reserve surat keluar menampilkan peringatan format '{N} TAHUN {YYYY}' saat jenis_surat berupa SK, dan Persuratan::isSuratKeputusan hanya mengenali nama jenis SK (Surat Keputusan, SK ...) bukan Surat Keterangan, SKCK, atau kata yang kebetulan mengandung 'sk'."
   },
   "tests/Feature/SuratKeluarTest.php": {
-    "summary": "Feature test register surat keluar: akses dan policy, penomoran tahunan sampai 9999, format jenis surat, minta nomor dengan data dan berkas, riwayat permintaan, activity_log, melengkapi surat, lampiran, ekspor, API; hapus khusus admin dengan alasan teraudit, nomor terhapus diberikan lagi dan riwayat permintaan ikut disesuaikan, serta permintaan 2000 nomor sekaligus dengan batas 5000."
+    "summary": "Feature test register surat keluar: akses dan policy, penomoran tahunan sampai 9999, format jenis surat, minta nomor dengan data dan berkas, riwayat permintaan, activity_log, melengkapi surat, lampiran, ekspor, API; hapus khusus admin dengan alasan teraudit, nomor terhapus diberikan lagi dan riwayat permintaan ikut disesuaikan, serta permintaan 2000 nomor sekaligus dengan batas 5000. Tes melengkapi surat dan simpan data lewat API memakai tanggal tetap di pertengahan bulan agar tidak bergeser bulan saat dijalankan pada tanggal 29–31."
   },
   "tests/Feature/SurveyApiTest.php": {
     "summary": "Feature test SurveyApiTest: API survei publik: struktur edisi aktif dan kirim jawaban tiga langkah, CRUD edisi admin, laporan."
