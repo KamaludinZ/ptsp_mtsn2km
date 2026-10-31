@@ -59,6 +59,8 @@ class RegisterSkSaveActionTest extends TestCase
         $copy = $notification->getActions()[0];
         $this->assertSame('Salin nomor', $copy->getLabel());
         $this->assertSame("7 TAHUN {$year}", $copy->getExtraAttributes()['data-copy-number']);
+        // The button escapes its attributes more than once: no quotes for Alpine to trip on.
+        $this->assertDoesNotMatchRegularExpression('/[\'"&<>]/', $copy->getExtraAttributes()['x-on:click']);
     }
 
     public function test_ambil_dan_minta_lagi_keeps_the_form_open_with_date_and_jenis(): void

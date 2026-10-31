@@ -226,7 +226,10 @@ class TicketProgressTest extends TestCase
             ->assertTableActionVisible('status_verified', $ticket)
             ->assertTableActionHidden('status_completed', $ticket)
             ->assertSee('data-ticket-status', false)
-            ->assertSee('replaceChildren', false)
+            // The badge handler is escaped once, like the click that saves the status.
+            ->assertSee('x-on:click="const badge = $el.closest(&#039;tr&#039;)', false)
+            ->assertDontSee('&amp;#039;tr&amp;#039;', false)
+            ->assertSee('wire:click="mountTableAction(&#039;status_verified&#039;, &#039;' . $ticket->getKey() . '&#039;)"', false)
             ->callTableAction('status_verified', $ticket)
             ->assertHasNoTableActionErrors()
             ->assertNotified("{$ticket->ticket_number}: Diverifikasi");
@@ -242,6 +245,36 @@ class TicketProgressTest extends TestCase
         $this->assertSame('rejected', $ticket->fresh()->status);
 
         Livewire::test($list)->set('activeTab', 'semua')->assertTableActionHidden('status_in_process', $ticket->fresh());
+    }
+
+    public function test_a_move_that_asks_nothing_saves_on_the_first_click(): void
+    {
+        // The heading every move carries had made Diverifikasi, Diproses and Diajukan open a modal.
+        $ticket = Ticket::factory()->create(['status' => 'submitted', 'approval_required' => false]);
+        $this->actingAs($this->officer);
+        $list = \App\Filament\Resources\TicketResource\Pages\ListTickets::class;
+
+        foreach (['status_rejected', 'status_cancelled'] as $asks) {
+            Livewire::test($list)->set('activeTab', 'semua')
+                ->mountTableAction($asks, $ticket)
+                ->assertTableActionMounted($asks);
+        }
+
+        Livewire::test($list)->set('activeTab', 'semua')
+            ->mountTableAction('status_verified', $ticket)
+            ->assertTableActionNotMounted('status_verified')
+            ->assertNotified("{$ticket->ticket_number}: Diverifikasi");
+        $this->assertSame('verified', $ticket->fresh()->status);
+
+        Livewire::test($list)->set('activeTab', 'semua')
+            ->mountTableAction('status_in_process', $ticket->fresh())
+            ->assertTableActionNotMounted('status_in_process');
+        $this->assertSame('in_process', $ticket->fresh()->status);
+
+        Livewire::test($list)->set('activeTab', 'semua')
+            ->mountTableAction('status_completed', $ticket->fresh())
+            ->assertTableActionMounted('status_completed');
+        $this->assertSame('in_process', $ticket->fresh()->status);
     }
 
     public function test_keyword_search_covers_applicant_whatsapp_service_and_text(): void

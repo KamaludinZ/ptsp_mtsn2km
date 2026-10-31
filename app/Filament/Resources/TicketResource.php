@@ -314,6 +314,7 @@ class TicketResource extends Resource
     {
         return collect(TicketService::OFFICER_STATUSES)->map(function (string $label, string $status) {
             $needsReason = in_array($status, ['rejected', 'cancelled'], true);
+            $asks = $needsReason || $status === 'completed';
             $optimistic = 'const badge = $el.closest(\'tr\')?.querySelector(\'[data-ticket-status] .fi-badge\');'
                 . ' if (badge) { badge.querySelector(\'.truncate\')?.replaceChildren(' . json_encode($label . ' …') . '); badge.style.opacity = \'.6\'; }';
 
@@ -329,8 +330,13 @@ class TicketResource extends Resource
                 })
                 ->color(TicketLabels::statusColor($status))
                 ->visible(fn (Ticket $record) => array_key_exists($status, app(TicketService::class)->nextStatuses($record, auth()->user())))
-                ->extraAttributes($needsReason || $status === 'completed' ? [] : ['x-on:click' => $optimistic])
-                ->requiresConfirmation($needsReason || $status === 'completed')
+                // Through extraAttributes() the dropdown escaped the handler twice and Alpine could not
+                // read it. alpineClickHandler() turns the Livewire click off, so it is turned back on.
+                ->alpineClickHandler($asks ? null : $optimistic)
+                ->livewireClickHandlerEnabled()
+                ->requiresConfirmation($asks)
+                // Only these ask first: the custom heading alone made every move open a modal.
+                ->modal($asks)
                 ->modalHeading(fn (Ticket $record) => "{$label}: {$record->ticket_number}")
                 ->modalDescription($status === 'completed' ? 'Pemohon akan diberi tahu bahwa layanan selesai.' : null)
                 ->form($needsReason ? [

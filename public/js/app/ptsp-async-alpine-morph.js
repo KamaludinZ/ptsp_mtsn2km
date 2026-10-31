@@ -15,6 +15,13 @@
  *   "textareaFormComponent is not defined"). During an update, a component
  *   async-alpine has not loaded yet keeps its x-ignore; async-alpine removes
  *   it itself once the code is in.
+ *
+ * Filament's select also asks Livewire for its options again whenever its
+ * state changes. Closing a modal takes its fields off the page, and a select
+ * asking then goes through $wire on a removed element, which Livewire answers
+ * with undefined instead of a list ("Cannot read properties of undefined
+ * (reading 'map')" after Escape on Minta Nomor SK). Such a select gets an
+ * empty list instead.
  */
 (() => {
     if (window.ptspAsyncAlpineMorph) {
@@ -44,6 +51,29 @@
         })
     }
 
+    const SELECT_LISTS = ['getOptionsUsing', 'getOptionLabelsUsing', 'getSearchResultsUsing']
+
+    const answerRemovedSelectsWithEmptyLists = () => {
+        const data = window.Alpine.data
+
+        window.Alpine.data = function (name, callback) {
+            if (name !== 'selectFormComponent') {
+                return data.call(this, name, callback)
+            }
+
+            return data.call(this, name, function (config, ...rest) {
+                const lists = Object.fromEntries(SELECT_LISTS.map((key) => [key, async (...args) => (await config[key](...args)) ?? []]))
+
+                return callback.call(this, { ...config, ...lists }, ...rest)
+            })
+        }
+    }
+
+    const watchLivewire = () => {
+        keepWaitingComponentsIgnored()
+        answerRemovedSelectsWithEmptyLists()
+    }
+
     // This script runs at the end of the body, before Livewire starts Alpine.
     loadTablesAtOnce(document)
     document.addEventListener('livewire:navigating', (event) => {
@@ -51,8 +81,8 @@
     })
 
     if (window.Livewire) {
-        keepWaitingComponentsIgnored()
+        watchLivewire()
     } else {
-        document.addEventListener('livewire:init', keepWaitingComponentsIgnored)
+        document.addEventListener('livewire:init', watchLivewire)
     }
 })()

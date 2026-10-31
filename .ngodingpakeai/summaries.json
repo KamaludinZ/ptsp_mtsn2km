@@ -498,24 +498,24 @@
     ]
   },
   "app/Filament/Resources/SuratKeluarResource/Pages/ListSuratKeluar.php": {
-    "summary": "Halaman daftar SuratKeluarResource (buku register surat keluar, nomor 1–9999 per tahun) dengan subjudul yang menautkan ke Register Penomoran SK karena SK bernomor terpisah, widget riwayat NumberRequestHistory, dan aksi Cetak/Unduh Excel (SuratKeluarExport) atau PDF (view pdf.surat-keluar-register). Aksi Minta Nomor Surat memesan satu atau banyak nomor lewat SuratKeluarService::reserve dengan pratinjau nomor dari freeNumbers dan numberComposer, memperingatkan bila jenis surat adalah SK, dan notifikasi berisi tombol salin nomor.",
+    "summary": "Halaman daftar SuratKeluarResource (buku register surat keluar, nomor 1–9999 per tahun) dengan subjudul yang menautkan ke Register Penomoran SK karena SK bernomor terpisah, widget riwayat NumberRequestHistory, dan aksi Cetak/Unduh Excel (SuratKeluarExport) atau PDF (view pdf.surat-keluar-register). Aksi Minta Nomor Surat memesan satu atau banyak nomor lewat SuratKeluarService::reserve dengan pratinjau nomor dari freeNumbers dan numberComposer, memperingatkan bila jenis surat adalah SK, dan notifikasi berisi tombol Salin nomor / Salin semua nomor yang menyalin nomor ke clipboard; handler klik tombol notifikasi tidak memakai tanda kutip karena atributnya di-escape lebih dari sekali.",
     "sections": [
       {
         "symbol": "ListSuratKeluar::getHeaderActions",
         "startLine": 47,
-        "endLine": 190,
-        "summary": "Grup unduhan Excel/PDF sesuai query tabel terfilter dan aksi reserve: form jumlah nomor, tanggal surat, jenis surat beserta format dan variabel, klasifikasi, data surat opsional dan lampiran, pratinjau rentang nomor, lalu pemanggilan SuratKeluarService::reserve dengan penanganan TicketActionException."
+        "endLine": 191,
+        "summary": "Grup unduhan Excel/PDF sesuai query tabel terfilter dan aksi reserve: form jumlah nomor, tanggal surat, jenis surat beserta format dan variabel, klasifikasi, data surat opsional dan lampiran, pratinjau rentang nomor, lalu pemanggilan SuratKeluarService::reserve dengan penanganan TicketActionException dan notifikasi bertombol salin nomor (data-copy-number) ke clipboard."
       },
       {
         "symbol": "ListSuratKeluar::letterTypeSummary",
-        "startLine": 192,
-        "endLine": 212,
+        "startLine": 193,
+        "endLine": 213,
         "summary": "Menyusun ringkasan HTML jenis surat terpilih: format nomor efektif, mode bulan, singkatan unit kerja, dan variabel tambahan, atau keterangan format bawaan bila jenis tidak ada di Master Persuratan."
       },
       {
         "symbol": "ListSuratKeluar::variableField",
-        "startLine": 214,
-        "endLine": 233,
+        "startLine": 215,
+        "endLine": 234,
         "summary": "Field variabel tambahan ({v}/{V}) yang hanya tampil bila jenis surat mendefinisikannya, wajib sesuai pengaturan, maksimal 50 karakter, dan tidak boleh berisi garis miring."
       }
     ]
@@ -554,38 +554,38 @@
     "sections": [
       {
         "symbol": "ListSuratKeputusan::requestForm",
-        "startLine": 43,
+        "startLine": 50,
         "endLine": 112,
         "summary": "Form Minta Nomor SK yang dipakai modal register dan halaman RegisterSkNumber: tanggal surat, Jumlah nomor yang dibutuhkan (1–1000 untuk administrator dengan peran aktif Administrator, 1–10 untuk petugas lain menurut RegisterSkAccess::maxPerRequest; disembunyikan untuk SK dari tiket), data SK, scan opsional yang disembunyikan bila jumlah lebih dari satu, petugas pencatat, pratinjau, dan centang konfirmasi wajib untuk banyak nomor."
       },
       {
         "symbol": "ListSuratKeputusan::numberPreview",
-        "startLine": 114,
+        "startLine": 118,
         "endLine": 145,
         "summary": "Pratinjau nomor berikutnya atau rentang nomor (SuratKeputusan::composeRange, mis. 7–256 TAHUN 2026) untuk tahun tanggal surat; memberi peringatan bila nomor tahun itu habis atau sisa nomornya kurang dari jumlah yang diminta, serta catatan bila tahunnya bukan tahun berjalan."
       },
       {
         "symbol": "ListSuratKeputusan::takeNumbers",
-        "startLine": 147,
-        "endLine": 173,
+        "startLine": 156,
+        "endLine": 184,
         "summary": "Mengambil nomor dari isian form: satu nomor lewat SuratKeputusanService::reserve, banyak nomor dengan data sama lewat reserveBlock (administrator, pencatatan nomor manual sampai 1000 dengan kuota harian sendiri) atau reserveMany (petugas lain, sampai 10 dalam batas biasa); scan tidak ikut bila lebih dari satu nomor."
       },
       {
         "symbol": "ListSuratKeputusan::numbersGiven / numberGiven / copyAction",
-        "startLine": 186,
-        "endLine": 234,
-        "summary": "Notifikasi setelah Ambil nomor: satu nomor dengan perihal dan pengingat unggah scan, atau N nomor SK diberikan dengan rentangnya; tombol Salin nomor menyalin nomor atau rentang ke clipboard."
+        "startLine": 192,
+        "endLine": 236,
+        "summary": "Notifikasi setelah Ambil nomor: satu nomor dengan perihal dan pengingat unggah scan, atau N nomor SK diberikan dengan rentangnya; tombol Salin nomor (copyAction) menyimpan nomor di atribut data-copy-number lalu menyalinnya ke clipboard dan menampilkan tooltip Tersalin, dengan handler tanpa tanda kutip karena tombol notifikasi meng-escape atributnya lebih dari sekali."
       },
       {
         "symbol": "ListSuratKeputusan::downloadReport",
-        "startLine": 273,
-        "endLine": 329,
+        "startLine": 281,
+        "endLine": 309,
         "summary": "Cetak / Unduh laporan register sesuai filter dan pencarian tabel: menolak laporan kosong, PDF yang terlalu besar, dan unduhan beruntun, mencatat unduhan di Log & Audit, lalu mengirim berkas Excel atau PDF."
       },
       {
         "symbol": "ListSuratKeputusan::getHeaderActions",
-        "startLine": 346,
-        "endLine": 409,
+        "startLine": 348,
+        "endLine": 411,
         "summary": "Aksi kepala halaman: grup Cetak / Unduh (Excel, PDF) dan Minta Nomor SK (modal requestForm dengan Ambil nomor, Ambil & minta lagi yang mengembalikan jumlah ke 1, serta tautan Buka sebagai halaman), memakai takeNumbers dan numbersGiven lalu menyegarkan tabel dan ringkasan tahun."
       }
     ]
@@ -4898,7 +4898,7 @@
     "summary": "Test fitur ganti peran dan ganti akun sementara pada register SK: peran aktif akun yang sedang dipakai menentukan wewenang. Memverifikasi klien API membaca GET /api/peran-aktif (peran aktif, flag register_sk per peran, wewenang register_sk), mendapat 403 dari GET /api/penomoran-sk dengan daftar peran_yang_berwenang, lalu berpindah peran lewat PUT /api/peran-aktif yang dicatat di activity log 'role'; serta saat admin meminjam akun petugas (route ganti-akun.mulai), tabel ListSuratKeputusan memakai peran back office petugas sehingga aksi delete tersembunyi."
   },
   "tests/Feature/RegisterSkSaveActionTest.php": {
-    "summary": "Test fitur penyimpanan aksi reserve (Minta Nomor SK) di ListSuratKeputusan: modal menawarkan tombol Ambil nomor dan Ambil & minta lagi, notifikasi ListSuratKeputusan::numberGiven menampilkan nomor, perihal, pengingat unggah scan, serta tombol 'Salin nomor' dengan atribut data-copy-number. Memverifikasi opsi another mempertahankan modal dengan tanggal dan jenis_sk sambil mengosongkan perihal/peminta dan memajukan pratinjau nomor, dan saat nomor ditolak (tahun mencapai 9999) isian yang sudah diketik tetap dipertahankan tanpa SK tersimpan."
+    "summary": "Test fitur penyimpanan aksi reserve (Minta Nomor SK) di ListSuratKeputusan: modal menawarkan tombol Ambil nomor dan Ambil & minta lagi, notifikasi ListSuratKeputusan::numberGiven menampilkan nomor, perihal, pengingat unggah scan, serta tombol 'Salin nomor' dengan atribut data-copy-number dan handler klik tanpa tanda kutip atau karakter HTML. Memverifikasi opsi another mempertahankan modal dengan tanggal dan jenis_sk sambil mengosongkan perihal/peminta dan memajukan pratinjau nomor, dan saat nomor ditolak (tahun mencapai 9999) isian yang sudah diketik tetap dipertahankan tanpa SK tersimpan."
   },
   "tests/Feature/RegisterSkScanDownloadTest.php": {
     "summary": "Test fitur unduh berkas arsip scan SK: halaman Rincian SK (SuratKeputusanResource view) menautkan 'Lihat scan' dan 'Unduh scan' ke route web surat-keputusan.scan yang menyajikan file inline atau sebagai unduhan dengan nama aslinya. Memverifikasi SK tanpa scan memberi 404, aksi tabel scan hanya untuk SK terarsip, header content-type sesuai MIME yang diperiksa dengan nosniff dan cache private no-store, MIME tidak dikenal selalu diunduh sebagai octet-stream, file hilang dari disk dilaporkan, unduhan API GET /api/penomoran-sk/{id}/scan (tautan_unduh route api.penomoran-sk.scan.show) butuh token, dan hanya back office yang boleh mengakses (loket 403, tamu diarahkan login).",
@@ -5237,7 +5237,7 @@
     "summary": "Test fitur pemberitahuan di buku surat keluar (ListSuratKeluar) bahwa nomor Surat Keputusan dicatat terpisah di Register Penomoran SK, lengkap dengan tautan ke SuratKeputusanResource. Memverifikasi aksi reserve surat keluar menampilkan peringatan format '{N} TAHUN {YYYY}' saat jenis_surat berupa SK, dan Persuratan::isSuratKeputusan hanya mengenali nama jenis SK (Surat Keputusan, SK ...) bukan Surat Keterangan, SKCK, atau kata yang kebetulan mengandung 'sk'."
   },
   "tests/Feature/SuratKeluarTest.php": {
-    "summary": "Feature test register surat keluar: akses dan policy, penomoran tahunan sampai 9999, format jenis surat, minta nomor dengan data dan berkas, riwayat permintaan, activity_log, melengkapi surat, lampiran, ekspor, API; hapus khusus admin dengan alasan teraudit, nomor terhapus diberikan lagi dan riwayat permintaan ikut disesuaikan, serta permintaan 2000 nomor sekaligus dengan batas 5000."
+    "summary": "Feature test register surat keluar: akses dan policy, penomoran tahunan sampai 9999, format jenis surat, minta nomor dengan data dan berkas, riwayat permintaan, activity_log, melengkapi surat, lampiran, ekspor, API; hapus khusus admin dengan alasan teraudit, nomor terhapus diberikan lagi dan riwayat permintaan ikut disesuaikan, serta permintaan 2000 nomor sekaligus dengan batas 5000. Tes melengkapi surat dan simpan data lewat API memakai tanggal tetap di pertengahan bulan agar tidak bergeser bulan saat dijalankan pada tanggal 29–31."
   },
   "tests/Feature/SurveyApiTest.php": {
     "summary": "Feature test SurveyApiTest: API survei publik: struktur edisi aktif dan kirim jawaban tiga langkah, CRUD edisi admin, laporan."
@@ -5279,7 +5279,21 @@
     "summary": "Feature test ticket_logs.acting_role: aksi tiket menyimpan peran aktif, staf satu peran tercatat dan pemohon/sistem kosong, kolom ikut immutable, API riwayat menampilkan Sebagai. Tiket demo dipilih pasti lewat TestCase::undisposedTicket."
   },
   "tests/Feature/TicketProgressTest.php": {
-    "summary": "Feature test TicketProgressTest: detail permohonan: tahapan (stepper) dan sisa waktu terhadap target."
+    "summary": "Feature test TicketProgressTest untuk detail dan daftar tiket: tahapan (stepper), sisa waktu terhadap target, riwayat status, catatan tindak lanjut, kontrol status di halaman detail, ubah status cepat dari /cp/tiket, pencarian kata kunci dan varian nomor, filter layanan/status/periode, serta ringkasan filter aktif.",
+    "sections": [
+      {
+        "symbol": "test_status_changes_from_the_list_without_opening_the_ticket",
+        "startLine": 218,
+        "endLine": 248,
+        "summary": "Ubah status dari daftar tiket: handler badge optimistis dan wire:click mountTableAction di dropdown masing-masing di-escape satu kali saja, lalu status tersimpan lewat aksi tabel."
+      },
+      {
+        "symbol": "test_a_move_that_asks_nothing_saves_on_the_first_click",
+        "startLine": 250,
+        "endLine": 278,
+        "summary": "Status ditolak, dibatalkan, dan selesai membuka modal konfirmasi, sedangkan diverifikasi dan diproses langsung tersimpan tanpa modal dengan notifikasi nomor tiket."
+      }
+    ]
   },
   "tests/Feature/TicketSchemaTest.php": {
     "summary": "Feature test TicketSchemaTest: skema tabel permohonan: indeks kolom daftar, hapus petugas tetap menyimpan permohonan, pemohon/layanan yang punya permohonan ditolak dihapus (kode restrict PostgreSQL 16 dan 18 diterima), dan CHECK nilai tidak dikenal."
@@ -5338,7 +5352,7 @@
     "summary": "Feature test UserUnitRolesTest: peran unit penerima disposisi di pengelolaan pengguna: admin menetapkan peran Penjamin Mutu yang tampil dengan labelnya."
   },
   "tests/Feature/VariabelTambahanTest.php": {
-    "summary": "Feature test variabel tambahan {v}/{V}: tab Variabel Tambahan dan aksi tambah/ubah/hapus, field variabel dinamis di form Minta Nomor Surat (muncul, reset saat jenis berganti, wajib diisi, batas 5000 nomor per permintaan dengan pesan jelas, ringkasan jenis surat, tombol salin nomor), validasi di SuratKeluarService dan API, nilai variabel masuk ke token, serta form edit surat yang meminta variabel."
+    "summary": "Feature test variabel tambahan {v}/{V}: tab Variabel Tambahan dan aksi tambah/ubah/hapus, field variabel dinamis di form Minta Nomor Surat (muncul, reset saat jenis berganti, wajib diisi, batas 5000 nomor per permintaan dengan pesan jelas, ringkasan jenis surat, tombol salin nomor dengan handler klik tanpa tanda kutip), validasi di SuratKeluarService dan API, nilai variabel masuk ke token, serta form edit surat yang meminta variabel."
   },
   "tests/Feature/VisitorFiltersTest.php": {
     "summary": "Feature test VisitorFiltersTest: buku tamu di panel staf: pencarian dan filter."
@@ -6229,25 +6243,25 @@
       {
         "symbol": "TicketResource::quickStatusActions",
         "startLine": 304,
-        "endLine": 352,
-        "summary": "Membangun aksi tabel per status dari TicketService::OFFICER_STATUSES yang hanya terlihat bila status itu ada di nextStatuses; status biasa memakai pembaruan badge optimistis di sisi klien, sedangkan ditolak/dibatalkan wajib alasan dan selesai meminta konfirmasi; memanggil TicketService::changeStatus dan menampilkan notifikasi gagal untuk TicketActionException."
+        "endLine": 358,
+        "summary": "Membangun aksi tabel per status dari TicketService::OFFICER_STATUSES yang hanya terlihat bila status itu ada di nextStatuses. Status biasa (mis. Diverifikasi, Diproses, Diajukan) tersimpan pada klik pertama tanpa modal dan memakai pembaruan badge optimistis lewat alpineClickHandler dengan klik Livewire tetap aktif; ditolak/dibatalkan wajib alasan dan selesai meminta konfirmasi, dan hanya ketiganya yang membuka modal. Memanggil TicketService::changeStatus dan menampilkan notifikasi gagal untuk TicketActionException."
       },
       {
         "symbol": "TicketResource::activeFilterCount/narrowingSummary/isNarrowed/emptyState",
-        "startLine": 354,
-        "endLine": 415,
+        "startLine": 360,
+        "endLine": 421,
         "summary": "Helper daftar: menghitung filter aktif, menyusun ringkasan 'n filter aktif · kata kunci · n permohonan ditemukan', menentukan apakah daftar disempitkan pencarian/filter, dan memilih judul, deskripsi, ikon empty state per tab (antrian, saya, disposisi-unit, terlambat, persetujuan, siap-diambil)."
       },
       {
         "symbol": "TicketResource::infolist",
-        "startLine": 417,
-        "endLine": 588,
+        "startLine": 423,
+        "endLine": 594,
         "summary": "Infolist detail tiket: tahapan permohonan, ringkasan (kategori masuk, status, layanan, jalur, prioritas, tanggal, petugas), data pemohon, persetujuan pimpinan (approval_status, approver, signature_type, disposition_recipients, approval_notes), keterangan, berkas dan hasil layanan via view ticket-documents, langkah workflow, serta riwayat status, kategori, disposisi, dokumen dan timeline melalui ViewEntry."
       },
       {
         "symbol": "TicketResource::getPages",
-        "startLine": 590,
-        "endLine": 596,
+        "startLine": 596,
+        "endLine": 602,
         "summary": "Mendaftarkan halaman resource: index ke Pages\\ListTickets dan view ke Pages\\ViewTicket dengan parameter record."
       }
     ]
@@ -6731,32 +6745,38 @@
     ]
   },
   "resources/js/async-alpine-morph.js": {
-    "summary": "Skrip panel Filament untuk mode SPA /cp: memuat tabel Filament (x-data table dengan x-load visible) langsung sebagai eager pada halaman pertama dan pada halaman yang dibuka lewat wire:navigate (event livewire:navigating, onSwap) sebelum Alpine berjalan, sehingga modal aksi halaman seperti Minta Nomor SK yang berada di dalam tabel bisa terbuka di ponsel. Hook Livewire morph.updating mempertahankan x-ignore pada komponen async-alpine yang belum dimuat agar render ulang tidak menjalankan komponen yang kodenya belum ada (table, selectFormComponent, textareaFormComponent is not defined).",
+    "summary": "Skrip panel Filament untuk mode SPA /cp: memuat tabel Filament (x-data table dengan x-load visible) langsung sebagai eager pada halaman pertama dan pada halaman yang dibuka lewat wire:navigate (event livewire:navigating, onSwap) sebelum Alpine berjalan, sehingga modal aksi halaman seperti Minta Nomor SK yang berada di dalam tabel bisa terbuka di ponsel. Hook Livewire morph.updating mempertahankan x-ignore pada komponen async-alpine yang belum dimuat. Pendaftaran Alpine.data selectFormComponent dibungkus agar dropdown yang sudah hilang dari halaman (mis. setelah modal ditutup dengan Escape) mendapat daftar opsi kosong, bukan error reading 'map'.",
     "sections": [
       {
         "symbol": "loadTablesAtOnce",
-        "startLine": 19,
-        "endLine": 29,
+        "startLine": 26,
+        "endLine": 36,
         "summary": "Penanda agar skrip hanya terpasang sekali, selektor tabel Filament yang dimuat malas, dan fungsi yang mengubah strategi pemuatannya menjadi eager di dalam satu akar DOM."
       },
       {
         "symbol": "keepWaitingComponentsIgnored",
-        "startLine": 31,
-        "endLine": 45,
+        "startLine": 38,
+        "endLine": 52,
         "summary": "Hook Livewire morph.updating: tabel di HTML baru tetap eager, dan komponen yang masih menunggu async-alpine (_x_async belum loaded) tetap memakai x-ignore selama render ulang."
       },
       {
-        "symbol": "pemasangan",
-        "startLine": 47,
-        "endLine": 58,
-        "summary": "Memuat tabel langsung pada halaman saat ini, mendaftarkan onSwap pada livewire:navigating untuk halaman berikutnya, dan memasang hook saat Livewire sudah ada atau menunggu livewire:init."
+        "symbol": "answerRemovedSelectsWithEmptyLists",
+        "startLine": 54,
+        "endLine": 70,
+        "summary": "Membungkus Alpine.data untuk komponen selectFormComponent: getOptionsUsing, getOptionLabelsUsing, dan getSearchResultsUsing yang dijawab undefined oleh $wire pada elemen yang sudah dilepas Livewire diganti daftar kosong."
+      },
+      {
+        "symbol": "watchLivewire / pemasangan",
+        "startLine": 72,
+        "endLine": 88,
+        "summary": "watchLivewire memasang kedua hook; pemasangan memuat tabel langsung pada halaman saat ini, mendaftarkan onSwap pada livewire:navigating, lalu memanggil watchLivewire saat Livewire sudah ada atau menunggu livewire:init."
       }
     ]
   },
   "public/js/app/ptsp-async-alpine-morph.js": {
-    "summary": "Salinan terbit (php artisan filament:assets) dari resources/js/async-alpine-morph.js, dimuat Filament sebagai aset ptsp-async-alpine-morph di panel: tabel /cp dimuat langsung pada mode SPA, termasuk setelah wire:navigate, agar modal aksi di dalam tabel terbuka di ponsel; komponen async-alpine yang belum dimuat tetap x-ignore saat render ulang Livewire."
+    "summary": "Salinan terbit (php artisan filament:assets) dari resources/js/async-alpine-morph.js, dimuat Filament sebagai aset ptsp-async-alpine-morph di panel: tabel /cp dimuat langsung pada mode SPA, termasuk setelah wire:navigate, agar modal aksi di dalam tabel terbuka di ponsel; komponen async-alpine yang belum dimuat tetap x-ignore saat render ulang Livewire; dropdown selectFormComponent yang sudah hilang dari halaman mendapat daftar opsi kosong."
   },
   "tests/Feature/AsyncAlpineMorphAssetTest.php": {
-    "summary": "Tes skrip ptsp-async-alpine-morph: halaman /cp/penomoran-sk dan /cp/penomoran-sk/registrasi memuat js/app/ptsp-async-alpine-morph.js, salinan di public sama dengan resources/js/async-alpine-morph.js (harus diterbitkan ulang dengan filament:assets bila berubah), dan skrip memuat aturan tabel eager, livewire:navigating, serta hook morph.updating."
+    "summary": "Tes skrip ptsp-async-alpine-morph: halaman /cp/penomoran-sk dan /cp/penomoran-sk/registrasi memuat js/app/ptsp-async-alpine-morph.js, salinan di public sama dengan resources/js/async-alpine-morph.js (harus diterbitkan ulang dengan filament:assets bila berubah), skrip memuat aturan tabel eager, livewire:navigating, dan hook morph.updating, serta pembungkus selectFormComponent yang memberi daftar kosong untuk getOptionsUsing, getOptionLabelsUsing, dan getSearchResultsUsing."
   }
 }
