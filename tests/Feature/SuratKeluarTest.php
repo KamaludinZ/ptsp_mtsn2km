@@ -307,12 +307,13 @@ class SuratKeluarTest extends TestCase
     public function test_officer_completes_a_reserved_letter(): void
     {
         $this->actingAs($this->user('staff1@mtsn2malang.sch.id'));
-        $letter = app(SuratKeluarService::class)->reserve(1, now()->setMonth(3), auth()->user())->first();
+        // A fixed day: setMonth() on the 31st rolls April over into May.
+        $letter = app(SuratKeluarService::class)->reserve(1, now()->setDate(now()->year, 3, 10), auth()->user())->first();
         $this->assertTrue($letter->isDraft());
 
         Livewire::test(ListSuratKeluar::class)
             ->callTableAction('edit', $letter, [
-                'tanggal_surat' => now()->setMonth(4)->toDateString(),
+                'tanggal_surat' => now()->setDate(now()->year, 4, 10)->toDateString(),
                 'tujuan_surat' => 'Kepala Dinas Pendidikan Kota Malang',
                 'perihal' => 'Permohonan izin kegiatan',
                 'jenis_surat' => 'Surat Dinas',
@@ -535,11 +536,11 @@ class SuratKeluarTest extends TestCase
     public function test_letter_data_is_saved_through_the_api(): void
     {
         $staff = $this->user('staff1@mtsn2malang.sch.id');
-        $letter = app(SuratKeluarService::class)->reserve(1, now()->setMonth(2), $staff)->first();
+        $letter = app(SuratKeluarService::class)->reserve(1, now()->setDate(now()->year, 2, 10), $staff)->first();
         Sanctum::actingAs($staff);
 
         $this->putJson('/api/surat-keluar/' . $letter->id, [
-            'tanggal_surat' => now()->setMonth(5)->toDateString(),
+            'tanggal_surat' => now()->setDate(now()->year, 5, 10)->toDateString(),
             'tujuan_surat' => 'Kepala Dinas Pendidikan Kota Malang',
             'perihal' => 'Permohonan data',
             'klasifikasi' => 'KS.00',
