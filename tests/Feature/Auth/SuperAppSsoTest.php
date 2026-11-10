@@ -39,7 +39,25 @@ class SuperAppSsoTest extends TestCase
     {
         $this->get('/login')->assertOk()
             ->assertSee('Masuk lewat Super App')
-            ->assertSee('href="https://superapp.test/"', false);
+            ->assertSee('href="https://superapp.test/"', false)
+            // SSO hanya alternatif: form e-mail + password bawaan tetap ada
+            ->assertSee('id="loginForm"', false)
+            ->assertSee('name="password"', false);
+    }
+
+    public function test_email_and_password_login_still_works_when_sso_is_configured(): void
+    {
+        $user = User::factory()->create();
+        Http::fake();
+
+        $this->withSession(['captcha_value' => '123456'])->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+            'captcha' => '123456',
+        ])->assertRedirect('/portal');
+
+        $this->assertAuthenticatedAs($user);
+        Http::assertNothingSent();
     }
 
     public function test_login_page_hides_the_button_until_configured(): void
