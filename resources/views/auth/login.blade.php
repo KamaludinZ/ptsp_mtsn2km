@@ -247,6 +247,37 @@
         color: #ffffff;
     }
 
+    .btn-superapp {
+        width: 100%;
+        background: #ffffff;
+        border: 2px solid var(--bs-primary);
+        color: var(--bs-primary) !important;
+    }
+
+    .btn-superapp:hover,
+    .btn-superapp:focus-visible {
+        background: var(--bs-primary);
+        color: #ffffff !important;
+    }
+
+    [data-theme="dark"] .btn-superapp {
+        background: transparent;
+        border-color: #22c55e;
+        color: #22c55e !important;
+    }
+
+    [data-theme="dark"] .btn-superapp:hover {
+        background: #22c55e;
+        color: #052e16 !important;
+    }
+
+    .sso-hint {
+        font-size: 13px;
+        color: var(--bs-secondary-text);
+        text-align: center;
+        margin: 8px 0 0;
+    }
+
     .alert-success {
         background: #d1fae5;
         border: 1px solid #6ee7b7;
@@ -470,6 +501,17 @@
                                         <li>{{ $error }}</li>
                                     @endforeach
                                 </ul>
+                            </div>
+                        @endif
+
+                        @if (\App\Http\Controllers\Auth\SuperAppSsoController::enabled())
+                            <a href="{{ \App\Http\Controllers\Auth\SuperAppSsoController::portalUrl() }}" class="btn btn-superapp d-flex align-items-center justify-content-center" id="superAppLogin">
+                                <i class="fas fa-th-large me-2" aria-hidden="true"></i><span>Masuk lewat Super App</span>
+                            </a>
+                            <p class="sso-hint">Untuk siswa, guru, dan pegawai madrasah. Setelah masuk di Super App, pilih kartu <strong>PTSP</strong>.</p>
+
+                            <div class="divider">
+                                <span>atau masuk dengan e-mail</span>
                             </div>
                         @endif
 

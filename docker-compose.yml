@@ -74,6 +74,10 @@ services:
       - WHATSAPP_API_URL=${WHATSAPP_API_URL:-}
       - WHATSAPP_API_TOKEN=${WHATSAPP_API_TOKEN:-}
       - WHATSAPP_SENDER_ID=${WHATSAPP_SENDER_ID:-}
+      # Masuk lewat Super App Madrasah (SSO); kosong = tombol tidak tampil
+      - SUPERAPP_SSO_URL=${SUPERAPP_SSO_URL:-}
+      - SUPERAPP_SSO_KUNCI=${SUPERAPP_SSO_KUNCI:-}
+      - SUPERAPP_SSO_PORTAL_URL=${SUPERAPP_SSO_PORTAL_URL:-}
     volumes:
       # Uploaded documents, service outputs, images and logs (must survive redeploys)
       - ptsp-storage:/var/www/html/storage
