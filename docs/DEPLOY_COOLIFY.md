@@ -87,6 +87,7 @@ Variabel opsional:
 | `MAIL_MAILER` | `log` | Isi `smtp` agar email benar-benar terkirim |
 | `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS` | – | Akun SMTP. Contoh Gmail: `smtp.gmail.com`, port `587`, pakai *App Password*. |
 | `WHATSAPP_API_URL`, `WHATSAPP_API_TOKEN`, `WHATSAPP_SENDER_ID` | – | Gateway WhatsApp, bila dipakai |
+| `SUPERAPP_SSO_URL`, `SUPERAPP_SSO_KUNCI`, `SUPERAPP_SSO_PORTAL_URL` | – | Tombol **Masuk lewat Super App** di halaman login. Lihat [SSO_SUPERAPP.md](SSO_SUPERAPP.md). Kosong = tombol tidak tampil. |
 | `AUTO_MIGRATE` | `true` | Migrasi otomatis setiap deploy |
 | `SEED_ON_FIRST_DEPLOY` | `true` | Isi data awal jika tabel users masih kosong |
 | `LOG_LEVEL` | `warning` | Isi `debug` sementara saat mencari masalah |

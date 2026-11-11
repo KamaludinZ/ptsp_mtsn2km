@@ -8,8 +8,14 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\SuperAppSsoController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+
+// Masuk lewat Super App Madrasah: Super App mengirim pengguna ke sini dengan tiket sekali pakai.
+Route::get('sso/masuk', [SuperAppSsoController::class, 'masuk'])
+    ->middleware('throttle:30,1')
+    ->name('sso.masuk');
 
 Route::get('refresh-captcha', [AuthenticatedSessionController::class, 'refreshCaptcha'])->name('refresh.captcha');
 
