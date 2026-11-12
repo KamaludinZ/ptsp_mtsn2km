@@ -2,7 +2,7 @@
     use App\Services\SystemMonitorService as M;
 
     $meters = [
-        ['Beban CPU', $server['load_percent'], $server['load'] ? 'Load rata-rata 1/5/15 menit: ' . implode(' / ', $server['load']) . ' pada ' . $server['cpu_cores'] . ' inti' : 'Tidak tersedia di host ini'],
+        ['Beban CPU server', $server['load_percent'], $server['load'] ? 'Rata-rata 5 menit, seluruh host. Load 1/5/15 menit: ' . implode(' / ', $server['load']) . ' pada ' . $server['cpu_cores'] . ' inti' : 'Tidak tersedia di host ini'],
         ['Memori (RAM)', $server['memory']['used_percent'], M::bytes($server['memory']['available']) . ' tersedia dari ' . M::bytes($server['memory']['total'])],
         ['Disk', $server['disk']['used_percent'], M::bytes($server['disk']['free']) . ' kosong dari ' . M::bytes($server['disk']['total'])],
     ];

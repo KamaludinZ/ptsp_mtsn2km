@@ -586,6 +586,44 @@ class SystemMonitorTest extends TestCase
         Log::shouldHaveReceived('critical')->once()->with('Monitoring: status aplikasi kritis', ['issues' => ['Database tidak terhubung']]);
     }
 
+    public function test_a_short_cpu_spike_does_not_send_an_alert_but_a_sustained_one_does_once(): void
+    {
+        $load = 95.0;
+        $this->partialMock(SystemMonitorService::class, function ($mock) use (&$load) {
+            $mock->shouldReceive('application')->andReturn([
+                'up' => true, 'maintenance' => false, 'database' => ['ok' => true, 'latency_ms' => 1.0, 'driver' => 'pgsql', 'error' => null],
+                'storage' => ['writable' => true], 'scheduler' => ['ok' => true, 'last_run' => null], 'queue' => ['pending' => 0, 'failed' => 0],
+            ]);
+            $mock->shouldReceive('server')->andReturnUsing(function () use (&$load) {
+                return ['load_percent' => $load, 'memory' => ['used_percent' => 10.0], 'disk' => ['used_percent' => 10.0]];
+            });
+        });
+        Log::spy();
+
+        // One spike, then back to normal: no e-mail.
+        $this->artisan('monitor:collect')->assertSuccessful();
+        $load = 20.0;
+        $this->artisan('monitor:collect')->assertSuccessful();
+        Log::shouldNotHaveReceived('critical');
+
+        // Critical at two snapshots in a row (about ten minutes): one e-mail,
+        // and no repeat while it keeps hovering around the threshold.
+        foreach ([95.0, 96.0, 20.0, 95.0, 97.0] as $load) {
+            $this->artisan('monitor:collect')->assertSuccessful();
+        }
+        Log::shouldHaveReceived('critical')->once()->with('Monitoring: status aplikasi kritis', ['issues' => ['CPU 96%']]);
+    }
+
+    public function test_cpu_load_uses_the_five_minute_average(): void
+    {
+        $server = app(SystemMonitorService::class)->server();
+        if ($server['load'] === null || ! $server['cpu_cores']) {
+            $this->markTestSkipped('Load average tidak tersedia di host ini.');
+        }
+
+        $this->assertEqualsWithDelta($server['load'][1] / $server['cpu_cores'] * 100, $server['load_percent'], 1.0);
+    }
+
     public function test_metrics_api_returns_snapshots_and_averages(): void
     {
         Sanctum::actingAs($this->admin());
