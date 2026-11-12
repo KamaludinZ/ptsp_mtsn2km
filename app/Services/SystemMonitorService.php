@@ -258,7 +258,7 @@ class SystemMonitorService
     /**
      * Overall health from the application and server readings.
      *
-     * @return array{level: string, label: string, issues: array<int, string>, checked_at: string}
+     * @return array{level: string, label: string, issues: array<int, string>, critical: array<int, string>, checked_at: string}
      */
     public function overall(?array $app = null, ?array $server = null): array
     {
@@ -293,7 +293,7 @@ class SystemMonitorService
             default => ['success', 'Sehat'],
         };
 
-        return ['level' => $level, 'label' => $label, 'issues' => [...$critical, ...$warnings], 'checked_at' => now()->toIso8601String()];
+        return ['level' => $level, 'label' => $label, 'issues' => [...$critical, ...$warnings], 'critical' => $critical, 'checked_at' => now()->toIso8601String()];
     }
 
     /** Keamanan aplikasi: sign-in failures, lockouts, sessions, blocks, HTTPS and risky settings. */
@@ -361,7 +361,11 @@ class SystemMonitorService
             'os' => PHP_OS_FAMILY . ' ' . php_uname('r'),
             'cpu_cores' => $cores,
             'load' => $load ? array_map(fn ($v) => round($v, 2), $load) : null,
-            'load_percent' => $load && $cores ? round($load[0] / $cores * 100, 1) : null,
+            // The 5-minute load average, not the 1-minute one: a build, backup
+            // or another container on the same host can push the 1-minute
+            // figure past 90% for a moment, which is not worth an alarm.
+            // Inside Docker this is the whole host's load, not just this app.
+            'load_percent' => $load && $cores ? round($load[1] / $cores * 100, 1) : null,
             'memory' => $memory,
             'disk' => $this->disk(base_path()),
             'uptime_seconds' => $this->uptime(),
