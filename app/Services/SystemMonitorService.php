@@ -334,6 +334,7 @@ class SystemMonitorService
             'queue_failed' => $app['queue']['failed'],
             'scheduler_ok' => $app['scheduler']['ok'],
             'cpu_percent' => $server['load_percent'],
+            'app_cpu_percent' => $this->appCpuPercent(remember: true),
             'memory_percent' => $server['memory']['used_percent'],
             'disk_percent' => $server['disk']['used_percent'],
             'status' => $this->lastOverall['level'],
@@ -366,6 +367,8 @@ class SystemMonitorService
             // figure past 90% for a moment, which is not worth an alarm.
             // Inside Docker this is the whole host's load, not just this app.
             'load_percent' => $load && $cores ? round($load[1] / $cores * 100, 1) : null,
+            // This app's own share (its container), averaged since the last snapshot.
+            'app_cpu_percent' => $this->appCpuPercent(),
             'memory' => $memory,
             'disk' => $this->disk(base_path()),
             'uptime_seconds' => $this->uptime(),
@@ -373,7 +376,75 @@ class SystemMonitorService
         ];
     }
 
-    private function cpuCores(): ?int
+    public const APP_CPU_SAMPLE_KEY = 'monitor:app-cpu-sample';
+
+    /**
+     * CPU used by this container (nginx, PHP, scheduler, queue: the whole
+     * PTSP app, not its database or other apps on the host), as a percentage
+     * of the CPUs it may use, averaged since the previous snapshot. The load
+     * figure above is the whole host's; this one tells whether a spike came
+     * from PTSP itself. Null outside a container or before a first sample.
+     *
+     * @param  bool  $remember  store this reading as the next starting point (monitor:collect)
+     */
+    public function appCpuPercent(bool $remember = false): ?float
+    {
+        if (! $this->container() || ($usage = $this->containerCpuUsageMicros()) === null) {
+            return null;
+        }
+
+        $now = microtime(true);
+        $previous = Cache::get(self::APP_CPU_SAMPLE_KEY);
+        if ($remember) {
+            Cache::forever(self::APP_CPU_SAMPLE_KEY, ['usage' => $usage, 'at' => $now]);
+        }
+
+        $elapsed = is_array($previous) ? $now - (float) $previous['at'] : 0;
+        $used = is_array($previous) ? $usage - (int) $previous['usage'] : -1;
+        $cpus = $this->containerCpuLimit() ?? $this->cpuCores();
+
+        // Too short to mean anything, too old (scheduler stopped), or the
+        // counter restarted with a new container.
+        if ($elapsed < 30 || $elapsed > 3600 || $used < 0 || ! $cpus) {
+            return null;
+        }
+
+        return round(min(100, $used / 1e6 / $elapsed / $cpus * 100), 1);
+    }
+
+    /** Total CPU time this container has used, in microseconds (cgroup v2 or v1). */
+    protected function containerCpuUsageMicros(): ?int
+    {
+        $stat = @file_get_contents('/sys/fs/cgroup/cpu.stat');
+        if ($stat && preg_match('/^usage_usec\s+(\d+)/m', $stat, $m)) {
+            return (int) $m[1];
+        }
+
+        foreach (['/sys/fs/cgroup/cpuacct/cpuacct.usage', '/sys/fs/cgroup/cpu,cpuacct/cpuacct.usage'] as $file) {
+            $nanos = trim((string) @file_get_contents($file));
+            if (ctype_digit($nanos)) {
+                return intdiv((int) $nanos, 1000);
+            }
+        }
+
+        return null;
+    }
+
+    /** CPUs the container may use when Docker limits it (e.g. "cpus: 2"), otherwise null. */
+    protected function containerCpuLimit(): ?float
+    {
+        $max = trim((string) @file_get_contents('/sys/fs/cgroup/cpu.max'));
+        if (preg_match('/^(\d+)\s+(\d+)$/', $max, $m) && (int) $m[2] > 0) {
+            return (int) $m[1] / (int) $m[2];
+        }
+
+        $quota = (int) trim((string) @file_get_contents('/sys/fs/cgroup/cpu/cpu.cfs_quota_us'));
+        $period = (int) trim((string) @file_get_contents('/sys/fs/cgroup/cpu/cpu.cfs_period_us'));
+
+        return $quota > 0 && $period > 0 ? $quota / $period : null;
+    }
+
+    protected function cpuCores(): ?int
     {
         $info = @file_get_contents('/proc/cpuinfo');
 
@@ -403,7 +474,7 @@ class SystemMonitorService
     }
 
     /** Docker/containerd details when the app runs in a container (e.g. Coolify). */
-    private function container(): ?array
+    protected function container(): ?array
     {
         $cgroup = (string) @file_get_contents('/proc/1/cgroup');
         $inside = file_exists('/.dockerenv') || str_contains($cgroup, 'docker') || str_contains($cgroup, 'kubepods') || str_contains($cgroup, 'containerd');

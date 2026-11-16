@@ -92,7 +92,7 @@ class DispositionHistory extends Page implements HasTable
                 Tables\Filters\SelectFilter::make('action')->label('Keputusan')
                     ->options(['approved' => 'Didisposisi', 'rejected' => 'Ditolak']),
                 Tables\Filters\SelectFilter::make('performed_by')->label('Pejabat')
-                    ->options(fn () => User::role(RoleAccess::LEADERSHIP)->orderBy('name')->pluck('name', 'id')),
+                    ->options(fn () => User::whereHas('roles', fn ($q) => $q->whereIn('name', RoleAccess::LEADERSHIP)->where('guard_name', 'web'))->orderBy('name')->pluck('name', 'id')),
                 Tables\Filters\SelectFilter::make('acting_role')->label('Sebagai peran')
                     ->options(fn () => TicketLog::query()->whereIn('action', ['approved', 'rejected'])->whereNotNull('acting_role')
                         ->distinct()->pluck('acting_role')->mapWithKeys(fn (string $role) => [$role => RoleAccess::roleLabel($role)])->sort()->all()),

@@ -30,7 +30,7 @@ class TodayVisitors extends TableWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn () => Visitor::query()->whereDate('check_in_time', today()))
+            ->query(fn () => Visitor::query()->whereBetween('check_in_time', [today(), today()->endOfDay()]))
             ->defaultSort('check_in_time', 'desc')
             ->paginated([5, 10, 25])
             ->defaultPaginationPageOption(5)

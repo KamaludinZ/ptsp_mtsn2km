@@ -44,17 +44,23 @@ function scrollToTop() {
     });
 }
 
-// Show/hide back to top button
+// Show/hide back to top button: at most once per frame, and only touch the
+// DOM when it crosses the threshold (scroll fires dozens of times a second).
+let backToTopShown = null;
+let backToTopQueued = false;
 window.addEventListener('scroll', function() {
-    const backToTopBtn = document.getElementById('back-to-top-btn');
-    if (window.pageYOffset > 300) {
-        backToTopBtn.style.opacity = '1';
-        backToTopBtn.style.visibility = 'visible';
-    } else {
-        backToTopBtn.style.opacity = '0';
-        backToTopBtn.style.visibility = 'hidden';
-    }
-});
+    if (backToTopQueued) return;
+    backToTopQueued = true;
+    requestAnimationFrame(function() {
+        backToTopQueued = false;
+        const backToTopBtn = document.getElementById('back-to-top-btn');
+        const show = window.pageYOffset > 300;
+        if (!backToTopBtn || show === backToTopShown) return;
+        backToTopShown = show;
+        backToTopBtn.style.opacity = show ? '1' : '0';
+        backToTopBtn.style.visibility = show ? 'visible' : 'hidden';
+    });
+}, { passive: true });
 
 // Font Size Functions
 function setFontSize(size) {

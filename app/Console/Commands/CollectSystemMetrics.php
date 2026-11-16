@@ -44,7 +44,7 @@ class CollectSystemMetrics extends Command
         if ($metric->status === 'danger') {
             $issues = $this->alertableIssues($monitor->lastOverall['critical'] ?? [], $previous);
             if ($issues) {
-                $this->notifyAdmins($issues);
+                $this->notifyAdmins($issues, $metric->app_cpu_percent);
             }
         } elseif ($previous?->status === 'danger') {
             Log::info('Monitoring: status aplikasi pulih', ['status' => $metric->status]);
@@ -84,12 +84,18 @@ class CollectSystemMetrics extends Command
     }
 
     /** @param  array<int, string>  $issues */
-    private function notifyAdmins(array $issues): void
+    private function notifyAdmins(array $issues, ?float $appCpu = null): void
     {
         Log::critical('Monitoring: status aplikasi kritis', ['issues' => $issues]);
 
+        // CPU is the whole host's load: say how much of it PTSP itself used.
+        $cpuNote = $appCpu !== null && collect($issues)->contains(fn (string $issue) => str_starts_with($issue, 'CPU '))
+            ? "\n\nCatatan: angka CPU di atas adalah beban seluruh server. Aplikasi PTSP sendiri memakai {$appCpu}% CPU."
+                . ($appCpu < 50 ? ' Jadi beban tinggi kemungkinan besar berasal dari proses lain di server yang sama (mis. build/redeploy Coolify, backup, atau aplikasi lain).' : '')
+            : '';
+
         $body = "Monitoring Sistem PTSP mendeteksi status KRITIS pada " . now()->format('d/m/Y H:i') . ":\n\n- "
-            . (implode("\n- ", $issues) ?: 'tidak ada rincian') . "\n\nPeriksa menu Monitoring Sistem: " . url('/cp');
+            . (implode("\n- ", $issues) ?: 'tidak ada rincian') . $cpuNote . "\n\nPeriksa menu Monitoring Sistem: " . url('/cp');
 
         User::role('admin')->where('is_active', true)->whereNotNull('email')->pluck('email')
             ->each(function (string $email) use ($body) {

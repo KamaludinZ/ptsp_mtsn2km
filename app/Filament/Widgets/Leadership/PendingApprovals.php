@@ -30,7 +30,7 @@ class PendingApprovals extends TableWidget
         return $table
             ->query(fn () => Ticket::query()
                 ->with(['service:id,name', 'user:id,name'])
-                ->whereIn('id', Ticket::approvableBy(auth()->user())->pluck('id')))
+                ->whereIn('id', Ticket::approvableQuery(auth()->user())->select('id')))
             ->defaultSort('created_at')
             ->paginated([5, 10])
             ->defaultPaginationPageOption(5)

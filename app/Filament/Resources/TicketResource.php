@@ -161,7 +161,7 @@ class TicketResource extends Resource
                     ->query(fn (Builder $query, array $data) => filled($data['value'] ?? null) ? $query->forwardedTo([$data['value']]) : $query),
                 Tables\Filters\SelectFilter::make('assigned_to_id')
                     ->label('Petugas')
-                    ->options(fn () => User::role(User::STAFF_ROLES)->orderBy('name')->pluck('name', 'id'))
+                    ->options(fn () => User::whereHas('roles', fn ($q) => $q->whereIn('name', User::STAFF_ROLES)->where('guard_name', 'web'))->orderBy('name')->pluck('name', 'id'))
                     ->searchable(),
                 Tables\Filters\TernaryFilter::make('terlambat')
                     ->label('Melewati target')

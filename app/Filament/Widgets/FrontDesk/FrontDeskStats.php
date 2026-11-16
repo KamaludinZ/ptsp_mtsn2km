@@ -34,7 +34,7 @@ class FrontDeskStats extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-m-user-group')
                 ->color('primary')
                 ->url(VisitorResource::getUrl('index')),
-            Stat::make('Pendaftaran loket hari ini', $offline()->whereDate('created_at', today())->count())
+            Stat::make('Pendaftaran loket hari ini', $offline()->whereBetween('created_at', [today(), today()->endOfDay()])->count())
                 ->description($offline()->where('status', 'submitted')->count() . ' menunggu verifikasi back office')
                 ->descriptionIcon('heroicon-m-document-plus')
                 ->color('info'),

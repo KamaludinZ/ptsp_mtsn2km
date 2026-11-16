@@ -263,10 +263,28 @@ class ActiveRoles
     public static function can(User $user, string $permission): bool
     {
         $active = self::inContext($user);
-        $role = $active ? Role::findByName($active, 'web') : null;
 
-        return ($role?->hasPermissionTo($permission, 'web') ?? false)
+        return ($active !== null && self::roleHasPermission($active, $permission))
             || rescue(fn () => $user->hasDirectPermission($permission), false, report: false);
+    }
+
+    /**
+     * Whether a role grants a permission, read from Spatie's permission cache
+     * (roles per permission). Loading the role and its permissions from the
+     * database cost two queries per check, and a ticket table checks this
+     * for every row's actions (over 200 queries on one page).
+     */
+    private static function roleHasPermission(string $role, string $permission): bool
+    {
+        $found = app(\Spatie\Permission\PermissionRegistrar::class)
+            ->getPermissions(['name' => $permission, 'guard_name' => 'web']);
+
+        if ($found->isEmpty()) {
+            // Unknown permission: same answer (an exception) as Spatie's own check.
+            return Role::findByName($role, 'web')->hasPermissionTo($permission, 'web');
+        }
+
+        return $found->contains(fn ($p) => $p->roles->contains(fn ($r) => $r->name === $role && $r->guard_name === 'web'));
     }
 
     /** Peran aktif kini selalu ditetapkan otomatis, jadi tidak ada lagi yang wajib memilih. */

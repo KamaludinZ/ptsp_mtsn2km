@@ -25,7 +25,7 @@ class VisitorStats extends BaseWidget
     {
         return Cache::remember('admin_dashboard_visitor_stats', 120, function () {
             try {
-                $visitorsToday = Visitor::whereDate('created_at', now()->today())->count();
+                $visitorsToday = Visitor::whereBetween('created_at', [today(), today()->endOfDay()])->count();
                 $totalVisitors = Visitor::count();
                 $activeVisitors = Visitor::where('status', 'active')->count();
                 $completedVisitors = Visitor::where('status', 'completed')->count();

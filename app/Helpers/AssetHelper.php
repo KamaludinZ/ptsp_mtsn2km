@@ -268,7 +268,17 @@ class AssetHelper
      * @param string $path Original asset path
      * @return string URL to compiled asset
      */
+    /** @var array<string, string> URLs already worked out (per PHP process) */
+    private static array $resolved = [];
+
     private static function manifestAsset($path)
+    {
+        // A public page asks for ~10 assets; reading and decoding the manifest
+        // (and globbing the build folder) once per asset is wasted work.
+        return self::$resolved[$path] ??= self::resolveManifestAsset($path);
+    }
+
+    private static function resolveManifestAsset($path)
     {
         // Handle vendor/package assets - return them as-is (they manage their own compilation)
         if (str_starts_with($path, 'vendor/') || str_starts_with($path, '/vendor/')) {

@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\View;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -181,11 +180,8 @@ class AppServiceProvider extends ServiceProvider
             \URL::forceScheme('http');
         }
 
-        // Share a variable to indicate whether to use Vite or not
-        View::composer('*', function ($view) {
-            $useVite = (config('app.env') === 'local') && config('assets.mode', 'vite') === 'vite';
-            $view->with('useVite', $useVite);
-        });
+        // No View::composer('*') here: a wildcard composer runs for every view
+        // and Blade component, hundreds per panel page.
     }
 
     /**

@@ -126,7 +126,7 @@ class ServiceMetrics
     public static function scopeFor(User $user): ?callable
     {
         return match (true) {
-            $user->hasAnyRole(RoleAccess::LEADERSHIP) && ! $user->hasRole('admin') => fn ($q) => $q->whereIn('id', Ticket::approvableBy($user)->pluck('id')),
+            $user->hasAnyRole(RoleAccess::LEADERSHIP) && ! $user->hasRole('admin') => fn ($q) => $q->whereIn('id', Ticket::approvableQuery($user)->select('id')),
             $user->hasRole('back_office') => fn ($q) => $q->where('assigned_to_id', $user->id),
             $user->hasRole('front_desk') => fn ($q) => $q->where('mode', 'offline')->where('created_by', $user->id),
             default => null,
@@ -136,14 +136,14 @@ class ServiceMetrics
     /** Today's intake and output, shown to every role on the dashboard. */
     public static function today(): array
     {
-        $in = Ticket::whereDate('created_at', today());
+        $in = Ticket::whereBetween('created_at', [today(), today()->endOfDay()]);
 
         return [
             'in' => (clone $in)->count(),
             'in_online' => (clone $in)->where('mode', 'online')->count(),
             'in_offline' => (clone $in)->where('mode', 'offline')->count(),
-            'completed' => Ticket::where('status', 'completed')->whereDate('actual_completion_date', today())->count(),
-            'rejected' => Ticket::where('status', 'rejected')->whereDate('updated_at', today())->count(),
+            'completed' => Ticket::where('status', 'completed')->whereBetween('actual_completion_date', [today(), today()->endOfDay()])->count(),
+            'rejected' => Ticket::where('status', 'rejected')->whereBetween('updated_at', [today(), today()->endOfDay()])->count(),
             'open' => Ticket::open()->count(),
             'overdue' => Ticket::overdue()->count(),
         ];
@@ -302,8 +302,8 @@ class ServiceMetrics
     public static function visitors(): array
     {
         return [
-            'today' => Visitor::whereDate('check_in_time', today())->count(),
-            'active' => Visitor::whereDate('check_in_time', today())->whereNull('check_out_time')->count(),
+            'today' => Visitor::whereBetween('check_in_time', [today(), today()->endOfDay()])->count(),
+            'active' => Visitor::whereBetween('check_in_time', [today(), today()->endOfDay()])->whereNull('check_out_time')->count(),
             'month' => Visitor::where('check_in_time', '>=', now()->startOfMonth())->count(),
         ];
     }

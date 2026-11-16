@@ -25,7 +25,7 @@ class LeadershipStats extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $myApprovals = Ticket::approvableBy(auth()->user())->count();
+        $myApprovals = Ticket::approvableQuery(auth()->user())->count();
         $tickets = ServiceMetrics::tickets(now()->startOfYear());
         $survey = ServiceMetrics::survey(now()->startOfYear());
 

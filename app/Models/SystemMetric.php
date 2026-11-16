@@ -14,7 +14,7 @@ class SystemMetric extends Model
 
     protected $fillable = [
         'recorded_at', 'app_up', 'database_ok', 'database_latency_ms', 'queue_pending', 'queue_failed',
-        'scheduler_ok', 'cpu_percent', 'memory_percent', 'disk_percent', 'status',
+        'scheduler_ok', 'cpu_percent', 'app_cpu_percent', 'memory_percent', 'disk_percent', 'status',
     ];
 
     protected $casts = [
@@ -24,6 +24,7 @@ class SystemMetric extends Model
         'scheduler_ok' => 'boolean',
         'database_latency_ms' => 'float',
         'cpu_percent' => 'float',
+        'app_cpu_percent' => 'float',
         'memory_percent' => 'float',
         'disk_percent' => 'float',
     ];

@@ -36,6 +36,9 @@ Schedule::call(function () {
 // Notifikasi in-app: drop old notifications every night.
 Schedule::command('notifications:prune')->dailyAt('02:30')->name('notifications-prune');
 
+// Cache: expired entries that are never read again (per-IP request counters, visitor marks) every night.
+Schedule::command('cache:prune-expired')->dailyAt('02:45')->name('cache-prune-expired')->withoutOverlapping();
+
 // Arsip scan SK: missing or changed scans show up in the log (and the command's exit code) every week.
 Schedule::command('sk:periksa-arsip')->weeklyOn(1, '03:00')->name('sk-periksa-arsip')->withoutOverlapping();
 

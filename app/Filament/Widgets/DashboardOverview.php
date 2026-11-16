@@ -41,7 +41,7 @@ class DashboardOverview extends BaseWidget
                 $totalUsers = User::count();
                 $activeServices = Service::where('is_active', true)->count();
                 $activeTickets = Ticket::whereIn('status', ['submitted', 'verified', 'in_process', 'pending_approval'])->count();
-                $todayVisitors = Visitor::whereDate('created_at', now()->today())->count();
+                $todayVisitors = Visitor::whereBetween('created_at', [today(), today()->endOfDay()])->count();
 
                 // Complaint & WBS
                 $pendingComplaints = Complaint::where('complaint_type', 'complaint')

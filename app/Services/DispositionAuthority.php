@@ -58,12 +58,16 @@ class DispositionAuthority
      */
     public function canDisposeInActiveRole(User $user, Ticket $ticket): bool
     {
-        $service = $ticket->service;
+        return $ticket->approval_required && $ticket->service
+            && $this->canDisposeServiceInActiveRole($user, $ticket->service);
+    }
 
-        if (! $ticket->approval_required || ! $service) {
-            return false;
-        }
-
+    /**
+     * canDisposeInActiveRole() for any ticket of this service that needs a
+     * disposition (Ticket::approvableBy() filters the tickets in SQL).
+     */
+    public function canDisposeServiceInActiveRole(User $user, Service $service): bool
+    {
         if (in_array((string) $user->id, array_map('strval', (array) $service->approval_users), true)) {
             return true;
         }
