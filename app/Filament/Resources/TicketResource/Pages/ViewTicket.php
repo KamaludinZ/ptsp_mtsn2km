@@ -438,7 +438,7 @@ class ViewTicket extends ViewRecord
                 $this->refreshTicket();
 
                 // Leaders usually work through the queue: take them back to the next request.
-                if ($done && Ticket::approvableBy(auth()->user())->isNotEmpty()) {
+                if ($done && Ticket::approvableQuery(auth()->user())->exists()) {
                     $this->redirect(Approvals::getUrl());
                 }
             });

@@ -14,7 +14,7 @@ class ListNotificationDeliveries extends ListRecords
 
     public function getSubheading(): ?string
     {
-        $today = NotificationDelivery::whereDate('created_at', today());
+        $today = NotificationDelivery::whereBetween('created_at', [today(), today()->endOfDay()]);
 
         return 'Hari ini: ' . (clone $today)->where('status', 'sent')->count() . ' terkirim, ' . (clone $today)->where('status', 'failed')->count() . ' gagal.';
     }

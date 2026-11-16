@@ -47,14 +47,15 @@ class TrackSiteVisit
         $today = now()->toDateString();
         $hash = hash('sha256', implode('|', [config('app.key'), $today, $request->ip(), $request->userAgent()]));
 
-        // The cache guard keeps this to one DB write per visitor per day.
+        // The cache guard keeps this to one DB write per visitor per day. The
+        // footer counters (SiteStats) catch up within their 5-minute cache:
+        // clearing it here made every new visitor recount the whole table.
         if (Cache::add("site_visit:{$hash}", 1, now()->endOfDay())) {
             DB::table('site_visits')->insertOrIgnore([
                 'visited_on' => $today,
                 'visitor_hash' => $hash,
                 'created_at' => now(),
             ]);
-            Cache::forget(\App\Support\SiteStats::CACHE_KEY);
         }
     }
 }

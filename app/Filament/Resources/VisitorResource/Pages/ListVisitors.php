@@ -26,12 +26,12 @@ class ListVisitors extends ListRecords
 
     public function getTabs(): array
     {
-        $onSite = fn (Builder $query) => $query->whereDate('check_in_time', today())->whereNull('check_out_time');
+        $onSite = fn (Builder $query) => $query->whereBetween('check_in_time', [today(), today()->endOfDay()])->whereNull('check_out_time');
 
         return [
             'hari-ini' => Tab::make('Hari ini')
-                ->badge(Visitor::whereDate('check_in_time', today())->count() ?: null)
-                ->modifyQueryUsing(fn (Builder $query) => $query->whereDate('check_in_time', today())),
+                ->badge(Visitor::whereBetween('check_in_time', [today(), today()->endOfDay()])->count() ?: null)
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereBetween('check_in_time', [today(), today()->endOfDay()])),
             'di-lokasi' => Tab::make('Masih di lokasi')
                 ->badge($onSite(Visitor::query())->count() ?: null)
                 ->badgeColor('warning')

@@ -696,8 +696,13 @@
     // Update immediately when page loads
     document.addEventListener('DOMContentLoaded', function() {
         updateDateTime();
-        // Update every second
-        setInterval(updateDateTime, 1000);
+        // Every second, but not while the tab is hidden (no work for nobody).
+        setInterval(function () {
+            if (!document.hidden) updateDateTime();
+        }, 1000);
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) updateDateTime();
+        });
     });
 </script>
 @endpush

@@ -21,7 +21,7 @@
         @endforeach
     </x-filament::tabs>
 
-    <div wire:poll.30s>
+    <div wire:poll.60s>
         @includeIf('filament.pages.system-monitor.' . $activeTab)
     </div>
 </x-filament-panels::page>

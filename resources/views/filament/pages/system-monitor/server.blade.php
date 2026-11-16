@@ -3,6 +3,7 @@
 
     $meters = [
         ['Beban CPU server', $server['load_percent'], $server['load'] ? 'Rata-rata 5 menit, seluruh host. Load 1/5/15 menit: ' . implode(' / ', $server['load']) . ' pada ' . $server['cpu_cores'] . ' inti' : 'Tidak tersedia di host ini'],
+        ['CPU aplikasi PTSP', $server['app_cpu_percent'] ?? null, $server['container'] ? 'Hanya container aplikasi ini (web, scheduler, antrean), rata-rata sejak catatan monitoring terakhir. Bila beban server tinggi tetapi angka ini rendah, penyebabnya proses lain di server yang sama.' : 'Hanya terbaca bila aplikasi berjalan di container'],
         ['Memori (RAM)', $server['memory']['used_percent'], M::bytes($server['memory']['available']) . ' tersedia dari ' . M::bytes($server['memory']['total'])],
         ['Disk', $server['disk']['used_percent'], M::bytes($server['disk']['free']) . ' kosong dari ' . M::bytes($server['disk']['total'])],
     ];

@@ -35,7 +35,7 @@ class VisitorResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = Visitor::whereDate('check_in_time', today())->whereNull('check_out_time')->count();
+        $count = Visitor::whereBetween('check_in_time', [today(), today()->endOfDay()])->whereNull('check_out_time')->count();
 
         return $count ? (string) $count : null;
     }

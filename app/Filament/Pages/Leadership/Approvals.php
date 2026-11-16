@@ -56,7 +56,7 @@ class Approvals extends Page implements HasTable
 
     public static function getNavigationBadge(): ?string
     {
-        $count = Ticket::approvableBy(auth()->user())->count();
+        $count = Ticket::approvableQuery(auth()->user())->count();
 
         return $count ? (string) $count : null;
     }
@@ -71,9 +71,9 @@ class Approvals extends Page implements HasTable
         return $table
             ->query(fn () => Ticket::query()
                 ->with(['service:id,name,signature_recommendation,approval_required,approval_roles,approval_users,disposition_roles', 'user:id,name,user_type'])
-                ->whereIn('id', Ticket::approvableBy(auth()->user())->pluck('id')))
+                ->whereIn('id', Ticket::approvableQuery(auth()->user())->select('id')))
             ->defaultSort('created_at')
-            ->poll('30s')
+            ->poll('60s')
             ->columns([
                 Tables\Columns\TextColumn::make('ticket_number')->label('No. Tiket')->weight('semibold')->searchable()
                     ->description(fn (Ticket $record) => $record->isOverdue() ? 'Melewati target' : null),

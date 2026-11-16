@@ -227,15 +227,54 @@ class Ticket extends Model implements HasMedia
             ->whereIn('status', ['verified', 'in_process']);
     }
 
-    /** Tickets awaiting a decision that this user is allowed to make. */
+    /**
+     * Tickets awaiting a decision that this user is allowed to make: the same
+     * tickets TicketPolicy::approve() allows, worked out in SQL. Who may
+     * decide depends only on the service (a handful of rows), so the services
+     * are checked in PHP and the tickets filtered in the database. Checking
+     * the policy ticket by ticket loaded every waiting ticket plus one query
+     * each, on every panel page (navigation badge, dashboard widgets).
+     */
     public static function approvableBy(User $user): \Illuminate\Support\Collection
     {
-        return static::with(['service', 'user:id,name,user_type'])
-            ->awaitingApproval()
+        return static::approvableQuery($user)
+            ->with(['service', 'user:id,name,user_type'])
             ->orderBy('created_at')
+            ->get();
+    }
+
+    /** approvableBy() as a query, for counts and tables (nothing is loaded). */
+    public static function approvableQuery(User $user): \Illuminate\Database\Eloquent\Builder
+    {
+        $authority = app(\App\Services\DispositionAuthority::class);
+
+        $services = Service::query()
+            ->whereIn('id', static::awaitingApproval()->select('service_id'))
             ->get()
-            ->filter(fn (Ticket $ticket) => $user->can('approve', $ticket))
-            ->values();
+            ->filter(fn (Service $service) => $authority->canDisposeServiceInActiveRole($user, $service));
+
+        if ($services->isEmpty()) {
+            return static::query()->whereRaw('1 = 0');
+        }
+
+        // "Kepala Madrasah + Kepala TU": a leader who already disposed in the
+        // role they work in now waits for the other one (TicketPolicy::approve).
+        $acting = \App\Support\ActiveRoles::actingRoleOf($user);
+        $joint = \App\Support\ServiceDisposition::JOINT_MODE;
+        $jointServices = in_array($acting, \App\Support\ServiceDisposition::MODE_ROLES[$joint], true)
+            ? $services->filter(fn (Service $service) => $service->disposition_mode === $joint)->modelKeys()
+            : [];
+
+        return static::query()
+            ->awaitingApproval()
+            ->whereIn('service_id', $services->modelKeys())
+            ->when($jointServices, fn ($query) => $query->where(fn ($q) => $q
+                ->whereNotIn('service_id', $jointServices)
+                ->orWhereNotExists(fn ($logs) => $logs->selectRaw('1')
+                    ->from('disposition_logs')
+                    ->whereColumn('disposition_logs.ticket_id', 'tickets.id')
+                    ->where('disposition_logs.action', \App\Enums\DispositionAction::Disposisi->value)
+                    ->where('disposition_logs.role', $acting))));
     }
 
     /** Tickets disposed to one of these back-office units. */
