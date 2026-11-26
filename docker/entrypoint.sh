@@ -20,7 +20,7 @@ if [ -z "${APP_KEY:-}" ]; then
     exit 1
 fi
 
-# Never serve requests on a PHP without the PHP2Shell fixes.
+# Never serve requests on a PHP without the latest security fixes.
 if ! php /usr/local/bin/php-security-check.php; then
     log "ERROR: versi PHP di image ini belum ditambal. Di Coolify: Redeploy dengan"
     log "       'Disable build cache' agar image PHP terbaru diunduh ulang."

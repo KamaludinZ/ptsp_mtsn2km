@@ -5,9 +5,10 @@
 # Build:  docker build -t ptsp .
 # Deploy: see docs/DEPLOY_COOLIFY.md
 
-# Pin the patch release: 8.3.36 carries the PHP2Shell fixes
-# (CVE-2026-109618/109619). A bare "8.3" could reuse an older cached base.
-ARG PHP_VERSION=8.3.36
+# Pin the patch release: 8.3.37 carries the November 2026 PHP security
+# fixes (and the PHP2Shell fixes of 8.3.36). A bare "8.3" could reuse an
+# older cached base.
+ARG PHP_VERSION=8.3.37
 ARG NODE_VERSION=22
 
 ############################################
@@ -51,7 +52,10 @@ LABEL org.opencontainers.image.title="PTSP MTsN 2 Kota Malang" \
 # Extensions: pgsql (database), intl (Filament), gd/exif (images, PDF),
 # zip (Excel export), bcmath, pcntl (queue/scheduler signals), opcache.
 COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
+# apk upgrade pulls the fixed system packages (nginx, OpenSSL, libxml2)
+# even when the base image layer is older than the Alpine repository.
 RUN install-php-extensions pdo_pgsql pgsql intl gd exif zip bcmath pcntl opcache \
+    && apk upgrade --no-cache \
     && apk add --no-cache nginx supervisor su-exec curl tzdata \
     && rm -rf /var/cache/apk/* \
     && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
@@ -76,8 +80,9 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 COPY docker/php-security-check.php /usr/local/bin/php-security-check.php
-# Fail the build on a PHP without the 21 October 2026 security fixes.
-RUN php /usr/local/bin/php-security-check.php
+COPY docker/system-security-check.sh /usr/local/bin/system-security-check
+# Fail the build on a PHP or system package without the latest security fixes.
+RUN php /usr/local/bin/php-security-check.php && system-security-check
 
 COPY --chown=www-data:www-data . .
 COPY --chown=www-data:www-data --from=vendor /app/vendor ./vendor
